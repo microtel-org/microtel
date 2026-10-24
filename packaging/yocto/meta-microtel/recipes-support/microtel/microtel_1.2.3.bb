@@ -3,8 +3,8 @@ DESCRIPTION = "microtel is a C++20 OpenTelemetry-compatible runtime with an \
 OTLP/HTTP and OTLP/gRPC exporter built on nghttp2 and a vendored upb, without \
 the gRPC or protobuf C++ libraries. Optional: the C11 'leaf' library for \
 microcontrollers and the concentrator that ingests leaf payloads."
-HOMEPAGE = "https://github.com/chanderraja/microtel"
-BUGTRACKER = "https://github.com/chanderraja/microtel/issues"
+HOMEPAGE = "https://github.com/microtel-org/microtel"
+BUGTRACKER = "https://github.com/microtel-org/microtel/issues"
 SECTION = "libs"
 
 # microtel itself is Apache-2.0. Vendored and absorbed into the static
@@ -20,7 +20,7 @@ LIC_FILES_CHKSUM = "file://LICENSE;md5=86d3f3a95c324c9479bd8986968f4327"
 # through FETCHCONTENT_SOURCE_DIR_TOMLPLUSPLUS with FetchContent fully
 # disconnected. upb, utf8_range and nanopb are vendored in the tarball.
 SRC_URI = " \
-    https://github.com/chanderraja/microtel/archive/refs/tags/v${PV}.tar.gz;downloadfilename=${BP}.tar.gz;name=microtel \
+    https://github.com/microtel-org/microtel/archive/refs/tags/v${PV}.tar.gz;downloadfilename=${BP}.tar.gz;name=microtel \
     https://github.com/marzer/tomlplusplus/archive/refs/tags/v${TOMLPP_PV}.tar.gz;downloadfilename=tomlplusplus-${TOMLPP_PV}.tar.gz;name=tomlplusplus;subdir=${BP}/_deps \
 "
 TOMLPP_PV = "3.4.0"

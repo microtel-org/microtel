@@ -87,7 +87,7 @@ and, for AI coding agents, [`CLAUDE.md`](../CLAUDE.md).
 
 "spec §N" citations inside the ICPs refer to the v1.0 design specification,
 archived at
-<https://github.com/chanderraja/microtel/blob/v1.2.1/microtel-spec.md>
+<https://github.com/microtel-org/microtel/blob/v1.2.1/microtel-spec.md>
 ([ICP 0037](icps/0037-retire-the-v1-spec.md)). The ICPs are append-only, so
 their citations stay as written; this table is the key to where each topic
 lives now.

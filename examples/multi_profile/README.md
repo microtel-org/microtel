@@ -139,7 +139,7 @@ hold the pointer, destroy at process teardown) never runs into the race.
 
 There is one more lifetime rule the example has to respect, and the header
 currently documents it wrongly
-([#285](https://github.com/chanderraja/microtel/issues/285)): a `Tracer`
+([#285](https://github.com/microtel-org/microtel/issues/285)): a `Tracer`
 borrows its provider's pipeline through raw pointers and must not outlive the
 provider. That is why the frontend's tracer goes out of scope before
 `frontend.reset()`.

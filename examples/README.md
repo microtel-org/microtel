@@ -71,7 +71,7 @@ in `build/examples/microtel_example_<name>`, whichever directory defined it.
 | `metrics_exemplars/` | Metrics with exemplars. | Planned, optional (adds Prometheus to the stack) |
 
 The planned set mirrors the v1.1 public surface; issue
-[#279](https://github.com/chanderraja/microtel/issues/279) is the epic.
+[#279](https://github.com/microtel-org/microtel/issues/279) is the epic.
 Logs, supported since v1.2, are in [`logs/`](logs/); the log bridges have
 their own READMEs ([spdlog](../src/adapters/spdlog/README.md),
 [glog](../src/adapters/glog/README.md), [log4cxx](../src/adapters/log4cxx/README.md)).

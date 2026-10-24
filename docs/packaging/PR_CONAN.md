@@ -108,7 +108,7 @@ the wire without linking gRPC, abseil or the protobuf C++ runtime, so it suits
 applications that want OTLP export with a small dependency closure.
 
 #### Details
-- Upstream: https://github.com/chanderraja/microtel (Apache-2.0)
+- Upstream: https://github.com/microtel-org/microtel (Apache-2.0)
 - Static library only; Linux only (the I/O thread uses epoll).
 - Needs C++20 with `std::format`: GCC 13+ or Clang 18+. CCI's GCC 11 Linux
   profile is rejected in `validate()`, so no Linux binaries will be published;

@@ -5,25 +5,25 @@ blank_issues_enabled: false
 
 contact_links:
   - name: Security vulnerability
-    url: https://github.com/chanderraja/microtel/security/advisories/new
+    url: https://github.com/microtel-org/microtel/security/advisories/new
     about: Please report security vulnerabilities privately, not as public issues. See SECURITY.md.
 
   - name: Question or design discussion
-    url: https://github.com/chanderraja/microtel/discussions
+    url: https://github.com/microtel-org/microtel/discussions
     about: Use GitHub Discussions for questions and design conversations.
 
   - name: Interface Change Proposal (ICP)
-    url: https://github.com/chanderraja/microtel/blob/master/docs/icps/README.md
+    url: https://github.com/microtel-org/microtel/blob/master/docs/icps/README.md
     about: For breaking changes to locked interfaces, use the ICP process — not an issue.
 
   - name: Documentation index
-    url: https://github.com/chanderraja/microtel/blob/master/docs/README.md
+    url: https://github.com/microtel-org/microtel/blob/master/docs/README.md
     about: For questions about what microtel does today, start from the design docs and the README Status section.
 
   - name: Roadmap
-    url: https://github.com/chanderraja/microtel/blob/master/docs/roadmap.md
+    url: https://github.com/microtel-org/microtel/blob/master/docs/roadmap.md
     about: For questions about what's planned and what's out of scope, see the roadmap.
 
   - name: Contributing
-    url: https://github.com/chanderraja/microtel/blob/master/.github/CONTRIBUTING.md
+    url: https://github.com/microtel-org/microtel/blob/master/.github/CONTRIBUTING.md
     about: For questions about contributing, see CONTRIBUTING.md.

@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/chanderraja/microtel/bench/sink/blackhole/internal/counters"
+	"github.com/microtel-org/microtel/bench/sink/blackhole/internal/counters"
 )
 
 // NewHandler returns an http.Handler for the control API on :19080.

@@ -21,7 +21,7 @@ import (
 	"google.golang.org/grpc/stats"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/chanderraja/microtel/bench/sink/blackhole/internal/counters"
+	"github.com/microtel-org/microtel/bench/sink/blackhole/internal/counters"
 )
 
 // wireBytes accumulates the on-the-wire size of one RPC's inbound messages.

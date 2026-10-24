@@ -52,7 +52,7 @@ real delivery:
 arrived. grpc-go inflates before the handler runs, so the gRPC path cannot
 measure the request inside the handler. Instead, `StatsHandlerOption()` installs a
 `grpc.StatsHandler` that records `stats.InPayload.WireLength` per RPC and the
-handler reads that instead of `proto.Size` ([#228](https://github.com/chanderraja/microtel/issues/228)).
+handler reads that instead of `proto.Size` ([#228](https://github.com/microtel-org/microtel/issues/228)).
 `WireLength` includes the 5-byte gRPC length-prefix header, so uncompressed
 gRPC byte baselines are 5 bytes per message higher than before that landed.
 

@@ -69,7 +69,7 @@ a 3.8× ratio.
 snapshot.** Every SUT's binary grew, the unchanged otelcpp ones included
 (otelcpp-gRPC 38.5 → 43.1 MB, otelcpp-HTTP 16.8 → 19.3 MB), because the
 benchmark app itself gained two workloads in v1.2: the logs workload
-([#305](https://github.com/chanderraja/microtel/issues/305)), which links each
+([#305](https://github.com/microtel-org/microtel/issues/305)), which links each
 library's logs SDK, and the leaf fan-in workload (#344). The comparison within
 this run still holds: the otelcpp-gRPC benchmark executable is 2.5× the size of
 the microtel one. microtel's own
@@ -124,7 +124,7 @@ commit** ([`docs/releasing.md`](../releasing.md) §5). A run from a different
 machine makes every delta unreadable. The v1.1.0 attempt from CI's 4-core
 `ubuntu-24.04` runner showed a ~45% throughput drop on SUTs whose code hadn't
 changed; an unchanged SUT that moves is the giveaway. Until
-[#277](https://github.com/chanderraja/microtel/issues/277) settles on a
+[#277](https://github.com/microtel-org/microtel/issues/277) settles on a
 reference host, refresh this directory from a local run on the host above,
 not from a `benchmark.yml` artifact.
 

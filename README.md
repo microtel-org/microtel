@@ -8,9 +8,9 @@ An OpenTelemetry-compatible trace runtime and OTLP exporter for C++20. It
 speaks OTLP/gRPC and OTLP/HTTP-protobuf without linking gRPC, abseil or the
 protobuf C++ runtime.
 
-[![CI](https://github.com/chanderraja/microtel/actions/workflows/ci.yml/badge.svg)](https://github.com/chanderraja/microtel/actions)
-[![release](https://img.shields.io/github/v/release/chanderraja/microtel)](https://github.com/chanderraja/microtel/releases/latest)
-[![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=chanderraja_microtel&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=chanderraja_microtel)
+[![CI](https://github.com/microtel-org/microtel/actions/workflows/ci.yml/badge.svg)](https://github.com/microtel-org/microtel/actions)
+[![release](https://img.shields.io/github/v/release/microtel-org/microtel)](https://github.com/microtel-org/microtel/releases/latest)
+[![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=microtel-org_microtel&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=microtel-org_microtel)
 [![C++20](https://img.shields.io/badge/C%2B%2B-20-blue)](#install)
 [![packages](https://img.shields.io/badge/packages-vcpkg%20port%20%7C%20Conan%20recipe%20%7C%20CPM-informational)](#install)
 [![license](https://img.shields.io/badge/license-Apache%202.0-blue)](LICENSE)
@@ -79,7 +79,7 @@ Podman) and end with a trace at <http://localhost:3000>. Tests are off, so the
 build compiles only what the examples need. Start from a checkout:
 
 ```bash
-git clone https://github.com/chanderraja/microtel.git && cd microtel
+git clone https://github.com/microtel-org/microtel.git && cd microtel
 ```
 
 **No collector, no containers:**
@@ -244,7 +244,7 @@ nghttp2, zlib, pkg-config), see [Getting started](#getting-started).
 `master` checkout:
 
 ```bash
-git clone https://github.com/chanderraja/microtel.git
+git clone https://github.com/microtel-org/microtel.git
 vcpkg install microtel --overlay-ports=microtel/packaging/vcpkg/ports
 ```
 
@@ -259,7 +259,7 @@ target_link_libraries(my_app PRIVATE microtel::microtel)
 include(FetchContent)
 FetchContent_Declare(
     microtel
-    GIT_REPOSITORY https://github.com/chanderraja/microtel.git
+    GIT_REPOSITORY https://github.com/microtel-org/microtel.git
     GIT_TAG        v1.2.3
     GIT_SHALLOW    TRUE)
 FetchContent_MakeAvailable(microtel)
@@ -269,7 +269,7 @@ target_link_libraries(my_app PRIVATE microtel::microtel)
 **CPM.cmake.**
 
 ```cmake
-CPMAddPackage("gh:chanderraja/microtel@1.2.3")
+CPMAddPackage("gh:microtel-org/microtel@1.2.3")
 target_link_libraries(my_app PRIVATE microtel::microtel)
 ```
 
@@ -297,7 +297,7 @@ Get the latest release, then build and install it under your home directory,
 which needs no `sudo`:
 
 ```bash
-git clone --branch v1.2.3 https://github.com/chanderraja/microtel.git
+git clone --branch v1.2.3 https://github.com/microtel-org/microtel.git
 cd microtel
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DMICROTEL_BUILD_TESTS=OFF
 cmake --build build -j"$(nproc)"
@@ -323,7 +323,7 @@ its dependencies (OpenSSL, nghttp2, zlib, toml++, spdlog) from source, so the
 development packages above aren't needed:
 
 ```bash
-git clone https://github.com/chanderraja/microtel.git
+git clone https://github.com/microtel-org/microtel.git
 vcpkg install microtel --overlay-ports=microtel/packaging/vcpkg/ports
 ```
 

@@ -23,7 +23,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 include(FetchContent)
 FetchContent_Declare(
     microtel
-    GIT_REPOSITORY https://github.com/chanderraja/microtel.git
+    GIT_REPOSITORY https://github.com/microtel-org/microtel.git
     GIT_TAG        v1.2.3
     GIT_SHALLOW    TRUE
 )

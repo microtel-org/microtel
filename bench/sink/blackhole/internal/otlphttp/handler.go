@@ -15,7 +15,7 @@ import (
 	tracepb "go.opentelemetry.io/proto/otlp/collector/trace/v1"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/chanderraja/microtel/bench/sink/blackhole/internal/counters"
+	"github.com/microtel-org/microtel/bench/sink/blackhole/internal/counters"
 )
 
 // NewHandler returns an http.Handler for the OTLP/HTTP listener on :4318.

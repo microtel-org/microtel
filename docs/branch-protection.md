@@ -1,6 +1,6 @@
 # Branch Protection and Repository Settings
 
-This document is both a **target** for the GitHub-side configuration that enforces the contribution policy described in [CONTRIBUTING.md](../.github/CONTRIBUTING.md), and a **record** of what is configured today. Where the two differ, each table marks it. Verify the record against the live settings before relying on it — `gh api repos/chanderraja/microtel/branches/master/protection` is the source of truth.
+This document is both a **target** for the GitHub-side configuration that enforces the contribution policy described in [CONTRIBUTING.md](../.github/CONTRIBUTING.md), and a **record** of what is configured today. Where the two differ, each table marks it. Verify the record against the live settings before relying on it — `gh api repos/microtel-org/microtel/branches/master/protection` is the source of truth.
 
 The intent is **layered signaling**, not hard blocking. PRs from outside contributors aren't disabled — that would be hostile to the OSS framing — but several layers prevent unwanted PRs from landing accidentally.
 

@@ -10,8 +10,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/chanderraja/microtel/bench/sink/blackhole/internal/control"
-	"github.com/chanderraja/microtel/bench/sink/blackhole/internal/counters"
+	"github.com/microtel-org/microtel/bench/sink/blackhole/internal/control"
+	"github.com/microtel-org/microtel/bench/sink/blackhole/internal/counters"
 )
 
 func newHandler() (http.Handler, *counters.Counters) {

@@ -25,8 +25,8 @@ import (
 	"google.golang.org/grpc/test/bufconn"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/chanderraja/microtel/bench/sink/blackhole/internal/counters"
-	"github.com/chanderraja/microtel/bench/sink/blackhole/internal/otlpgrpc"
+	"github.com/microtel-org/microtel/bench/sink/blackhole/internal/counters"
+	"github.com/microtel-org/microtel/bench/sink/blackhole/internal/otlpgrpc"
 )
 
 const bufSize = 1 << 20 // 1 MiB

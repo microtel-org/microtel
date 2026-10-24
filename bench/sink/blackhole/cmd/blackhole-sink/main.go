@@ -24,10 +24,10 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
-	"github.com/chanderraja/microtel/bench/sink/blackhole/internal/control"
-	"github.com/chanderraja/microtel/bench/sink/blackhole/internal/counters"
-	"github.com/chanderraja/microtel/bench/sink/blackhole/internal/otlpgrpc"
-	"github.com/chanderraja/microtel/bench/sink/blackhole/internal/otlphttp"
+	"github.com/microtel-org/microtel/bench/sink/blackhole/internal/control"
+	"github.com/microtel-org/microtel/bench/sink/blackhole/internal/counters"
+	"github.com/microtel-org/microtel/bench/sink/blackhole/internal/otlpgrpc"
+	"github.com/microtel-org/microtel/bench/sink/blackhole/internal/otlphttp"
 )
 
 const (

@@ -91,9 +91,12 @@ jobs:
             echo
             echo "To fix, a maintainer must:"
             echo
-            echo "1. Create a token at sonarcloud.io → Account → Security."
-            echo "2. Add it as the \`SONAR_TOKEN\` repository secret."
-            echo "3. Replace \`TBD-organization\` in \`sonar-project.properties\`."
+            echo "1. Create a SonarCloud org that matches \`sonar.organization\` in"
+            echo "   \`sonar-project.properties\` (currently \`microtel-org\`) and import"
+            echo "   this GitHub repo so the project key matches \`sonar.projectKey\`"
+            echo "   (currently \`microtel-org_microtel\`)."
+            echo "2. Create a token at sonarcloud.io → Account → Security."
+            echo "3. Add it as the \`SONAR_TOKEN\` repository secret on microtel-org/microtel."
             echo "4. Disable Automatic Analysis in the SonarCloud project settings, so"
             echo "   this workflow is the only analysis path and \`sonar.exclusions\` is"
             echo "   honoured."

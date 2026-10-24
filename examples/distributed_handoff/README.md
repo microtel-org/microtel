@@ -314,7 +314,7 @@ That wasn't always true. Writing this example turned up a bug where
 `StartAsCurrentSpan` installed a `Context` built from the span context alone,
 so the thread's baggage was empty for the whole span scope and this read
 returned `nullopt`. That was
-[#283](https://github.com/chanderraja/microtel/issues/283), fixed in
+[#283](https://github.com/microtel-org/microtel/issues/283), fixed in
 `src/sdk/sdk_tracer.cpp` by passing `CurrentContext().baggage` into the
 installed context. Until the fix landed, the example worked around it by doing
 the read above the span, with a comment saying why.

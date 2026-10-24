@@ -108,7 +108,7 @@ Other ways to get the source:
 To compute the `SHA512` of a new release:
 
 ```bash
-curl -sL https://github.com/chanderraja/microtel/archive/vX.Y.Z.tar.gz | sha512sum
+curl -sL https://github.com/microtel-org/microtel/archive/vX.Y.Z.tar.gz | sha512sum
 ```
 
 GitHub's archive omits the `export-ignore` paths in `.gitattributes`, among

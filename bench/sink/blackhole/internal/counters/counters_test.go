@@ -6,7 +6,7 @@ package counters_test
 import (
 	"testing"
 
-	"github.com/chanderraja/microtel/bench/sink/blackhole/internal/counters"
+	"github.com/microtel-org/microtel/bench/sink/blackhole/internal/counters"
 )
 
 func TestNew_ZeroValues(t *testing.T) {

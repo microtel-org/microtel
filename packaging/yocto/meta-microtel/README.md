@@ -1,7 +1,7 @@
 # meta-microtel
 
 A Yocto Project / OpenEmbedded layer for
-[microtel](https://github.com/chanderraja/microtel), a C++20 OpenTelemetry
+[microtel](https://github.com/microtel-org/microtel), a C++20 OpenTelemetry
 trace runtime with an OTLP/HTTP and OTLP/gRPC exporter built on nghttp2 and
 a vendored upb.
 
@@ -15,7 +15,7 @@ a vendored upb.
 
 ```bash
 cd poky   # or your build's top directory, with oe-init-build-env sourced
-git clone https://github.com/chanderraja/microtel.git ../microtel
+git clone https://github.com/microtel-org/microtel.git ../microtel
 bitbake-layers add-layer ../microtel/packaging/yocto/meta-microtel
 ```
 
@@ -37,7 +37,7 @@ With kas, add the layer to your project file:
 ```yaml
 repos:
   microtel:
-    url: https://github.com/chanderraja/microtel.git
+    url: https://github.com/microtel-org/microtel.git
     branch: master
     layers:
       packaging/yocto/meta-microtel:

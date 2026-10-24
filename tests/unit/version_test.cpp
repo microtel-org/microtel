@@ -50,7 +50,7 @@ TEST(VersionTest, ReadmeNamesTheCurrentRelease)
         << "README Getting started does not clone v" << version;
     EXPECT_NE(readme.find("GIT_TAG        v" + version + "\n"), std::string::npos)
         << "README Install FetchContent snippet does not pin v" << version;
-    EXPECT_NE(readme.find("\"gh:chanderraja/microtel@" + version + "\""), std::string::npos)
+    EXPECT_NE(readme.find("\"gh:microtel-org/microtel@" + version + "\""), std::string::npos)
         << "README Install CPM snippet does not pin " << version;
 }
 
@@ -81,7 +81,7 @@ TEST(VersionTest, ConsumerProjectsPinTheCurrentRelease)
 
     const std::string cpm = ReadSourceFile(MICROTEL_CONSUMER_CPM_PATH);
     ASSERT_FALSE(cpm.empty()) << "cannot read " << MICROTEL_CONSUMER_CPM_PATH;
-    EXPECT_NE(cpm.find("\"gh:chanderraja/microtel@" + version + "\""), std::string::npos)
+    EXPECT_NE(cpm.find("\"gh:microtel-org/microtel@" + version + "\""), std::string::npos)
         << "tests/consumer_cpm does not pin " << version;
 }
 

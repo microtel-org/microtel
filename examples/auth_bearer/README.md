@@ -121,13 +121,13 @@ problem never looks like a connectivity problem.
 
 A failing callback also costs the batch, and nothing goes to the wire. This
 was deliberate hardening in v1.1. Before [issue
-#250](https://github.com/chanderraja/microtel/issues/250), a callback error sent
+#250](https://github.com/microtel-org/microtel/issues/250), a callback error sent
 the batch *unauthenticated*. Now `BuildHeaders` fails as a unit, the batch is
 dropped, and the message reaches `HealthSnapshot::last_error_message` prefixed
 `authorization header unavailable:`. A throwing callback costs the same one
 batch: the exception is caught at the provider boundary and converted to
 `Error::Kind::InternalFailure`
-([#251](https://github.com/chanderraja/microtel/issues/251)). **Prefer
+([#251](https://github.com/microtel-org/microtel/issues/251)). **Prefer
 returning `make_unexpected` to throwing.** A returned error keeps your
 `Error::Kind` all the way to the snapshot, whereas a throw shows up as
 `InternalFailure` whatever actually went wrong.

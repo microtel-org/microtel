@@ -89,7 +89,7 @@ Three steps, each its own PR, in this order.
 
 3. **Delete `microtel-spec.md`.** `docs/README.md` says that "spec §N"
    citations inside ICPs refer to the v1.0 design specification, archived at
-   <https://github.com/chanderraja/microtel/blob/v1.2.1/microtel-spec.md>,
+   <https://github.com/microtel-org/microtel/blob/v1.2.1/microtel-spec.md>,
    and points at the table above for where each topic lives now. A grep for
    `microtel-spec` and `spec §` outside `docs/icps/` comes back empty, and
    `citation-check.py` and the link checks pass.

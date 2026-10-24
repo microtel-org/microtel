@@ -1,4 +1,4 @@
-module github.com/chanderraja/microtel/bench/sink/blackhole
+module github.com/microtel-org/microtel/bench/sink/blackhole
 
 go 1.25.0
 

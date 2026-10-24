@@ -98,7 +98,7 @@ compute it. Don't copy this one.
 
 - `vcpkg.json` `version` is the tag without its `v`, and `SHA512` is the hash
   of GitHub's archive of that tag:
-  `curl -sL https://github.com/chanderraja/microtel/archive/vX.Y.Z.tar.gz | sha512sum`.
+  `curl -sL https://github.com/microtel-org/microtel/archive/vX.Y.Z.tar.gz | sha512sum`.
   That archive is not the `microtel-X.Y.Z.tar.gz` asset the release workflow
   attaches, and the two hashes differ.
 - `x64-linux` built with no post-build validation warnings.
@@ -119,7 +119,7 @@ New port: microtel, a lightweight OpenTelemetry trace runtime and OTLP exporter
 (OTLP/HTTP-protobuf and OTLP/gRPC) built on nghttp2. It speaks gRPC on the wire
 without linking gRPC, abseil or the protobuf C++ runtime.
 
-- Upstream: https://github.com/chanderraja/microtel (Apache-2.0)
+- Upstream: https://github.com/microtel-org/microtel (Apache-2.0)
 - Source: the release tag `v1.2.2` through `vcpkg_from_github`.
 - Linux only (`"supports": "linux"`): the I/O thread uses epoll. Needs GCC 13+ or
   Clang 18+ (C++20 and `std::format`).

@@ -99,7 +99,7 @@ This is the overlay port that built here. It assumes §5 items 1–3 have landed
   "name": "microtel",
   "version": "1.2.0",
   "description": "Lightweight OpenTelemetry-compatible trace runtime and OTLP exporter built on nghttp2",
-  "homepage": "https://github.com/chanderraja/microtel",
+  "homepage": "https://github.com/microtel-org/microtel",
   "license": "Apache-2.0 AND BSD-3-Clause AND MIT AND CC0-1.0",
   "supports": "linux",
   "dependencies": [
@@ -116,7 +116,7 @@ This is the overlay port that built here. It assumes §5 items 1–3 have landed
 
 ```cmake
 vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
-vcpkg_from_github(OUT_SOURCE_PATH SOURCE_PATH REPO chanderraja/microtel
+vcpkg_from_github(OUT_SOURCE_PATH SOURCE_PATH REPO microtel-org/microtel
     REF "v${VERSION}" SHA512 a21085ee…ca679 HEAD_REF master)
 vcpkg_find_acquire_program(PKGCONFIG)
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS FEATURES leaf MICROTEL_BUILD_LEAF)

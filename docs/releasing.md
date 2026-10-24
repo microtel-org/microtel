@@ -30,7 +30,7 @@ The README names the release in two prose places: the Status section ("The
 current release is …") and the `git clone --branch` tag in Getting started.
 `CONTRIBUTING.md` names it once ("The current release is v…"). The README's
 Install section pins it twice more: the FetchContent snippet's `GIT_TAG` and
-the CPM snippet's `gh:chanderraja/microtel@X.Y.Z`. Update all five in the same
+the CPM snippet's `gh:microtel-org/microtel@X.Y.Z`. Update all five in the same
 commit. `version-drift-check.sh` does not read them, but
 `tests/unit/version_test.cpp` does (from v1.2.2), so a missed one fails `ctest`.
 The two consumer projects pin the same tag — `GIT_TAG` in
@@ -207,7 +207,7 @@ a follow-up PR. Set `version` in `vcpkg.json` to the new release. In
 the tag's archive:
 
 ```bash
-curl -sL https://github.com/chanderraja/microtel/archive/vX.Y.Z.tar.gz | sha512sum
+curl -sL https://github.com/microtel-org/microtel/archive/vX.Y.Z.tar.gz | sha512sum
 ```
 
 Then install it once with `vcpkg install microtel --overlay-ports=packaging/vcpkg/ports`
@@ -245,7 +245,7 @@ gate is the separate `bench/baseline/results.json` in §6 — but the root READM
 quotes it, so the two must agree, and a release is when they are made to agree.
 
 > **Run it on the host the outgoing snapshot came from — see
-> [#277](https://github.com/chanderraja/microtel/issues/277).**
+> [#277](https://github.com/microtel-org/microtel/issues/277).**
 > `benchmark.yml` is hard-wired to `runs-on: ubuntu-24.04`, a shared 4-core
 > GitHub-hosted VM, while the committed snapshot comes from a 12-core
 > workstation. Refreshing one from the other is not a refresh, it is a machine
@@ -298,7 +298,7 @@ into the release PR — both are noisy diffs that would bury the version change.
 the next cycle's 5% gate measures against the released numbers:
 
 1. Trigger `benchmark.yml`. (It runs on `ubuntu-24.04`; there is no reference
-   runner to select, which is [#277](https://github.com/chanderraja/microtel/issues/277).)
+   runner to select, which is [#277](https://github.com/microtel-org/microtel/issues/277).)
 2. `ci/scripts/baseline-update.sh <sha>` — it downloads the
    `bench-results-<sha>` artifact, validates the JSON, and overwrites the file.
 3. Commit on its own branch, PR, merge.

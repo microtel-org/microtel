@@ -28,7 +28,7 @@ Durable rules-of-engagement for Claude Code (and any other AI coding agent) work
 - **`docs/icps/`** — the Interface Change Proposals: every decision made since M0, and how each changed the documents above.
 - **`docs/roadmap.md`** — multi-year roadmap, v1.0 → v3.0. Source of truth for what's deferred and when.
 
-The original v1.0 design specification was retired by [ICP 0037](docs/icps/0037-retire-the-v1-spec.md); it is archived at the `v1.2.1` tag ([`microtel-spec.md`](https://github.com/chanderraja/microtel/blob/v1.2.1/microtel-spec.md)). "spec §N" citations inside ICPs refer to it; [`docs/README.md`](docs/README.md) maps each section to its current home.
+The original v1.0 design specification was retired by [ICP 0037](docs/icps/0037-retire-the-v1-spec.md); it is archived at the `v1.2.1` tag ([`microtel-spec.md`](https://github.com/microtel-org/microtel/blob/v1.2.1/microtel-spec.md)). "spec §N" citations inside ICPs refer to it; [`docs/README.md`](docs/README.md) maps each section to its current home.
 
 ---
 

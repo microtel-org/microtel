@@ -18,8 +18,8 @@ are untouched.
 Give `Context` a baggage slot and a thread-local current-context slot, give
 `TraceState` real storage, and turn `Tracer::StartAsCurrentSpan` into an RAII
 scope that installs the new span as the caller thread's current span — the four
-pieces that issues [#208](https://github.com/chanderraja/microtel/issues/208)
-and [#221](https://github.com/chanderraja/microtel/issues/221) each need half
+pieces that issues [#208](https://github.com/microtel-org/microtel/issues/208)
+and [#221](https://github.com/microtel-org/microtel/issues/221) each need half
 of, and that one shared-ownership decision makes possible at once.
 
 ## Motivation

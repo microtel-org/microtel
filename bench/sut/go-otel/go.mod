@@ -1,4 +1,4 @@
-module github.com/chanderraja/microtel/bench/sut/go-otel
+module github.com/microtel-org/microtel/bench/sut/go-otel
 
 go 1.22
 

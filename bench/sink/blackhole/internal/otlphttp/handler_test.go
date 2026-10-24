@@ -16,8 +16,8 @@ import (
 	otlptrace "go.opentelemetry.io/proto/otlp/trace/v1"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/chanderraja/microtel/bench/sink/blackhole/internal/counters"
-	"github.com/chanderraja/microtel/bench/sink/blackhole/internal/otlphttp"
+	"github.com/microtel-org/microtel/bench/sink/blackhole/internal/counters"
+	"github.com/microtel-org/microtel/bench/sink/blackhole/internal/otlphttp"
 )
 
 func buildTraceRequest(nSpans int) []byte {

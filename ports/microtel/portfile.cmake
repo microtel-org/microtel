@@ -2,7 +2,7 @@ vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
 
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
-    REPO chanderraja/microtel
+    REPO microtel-org/microtel
     REF "v${VERSION}"
     SHA512 76b47f31364f279bf18b88de9e90f098c84179477f90191e7a160705021ee8b96ad65125dd7f7a9b7a01b157b6f974a6592300716a14c6309abe44fbb9ff3f35
     HEAD_REF master

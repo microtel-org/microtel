@@ -19,7 +19,7 @@ class MicrotelConan(ConanFile):
     # tl::expected (CC0-1.0). The leaf option adds nanopb (Zlib).
     license = ("Apache-2.0", "BSD-3-Clause", "MIT", "CC0-1.0")
     url = "https://github.com/conan-io/conan-center-index"
-    homepage = "https://github.com/chanderraja/microtel"
+    homepage = "https://github.com/microtel-org/microtel"
     topics = ("opentelemetry", "otlp", "tracing", "grpc", "nghttp2")
     package_type = "static-library"
     settings = "os", "arch", "compiler", "build_type"
