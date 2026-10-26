@@ -392,6 +392,8 @@ using UpbScoMet = opentelemetry_proto_metrics_v1_ScopeMetrics;
 using UpbMetric = opentelemetry_proto_metrics_v1_Metric;
 using UpbNDP = opentelemetry_proto_metrics_v1_NumberDataPoint;
 using UpbHDP = opentelemetry_proto_metrics_v1_HistogramDataPoint;
+using UpbEHDP = opentelemetry_proto_metrics_v1_ExponentialHistogramDataPoint;
+using UpbEHBuckets = opentelemetry_proto_metrics_v1_ExponentialHistogramDataPoint_Buckets;
 using UpbMetReq = opentelemetry_proto_collector_metrics_v1_ExportMetricsServiceRequest;
 
 // ---------------------------------------------------------------------------
@@ -537,6 +539,99 @@ void EncodeHistogram(const internal::HistogramData& data, UpbMetric* m, upb_Aren
 }
 
 // ---------------------------------------------------------------------------
+// ExponentialHistogramDataPoint encoding
+// ---------------------------------------------------------------------------
+
+void EncodeExpHistogramBuckets(const internal::ExponentialHistogramBuckets& buckets,
+                               UpbEHBuckets* out,
+                               upb_Arena* arena)
+{
+    opentelemetry_proto_metrics_v1_ExponentialHistogramDataPoint_Buckets_set_offset(out,
+                                                                                    buckets.offset);
+    for (const auto bc : buckets.bucket_counts)
+    {
+        (void)
+            opentelemetry_proto_metrics_v1_ExponentialHistogramDataPoint_Buckets_add_bucket_counts(
+                out, bc, arena);
+    }
+}
+
+void EncodeExpHistogramPoint(const internal::ExponentialHistogramPoint& pt,
+                             UpbEHDP* dp,
+                             upb_Arena* arena)
+{
+    opentelemetry_proto_metrics_v1_ExponentialHistogramDataPoint_set_start_time_unix_nano(
+        dp, ToNanos(pt.start_time));
+    opentelemetry_proto_metrics_v1_ExponentialHistogramDataPoint_set_time_unix_nano(
+        dp, ToNanos(pt.time));
+    opentelemetry_proto_metrics_v1_ExponentialHistogramDataPoint_set_count(dp, pt.count);
+    opentelemetry_proto_metrics_v1_ExponentialHistogramDataPoint_set_sum(dp, pt.sum);
+    if (pt.min.has_value())
+    {
+        opentelemetry_proto_metrics_v1_ExponentialHistogramDataPoint_set_min(dp, *pt.min);
+    }
+    if (pt.max.has_value())
+    {
+        opentelemetry_proto_metrics_v1_ExponentialHistogramDataPoint_set_max(dp, *pt.max);
+    }
+    opentelemetry_proto_metrics_v1_ExponentialHistogramDataPoint_set_scale(dp, pt.scale);
+    opentelemetry_proto_metrics_v1_ExponentialHistogramDataPoint_set_zero_count(dp, pt.zero_count);
+    // A side with no buckets is left unset rather than written empty.
+    if (!pt.positive.bucket_counts.empty())
+    {
+        UpbEHBuckets* pos =
+            opentelemetry_proto_metrics_v1_ExponentialHistogramDataPoint_mutable_positive(dp,
+                                                                                          arena);
+        if (pos != nullptr)
+        {
+            EncodeExpHistogramBuckets(pt.positive, pos, arena);
+        }
+    }
+    if (!pt.negative.bucket_counts.empty())
+    {
+        UpbEHBuckets* neg =
+            opentelemetry_proto_metrics_v1_ExponentialHistogramDataPoint_mutable_negative(dp,
+                                                                                          arena);
+        if (neg != nullptr)
+        {
+            EncodeExpHistogramBuckets(pt.negative, neg, arena);
+        }
+    }
+    EncodeAttributes(
+        pt.attributes,
+        arena,
+        [dp](upb_Arena* a) {
+            return opentelemetry_proto_metrics_v1_ExponentialHistogramDataPoint_add_attributes(dp,
+                                                                                               a);
+        });
+}
+
+// ---------------------------------------------------------------------------
+// ExponentialHistogram encoding
+// ---------------------------------------------------------------------------
+
+void EncodeExpHistogram(const internal::ExponentialHistogramData& data,
+                        UpbMetric* m,
+                        upb_Arena* arena)
+{
+    auto* h = opentelemetry_proto_metrics_v1_Metric_mutable_exponential_histogram(m, arena);
+    if (h == nullptr)
+    {
+        return;
+    }
+    opentelemetry_proto_metrics_v1_ExponentialHistogram_set_aggregation_temporality(
+        h, MapTemporality(data.temporality));
+    for (const auto& pt : data.points)
+    {
+        UpbEHDP* dp = opentelemetry_proto_metrics_v1_ExponentialHistogram_add_data_points(h, arena);
+        if (dp != nullptr)
+        {
+            EncodeExpHistogramPoint(pt, dp, arena);
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
 // Metric record encoding (variant dispatch)
 // ---------------------------------------------------------------------------
 
@@ -566,9 +661,10 @@ void EncodeMetricRecord(const internal::MetricRecord& rec, UpbScoMet* sm, upb_Ar
             {
                 EncodeHistogram(data, m, arena);
             }
-            // ExponentialHistogramData deferred to v1.2, with the rest of the
-            // metrics work: the v1.1 rescope (ICP 0024) kept it there, and
-            // interop-matrix.md §6 dates metrics collector-conformance v1.2.
+            else if constexpr (std::is_same_v<T, internal::ExponentialHistogramData>)
+            {
+                EncodeExpHistogram(data, m, arena);
+            }
         },
         rec.data);
 }
