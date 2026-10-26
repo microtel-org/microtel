@@ -8,7 +8,7 @@ This document is intentionally short — the heavy details live in other documen
 
 ## Project status
 
-The current release is v1.2.3. The architecture has settled, the interfaces in [docs/interfaces.md](../docs/interfaces.md) are locked, and the rules are enforced by CI rather than by review taste.
+The current release is v1.2.4. The architecture has settled, the interfaces in [docs/interfaces.md](../docs/interfaces.md) are locked, and the rules are enforced by CI rather than by review taste.
 
 **External contributions are welcome.** Bugs, fixes, tests, docs and features all take the same route: an Issue or an ICP where one is needed, then a PR that passes CI and a maintainer review. The discipline hasn't loosened — TDD gates, RAII, and the fixed dependency closure are still non-negotiable — but nothing is closed off because of who's typing.
 

@@ -5,7 +5,7 @@
 // as kVersionMajor/Minor/Patch. version-drift-check.sh compares both against
 // PROJECT_VERSION, but nothing compiled checked the two against each other, so
 // a hand edit could leave the public API reporting two different versions.
-// It also holds the README, CONTRIBUTING.md and the FetchContent/CPM consumer
+// It also holds the README, CONTRIBUTING.md, SECURITY.md and the FetchContent/CPM consumer
 // projects to the same version.
 
 #include "microtel/version.hpp"
@@ -62,6 +62,17 @@ TEST(VersionTest, ContributingNamesTheCurrentRelease)
         contributing.find("The current release is v" + std::string{microtel::kVersionString} + "."),
         std::string::npos)
         << "CONTRIBUTING.md does not name v" << microtel::kVersionString;
+}
+
+// docs/releasing.md §3: SECURITY.md's supported-versions table marks the current
+// release, and nothing else checks that it was moved forward.
+TEST(VersionTest, SecurityPolicyNamesTheCurrentRelease)
+{
+    const std::string security = ReadSourceFile(MICROTEL_SECURITY_PATH);
+    ASSERT_FALSE(security.empty()) << "cannot read " << MICROTEL_SECURITY_PATH;
+    EXPECT_NE(security.find("current release (" + std::string{microtel::kVersionString} + ")"),
+              std::string::npos)
+        << "SECURITY.md does not mark " << microtel::kVersionString << " as the current release";
 }
 
 // docs/releasing.md §1: tests/consumer_fetchcontent and tests/consumer_cpm pin the
