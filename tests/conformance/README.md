@@ -1,7 +1,7 @@
 # `tests/conformance/`
 
-End-to-end tests against a real OpenTelemetry Collector: eleven test
-binaries holding 43 tests, plus the two leaf binaries (ten tests each) when
+End-to-end tests against a real OpenTelemetry Collector: thirteen test
+binaries holding 53 tests, plus the two leaf binaries (ten tests each) when
 the leaf and the concentrator are built, none of them disabled. Every test skips
 unless [`ci/scripts/conformance.sh`](../../ci/scripts/conformance.sh)
 has started a collector and exported the environment contract below.
@@ -11,8 +11,8 @@ has started a collector and exported the environment contract below.
 Tier 1 of the four-tier compatibility model in `docs/compatibility-matrix.md` §7:
 payloads emitted by microtel are accepted by receivers implementing the
 pinned OTLP specification version, over both OTLP/HTTP-protobuf and
-OTLP/gRPC. Traces and logs are covered; metrics are not yet (see
-"Deliberately excluded").
+OTLP/gRPC. Traces, logs and metrics are covered; the metrics
+cardinality-overflow series is not yet (see "Deliberately excluded").
 
 This is the gate the `conformance` CI job runs (`docs/ci-architecture.md`):
 
@@ -45,7 +45,7 @@ integration tier.
 
 ## Layout
 
-### `http/` — OTLP/HTTP-protobuf, 6 binaries
+### `http/` — OTLP/HTTP-protobuf, 7 binaries
 
 | Binary | Source | Tests |
 |---|---|---|
@@ -55,8 +55,9 @@ integration tier.
 | `conformance_http_auth_test` | `auth_test.cpp` | static bearer header, auth callback, wrong-token 401 |
 | `conformance_http_plaintext_gap_test` | `plaintext_gap_test.cpp` | pins the plaintext gap as a failure — issue #166 |
 | `conformance_http_logs_test` | `logs_test.cpp` | logs to `/v1/logs`: see [Logs](#logs) |
+| `conformance_http_metrics_test` | `metrics_test.cpp` | metrics to `/v1/metrics`: see [Metrics](#metrics) |
 
-### `grpc/` — OTLP/gRPC, 5 binaries
+### `grpc/` — OTLP/gRPC, 6 binaries
 
 | Binary | Source | Tests |
 |---|---|---|
@@ -65,6 +66,7 @@ integration tier.
 | `conformance_grpc_tls_test` | `tls_test.cpp` | custom CA, mTLS, SNI override, and two negative cases |
 | `conformance_grpc_auth_test` | `auth_test.cpp` | static bearer header, auth callback, wrong-token `grpc-status: 16` |
 | `conformance_grpc_logs_test` | `logs_test.cpp` | logs to `LogsService/Export`: see [Logs](#logs) |
+| `conformance_grpc_metrics_test` | `metrics_test.cpp` | metrics to `MetricsService/Export`: see [Metrics](#metrics) |
 
 There is no gRPC mirror of `plaintext_gap_test.cpp`: the gRPC suite
 runs over `http://` except for `tls_test.cpp`, and that is the answer
@@ -94,6 +96,24 @@ gRPC over plaintext, exactly as the trace suites do).
 A key/value-list (structured map) body is not tested because the public
 `LogRecord::body` cannot hold one: `AttributeValue` has no map alternative.
 
+### Metrics
+
+Both `metrics_test.cpp` files run the same five scenarios, defined once in
+[`support/metric_conformance.hpp`](support/metric_conformance.hpp), over HTTP
+(TLS receiver) and gRPC (plaintext), read back from `metrics.jsonl`. Every
+assertion is narrowed to one metric's object by its per-run unique name, and
+every data point must carry `0 < startTimeUnixNano <= timeUnixNano` (a gauge:
+a `timeUnixNano` and no start), per
+[ICP 0039](../../docs/icps/0039-metric-start-timestamps.md).
+
+| Test | What the collector must have decoded |
+|---|---|
+| `SyncInstruments` | a Counter, UpDownCounter, Gauge, explicit-bucket Histogram and exponential Histogram: each one's value, buckets, count, sum, min/max, scale and offset as applicable, cumulative temporality, `isMonotonic` on the counter only; the description and unit; `service.name` on the resource and the `GetMeter(name, version)` scope |
+| `ObservableInstruments` | an ObservableCounter, ObservableUpDownCounter and ObservableGauge, each with the value its callback reported during `ForceFlush` |
+| `CumulativeTemporality` | a counter exported twice reports 3 then 7, with one start time |
+| `DeltaTemporality` | the same counter on a delta provider reports 3 then 4, the second window starting where the first ended |
+| `GzipAccepted` | 20 counters through a gzip-compressed provider, each exactly once |
+
 ### `leaf/` — the leaf / concentrator gate, 2 binaries
 
 ICP 0031 gates 3 and 5 ([`leaf-concentrator-design.md`](../../docs/leaf-concentrator-design.md)
@@ -116,7 +136,7 @@ batch processor, so the collector's output line for a request is exactly that
 request. Each binary also checks that it runs the backend it is named for:
 nanopb streams a payload in many `write` calls, upb in one.
 
-### `support/` — 5 headers, included as `conformance/support/<name>.hpp`
+### `support/` — 6 headers, included as `conformance/support/<name>.hpp`
 
 | Header | What |
 |---|---|
@@ -124,6 +144,7 @@ nanopb streams a payload in many `write` calls, upb in one.
 | [`collector_output.hpp`](support/collector_output.hpp) | Reads back what the collector wrote: `PollForLineContaining`, `CountOccurrences`, and `EnclosingObject`, which narrows a line to one record (or its scope, or its resource). |
 | [`provider_builder.hpp`](support/provider_builder.hpp) | `ConfigureConformanceBuilder`: endpoint, protocol, and timeouts short enough to fail fast instead of turning into a ctest timeout. |
 | [`log_conformance.hpp`](support/log_conformance.hpp) | The logs scenarios and their expected protojson fragments, shared by both protocols. |
+| [`metric_conformance.hpp`](support/metric_conformance.hpp) | The metrics scenarios, their expected fragments and the timestamp checks, shared by both protocols. |
 | [`trace_context_conformance.hpp`](support/trace_context_conformance.hpp) | The span and link `traceState` / `flags` scenario, shared by both `basic_export_test.cpp` files. |
 
 ### `collector/config.yaml`
@@ -131,11 +152,12 @@ nanopb streams a payload in many `write` calls, upb in one.
 Four named `otlp` receivers, each on its own port pair, so a test picks
 a transport-security posture by picking an endpoint rather than by
 restarting the collector. All four feed one traces pipeline (the
-`batch` processor, then the `file` exporter) and one logs pipeline (the
-same `batch` processor, then a second `file/logs` exporter), so every
-test asserts against one output file per signal whichever port it used.
-Keeping the files apart means a trace assertion can never be satisfied
-by a log line, or the reverse.
+`batch` processor, then the `file` exporter), one logs pipeline (the
+same `batch` processor, then a `file/logs` exporter) and one metrics
+pipeline (the same, then a `file/metrics` exporter), so every test
+asserts against one output file per signal whichever port it used.
+Keeping the files apart means an assertion about one signal can never be
+satisfied by another's line.
 
 A fifth receiver, `otlp/leaf`, belongs to the leaf gate alone. Its traces
 pipeline has no processor and its own `file/leaf` exporter, so the collector
@@ -230,6 +252,7 @@ consumed through [`support/conformance_env.hpp`](support/conformance_env.hpp).
 | `MICROTEL_CONFORMANCE_AUTH_TOKEN` | the bearer token `bearertokenauth` accepts |
 | `MICROTEL_CONFORMANCE_OUTPUT_FILE` | `<build-dir>/conformance/out/traces.jsonl` |
 | `MICROTEL_CONFORMANCE_LOGS_OUTPUT_FILE` | `<build-dir>/conformance/out/logs.jsonl` |
+| `MICROTEL_CONFORMANCE_METRICS_OUTPUT_FILE` | `<build-dir>/conformance/out/metrics.jsonl` |
 | `MICROTEL_CONFORMANCE_LEAF_HTTP_ENDPOINT` | `https://localhost:4358` |
 | `MICROTEL_CONFORMANCE_LEAF_GRPC_ENDPOINT` | `http://127.0.0.1:4357` |
 | `MICROTEL_CONFORMANCE_LEAF_OUTPUT_FILE` | `<build-dir>/conformance/out/leaf-traces.jsonl` |
@@ -260,7 +283,8 @@ either.
 
 The collector runs the `file` exporter, which appends one compact
 protojson object per batch: `ResourceSpans` to `/out/traces.jsonl`,
-`ResourceLogs` to `/out/logs.jsonl`. Those files are the only place a
+`ResourceLogs` to `/out/logs.jsonl`, `ResourceMetrics` to
+`/out/metrics.jsonl`. Those files are the only place a
 test can observe what the collector *understood*, as opposed to what
 microtel claims it sent.
 
@@ -304,7 +328,7 @@ per-run marker are normalised
 | Partial-success responses | [`tests/unit/wire/otlp_response_test.cpp`](../unit/wire/otlp_response_test.cpp) and the two codec tests, against hand-encoded byte fixtures | A collector configured to accept spans never returns a `partial_success` body, so this tier cannot elicit one. |
 | Retry and backoff timing | [`tests/unit/exporter/retry_policy_test.cpp`](../unit/exporter/retry_policy_test.cpp), [`tests/integration/sdk/exporter_health_test.cpp`](../integration/sdk/exporter_health_test.cpp) against fakes | Needs a clock the test controls. Here the negative tests run a near-zero retry budget precisely to *avoid* the schedule. |
 | Restart recovery (collector bounced mid-export) | deferred; see [`docs/interop-matrix.md`](../../docs/interop-matrix.md) §6 | |
-| Metrics conformance | deferred to v1.3; see [`docs/interop-matrix.md`](../../docs/interop-matrix.md) §6 | |
+| The metrics cardinality-overflow series | deferred to v1.3 (#302); see [`docs/interop-matrix.md`](../../docs/interop-matrix.md) §6 | |
 | Throughput and delivery rate at volume | the weekly [`interop.yml`](../../.github/workflows/interop.yml) workflow | Slow, and not a merge gate. |
 
 ## Known-defect tripwires
