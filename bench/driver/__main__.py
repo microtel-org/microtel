@@ -127,22 +127,6 @@ def _log(msg: str) -> None:
     print(f"[driver] {msg}", file=sys.stderr, flush=True)
 
 
-def _binary_bytes(engine: str, image_name: str) -> Optional[int]:
-    """Return the byte size of /emit_app inside the SUT image, or None on error."""
-    import subprocess
-    try:
-        proc = subprocess.run(
-            [engine, "run", "--rm", "--entrypoint", "/bin/sh",
-             image_name, "-c", "wc -c < /emit_app"],
-            capture_output=True, text=True, timeout=30,
-        )
-        if proc.returncode == 0:
-            return int(proc.stdout.strip())
-    except (subprocess.TimeoutExpired, ValueError, OSError):
-        pass
-    return None
-
-
 # The emit-app's spans_emitted counts workload *iterations* (one latency
 # sample each), not spans: EMIT_WORKLOAD=realistic_request emits a parent and
 # two children per iteration.  Delivery is spans received over spans sent, so
@@ -575,9 +559,6 @@ def _collect_sut_results(
         image_tag = (
             perf_image_name(sut.image_name) if flamegraph_dir else sut.image_name
         )
-        binary_size = _binary_bytes(engine, image_tag)
-        if binary_size is not None:
-            _log(f"  binary size: {binary_size:,} bytes")
         sut_results.append({
             "name":                sut.name,
             "library":             sut.library,
@@ -586,7 +567,6 @@ def _collect_sut_results(
             "library_build_flags": "",
             "image_tag":           image_tag,
             "image_id":            sut_image_ids.get(sut.name, ""),
-            "binary_bytes":        binary_size,
             "samples":             samples,
             "flamegraph_svg":      str(svg_path) if svg_path else None,
         })

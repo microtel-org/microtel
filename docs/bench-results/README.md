@@ -18,9 +18,9 @@ matched, governor included, so the deltas below are like for like.
 ## Summary
 
 This is the table the root README's performance claims are read off.
-Hot-loop traces, 10 000 spans per sample × 10 samples, blackhole sink (no
-network), Podman containers on one host (AMD Ryzen 5 5600G, `performance`
-governor, SMT on).
+Hot-loop traces, 10 000 spans per sample × 10 samples, each SDK exporting to
+a local blackhole sink over a container network, one host (Podman; AMD Ryzen 5
+5600G, `performance` governor, SMT on).
 
 | Metric | microtel (HTTP) | microtel (gRPC) | otelcpp (gRPC) | otelcpp (HTTP) |
 |---|---|---|---|---|
@@ -30,7 +30,6 @@ governor, SMT on).
 | Flush p50 | 2.7 ms | 4.3 ms | 2.0 ms | 1.9 ms |
 | Delivery rate | **100%** | **100%** | 95.2% | 97.0% |
 | Wire bytes / span | **62.2** | **62.2** | 68.1 | 68.1 |
-| Benchmark binary size | **17.5 MB** | **17.5 MB** | 43.1 MB | 19.3 MB |
 
 **Span emit** times one whole `EmitSpan()` call of the benchmark app
 ([`control_socket.cpp`](../../bench/emit-app/src/control_socket.cpp), the
@@ -40,9 +39,13 @@ overhead: a virtual call, a relaxed counter increment and two
 of `StartSpan` alone, although the harness and [results.md](results.md) label
 the row "StartSpan".
 
-**Benchmark binary size** is the size of each whole benchmark executable: the
-same emit app linked against each SDK and its exporter. It is not the size of
-the library or its dependency closure.
+**Size** is measured separately, in [`sizes/library-sizes.md`](sizes/library-sizes.md):
+the stripped benchmark executable plus every shared library it loads, Ubuntu
+24.04 packages, split per library with bloaty. The telemetry stack is
+**13.4 MB** for opentelemetry-cpp with its OTLP/gRPC exporter (gRPC, protobuf,
+Abseil, c-ares, re2 and the OTLP proto libraries) against **1.1 MB** for
+microtel (with nghttp2, upb and toml++), on top of the same **12.0 MB** shared
+base of OpenSSL, zlib and the C/C++ runtime that both load.
 
 The methodology is in [docs/bench-spec.md](../bench-spec.md), and
 [plots.html](plots.html) has interactive plots and the raw
@@ -65,16 +68,11 @@ microtel-grpc −5.1%, and the unchanged otelcpp SUTs −5.6% (gRPC) and −4.2%
 (HTTP). Span emit p50 is 217 ns for microtel against 832 ns for otelcpp-gRPC,
 a 3.8× ratio.
 
-**The benchmark binary size row is not comparable with the previous
-snapshot.** Every SUT's binary grew, the unchanged otelcpp ones included
-(otelcpp-gRPC 38.5 → 43.1 MB, otelcpp-HTTP 16.8 → 19.3 MB), because the
-benchmark app itself gained two workloads in v1.2: the logs workload
-([#305](https://github.com/microtel-org/microtel/issues/305)), which links each
-library's logs SDK, and the leaf fan-in workload (#344). The comparison within
-this run still holds: the otelcpp-gRPC benchmark executable is 2.5× the size of
-the microtel one. microtel's own
-library size is measured separately; see [`leaf-footprint.md`](leaf-footprint.md)
-for the leaf and the Cortex-M figures.
+**The benchmark binary size row is withdrawn.** It compared the benchmark
+executables' file sizes, which were over 92% debug info and left out the
+shared libraries each executable loads. [`sizes/library-sizes.md`](sizes/library-sizes.md) replaces it,
+and #445 tracks the driver fix. The leaf's footprint is in
+[`leaf-footprint.md`](leaf-footprint.md).
 
 The other two profiles from the same session: `realistic-request` shows 100%
 delivery for both SUTs, and `compression` shows 342.2 B/span uncompressed

@@ -205,7 +205,9 @@ Human-readable report. Layout:
 3. **Per-profile sections.** Detailed stats, with notes on anomalies (e.g., "SUT-B saw 0.3% drop rate; SUT-A saw 0%").
 4. **Methodology footer.** What was measured, how, what was held constant, what wasn't.
 
-Example TL;DR row format:
+Example TL;DR row format. **The values are illustrative placeholders, not
+measurements**; measured figures are in [`docs/bench-results/`](bench-results/README.md),
+and sizes in [`docs/bench-results/sizes/`](bench-results/sizes/library-sizes.md).
 
 ```
 | Metric                       | microtel        | otel-cpp+gRPC   | otel-cpp+HTTP   | Δ (microtel vs gRPC) |

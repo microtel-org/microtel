@@ -358,7 +358,7 @@ The shipped names are in `microtel::sugar` ([ICP 0028](icps/0028-sugar-surface.m
 
 The v1.0 footprint targets in [`docs/bench-spec.md`](bench-spec.md) §14.5 are stretch numbers pending prototype. The trajectory across releases:
 
-*(Status: the table below was written assuming shared libraries. microtel ships static archives only (`libmicrotel_*.a` behind `microtel::microtel`), and per-library sizes have not been measured or published yet; release notes so far report only the benchmark binary size. ICP 0030 (PR #293) proposes the CI size report that would fill this in.)*
+*(Status: the table below was written assuming shared libraries. microtel ships static archives only (`libmicrotel_*.a` behind `microtel::microtel`). Sizes are now measured per library for the benchmark app, stripped and with every shared library it loads, in [`docs/bench-results/sizes/library-sizes.md`](bench-results/sizes/library-sizes.md): microtel's telemetry stack is 1.1 MB against 13.4 MB for opentelemetry-cpp with its OTLP/gRPC exporter, over the same 12.0 MB of OpenSSL, zlib and the C/C++ runtime. The per-archive figures this table asks for are still unmeasured; ICP 0030 (PR #293) proposes the CI size report that would fill them in.)*
 
 | Release | Core exporter (`libmicrotel-exporter.so`) | Full SDK (`libmicrotel-sdk.so`) | Total dynamic closure |
 |---|---|---|---|
