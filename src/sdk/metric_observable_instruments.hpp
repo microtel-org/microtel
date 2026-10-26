@@ -157,7 +157,9 @@ public:
 
     using IMetricStream::Collect;
 
-    /// @brief Run the callback and snapshot what it reported. A delta point
+    /// @brief Run the callback and snapshot what it reported. Under delta
+    ///        each value is the change since the series' previous
+    ///        observation (see `DeltaFor`). A delta point
     ///        starts at the previous collection (this stream's creation on
     ///        the first); a cumulative series starts at the collection before
     ///        it was first observed, which is the creation if that was the
@@ -182,9 +184,15 @@ public:
                 .attributes = std::vector<KeyValue>(pairs.begin(), pairs.end()),
                 .start_time = delta ? m_last_collect : series_start,
                 .time = collection_time,
-                .value = value,
+                .value = delta ? DeltaFor(attr_set, value) : value,
                 .exemplars = {},
             });
+        }
+        if (delta)
+        {
+            // Forget a series this collection didn't observe: when it returns,
+            // it is new, and its first observation is reported in full.
+            m_previous = m_result.Map();
         }
         m_last_collect = collection_time;
         return internal::MetricRecord{
@@ -196,12 +204,27 @@ public:
     }
 
 private:
+    /// @brief The change in @p value since the series' previous observation:
+    ///        the whole value for a series with none, and for a monotonic
+    ///        counter whose value went down (it reset).
+    [[nodiscard]] T DeltaFor(const AttributeSet& series, const T value) const
+    {
+        const auto it = m_previous.find(series);
+        if (it == m_previous.end() || (m_monotonic && value < it->second))
+        {
+            return value;
+        }
+        return value - it->second;
+    }
+
     std::string m_name;
     std::string m_description;
     std::string m_unit;
     bool m_monotonic;
     ObservableCallback<T> m_callback;
     ObservableResult<T> m_result;
+    /// Each series' observation in the previous delta collection.
+    std::unordered_map<AttributeSet, T, AttributeSetHash> m_previous;
     /// Each series' start: the collection before it was first observed.
     std::unordered_map<AttributeSet, std::chrono::system_clock::time_point, AttributeSetHash>
         m_series_start;
