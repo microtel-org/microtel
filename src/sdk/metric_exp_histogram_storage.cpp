@@ -184,6 +184,7 @@ void ExponentialHistogramStorage<T>::Record(T value, AttributeSpan attrs)
     if (point.count == 0)  // newly inserted entry (normal or first overflow use)
     {
         point.scale = m_max_scale;
+        point.start = std::chrono::system_clock::now();
         point.min = observation;
         point.max = observation;
     }
@@ -209,7 +210,8 @@ void ExponentialHistogramStorage<T>::Record(T value, AttributeSpan attrs)
 
 template <typename T>
 internal::ExponentialHistogramData ExponentialHistogramStorage<T>::Collect(
-    internal::AggregationTemporality temporality)
+    internal::AggregationTemporality temporality,
+    std::chrono::system_clock::time_point collection_time)
 {
     const std::scoped_lock lock{m_mu};
 
@@ -217,11 +219,14 @@ internal::ExponentialHistogramData ExponentialHistogramStorage<T>::Collect(
     data.temporality = temporality;
     data.points.reserve(m_points.size());
 
+    const bool delta = temporality == internal::AggregationTemporality::Delta;
     for (const auto& [key, point] : m_points)
     {
         internal::ExponentialHistogramPoint out;
         const auto pairs = key.Pairs();
         out.attributes.assign(pairs.begin(), pairs.end());
+        out.start_time = delta ? m_last_collect : point.start;
+        out.time = collection_time;
         out.count = point.count;
         out.sum = point.sum;
         out.min = point.min;
@@ -240,7 +245,8 @@ internal::ExponentialHistogramData ExponentialHistogramStorage<T>::Collect(
     }
 
     m_exemplars.clear();
-    if (temporality == internal::AggregationTemporality::Delta)
+    m_last_collect = collection_time;
+    if (delta)
     {
         m_points.clear();
     }

@@ -14,6 +14,7 @@
 #include "sdk/metric_stream.hpp"
 #include "sdk/metric_sum_storage.hpp"
 
+#include <chrono>
 #include <cstddef>
 #include <cstdint>
 #include <string>
@@ -71,14 +72,17 @@ public:
     ~MetricStreamSum() noexcept override = default;
 
     /// @brief Snapshot the storage into a MetricRecord.
+    using IMetricStream::Collect;
+
     [[nodiscard]] internal::MetricRecord Collect(
-        internal::AggregationTemporality temporality) override
+        internal::AggregationTemporality temporality,
+        std::chrono::system_clock::time_point collection_time) override
     {
         return internal::MetricRecord{
             .name = m_name,
             .description = m_description,
             .unit = m_unit,
-            .data = m_storage.Collect(temporality),
+            .data = m_storage.Collect(temporality, collection_time),
         };
     }
 
@@ -121,14 +125,17 @@ public:
     MetricStreamGauge& operator=(MetricStreamGauge&&) = delete;
     ~MetricStreamGauge() noexcept override = default;
 
+    using IMetricStream::Collect;
+
     [[nodiscard]] internal::MetricRecord Collect(
-        internal::AggregationTemporality /*temporality*/) override
+        internal::AggregationTemporality /*temporality*/,
+        std::chrono::system_clock::time_point collection_time) override
     {
         return internal::MetricRecord{
             .name = m_name,
             .description = m_description,
             .unit = m_unit,
-            .data = m_storage.Collect(),
+            .data = m_storage.Collect(collection_time),
         };
     }
 
@@ -171,14 +178,17 @@ public:
     MetricStreamHistogram& operator=(MetricStreamHistogram&&) = delete;
     ~MetricStreamHistogram() noexcept override = default;
 
+    using IMetricStream::Collect;
+
     [[nodiscard]] internal::MetricRecord Collect(
-        internal::AggregationTemporality temporality) override
+        internal::AggregationTemporality temporality,
+        std::chrono::system_clock::time_point collection_time) override
     {
         return internal::MetricRecord{
             .name = m_name,
             .description = m_description,
             .unit = m_unit,
-            .data = m_storage.Collect(temporality),
+            .data = m_storage.Collect(temporality, collection_time),
         };
     }
 
@@ -223,14 +233,17 @@ public:
     MetricStreamExpHistogram& operator=(MetricStreamExpHistogram&&) = delete;
     ~MetricStreamExpHistogram() noexcept override = default;
 
+    using IMetricStream::Collect;
+
     [[nodiscard]] internal::MetricRecord Collect(
-        internal::AggregationTemporality temporality) override
+        internal::AggregationTemporality temporality,
+        std::chrono::system_clock::time_point collection_time) override
     {
         return internal::MetricRecord{
             .name = m_name,
             .description = m_description,
             .unit = m_unit,
-            .data = m_storage.Collect(temporality),
+            .data = m_storage.Collect(temporality, collection_time),
         };
     }
 

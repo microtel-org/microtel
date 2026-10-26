@@ -54,6 +54,7 @@ from `CLAUDE.md`, `CMakeLists.txt`, `ci/header_check.cpp` and the headers.
 | [0036](0036-custom-export-transport.md) | `SdkBuilder::WithExportTransport` for full-SDK nodes; `LeafTimeMode::Unix` for undeclared concentrator payloads | Accepted | #357, #358 |
 | [0037](0037-retire-the-v1-spec.md) | Retire `microtel-spec.md`: move the tiers, ABI policy and performance targets to live docs, rewrite references outside the ICPs, delete it (archived at `v1.2.1`) | Accepted | #404, #405, #406, #407 |
 | [0038](0038-reject-reserved-request-headers.md) | `Build()` rejects static request headers that HTTP/2 forbids (pseudo-headers, connection-specific, `host`) or that microtel sets for the resolved protocol (#408) | Accepted | #410 |
+| [0039](0039-metric-start-timestamps.md) | Metric data-point `time` and `start_time`: one collection time per collect, delta windows chained, cumulative series start at first measurement (observable: the prior collection), gauges time only (#448) | Accepted | #449 |
 
 [ICP 0024](0024-v1.1-rescope.md) reserved number 0027 for an amendment to
 `docs/control-plane-design.md` §9 (the fourth thread role). That amendment is

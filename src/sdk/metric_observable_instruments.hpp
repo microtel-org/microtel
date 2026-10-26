@@ -11,6 +11,7 @@
 #include "sdk/metric_attribute_set.hpp"
 #include "sdk/metric_stream.hpp"
 
+#include <chrono>
 #include <cstddef>
 #include <functional>
 #include <string>
@@ -154,8 +155,16 @@ public:
     MetricStreamObservableSum& operator=(MetricStreamObservableSum&&) = delete;
     ~MetricStreamObservableSum() noexcept override = default;
 
+    using IMetricStream::Collect;
+
+    /// @brief Run the callback and snapshot what it reported. A delta point
+    ///        starts at the previous collection (this stream's creation on
+    ///        the first); a cumulative series starts at the collection before
+    ///        it was first observed, which is the creation if that was the
+    ///        first collection.
     [[nodiscard]] internal::MetricRecord Collect(
-        internal::AggregationTemporality temporality) override
+        internal::AggregationTemporality temporality,
+        std::chrono::system_clock::time_point collection_time) override
     {
         m_result.Clear();
         m_callback(m_result);
@@ -163,15 +172,21 @@ public:
         internal::SumData data;
         data.is_monotonic = m_monotonic;
         data.temporality = temporality;
+        const bool delta = temporality == internal::AggregationTemporality::Delta;
         for (const auto& [attr_set, value] : m_result.Map())
         {
             const auto pairs = attr_set.Pairs();
+            const auto series_start =
+                m_series_start.try_emplace(attr_set, m_last_collect).first->second;
             data.points.push_back(internal::NumberPoint{
                 .attributes = std::vector<KeyValue>(pairs.begin(), pairs.end()),
+                .start_time = delta ? m_last_collect : series_start,
+                .time = collection_time,
                 .value = value,
                 .exemplars = {},
             });
         }
+        m_last_collect = collection_time;
         return internal::MetricRecord{
             .name = m_name,
             .description = m_description,
@@ -187,6 +202,11 @@ private:
     bool m_monotonic;
     ObservableCallback<T> m_callback;
     ObservableResult<T> m_result;
+    /// Each series' start: the collection before it was first observed.
+    std::unordered_map<AttributeSet, std::chrono::system_clock::time_point, AttributeSetHash>
+        m_series_start;
+    /// The previous collection's time; this stream's creation before the first.
+    std::chrono::system_clock::time_point m_last_collect = std::chrono::system_clock::now();
 };
 
 /// @brief `IMetricStream` for ObservableGauge.
@@ -218,8 +238,13 @@ public:
     MetricStreamObservableGauge& operator=(MetricStreamObservableGauge&&) = delete;
     ~MetricStreamObservableGauge() noexcept override = default;
 
+    using IMetricStream::Collect;
+
+    /// @brief Run the callback and snapshot what it reported, stamped with
+    ///        @p collection_time. A gauge carries no start time.
     [[nodiscard]] internal::MetricRecord Collect(
-        internal::AggregationTemporality /*temporality*/) override
+        internal::AggregationTemporality /*temporality*/,
+        std::chrono::system_clock::time_point collection_time) override
     {
         m_result.Clear();
         m_callback(m_result);
@@ -230,6 +255,7 @@ public:
             const auto pairs = attr_set.Pairs();
             data.points.push_back(internal::NumberPoint{
                 .attributes = std::vector<KeyValue>(pairs.begin(), pairs.end()),
+                .time = collection_time,
                 .value = value,
                 .exemplars = {},
             });

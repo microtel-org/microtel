@@ -59,6 +59,7 @@ void HistogramStorage<T>::Record(T value, AttributeSpan attrs)
     if (point.bucket_counts.empty())  // newly inserted entry (normal or first overflow use)
     {
         point.bucket_counts.assign(m_boundaries.size() + 1, 0);
+        point.start = std::chrono::system_clock::now();
         point.min = observation;
         point.max = observation;
     }
@@ -81,7 +82,9 @@ void HistogramStorage<T>::Record(T value, AttributeSpan attrs)
 }
 
 template <typename T>
-internal::HistogramData HistogramStorage<T>::Collect(internal::AggregationTemporality temporality)
+internal::HistogramData HistogramStorage<T>::Collect(
+    internal::AggregationTemporality temporality,
+    std::chrono::system_clock::time_point collection_time)
 {
     const std::scoped_lock lock{m_mu};
 
@@ -89,11 +92,14 @@ internal::HistogramData HistogramStorage<T>::Collect(internal::AggregationTempor
     data.temporality = temporality;
     data.points.reserve(m_points.size());
 
+    const bool delta = temporality == internal::AggregationTemporality::Delta;
     for (const auto& [key, point] : m_points)
     {
         internal::HistogramPoint out;
         const auto pairs = key.Pairs();
         out.attributes.assign(pairs.begin(), pairs.end());
+        out.start_time = delta ? m_last_collect : point.start;
+        out.time = collection_time;
         out.count = point.count;
         out.sum = point.sum;
         out.min = point.min;
@@ -108,7 +114,8 @@ internal::HistogramData HistogramStorage<T>::Collect(internal::AggregationTempor
     }
 
     m_exemplars.clear();
-    if (temporality == internal::AggregationTemporality::Delta)
+    m_last_collect = collection_time;
+    if (delta)
     {
         m_points.clear();
     }

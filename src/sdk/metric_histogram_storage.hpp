@@ -10,6 +10,7 @@
 
 #include "sdk/metric_attribute_set.hpp"
 
+#include <chrono>
 #include <cstdint>
 #include <mutex>
 #include <unordered_map>
@@ -58,8 +59,13 @@ public:
     /// @brief Snapshot the buckets as `HistogramData`. Cumulative (default)
     /// retains state; Delta reports the buckets accumulated since the previous
     /// collect and then clears the live state.
-    [[nodiscard]] internal::HistogramData Collect(internal::AggregationTemporality temporality =
-                                                      internal::AggregationTemporality::Cumulative);
+    ///
+    /// Every point's `time` is @p collection_time. Its `start_time` is the
+    /// series' first measurement (cumulative) or the previous collect's
+    /// `collection_time`, the storage's creation on the first (delta).
+    [[nodiscard]] internal::HistogramData Collect(
+        internal::AggregationTemporality temporality = internal::AggregationTemporality::Cumulative,
+        std::chrono::system_clock::time_point collection_time = std::chrono::system_clock::now());
 
 private:
     /// @brief Count one NaN / +-Inf measurement. No-op without a sink.
@@ -80,6 +86,7 @@ private:
         double min = 0.0;
         double max = 0.0;
         std::vector<std::uint64_t> bucket_counts;
+        std::chrono::system_clock::time_point start;  ///< the series' first measurement
     };
 
     mutable std::mutex m_mu;
@@ -89,6 +96,8 @@ private:
     internal::IDiagnosticsSink* m_diag;  ///< non-owning; null disables drop accounting
     std::unordered_map<AttributeSet, Point, AttributeSetHash> m_points;
     std::unordered_map<AttributeSet, internal::Exemplar, AttributeSetHash> m_exemplars;
+    /// The previous collect's time; the storage's creation before the first.
+    std::chrono::system_clock::time_point m_last_collect = std::chrono::system_clock::now();
 };
 
 }  // namespace microtel::sdk

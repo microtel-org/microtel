@@ -3,6 +3,7 @@
 
 #include "sdk/metric_producer.hpp"
 
+#include <chrono>
 #include <memory>
 #include <mutex>
 #include <utility>
@@ -59,6 +60,8 @@ std::vector<internal::MetricBatchHandle> MetricProducer::Collect(
     // the next. That is inherent to concurrent registration and harmless: it
     // is collected on the following cycle.
     const std::vector<ScopeSnapshot> snapshot = SnapshotScopes();
+    // One collection, one time: every point of this cycle carries it.
+    const auto collection_time = std::chrono::system_clock::now();
 
     std::vector<internal::MetricBatchHandle> handles;
     handles.reserve(snapshot.size());
@@ -68,7 +71,7 @@ std::vector<internal::MetricBatchHandle> MetricProducer::Collect(
         records.reserve(entry.streams.size());
         for (IMetricStream* const stream : entry.streams)
         {
-            records.push_back(stream->Collect(temporality));
+            records.push_back(stream->Collect(temporality, collection_time));
         }
         handles.emplace_back(std::move(records), m_resource, entry.scope);
     }
