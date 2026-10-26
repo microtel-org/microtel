@@ -116,7 +116,7 @@ batch processor, so the collector's output line for a request is exactly that
 request. Each binary also checks that it runs the backend it is named for:
 nanopb streams a payload in many `write` calls, upb in one.
 
-### `support/` — 4 headers, included as `conformance/support/<name>.hpp`
+### `support/` — 5 headers, included as `conformance/support/<name>.hpp`
 
 | Header | What |
 |---|---|
@@ -124,6 +124,7 @@ nanopb streams a payload in many `write` calls, upb in one.
 | [`collector_output.hpp`](support/collector_output.hpp) | Reads back what the collector wrote: `PollForLineContaining`, `CountOccurrences`, and `EnclosingObject`, which narrows a line to one record (or its scope, or its resource). |
 | [`provider_builder.hpp`](support/provider_builder.hpp) | `ConfigureConformanceBuilder`: endpoint, protocol, and timeouts short enough to fail fast instead of turning into a ctest timeout. |
 | [`log_conformance.hpp`](support/log_conformance.hpp) | The logs scenarios and their expected protojson fragments, shared by both protocols. |
+| [`trace_context_conformance.hpp`](support/trace_context_conformance.hpp) | The span and link `traceState` / `flags` scenario, shared by both `basic_export_test.cpp` files. |
 
 ### `collector/config.yaml`
 
