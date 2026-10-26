@@ -1,7 +1,7 @@
 # `tests/conformance/`
 
 End-to-end tests against a real OpenTelemetry Collector: eleven test
-binaries holding 41 tests, plus the two leaf binaries (ten tests each) when
+binaries holding 43 tests, plus the two leaf binaries (ten tests each) when
 the leaf and the concentrator are built, none of them disabled. Every test skips
 unless [`ci/scripts/conformance.sh`](../../ci/scripts/conformance.sh)
 has started a collector and exported the environment contract below.
@@ -49,7 +49,7 @@ integration tier.
 
 | Binary | Source | Tests |
 |---|---|---|
-| `conformance_http_basic_test` | `basic_export_test.cpp` | `Connect()` preflight; one span's full round trip |
+| `conformance_http_basic_test` | `basic_export_test.cpp` | `Connect()` preflight; one span's full round trip; `traceState` and `flags` of a span with a remote parent and of its link (#451) |
 | `conformance_http_batching_test` | `batching_test.cpp` | multi-batch exactly-once, gzip, multi-DATA-frame body |
 | `conformance_http_tls_test` | `tls_test.cpp` | custom CA, mTLS, SNI override, and two negative cases |
 | `conformance_http_auth_test` | `auth_test.cpp` | static bearer header, auth callback, wrong-token 401 |
@@ -60,7 +60,7 @@ integration tier.
 
 | Binary | Source | Tests |
 |---|---|---|
-| `conformance_grpc_basic_test` | `basic_export_test.cpp` | `Connect()` preflight; one span's full round trip |
+| `conformance_grpc_basic_test` | `basic_export_test.cpp` | `Connect()` preflight; one span's full round trip; `traceState` and `flags` of a span with a remote parent and of its link (#451) |
 | `conformance_grpc_batching_test` | `batching_test.cpp` | multi-RPC exactly-once, `grpc-encoding: gzip`, message spanning DATA frames |
 | `conformance_grpc_tls_test` | `tls_test.cpp` | custom CA, mTLS, SNI override, and two negative cases |
 | `conformance_grpc_auth_test` | `auth_test.cpp` | static bearer header, auth callback, wrong-token `grpc-status: 16` |
@@ -116,7 +116,7 @@ batch processor, so the collector's output line for a request is exactly that
 request. Each binary also checks that it runs the backend it is named for:
 nanopb streams a payload in many `write` calls, upb in one.
 
-### `support/` — 4 headers, included as `conformance/support/<name>.hpp`
+### `support/` — 5 headers, included as `conformance/support/<name>.hpp`
 
 | Header | What |
 |---|---|
@@ -124,6 +124,7 @@ nanopb streams a payload in many `write` calls, upb in one.
 | [`collector_output.hpp`](support/collector_output.hpp) | Reads back what the collector wrote: `PollForLineContaining`, `CountOccurrences`, and `EnclosingObject`, which narrows a line to one record (or its scope, or its resource). |
 | [`provider_builder.hpp`](support/provider_builder.hpp) | `ConfigureConformanceBuilder`: endpoint, protocol, and timeouts short enough to fail fast instead of turning into a ctest timeout. |
 | [`log_conformance.hpp`](support/log_conformance.hpp) | The logs scenarios and their expected protojson fragments, shared by both protocols. |
+| [`trace_context_conformance.hpp`](support/trace_context_conformance.hpp) | The span and link `traceState` / `flags` scenario, shared by both `basic_export_test.cpp` files. |
 
 ### `collector/config.yaml`
 

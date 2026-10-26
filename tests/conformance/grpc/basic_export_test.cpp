@@ -59,6 +59,7 @@
 #include "conformance/support/collector_output.hpp"
 #include "conformance/support/conformance_env.hpp"
 #include "conformance/support/provider_builder.hpp"
+#include "conformance/support/trace_context_conformance.hpp"
 
 #include <gtest/gtest.h>
 
@@ -240,6 +241,22 @@ TEST(GrpcConformance, BasicExportRoundTrip)
     ExpectLineContains(exported, kEventNameJson);
     ExpectLineContains(exported, kEventAttrJson);
     ExpectLineContains(exported, kStatusJson);
+}
+
+TEST(GrpcConformance, RemoteParentTraceStateAndFlags)
+{
+    std::string endpoint;
+    std::string output_file;
+    if (!microtel::testing::ConformanceEnabled(kEndpointEnv, endpoint) ||
+        !microtel::testing::ConformanceEnabled(kOutputFileEnv, output_file))
+    {
+        GTEST_SKIP() << kSkipReason;
+    }
+    microtel::SdkBuilder builder;
+    auto result = BuildPlaintextProvider(builder, endpoint);
+    ASSERT_TRUE(result.has_value()) << result.error().message;
+    microtel::testing::trace_context::RunRemoteParentTraceStateAndFlags(
+        **result, output_file, kScopeName);
 }
 
 }  // namespace

@@ -14,9 +14,10 @@ if(MICROTEL_WITH_CONCENTRATOR)
     target_sources(microtel_encoder PRIVATE otlp_trace_decoder.cpp)
 endif()
 
+# microtel_api: TraceState::ToHeader(), for span and link trace_state (#451).
 target_link_libraries(microtel_encoder
     PUBLIC  microtel_headers
-    PRIVATE microtel_upb_gen)
+    PRIVATE microtel_api microtel_upb_gen)
 
 # otlp_encoder.cpp includes upb headers via relative paths rooted at
 # third_party/upb and the generated accessors rooted at gen/.
