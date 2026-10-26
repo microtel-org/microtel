@@ -36,6 +36,14 @@ microtel_add_test(
 target_include_directories(metric_timestamps_test
     PRIVATE ${PROJECT_SOURCE_DIR}/src)
 
+# Observable sums under delta temporality (issue #450).
+microtel_add_test(
+    NAME    metric_observable_delta_test
+    SOURCES metric_observable_delta_test.cpp
+    LIBS    microtel_sdk)
+target_include_directories(metric_observable_delta_test
+    PRIVATE ${PROJECT_SOURCE_DIR}/src)
+
 # M12 — Gauge (last-value) aggregation storage.
 microtel_add_test(
     NAME    metric_gauge_storage_test
