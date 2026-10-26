@@ -73,6 +73,9 @@ and counter-reset semantics.
   OTel-defined preset). Per-View aggregation override can also force temporality
   on a specific instrument.
 - Honor `OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE`.
+- **Point timestamps** (`time_unix_nano`, `start_time_unix_nano`) follow the
+  OTel SDK "Start timestamps" rules; [ICP 0039](icps/0039-metric-start-timestamps.md)
+  records them.
 
 ## §2 Cardinality limits
 
