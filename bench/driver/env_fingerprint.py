@@ -11,13 +11,15 @@ import platform
 import re
 import shutil
 import subprocess
+from pathlib import Path
 from typing import Optional
 
 
 @dataclasses.dataclass
 class EnvFingerprint:
     cpu_model: str
-    cpu_physical_cores: int
+    cpu_physical_cores: Optional[int]  # from the CPU topology; None if unreadable
+    cpu_threads: int                   # logical CPUs (hardware threads)
     cpu_governor: str           # "performance" | "powersave" | "unknown"
     hyperthreading: Optional[bool]  # None if undeterminable
     kernel: str
@@ -31,6 +33,7 @@ def capture(container_engine: str) -> EnvFingerprint:
     return EnvFingerprint(
         cpu_model=_cpu_model(),
         cpu_physical_cores=_physical_cores(),
+        cpu_threads=_threads(),
         cpu_governor=_cpu_governor(),
         hyperthreading=_hyperthreading(),
         kernel=platform.release(),
@@ -72,7 +75,22 @@ def _cpu_model() -> str:
     return platform.processor() or "unknown"
 
 
-def _physical_cores() -> int:
+def _physical_cores(cpu_root: Path = Path("/sys/devices/system/cpu")) -> Optional[int]:
+    """Count distinct (package, core) pairs in the CPU topology, or None."""
+    cores = set()
+    for cpu in cpu_root.glob("cpu[0-9]*"):
+        topo = cpu / "topology"
+        try:
+            package = (topo / "physical_package_id").read_text(encoding="utf-8").strip()
+            core = (topo / "core_id").read_text(encoding="utf-8").strip()
+        except OSError:
+            continue
+        cores.add((package, core))
+    return len(cores) or None
+
+
+def _threads() -> int:
+    """Logical CPUs, all of them rather than only those this process may use."""
     try:
         out = subprocess.check_output(
             ["nproc", "--all"], text=True, stderr=subprocess.DEVNULL
