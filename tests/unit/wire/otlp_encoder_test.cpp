@@ -585,3 +585,90 @@ TEST_F(OtlpEncoderTest, SpanLink_RoundTrips)
     const auto& expected_sid = linked_ctx.span_id.AsBytes();
     EXPECT_EQ(std::memcmp(sid.data, expected_sid.data(), expected_sid.size()), 0);
 }
+
+// ── trace_state and flags (issue #451) ───────────────────────────────────────
+
+namespace
+{
+
+constexpr std::uint32_t kHasIsRemote = 0x100U;  // SPAN_FLAGS_CONTEXT_HAS_IS_REMOTE_MASK
+constexpr std::uint32_t kIsRemote = 0x200U;     // SPAN_FLAGS_CONTEXT_IS_REMOTE_MASK
+constexpr std::uint32_t kSampledBit = 0x01U;
+
+}  // namespace
+
+TEST_F(OtlpEncoderTest, SpanTraceStateAndFlags_RemoteParent)
+{
+    mt::SpanContext ctx = MakeCtx(0x01, 0x02);
+    ctx.trace_state = mt::TraceState::FromHeader("vendor=abc,other=1");
+    mt::SpanContext parent = MakeCtx(0x01, 0x03);
+    parent.remote = true;
+
+    const auto payload = Encode(MinimalBatch(ctx, "op", parent));
+    auto parsed = ParseFirst(payload);
+    m_arena = parsed.arena;
+    ASSERT_NE(parsed.span, nullptr);
+
+    EXPECT_EQ(SvStr(opentelemetry_proto_trace_v1_Span_trace_state(parsed.span)),
+              "vendor=abc,other=1");
+    EXPECT_EQ(opentelemetry_proto_trace_v1_Span_flags(parsed.span),
+              kSampledBit | kHasIsRemote | kIsRemote);
+}
+
+TEST_F(OtlpEncoderTest, SpanFlags_RootSpanParentIsKnownNotRemote)
+{
+    const auto payload = Encode(MinimalBatch(MakeCtx(0x01, 0x02)));
+    auto parsed = ParseFirst(payload);
+    m_arena = parsed.arena;
+    ASSERT_NE(parsed.span, nullptr);
+
+    EXPECT_EQ(opentelemetry_proto_trace_v1_Span_trace_state(parsed.span).size, 0U);
+    EXPECT_EQ(opentelemetry_proto_trace_v1_Span_flags(parsed.span), kSampledBit | kHasIsRemote);
+}
+
+TEST_F(OtlpEncoderTest, SpanFlags_UnsampledWithLocalParent)
+{
+    mt::SpanContext ctx = MakeCtx(0x01, 0x02);
+    ctx.trace_flags = mt::TraceFlags{};
+    mt::SpanContext parent = MakeCtx(0x01, 0x03);
+    parent.trace_flags = mt::TraceFlags{};
+
+    const auto payload = Encode(MinimalBatch(ctx, "op", parent));
+    auto parsed = ParseFirst(payload);
+    m_arena = parsed.arena;
+    ASSERT_NE(parsed.span, nullptr);
+
+    EXPECT_EQ(opentelemetry_proto_trace_v1_Span_flags(parsed.span), kHasIsRemote);
+}
+
+TEST_F(OtlpEncoderTest, SpanLinkTraceStateAndFlags_RemoteLinkedContext)
+{
+    mt::SpanContext linked_ctx = MakeCtx(0xAB, 0xCD);
+    linked_ctx.trace_state = mt::TraceState::FromHeader("linked=1");
+    linked_ctx.remote = true;
+
+    mti::SpanLink lnk;
+    lnk.linked_context = linked_ctx;
+    mti::SpanRecord rec{.context = MakeCtx(0x01, 0x02),
+                        .name = "op",
+                        .start_time = NsEpoch(1),
+                        .end_time = NsEpoch(2)};
+    rec.links.push_back(std::move(lnk));
+    std::vector<mti::SpanRecord> records;
+    records.push_back(std::move(rec));
+    mti::BatchHandle batch{std::move(records),
+                           std::make_shared<const mt::Resource>(),
+                           mti::InstrumentationScope{.name = "lib", .version = "1"}};
+
+    const auto payload = Encode(std::move(batch));
+    auto parsed = ParseFirst(payload);
+    m_arena = parsed.arena;
+    ASSERT_NE(parsed.span, nullptr);
+
+    std::size_t lnk_count = 0;
+    const auto* const* links = opentelemetry_proto_trace_v1_Span_links(parsed.span, &lnk_count);
+    ASSERT_EQ(lnk_count, 1U);
+    EXPECT_EQ(SvStr(opentelemetry_proto_trace_v1_Span_Link_trace_state(links[0])), "linked=1");
+    EXPECT_EQ(opentelemetry_proto_trace_v1_Span_Link_flags(links[0]),
+              kSampledBit | kHasIsRemote | kIsRemote);
+}

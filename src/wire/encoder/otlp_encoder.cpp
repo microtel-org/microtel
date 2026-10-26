@@ -44,6 +44,7 @@
 #include <cstddef>
 #include <cstring>
 #include <memory>
+#include <string>
 #include <variant>
 
 namespace microtel::wire
@@ -83,6 +84,35 @@ upb_StringView Sv(const std::string& s) noexcept
 upb_StringView SvBytes(const void* data, std::size_t size) noexcept
 {
     return upb_StringView_FromDataAndSize(static_cast<const char*>(data), size);
+}
+
+// A view of a copy of @p s in @p arena, for strings that do not outlive the
+// call, such as `TraceState::ToHeader()`. Empty if the arena is exhausted.
+upb_StringView ArenaSv(const std::string& s, upb_Arena* arena) noexcept
+{
+    char* const buf = static_cast<char*>(upb_Arena_Malloc(arena, s.size()));
+    if (buf == nullptr)
+    {
+        return upb_StringView_FromDataAndSize(nullptr, 0);
+    }
+    std::memcpy(buf, s.data(), s.size());
+    return upb_StringView_FromDataAndSize(buf, s.size());
+}
+
+// OTLP `Span.flags` / `Span.Link.flags`: the W3C trace flags in bits 0-7, and
+// whether the parent (for a span) or the linked context (for a link) is remote,
+// which microtel always knows.
+std::uint32_t SpanFlags(const microtel::TraceFlags flags, const bool remote) noexcept
+{
+    std::uint32_t bits = static_cast<std::uint32_t>(flags.AsByte()) |
+                         static_cast<std::uint32_t>(
+                             opentelemetry_proto_trace_v1_SPAN_FLAGS_CONTEXT_HAS_IS_REMOTE_MASK);
+    if (remote)
+    {
+        bits |= static_cast<std::uint32_t>(
+            opentelemetry_proto_trace_v1_SPAN_FLAGS_CONTEXT_IS_REMOTE_MASK);
+    }
+    return bits;
 }
 
 std::uint64_t ToNanos(std::chrono::system_clock::time_point tp) noexcept
@@ -276,6 +306,12 @@ void EncodeLink(const internal::SpanLink& lnk, UpbSpan* span, upb_Arena* arena)
         ulnk, SvBytes(tc.trace_id.AsBytes().data(), tc.trace_id.AsBytes().size()));
     opentelemetry_proto_trace_v1_Span_Link_set_span_id(
         ulnk, SvBytes(tc.span_id.AsBytes().data(), tc.span_id.AsBytes().size()));
+    if (!tc.trace_state.Empty())
+    {
+        opentelemetry_proto_trace_v1_Span_Link_set_trace_state(
+            ulnk, ArenaSv(tc.trace_state.ToHeader(), arena));
+    }
+    opentelemetry_proto_trace_v1_Span_Link_set_flags(ulnk, SpanFlags(tc.trace_flags, tc.remote));
 
     EncodeAttributes(lnk.attributes,
                      arena,
@@ -333,6 +369,13 @@ void EncodeSpan(const internal::SpanRecord& rec, UpbScopeSp* ss, upb_Arena* aren
         opentelemetry_proto_trace_v1_Span_set_parent_span_id(
             span, SvBytes(pc.span_id.AsBytes().data(), pc.span_id.AsBytes().size()));
     }
+    if (!ctx.trace_state.Empty())
+    {
+        opentelemetry_proto_trace_v1_Span_set_trace_state(
+            span, ArenaSv(ctx.trace_state.ToHeader(), arena));
+    }
+    const bool remote_parent = rec.parent_context.IsValid() && rec.parent_context.remote;
+    opentelemetry_proto_trace_v1_Span_set_flags(span, SpanFlags(ctx.trace_flags, remote_parent));
 
     EncodeAttributes(rec.attributes,
                      arena,
