@@ -59,7 +59,7 @@ void GaugeStorage<T>::Record(T value, AttributeSpan attrs)
 }
 
 template <typename T>
-internal::GaugeData GaugeStorage<T>::Collect()
+internal::GaugeData GaugeStorage<T>::Collect(std::chrono::system_clock::time_point collection_time)
 {
     const std::scoped_lock lock{m_mu};
 
@@ -71,6 +71,7 @@ internal::GaugeData GaugeStorage<T>::Collect()
         internal::NumberPoint point;
         const auto pairs = key.Pairs();
         point.attributes.assign(pairs.begin(), pairs.end());
+        point.time = collection_time;
         point.value = value;  // T (int64_t/double) selects the MetricValue alternative
         if (const auto ex_it = m_exemplars.find(key); ex_it != m_exemplars.end())
         {

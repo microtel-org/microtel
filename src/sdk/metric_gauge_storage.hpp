@@ -10,6 +10,7 @@
 
 #include "sdk/metric_attribute_set.hpp"
 
+#include <chrono>
 #include <mutex>
 #include <unordered_map>
 
@@ -49,7 +50,11 @@ public:
 
     /// @brief Snapshot the latest readings as `GaugeData`. Clears the exemplar
     /// window on every call (exemplars represent the current collection period).
-    [[nodiscard]] internal::GaugeData Collect();
+    ///
+    /// Every point's `time` is @p collection_time. A gauge carries no start
+    /// time: OTLP leaves it optional for gauges.
+    [[nodiscard]] internal::GaugeData Collect(
+        std::chrono::system_clock::time_point collection_time = std::chrono::system_clock::now());
 
 private:
     /// @brief Count one NaN / +-Inf measurement. No-op without a sink.

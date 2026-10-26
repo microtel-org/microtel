@@ -28,6 +28,14 @@ microtel_add_test(
 target_include_directories(metric_sum_storage_test
     PRIVATE ${PROJECT_SOURCE_DIR}/src)
 
+# Data-point start / end timestamps across every storage (issue #448).
+microtel_add_test(
+    NAME    metric_timestamps_test
+    SOURCES metric_timestamps_test.cpp
+    LIBS    microtel_sdk)
+target_include_directories(metric_timestamps_test
+    PRIVATE ${PROJECT_SOURCE_DIR}/src)
+
 # M12 — Gauge (last-value) aggregation storage.
 microtel_add_test(
     NAME    metric_gauge_storage_test

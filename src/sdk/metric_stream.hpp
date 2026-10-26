@@ -5,6 +5,8 @@
 
 #include "microtel/internal/metric_batch.hpp"
 
+#include <chrono>
+
 namespace microtel::sdk
 {
 
@@ -27,9 +29,18 @@ public:
     IMetricStream& operator=(IMetricStream&&) = delete;
     virtual ~IMetricStream() noexcept = default;
 
-    /// @brief Snapshot the stream's aggregation state.
+    /// @brief Snapshot the stream's aggregation state, stamping every point
+    ///        with @p collection_time. `MetricProducer` passes one time to
+    ///        every stream of a collection.
     [[nodiscard]] virtual internal::MetricRecord Collect(
-        internal::AggregationTemporality temporality) = 0;
+        internal::AggregationTemporality temporality,
+        std::chrono::system_clock::time_point collection_time) = 0;
+
+    /// @brief `Collect(temporality, now)`.
+    [[nodiscard]] internal::MetricRecord Collect(internal::AggregationTemporality temporality)
+    {
+        return Collect(temporality, std::chrono::system_clock::now());
+    }
 };
 
 }  // namespace microtel::sdk

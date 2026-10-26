@@ -18,6 +18,7 @@
 
 #include <gtest/gtest.h>
 
+#include <chrono>
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -38,7 +39,10 @@ public:
     {
     }
 
-    [[nodiscard]] mti::MetricRecord Collect(mti::AggregationTemporality temporality) override
+    using mts::IMetricStream::Collect;
+
+    [[nodiscard]] mti::MetricRecord Collect(mti::AggregationTemporality temporality,
+                                            std::chrono::system_clock::time_point /*time*/) override
     {
         m_last_temporality = temporality;
         ++m_call_count;

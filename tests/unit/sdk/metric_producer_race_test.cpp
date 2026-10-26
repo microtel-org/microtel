@@ -23,6 +23,7 @@
 #include <gtest/gtest.h>
 
 #include <atomic>
+#include <chrono>
 #include <memory>
 #include <string>
 #include <thread>
@@ -41,7 +42,10 @@ namespace
 class StubStream final : public mts::IMetricStream
 {
 public:
-    [[nodiscard]] mti::MetricRecord Collect(mti::AggregationTemporality /*temporality*/) override
+    using mts::IMetricStream::Collect;
+
+    [[nodiscard]] mti::MetricRecord Collect(mti::AggregationTemporality /*temporality*/,
+                                            std::chrono::system_clock::time_point /*time*/) override
     {
         return mti::MetricRecord{.name = "stub"};
     }
