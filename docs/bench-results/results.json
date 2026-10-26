@@ -34,7 +34,8 @@
   },
   "environment": {
     "cpu_model": "AMD Ryzen 5 5600G with Radeon Graphics",
-    "cpu_physical_cores": 12,
+    "cpu_physical_cores": 6,
+    "cpu_threads": 12,
     "cpu_governor": "performance",
     "hyperthreading": true,
     "kernel": "7.1.13-200.fc44.x86_64",
@@ -52,7 +53,6 @@
       "library_build_flags": "",
       "image_tag": "bench-sut-microtel",
       "image_id": "d72fc10c25529cf02632842df9405be9f36116d57a90ba091fdc0472043e05c8",
-      "binary_bytes": 17496320,
       "samples": [
         {
           "spans_emitted": 10000,
@@ -1152,7 +1152,6 @@
       "library_build_flags": "",
       "image_tag": "bench-sut-microtel-grpc",
       "image_id": "e1a7e4e57ef5f6b58907356f474ad21be65ef459751cfa5b16638d07cca7f6d5",
-      "binary_bytes": 17496320,
       "samples": [
         {
           "spans_emitted": 10000,
@@ -2252,7 +2251,6 @@
       "library_build_flags": "",
       "image_tag": "bench-sut-otelcpp-grpc",
       "image_id": "2c6c9b40a99f0ae636a1e85fb855694a128615492921005384e4a1f5d9767be7",
-      "binary_bytes": 43128128,
       "samples": [
         {
           "spans_emitted": 10000,
@@ -3352,7 +3350,6 @@
       "library_build_flags": "",
       "image_tag": "bench-sut-otelcpp-http",
       "image_id": "aa4d34786e49f5d32537cd509b2e4a78f390b886fe6cd6afbef4ec4c58e4b6e4",
-      "binary_bytes": 19311672,
       "samples": [
         {
           "spans_emitted": 10000,

@@ -37,3 +37,8 @@ microtel_add_conformance_test(
     NAME    conformance_http_logs_test
     SOURCES logs_test.cpp
     LIBS    microtel_sdk microtel_api)
+
+microtel_add_conformance_test(
+    NAME    conformance_http_metrics_test
+    SOURCES metrics_test.cpp
+    LIBS    microtel_sdk)

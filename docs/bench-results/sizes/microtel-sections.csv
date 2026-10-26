@@ -1,0 +1,36 @@
+sections,vmsize,filesize
+.text,707104,707104
+.eh_frame,78544,78544
+.rela.dyn,46440,46440
+.rodata,36968,36968
+.gcc_except_table,31848,31848
+.data.rel.ro,14951,17512
+.eh_frame_hdr,14896,14896
+.dynstr,7958,7958
+.dynsym,6672,6672
+[Unmapped],0,6091
+.rela.plt,5640,5640
+.plt,3776,3776
+.tbss,2585,0
+[ELF Section Headers],0,2048
+.got.plt,1912,1912
+.data,952,948
+[ELF Program Headers],784,784
+.gnu.version_r,672,672
+.dynamic,592,592
+.gnu.version,562,562
+.bss,320,0
+.shstrtab,0,304
+.got,192,192
+.comment,0,84
+.gnu.hash,80,80
+[ELF Header],64,64
+.note.ABI-tag,36,36
+.note.gnu.build-id,36,36
+.init,32,32
+.interp,32,32
+.note.gnu.property,32,32
+.plt.got,32,32
+.init_array,0,16
+.fini,13,13
+.fini_array,0,8

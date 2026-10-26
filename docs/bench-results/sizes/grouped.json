@@ -1,0 +1,264 @@
+{
+ "microtel": {
+  "binary": {
+   "buckets": {
+    "microtel": 678130,
+    "toml++": 55943,
+    "upb": 31012,
+    "emit-app": 29396,
+    "unattributed": 177447
+   },
+   "sections": {
+    "[section .rela.dyn]": 46224,
+    "[section .rodata]": 36886,
+    "[section .gcc_except_table]": 31848,
+    "[section .text]": 7259,
+    "[section .data.rel.ro]": 17168,
+    "[section .dynstr]": 7410,
+    "[Unmapped]": 6092,
+    "[section .dynsym]": 6017,
+    "[section .rela.plt]": 5640,
+    "[section .eh_frame]": 956,
+    "[section .plt]": 3776,
+    "[section .tbss]": 0,
+    "[ELF Section Headers]": 2048,
+    "[section .got.plt]": 1904,
+    "[section .data]": 928,
+    "[section .eh_frame_hdr]": 124,
+    "[section .gnu.version_r]": 672,
+    "[section .dynamic]": 592,
+    "[section .gnu.version]": 556,
+    "[ELF Program Headers]": 432,
+    "[section .bss]": 0,
+    "[section .shstrtab]": 303,
+    "[section .got]": 184,
+    "[section .comment]": 84,
+    "[section .gnu.hash]": 80,
+    "[section .note.gnu.build-id]": 36,
+    "[section .note.ABI-tag]": 32,
+    "[section .note.gnu.property]": 32,
+    "[section .interp]": 28,
+    "[section .init]": 27,
+    "[section .plt.got]": 24,
+    "[LOAD #5 [RW]]": 16,
+    "[section .init_array]": 16,
+    "[LOAD #2 [R]]": 15,
+    "[LOAD #3 [RX]]": 13,
+    "[section .fini]": 13,
+    "[section .fini_array]": 8,
+    "[LOAD #4 [R]]": 4
+   },
+   "upb_in_sections": {
+    "[section .rela.dyn]": 216,
+    "[section .rodata]": 82,
+    "[section .text]": 15472,
+    "[section .data.rel.ro]": 344,
+    "[section .eh_frame]": 3520,
+    "[section .data]": 20,
+    "[section .eh_frame_hdr]": 720,
+    "[section .bss]": 0,
+    "[LOAD #5 [RW]]": 0
+   },
+   "stdcxx_inlined": {
+    "microtel": 482215,
+    "emit-app": 20286
+   },
+   "unknown_cu": {},
+   "bloaty_total": 971928
+  },
+  "shared": {
+   "OpenSSL": {
+    "bytes": 6005912,
+    "files": [
+     "libssl.so.3 696512",
+     "libcrypto.so.3 5309400"
+    ]
+   },
+   "nghttp2": {
+    "bytes": 170352,
+    "files": [
+     "libnghttp2.so.14.26.0 170352"
+    ]
+   },
+   "zlib": {
+    "bytes": 113000,
+    "files": [
+     "libz.so.1.3 113000"
+    ]
+   },
+   "C/C++ runtime": {
+    "bytes": 5857288,
+    "files": [
+     "libstdc++.so.6.0.33 2592224",
+     "libm.so.6 952616",
+     "libgcc_s.so.1 183024",
+     "libc.so.6 2129424"
+    ]
+   }
+  }
+ },
+ "otelcpp-grpc": {
+  "binary": {
+   "buckets": {
+    "opentelemetry-cpp": 853160,
+    "emit-app": 44946,
+    "header-inlined third-party": 7812,
+    "unattributed": 162490
+   },
+   "sections": {
+    "[section .rela.dyn]": 43056,
+    "[section .rodata]": 40632,
+    "[section .gcc_except_table]": 19318,
+    "[section .dynstr]": 16083,
+    "[section .data.rel.ro]": 14392,
+    "[Unmapped]": 9922,
+    "[section .rela.plt]": 5472,
+    "[section .plt]": 3664,
+    "[section .data]": 2232,
+    "[ELF Section Headers]": 2048,
+    "[section .got.plt]": 1848,
+    "[section .dynamic]": 1472,
+    "[section .bss]": 0,
+    "[section .gnu.version]": 614,
+    "[section .gnu.version_r]": 496,
+    "[section .shstrtab]": 303,
+    "[section .text]": 293,
+    "[section .eh_frame]": 196,
+    "[section .got]": 152,
+    "[section .init_array]": 96,
+    "[section .comment]": 84,
+    "[section .tbss]": 0,
+    "[section .eh_frame_hdr]": 28,
+    "[section .init]": 27,
+    "[LOAD #5 [RW]]": 16,
+    "[LOAD #3 [RX]]": 13,
+    "[section .fini]": 13,
+    "[section .fini_array]": 8,
+    "[section .plt.got]": 8,
+    "[LOAD #4 [R]]": 3,
+    "[LOAD #2 [R]]": 1
+   },
+   "upb_in_sections": {},
+   "stdcxx_inlined": {
+    "opentelemetry-cpp": 542110,
+    "emit-app": 22131
+   },
+   "unknown_cu": {},
+   "bloaty_total": 1068408
+  },
+  "shared": {
+   "libopentelemetry_proto*.so": {
+    "bytes": 651096,
+    "files": [
+     "libopentelemetry_proto_grpc.so 211696",
+     "libopentelemetry_proto.so 439400"
+    ]
+   },
+   "gRPC": {
+    "bytes": 6683680,
+    "files": [
+     "libgrpc++.so.1.51.1 759088",
+     "libgrpc.so.29.0.0 5680744",
+     "libupb.so.29.0.0 183184",
+     "libgpr.so.29.0.0 60664"
+    ]
+   },
+   "protobuf": {
+    "bytes": 3056272,
+    "files": [
+     "libprotobuf.so.32.0.12 3056272"
+    ]
+   },
+   "zlib": {
+    "bytes": 113000,
+    "files": [
+     "libz.so.1.3 113000"
+    ]
+   },
+   "c-ares": {
+    "bytes": 157792,
+    "files": [
+     "libcares.so.2.12.0 157792"
+    ]
+   },
+   "libaddress_sorting.so.29": {
+    "bytes": 14648,
+    "files": [
+     "libaddress_sorting.so.29.0.0 14648"
+    ]
+   },
+   "re2": {
+    "bytes": 400480,
+    "files": [
+     "libre2.so.10.0.0 400480"
+    ]
+   },
+   "Abseil": {
+    "bytes": 1378840,
+    "files": [
+     "libabsl_raw_hash_set.so.20220623.0.0 14568",
+     "libabsl_hashtablez_sampler.so.20220623.0.0 18688",
+     "libabsl_hash.so.20220623.0.0 14416",
+     "libabsl_city.so.20220623.0.0 14128",
+     "libabsl_low_level_hash.so.20220623.0.0 14128",
+     "libabsl_statusor.so.20220623.0.0 18760",
+     "libabsl_bad_variant_access.so.20220623.0.0 14576",
+     "libabsl_status.so.20220623.0.0 39176",
+     "libabsl_strerror.so.20220623.0.0 14584",
+     "libabsl_random_distributions.so.20220623.0.0 14584",
+     "libabsl_random_seed_sequences.so.20220623.0.0 14584",
+     "libabsl_random_internal_pool_urbg.so.20220623.0.0 18752",
+     "libabsl_random_internal_randen.so.20220623.0.0 14512",
+     "libabsl_random_internal_randen_hwaes.so.20220623.0.0 14128",
+     "libabsl_random_internal_randen_hwaes_impl.so.20220623.0.0 14128",
+     "libabsl_random_internal_randen_slow.so.20220623.0.0 18296",
+     "libabsl_random_internal_platform.so.20220623.0.0 18216",
+     "libabsl_random_internal_seed_material.so.20220623.0.0 14584",
+     "libabsl_random_seed_gen_exception.so.20220623.0.0 14576",
+     "libabsl_cord.so.20220623.0.0 96504",
+     "libabsl_bad_optional_access.so.20220623.0.0 14576",
+     "libabsl_cordz_info.so.20220623.0.0 26976",
+     "libabsl_cord_internal.so.20220623.0.0 108792",
+     "libabsl_cordz_functions.so.20220623.0.0 14568",
+     "libabsl_exponential_biased.so.20220623.0.0 14496",
+     "libabsl_cordz_handle.so.20220623.0.0 18784",
+     "libabsl_str_format_internal.so.20220623.0.0 104696",
+     "libabsl_synchronization.so.20220623.0.0 59800",
+     "libabsl_stacktrace.so.20220623.0.0 14424",
+     "libabsl_symbolize.so.20220623.0.0 26872",
+     "libabsl_debugging_internal.so.20220623.0.0 22792",
+     "libabsl_demangle_internal.so.20220623.0.0 39240",
+     "libabsl_graphcycles_internal.so.20220623.0.0 26872",
+     "libabsl_malloc_internal.so.20220623.0.0 18760",
+     "libabsl_time.so.20220623.0.0 72248",
+     "libabsl_strings.so.20220623.0.0 121080",
+     "libabsl_strings_internal.so.20220623.0.0 18672",
+     "libabsl_throw_delegate.so.20220623.0.0 22704",
+     "libabsl_base.so.20220623.0.0 18696",
+     "libabsl_spinlock_wait.so.20220623.0.0 14424",
+     "libabsl_int128.so.20220623.0.0 22776",
+     "libabsl_raw_logging_internal.so.20220623.0.0 14552",
+     "libabsl_log_severity.so.20220623.0.0 14496",
+     "libabsl_civil_time.so.20220623.0.0 26872",
+     "libabsl_time_zone.so.20220623.0.0 104784"
+    ]
+   },
+   "C/C++ runtime": {
+    "bytes": 5857288,
+    "files": [
+     "libm.so.6 952616",
+     "libstdc++.so.6.0.33 2592224",
+     "libgcc_s.so.1 183024",
+     "libc.so.6 2129424"
+    ]
+   },
+   "OpenSSL": {
+    "bytes": 6005912,
+    "files": [
+     "libssl.so.3 696512",
+     "libcrypto.so.3 5309400"
+    ]
+   }
+  }
+ }
+}

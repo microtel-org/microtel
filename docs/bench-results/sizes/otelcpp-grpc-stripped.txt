@@ -1,0 +1,2 @@
+/usr/local/lib/libopentelemetry_proto.so 439400
+/usr/local/lib/libopentelemetry_proto_grpc.so 211696

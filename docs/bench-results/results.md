@@ -5,7 +5,8 @@
 | Field | Value |
 |-------|-------|
 | CPU | AMD Ryzen 5 5600G with Radeon Graphics |
-| Physical cores | 12 |
+| Physical cores | 6 |
+| Threads | 12 |
 | CPU governor | performance |
 | Hyperthreading | True |
 | Kernel | 7.1.13-200.fc44.x86_64 |
@@ -39,7 +40,6 @@
 | Throughput (Mbps) | 1854.1 [1788.5–1993.9] | 1166.3 [1108.7–1198.5] | 2539.1 [2109.5–2693.0] | 2694.9 [2421.4–3125.4] |
 | Delivery rate (sink/emitted) | 100.00% | 100.00% | 95.23% | 96.98% |
 | Wire bytes/span | 62.2 [62.2–62.2] | 62.2 [62.2–62.2] | 68.1 [68.1–68.1] | 68.1 [68.1–68.1] |
-| Binary size (bytes) | 17,496,320 | 17,496,320 | 43,128,128 | 19,311,672 |
 | Spans dropped (total) | 0 | 0 | 0 | 0 |
 
 ---

@@ -4,9 +4,9 @@
   <img alt="microtel: OpenTelemetry for C++ without the gRPC tax. Speaks OTLP over gRPC and HTTP with no grpc++, abseil or protobuf; about 3.8x faster spans than opentelemetry-cpp in the project's benchmark; a microcontroller client of about 9 KB flash with no heap." src="docs/assets/microtel-hero.png" width="720">
 </p>
 
-An OpenTelemetry-compatible trace runtime and OTLP exporter for C++20. It
-speaks OTLP/gRPC and OTLP/HTTP-protobuf without linking gRPC, abseil or the
-protobuf C++ runtime.
+An OpenTelemetry-compatible runtime and OTLP exporter for C++20, for traces,
+metrics and logs. It speaks OTLP/gRPC and OTLP/HTTP-protobuf without linking
+gRPC, abseil or the protobuf C++ runtime.
 
 [![CI](https://github.com/microtel-org/microtel/actions/workflows/ci.yml/badge.svg)](https://github.com/microtel-org/microtel/actions)
 [![release](https://img.shields.io/github/v/release/microtel-org/microtel)](https://github.com/microtel-org/microtel/releases/latest)
@@ -15,9 +15,12 @@ protobuf C++ runtime.
 [![packages](https://img.shields.io/badge/packages-vcpkg%20port%20%7C%20Conan%20recipe%20%7C%20CPM-informational)](#install)
 [![license](https://img.shields.io/badge/license-Apache%202.0-blue)](LICENSE)
 
-microtel covers the part of the OpenTelemetry tracing SDK that applications
-use day to day: tracers, spans, context, W3C propagation, samplers, a batch
-processor and resources, plus an OTLP exporter. Both OTLP protocols run over a
+microtel covers the part of the OpenTelemetry SDK that applications use day to
+day. For traces: tracers, spans, context, W3C propagation, samplers, a batch
+processor and resources. For metrics (experimental until v1.3): all seven
+instrument kinds, a periodic reader, both temporalities and views. For logs: a
+`Logger`, trace correlation and bridges for spdlog, glog and log4cxx. One OTLP
+exporter carries all three signals. Both OTLP protocols run over a
 single nghttp2 HTTP/2 transport. The gRPC side is a small unary-RPC layer on
 that transport, so picking gRPC over HTTP costs nothing extra in binary size.
 In the project's benchmark against opentelemetry-cpp, a timed call that creates
@@ -26,9 +29,9 @@ sustains roughly **twice the throughput**;
 [Performance](#performance) has the full comparison and its caveats.
 
 **At a glance:** no gRPC, abseil or protobuf C++ runtime ·
-OTLP/gRPC and OTLP/HTTP over one nghttp2 transport · a C11 microcontroller
-client at about 9.3 KB of flash (Cortex-M4), 512 bytes of caller-owned RAM and
-no heap · spans in about a quarter of opentelemetry-cpp's time
+OTLP/gRPC and OTLP/HTTP over one nghttp2 transport · an experimental C11
+microcontroller client at about 9.3 KB of flash (Cortex-M4), 512 bytes of
+caller-owned RAM and no heap · spans in about a quarter of opentelemetry-cpp's time
 ([caveats](#performance)).
 
 ```cpp
@@ -61,7 +64,8 @@ the architecture diagrams.
   [migration guide](docs/migration-from-otel-cpp.md) before you start.
 - **You're tracing microcontrollers or other constrained devices.**
   microtel-leaf (experimental) is a C11 library with no heap, and a microtel
-  gateway forwards its spans to your collector. Start with
+  gateway running the experimental concentrator exports its spans to your
+  collector. Start with
   [the leaf overview](#leaf-and-concentrator-tracing-for-microcontrollers),
   then [`leaf/README.md`](leaf/README.md) and the
   [`examples/leaf/`](examples/leaf/) and [`examples/leaf_mqtt/`](examples/leaf_mqtt/)
@@ -122,7 +126,7 @@ cmake --build build -j"$(nproc)"
 ./build/examples/microtel_example_basic_trace     # prints the trace ID
 ```
 
-**A leaf device and its gateway:**
+**A leaf device and its gateway (experimental):**
 
 ```bash
 examples/stack/up.sh
@@ -172,7 +176,7 @@ The current release is **v1.2.3**, and the project follows SemVer.
 |---|---|
 | Traces | Supported. `Tracer` and `Span`; `StartAsCurrentSpan` with a thread-local context; W3C `traceparent`, `tracestate` and `baggage` inject/extract; head samplers (always on/off, trace-ID ratio, parent-based) and composable rule chains; batch span processor; process and host resource detectors; `HealthSnapshot` drop and queue counters. |
 | Operations | Supported since v1.1. Runtime setters on `Provider` (`SetBatchOptions`, `SetSamplerRatio`, `SetMetricInterval`, `SetLogLevel`); several named providers in one process via `GetProvider(name)`; static headers and a `WithAuthProvider` callback; TLS, custom CA and mTLS; gzip; the `microtel::sugar` convenience layer. |
-| Metrics | Implemented but experimental: all seven instruments, periodic reader, temporality, cardinality limits, views and exemplars. Scheduled to become supported in v1.3. Until then there is no compatibility guarantee and no conformance coverage. |
+| Metrics | Implemented but experimental: all seven instruments, periodic reader, temporality, cardinality limits, views, and exemplar capture (not yet exported; see [Known limitations](#known-limitations)). Conformance-tested against the collector over both protocols since v1.2.4. Scheduled to become supported in v1.3; until then there is no compatibility guarantee. |
 | Logs | Supported since v1.2: `Logger` and `LogRecord`, OTLP export over both protocols with retry, automatic trace/span correlation, conformance-tested against the collector, and bridges for spdlog, glog and log4cxx. |
 | Leaf / concentrator | New in v1.2, experimental and off by default. A C11 leaf library for microcontrollers (about 9.3 KB of flash, no heap) and a `LeafReceiver` that turns a microtel process into a gateway for them; see [Leaf and concentrator](#leaf-and-concentrator-tracing-for-microcontrollers). Traces only. The C API may change in any 1.x minor. |
 | Custom export transport | Experimental. `SdkBuilder::WithExportTransport` sends a full C++ Provider's OTLP requests through your own link (UART, CAN, UDP, MQTT…) instead of HTTP/2, for example to a concentrator. See [ICP 0036](docs/icps/0036-custom-export-transport.md). |
@@ -182,6 +186,17 @@ Not supported: plaintext OTLP/HTTP to an HTTP/1.1-only receiver (see
 [Protocols and endpoints](#protocols-and-endpoints)), HTTP proxies, TLS below
 1.2, and Windows. The [compatibility matrix](docs/compatibility-matrix.md) has
 the full list, and [docs/roadmap.md](docs/roadmap.md) has what's next.
+
+## Known limitations
+
+- **Metric exemplars are captured but not exported.** The SDK records an
+  exemplar for a measurement made inside a sampled span, but the OTLP encoder
+  doesn't write exemplars yet, so none reach the collector (#454).
+- **The Delta and LowMemory temporality presets apply delta to up-down
+  counters.** The OpenTelemetry presets keep UpDownCounter and
+  ObservableUpDownCounter cumulative (and LowMemory keeps ObservableCounter
+  cumulative too); microtel applies delta to every instrument. A fix is
+  planned for v1.3 (#455).
 
 ## How you use it
 
@@ -329,8 +344,8 @@ vcpkg install microtel --overlay-ports=microtel/packaging/vcpkg/ports
 
 Configure your application with vcpkg's toolchain file,
 `-DCMAKE_TOOLCHAIN_FILE=<vcpkg>/scripts/buildsystems/vcpkg.cmake`, in place of
-the `CMAKE_PREFIX_PATH` below. Manifest mode, the `leaf` and `concentrator`
-features, and where `microtel-preflight` lands are in the
+the `CMAKE_PREFIX_PATH` below. Manifest mode, the experimental `leaf` and
+`concentrator` features, and where `microtel-preflight` lands are in the
 [port's README](packaging/vcpkg/ports/microtel/README.md).
 
 For embedded Linux images built with the Yocto Project, add the
@@ -459,7 +474,8 @@ latency->Record(4.2, attrs);
 
 ## Leaf and concentrator: tracing for microcontrollers
 
-microtel also traces devices too small to run any OpenTelemetry SDK. **microtel-leaf**
+microtel also traces devices too small to run any OpenTelemetry SDK. Both parts
+are experimental (see the note at the end of this section). **microtel-leaf**
 is a C11 library that emits OTLP spans from a microcontroller. On a Cortex-M4
 it adds about 9.3 KB of flash to the firmware image and needs 512 bytes of RAM
 you allocate, about 3.4 KB of stack at its deepest call, and no heap. A
@@ -586,23 +602,25 @@ In the project's benchmark against opentelemetry-cpp on the same host:
   and the harness's own overhead (a virtual call, a counter increment and two
   clock reads). The profile sets no attributes.
 - **Throughput:** microtel sustains roughly **twice the span throughput**.
-- **Executable size:** the benchmark executable built with microtel is
-  17.5 MB, against 43.1 MB for the same benchmark built with
-  opentelemetry-cpp's OTLP/gRPC exporter, about **2.5× smaller** (and 19.3 MB,
-  1.1×, with its OTLP/HTTP exporter). That compares whole executables, not
-  library or dependency size.
+- **Size:** stripped, with Ubuntu 24.04 packages, the telemetry stack the
+  benchmark loads is **1.1 MB** with microtel against **13.4 MB** with
+  opentelemetry-cpp's OTLP/gRPC exporter (gRPC, protobuf, Abseil, c-ares, re2
+  and its OTLP proto libraries), on top of the same **12.0 MB** of OpenSSL,
+  zlib and the C/C++ runtime that both load.
+  [docs/bench-results/sizes/](docs/bench-results/sizes/library-sizes.md) has
+  the per-library breakdown and how it was measured.
 - **Flush:** opentelemetry-cpp flushes somewhat faster.
 
-Those figures come from hot-loop traces with a blackhole sink (no network) on
-one host. [docs/bench-results/](docs/bench-results/README.md) has the summary
+Those figures come from hot-loop traces exporting to a local blackhole sink
+over a container network, on one host. [docs/bench-results/](docs/bench-results/README.md) has the summary
 table, the committed snapshot it is read off, the method and how to reproduce
-it; the leaf's flash, RAM and stack are in
+it; the experimental leaf's flash, RAM and stack are in
 [docs/bench-results/leaf-footprint.md](docs/bench-results/leaf-footprint.md).
 
 ## Documentation
 
 **[Full documentation index](docs/README.md)**: every document, grouped into
-using microtel, microcontrollers (the leaf), and contributing and design.
+using microtel, microcontrollers (the experimental leaf), and contributing and design.
 
 **[Troubleshooting](docs/troubleshooting.md)**: an error message, warning,
 health counter or exit code, and what to do about it.

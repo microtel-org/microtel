@@ -73,7 +73,6 @@ def build_results(
             "library_build_flags": sr["library_build_flags"],
             "image_tag":           sr["image_tag"],
             "image_id":            sr["image_id"],
-            "binary_bytes":        sr.get("binary_bytes"),
             "samples":             samples,
             "summary":             _summarize(samples),
             "flamegraph_svg":      sr.get("flamegraph_svg"),
@@ -194,6 +193,7 @@ def _render_md(doc: dict) -> str:
         f"|-------|-------|",
         f"| CPU | {env.get('cpu_model', '?')} |",
         f"| Physical cores | {env.get('cpu_physical_cores', '?')} |",
+        f"| Threads | {env.get('cpu_threads', '?')} |",
         f"| CPU governor | {env.get('cpu_governor', '?')} |",
         f"| Hyperthreading | {env.get('hyperthreading', '?')} |",
         f"| Kernel | {env.get('kernel', '?')} |",
@@ -263,13 +263,6 @@ def _render_md(doc: dict) -> str:
             dr_cells.append(f"{dr:.2f}%" if dr is not None else "N/A")
         lines.append(f"| Delivery rate (sink/emitted) | " + " | ".join(dr_cells) + " |")
         _row(f"Wire bytes/{unit}",    "wire_bytes_per_span", lambda v: f"{v:.1f}")
-
-        # Binary size row — pulled from top-level sut dict, not summary.
-        bin_cells = []
-        for s in suts:
-            bb = s.get("binary_bytes")
-            bin_cells.append(f"{bb:,}" if bb is not None else "N/A")
-        lines.append(f"| Binary size (bytes) | " + " | ".join(bin_cells) + " |")
 
         for s in suts:
             d = s.get("summary", {}).get("spans_dropped", {})

@@ -25,7 +25,7 @@ finishing and stabilizing that code, not writing it.
 | v1.2 Logs | Done, supported | Logs cookbook (docs only) |
 | v1.2 Leaf / concentrator | Done, experimental (ICP 0031, ICP 0036) | Leaf programming and concentrator deployment guides; v2.0 stabilises the API |
 | v1.2.2 Patch | Done | Static request headers validated at `Build()`, and the auth callback's value on each export ([ICP 0038](icps/0038-reject-reserved-request-headers.md), #412); OTel key=value env lists trimmed and percent-decoded (#413); a Meter, its instruments and a Logger may outlive the Provider (#259, #417) |
-| v1.3 Metrics | Mostly done, experimental | Async-callback deadline (#237); View aggregation override; per-instrument temporality; OTel exemplar reservoirs and `OTEL_METRICS_EXEMPLAR_FILTER`; `Timer`/`Counter` sugar; collector conformance tests |
+| v1.3 Metrics | Mostly done, experimental | Async-callback deadline (#237); View aggregation override; per-instrument temporality; OTel exemplar reservoirs and `OTEL_METRICS_EXEMPLAR_FILTER`; exemplar export (#454); per-kind Delta/LowMemory presets (#455); `Timer`/`Counter` sugar; collector conformance for the cardinality-overflow series (#302) |
 | v1.4 Control plane | Not started | Unix-socket server, `microtelctl`, threat model, operator guide (ICP 0024); mTLS rotation (#296, #297) |
 | Tier 3 otel-cpp shim | Done for all three signals, experimental | Beta gates in §10 (real-world app testing, frozen API, deprecation policy) |
 | v1.5 Conformance push | Not started | Custom samplers are reachable through `SamplerHandle` but not a documented extension point; histogram buckets can be set per instrument but not through Views |
@@ -176,7 +176,7 @@ Python bindings are **not** part of v1.0. They ship post-v1.0 as **M18**, coveri
 
 **Theme:** Second signal lands.
 
-**Status:** mostly done and shipping as experimental. The work left is finishing the gaps marked below and adding collector conformance tests. Open issues are on the v1.3 milestone. The control plane that ICP 0024 moved into this release is now its own release, v1.4 ([ICP 0032](icps/0032-release-reorder-v1.1.1.md)).
+**Status:** mostly done and shipping as experimental. The work left is finishing the gaps marked below. Collector conformance tests landed in v1.2.4, over both protocols, except for the cardinality-overflow series (#302). Open issues are on the v1.3 milestone. The control plane that ICP 0024 moved into this release is now its own release, v1.4 ([ICP 0032](icps/0032-release-reorder-v1.1.1.md)).
 
 **Prerequisite milestone (M11 from spec):** `docs/metrics-design.md` lands first, with reviewer sign-off. Covers the semantic decisions that v1.0 deliberately deferred: aggregation temporality (delta vs cumulative), cardinality limits, histogram bucket configuration, async-instrument callback semantics, reader/exporter interaction, views, exemplars roadmap. *(Done.)*
 
@@ -358,7 +358,7 @@ The shipped names are in `microtel::sugar` ([ICP 0028](icps/0028-sugar-surface.m
 
 The v1.0 footprint targets in [`docs/bench-spec.md`](bench-spec.md) §14.5 are stretch numbers pending prototype. The trajectory across releases:
 
-*(Status: the table below was written assuming shared libraries. microtel ships static archives only (`libmicrotel_*.a` behind `microtel::microtel`), and per-library sizes have not been measured or published yet; release notes so far report only the benchmark binary size. ICP 0030 (PR #293) proposes the CI size report that would fill this in.)*
+*(Status: the table below was written assuming shared libraries. microtel ships static archives only (`libmicrotel_*.a` behind `microtel::microtel`). Sizes are now measured per library for the benchmark app, stripped and with every shared library it loads, in [`docs/bench-results/sizes/library-sizes.md`](bench-results/sizes/library-sizes.md): microtel's telemetry stack is 1.1 MB against 13.4 MB for opentelemetry-cpp with its OTLP/gRPC exporter, over the same 12.0 MB of OpenSSL, zlib and the C/C++ runtime. The per-archive figures this table asks for are still unmeasured; ICP 0030 (PR #293) proposes the CI size report that would fill them in.)*
 
 | Release | Core exporter (`libmicrotel-exporter.so`) | Full SDK (`libmicrotel-sdk.so`) | Total dynamic closure |
 |---|---|---|---|
