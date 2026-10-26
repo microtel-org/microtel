@@ -40,6 +40,7 @@
 #include "microtel/resource.hpp"
 #include "microtel/trace.hpp"
 
+#include <algorithm>
 #include <chrono>
 #include <cstddef>
 #include <cstring>
@@ -95,14 +96,14 @@ upb_StringView ArenaSv(const std::string& s, upb_Arena* arena) noexcept
     {
         return upb_StringView_FromDataAndSize(nullptr, 0);
     }
-    std::memcpy(buf, s.data(), s.size());
+    std::copy_n(s.data(), s.size(), buf);
     return upb_StringView_FromDataAndSize(buf, s.size());
 }
 
 // OTLP `Span.flags` / `Span.Link.flags`: the W3C trace flags in bits 0-7, and
 // whether the parent (for a span) or the linked context (for a link) is remote,
 // which microtel always knows.
-std::uint32_t SpanFlags(const microtel::TraceFlags flags, const bool remote) noexcept
+std::uint32_t SpanFlags(microtel::TraceFlags flags, bool remote) noexcept
 {
     std::uint32_t bits = static_cast<std::uint32_t>(flags.AsByte()) |
                          static_cast<std::uint32_t>(
