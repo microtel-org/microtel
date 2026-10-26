@@ -1,0 +1,1669 @@
+compileunits,symbols,vmsize,filesize
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_BracketMatcher<>::_M_ready(),10448,10448
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_Compiler<>::_M_expression_term<>(),7408,7408
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::vector<>::_M_realloc_insert<>(),6584,6584
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_Compiler<>::_M_insert_bracket_matcher<>(),4368,4368
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__cxx11::regex_traits<>::lookup_collatename<>()::__collatenames,4096,4096
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::_Function_handler<>::_M_manager(),3616,3616
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_Compiler<>::_M_insert_character_class_matcher<>(),3264,3264
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_Executor<>::_M_main_dispatch(),2942,2942
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_Executor<>::_M_dfs(),2776,2776
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_StateSeq<>::_M_clone(),2588,2588
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_BracketMatcher<>::_M_make_range(),2424,2424
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::_Function_handler<>::_M_invoke(),2184,2184
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_Executor<>::_M_lookahead(),2104,2104
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_Compiler<>::_Compiler(),2092,2092
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_Compiler<>::_M_quantifier(),2088,2088
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_Compiler<>::_M_insert_char_matcher<>(),1400,1400
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,opentelemetry::v1::sdk::metrics::InstrumentMetaDataValidator::ValidateName(),1380,1380
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,opentelemetry::v1::sdk::metrics::InstrumentMetaDataValidator::ValidateUnit(),1380,1380
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_BracketMatcher<>::~_BracketMatcher(),1312,1312
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__cxx11::regex_traits<>::value(),1260,1260
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_Compiler<>::_M_atom(),1228,1228
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_Compiler<>::_M_insert_any_matcher_ecma<>(),1216,1216
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_Compiler<>::_M_insert_any_matcher_posix<>(),1216,1216
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_Scanner<>::_M_scan_normal(),1132,1132
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__cxx11::regex_traits<>::lookup_classname<>(),1068,1068
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::deque<>::_M_push_back_aux<>(),1016,1016
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_Scanner<>::_M_eat_escape_ecma(),988,988
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::vector<>::vector(),960,960
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_Compiler<>::_M_assertion(),952,952
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_Compiler<>::_M_expression_term<>()::{lambda()#1}::operator()(),908,908
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_Compiler<>::_M_alternative(),804,804
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_Scanner<>::_M_eat_escape_awk(),800,800
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_Executor<>::_M_is_line_terminator(),760,760
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__cxx11::regex_traits<>::lookup_collatename<>(),732,732
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::vector<>::~vector(),704,704
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_Scanner<>::_Scanner(),660,660
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_Compiler<>::_M_disjunction(),632,632
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_Executor<>::_M_handle_backref(),628,628
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__cxx11::regex_traits<>::transform_primary<>(),620,620
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_NFA<>::_M_insert_backref(),612,612
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_NFA<>::_M_insert_matcher(),612,612
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__cxx11::regex_traits<>::lookup_classname<>()::__classnames,600,600
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_Scanner<>::_M_scan_in_brace(),596,596
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_Scanner<>::_M_scan_in_bracket(),588,588
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::deque<>::_M_reallocate_map(),568,568
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__introsort_loop<>(),532,532
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::_Rb_tree<>::_M_erase(),516,516
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_NFA<>::_M_insert_subexpr_begin(),516,516
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::vector<>::_M_fill_assign(),516,516
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__cxx11::basic_regex<>::_M_compile(),484,484
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::vector<>::operator=(),476,476
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_NFA<>::_M_insert_subexpr_end(),468,468
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_NFA<>::_M_insert_repeat(),452,452
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::_Deque_base<>::_M_initialize_map(),428,428
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_Backref_matcher<>::_M_apply(),428,428
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_Executor<>::_M_handle_word_boundary(),428,428
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_Scanner<>::_M_eat_escape_posix(),428,428
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::vector<>::emplace_back<>(),408,408
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::_Rb_tree<>::_M_emplace_hint_unique<>(),392,392
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_Scanner<>::_M_eat_class(),392,392
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::deque<>::emplace_back<>(),392,392
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_Executor<>::_M_rep_once_more(),384,384
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__adjust_heap<>(),380,380
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_NFA<>::_M_insert_accept(),372,372
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_NFA<>::_M_insert_dummy(),372,372
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,opentelemetry::v1::sdk::metrics::InstrumentMetaDataValidator::InstrumentMetaDataValidator(),342,342
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__cxx11::basic_string<>::operator=(),320,320
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_Compiler<>::_M_try_char(),312,312
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__cxx11::basic_string<>::basic_string<>(),292,292
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_NFA<>::_M_insert_state(),284,284
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_Executor<>::~_Executor(),264,264
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_RegexTranslatorBase<>::_M_translate(),256,256
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__cxx11::basic_string<>::_M_construct<>(),244,244
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_Compiler<>::_M_expression_term<>()::{lambda()#2}::operator()(),244,244
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_Compiler<>::_M_pop(),244,244
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_Compiler<>::_M_bracket_expression(),240,240
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::_Sp_counted_ptr_inplace<>::_M_dispose(),236,236
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__cxx11::regex_traits<>::isctype(),232,232
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_Executor<>::_M_handle_alternative(),224,224
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,_GLOBAL__sub_I__ZN13opentelemetry2v13sdk7metrics27InstrumentMetaDataValidatorC2Ev,212,212
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_Executor<>::_M_handle_repeat(),208,208
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_Compiler<>::_M_cur_int_value(),204,204
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::_Rb_tree<>::_M_get_insert_unique_pos(),196,196
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::vector<>::_M_erase(),188,188
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::_Deque_base<>::~_Deque_base(),184,184
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_Compiler<>::_M_quantifier()::{lambda()#1}::operator()(),176,176
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__unique<>(),156,156
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__throw_regex_error(),152,152
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::_Sp_counted_ptr_inplace<>::_M_get_deleter(),144,144
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::vector<>::push_back(),144,144
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_Scanner<>::_M_advance(),124,124
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_State<>::~_State(),92,92
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::deque<>::push_back(),92,92
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::_Sp_counted_ptr_inplace<>::~_Sp_counted_ptr_inplace(),88,88
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::ctype<>::do_narrow(),73,73
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::ctype<>::do_widen(),71,71
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_AnyMatcher<>::operator()()::__nul,64,0
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,opentelemetry::v1::sdk::metrics::InstrumentMetaDataValidator::ValidateDescription(),44,44
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::_Sp_counted_ptr_inplace<>::_M_destroy(),44,44
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,opentelemetry::v1::sdk::metrics::kInstrumentNamePattern,32,0
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,opentelemetry::v1::sdk::metrics::kInstrumentUnitPattern,32,0
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,std::__detail::_Executor<>::_M_is_word()::__s,4,4
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,std::vector<>::_M_realloc_insert<>(),3532,3532
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::AsyncMetricStorage::~AsyncMetricStorage(),3252,3252
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::SyncMetricStorage::~SyncMetricStorage(),3152,3152
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,std::_Rb_tree<>::_M_copy<>(),2626,2626
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::AsyncMetricStorage::RecordDouble(),2624,2624
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::AsyncMetricStorage::RecordLong(),2608,2608
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::AttributesHashMap::Set(),2348,2348
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::Meter::RegisterSyncMetricStorage()::{lambda()#1}::operator()(),2086,2086
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::Meter::Collect(),1884,1884
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::Meter::RegisterAsyncMetricStorage()::{lambda()#1}::operator()(),1870,1870
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::Meter::RegisterSyncMetricStorage(),1736,1736
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::Meter::RegisterAsyncMetricStorage(),1680,1680
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,std::__detail::_Map_base<>::operator[](),1288,1288
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::Meter::CreateDoubleObservableCounter(),1212,1212
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::Meter::CreateDoubleObservableGauge(),1212,1212
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::Meter::CreateDoubleObservableUpDownCounter(),1212,1212
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::Meter::CreateInt64ObservableCounter(),1212,1212
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::Meter::CreateInt64ObservableGauge(),1212,1212
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::Meter::CreateInt64ObservableUpDownCounter(),1212,1212
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,std::vector<>::vector(),1060,1060
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::Meter::CreateDoubleCounter(),1036,1036
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::Meter::CreateDoubleHistogram(),1036,1036
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::Meter::CreateDoubleUpDownCounter(),1036,1036
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::Meter::CreateInt64UpDownCounter(),1036,1036
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::Meter::CreateUInt64Counter(),1036,1036
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::Meter::CreateUInt64Histogram(),1036,1036
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::ViewRegistry::FindViews(),948,948
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,std::__do_uninit_copy<>(),924,924
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::DefaultAggregation::CreateAggregation(),900,900
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::DefaultAggregation::CloneAggregation(),872,872
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,std::_Hashtable<>::_M_rehash(),784,784
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,std::vector<>::~vector(),700,700
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::TemporalMetricStorage::~TemporalMetricStorage(),684,684
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::AsyncMetricStorage::Collect(),656,656
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::AsyncMultiMetricStorage::~AsyncMultiMetricStorage(),644,644
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::SyncMultiMetricStorage::~SyncMultiMetricStorage(),644,644
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,_GLOBAL__sub_I__ZN13opentelemetry2v13sdk7metrics5MeterC2ESt8weak_ptrINS2_12MeterContextEESt10unique_ptrINS1_20instrumentationscope20InstrumentationScopeESt14default_deleteIS9_EE,572,572
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::nostd::function_ref<>::BindTo<>()::{lambda()#1}::_FUN(),545,545
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,std::_Function_handler<>::_M_invoke(),508,508
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::Meter::GetNoopObservableInsrument(),488,488
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::Meter::Meter(),414,414
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,std::_Sp_counted_ptr<>::_M_dispose(),392,392
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::metrics::NoopCounter<>::Add(),352,352
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::metrics::NoopUpDownCounter<>::Add(),352,352
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,std::_Sp_counted_ptr<>::~_Sp_counted_ptr(),352,352
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,std::_Hashtable<>::~_Hashtable(),332,332
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,absl::otel_v1::variant_internal::VisitIndicesSwitch<>::Run<>(),328,328
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::Meter::ValidateInstrument(),324,324
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,std::__cxx11::basic_string<>::operator=(),320,320
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,std::_Destroy_aux<>::__destroy<>(),288,288
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::SyncMultiMetricStorage::RecordDouble(),276,276
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::SyncMultiMetricStorage::RecordLong(),276,276
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,std::__cxx11::basic_string<>::basic_string(),276,276
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::common::SpinLockMutex::lock(),248,248
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,std::__cxx11::basic_string<>::_M_construct<>(),244,244
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::InstrumentDescriptor::InstrumentDescriptor(),232,232
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,std::_Function_handler<>::_M_manager(),196,196
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::nostd::shared_ptr<>::shared_ptr_wrapper::~shared_ptr_wrapper(),180,180
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,std::__shared_count<>::__shared_count<>(),180,180
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::metrics::NoopCounter<>::~NoopCounter(),176,176
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::metrics::NoopHistogram<>::Record(),176,176
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::metrics::NoopHistogram<>::~NoopHistogram(),176,176
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::metrics::NoopUpDownCounter<>::~NoopUpDownCounter(),176,176
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,std::_Rb_tree<>::_M_erase(),176,176
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,std::_Sp_counted_ptr<>::_M_destroy(),176,176
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,std::_Sp_counted_ptr<>::_M_get_deleter(),176,176
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,std::pair<>::~pair(),172,172
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::InstrumentDescriptor::~InstrumentDescriptor(),160,160
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,absl::otel_v1::variant_internal::VariantStateBaseDestructorNontrivial<>::destroy(),148,148
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::ViewRegistry::FindViews()::view,136,0
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::AsyncMultiMetricStorage::RecordDouble(),128,128
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::AsyncMultiMetricStorage::RecordLong(),128,128
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,std::__cxx11::basic_string<>::compare(),124,124
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::InstrumentMetaDataValidator::~InstrumentMetaDataValidator(),120,120
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,std::_Sp_counted_deleter<>::_M_dispose(),112,112
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,std::unique_ptr<>::~unique_ptr(),112,112
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,std::_Sp_counted_deleter<>::_M_get_deleter(),108,108
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::nostd::shared_ptr<>::shared_ptr_wrapper::CopyTo(),92,92
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::nostd::shared_ptr<>::~shared_ptr(),92,92
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::DefaultAttributesProcessor::process(),92,92
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::DropAggregation::Diff(),92,92
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::DropAggregation::Merge(),92,92
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::metrics::NoopObservableInstrument::~NoopObservableInstrument(),88,88
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::DefaultAttributesProcessor::~DefaultAttributesProcessor(),88,88
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::DropAggregation::Aggregate(),88,88
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::DropAggregation::~DropAggregation(),88,88
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,std::_Sp_counted_deleter<>::~_Sp_counted_deleter(),88,88
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,_GLOBAL__sub_I__ZN13opentelemetry2v13sdk7metrics5MeterC2ESt8weak_ptrINS2_12MeterContextEESt10unique_ptrINS1_20instrumentationscope20InstrumentationScopeESt14default_deleteIS9_EE.cold,85,85
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::nostd::shared_ptr<>::shared_ptr_wrapper::MoveTo(),76,76
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::nostd::shared_ptr<>::shared_ptr_wrapper::Reset(),76,76
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::Meter::ValidateInstrument()::instrument_validator,64,0
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::metrics::NoopObservableInstrument::AddCallback(),44,44
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::metrics::NoopObservableInstrument::RemoveCallback(),44,44
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::nostd::shared_ptr<>::shared_ptr_wrapper::Get(),44,44
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::DefaultAttributesProcessor::isPresent(),44,44
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::DropAggregation::ToPoint(),44,44
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::Meter::GetInstrumentationScope(),44,44
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,std::_Sp_counted_deleter<>::_M_destroy(),44,44
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::Meter::GetNoopObservableInsrument()::noop_instrument,32,0
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::kAttributesLimitOverflowKey,32,0
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,opentelemetry::v1::sdk::metrics::kOverflowAttributesHash,8,0
+/src/opentelemetry-cpp/sdk/src/metrics/sync_instruments.cc,opentelemetry::v1::sdk::metrics::DoubleUpDownCounter::Add(),7310,7310
+/src/opentelemetry-cpp/sdk/src/metrics/sync_instruments.cc,opentelemetry::v1::sdk::metrics::DoubleCounter::Add(),6400,6400
+/src/opentelemetry-cpp/sdk/src/metrics/sync_instruments.cc,opentelemetry::v1::sdk::metrics::LongCounter::Add(),6204,6204
+/src/opentelemetry-cpp/sdk/src/metrics/sync_instruments.cc,opentelemetry::v1::sdk::metrics::LongUpDownCounter::Add(),6204,6204
+/src/opentelemetry-cpp/sdk/src/metrics/sync_instruments.cc,opentelemetry::v1::sdk::metrics::LongHistogram::Record(),3640,3640
+/src/opentelemetry-cpp/sdk/src/metrics/sync_instruments.cc,opentelemetry::v1::sdk::metrics::DoubleHistogram::Record(),2996,2996
+/src/opentelemetry-cpp/sdk/src/metrics/sync_instruments.cc,opentelemetry::v1::sdk::metrics::DoubleCounter::DoubleCounter(),2604,2604
+/src/opentelemetry-cpp/sdk/src/metrics/sync_instruments.cc,opentelemetry::v1::sdk::metrics::LongUpDownCounter::LongUpDownCounter(),2604,2604
+/src/opentelemetry-cpp/sdk/src/metrics/sync_instruments.cc,std::_Rb_tree<>::_M_erase(),2392,2392
+/src/opentelemetry-cpp/sdk/src/metrics/sync_instruments.cc,opentelemetry::v1::sdk::metrics::DoubleHistogram::DoubleHistogram(),2360,2360
+/src/opentelemetry-cpp/sdk/src/metrics/sync_instruments.cc,opentelemetry::v1::sdk::metrics::DoubleUpDownCounter::DoubleUpDownCounter(),2360,2360
+/src/opentelemetry-cpp/sdk/src/metrics/sync_instruments.cc,opentelemetry::v1::sdk::metrics::LongCounter::LongCounter(),2360,2360
+/src/opentelemetry-cpp/sdk/src/metrics/sync_instruments.cc,opentelemetry::v1::sdk::metrics::LongHistogram::LongHistogram(),2360,2360
+/src/opentelemetry-cpp/sdk/src/metrics/sync_instruments.cc,_GLOBAL__sub_I__ZN13opentelemetry2v13sdk7metrics11LongCounterC2ERKNS2_20InstrumentDescriptorESt10unique_ptrINS2_25SyncWritableMetricStorageESt14default_deleteIS8_EE,556,556
+/src/opentelemetry-cpp/sdk/src/metrics/sync_instruments.cc,opentelemetry::v1::sdk::metrics::DoubleCounter::~DoubleCounter(),348,348
+/src/opentelemetry-cpp/sdk/src/metrics/sync_instruments.cc,opentelemetry::v1::sdk::metrics::DoubleHistogram::~DoubleHistogram(),348,348
+/src/opentelemetry-cpp/sdk/src/metrics/sync_instruments.cc,opentelemetry::v1::sdk::metrics::DoubleUpDownCounter::~DoubleUpDownCounter(),348,348
+/src/opentelemetry-cpp/sdk/src/metrics/sync_instruments.cc,opentelemetry::v1::sdk::metrics::LongCounter::~LongCounter(),348,348
+/src/opentelemetry-cpp/sdk/src/metrics/sync_instruments.cc,opentelemetry::v1::sdk::metrics::LongHistogram::~LongHistogram(),348,348
+/src/opentelemetry-cpp/sdk/src/metrics/sync_instruments.cc,opentelemetry::v1::sdk::metrics::LongUpDownCounter::~LongUpDownCounter(),348,348
+/src/opentelemetry-cpp/sdk/src/metrics/sync_instruments.cc,absl::otel_v1::variant_internal::VisitIndicesSwitch<>::Run<>(),344,344
+/src/opentelemetry-cpp/sdk/src/metrics/sync_instruments.cc,opentelemetry::v1::sdk::metrics::Synchronous::~Synchronous(),176,176
+/src/opentelemetry-cpp/sdk/src/metrics/sync_instruments.cc,_GLOBAL__sub_I__ZN13opentelemetry2v13sdk7metrics11LongCounterC2ERKNS2_20InstrumentDescriptorESt10unique_ptrINS2_25SyncWritableMetricStorageESt14default_deleteIS8_EE.cold,88,88
+/src/opentelemetry-cpp/sdk/src/metrics/sync_instruments.cc,opentelemetry::v1::sdk::metrics::NoopWritableMetricStorage::RecordDouble(),88,88
+/src/opentelemetry-cpp/sdk/src/metrics/sync_instruments.cc,opentelemetry::v1::sdk::metrics::NoopWritableMetricStorage::RecordLong(),44,44
+/src/opentelemetry-cpp/sdk/src/metrics/sync_instruments.cc,opentelemetry::v1::sdk::metrics::kAttributesLimitOverflowKey,32,0
+/src/opentelemetry-cpp/sdk/src/metrics/state/temporal_metric_storage.cc,opentelemetry::v1::sdk::metrics::TemporalMetricStorage::buildMetrics(),13078,13078
+/src/opentelemetry-cpp/sdk/src/metrics/state/temporal_metric_storage.cc,std::_Rb_tree<>::_M_copy<>(),9610,9610
+/src/opentelemetry-cpp/sdk/src/metrics/state/temporal_metric_storage.cc,opentelemetry::v1::nostd::function_ref<>::BindTo<>()::{lambda()#1}::_FUN(),3770,3770
+/src/opentelemetry-cpp/sdk/src/metrics/state/temporal_metric_storage.cc,std::vector<>::_M_realloc_insert<>(),2520,2520
+/src/opentelemetry-cpp/sdk/src/metrics/state/temporal_metric_storage.cc,opentelemetry::v1::sdk::metrics::TemporalMetricStorage::buildMetrics()::{lambda()#1}::operator()(),2060,2060
+/src/opentelemetry-cpp/sdk/src/metrics/state/temporal_metric_storage.cc,opentelemetry::v1::sdk::metrics::TemporalMetricStorage::buildMetrics()::{lambda()#4}::operator()(),2060,2060
+/src/opentelemetry-cpp/sdk/src/metrics/state/temporal_metric_storage.cc,std::_Rb_tree<>::_M_construct_node<>(),1984,1984
+/src/opentelemetry-cpp/sdk/src/metrics/state/temporal_metric_storage.cc,opentelemetry::v1::nostd::function_ref<>::operator()(),1548,1548
+/src/opentelemetry-cpp/sdk/src/metrics/state/temporal_metric_storage.cc,absl::otel_v1::variant_internal::VisitIndicesSwitch<>::Run<>(),1276,1276
+/src/opentelemetry-cpp/sdk/src/metrics/state/temporal_metric_storage.cc,opentelemetry::v1::sdk::metrics::TemporalMetricStorage::TemporalMetricStorage(),1056,1056
+/src/opentelemetry-cpp/sdk/src/metrics/state/temporal_metric_storage.cc,std::__detail::_Map_base<>::operator[](),828,828
+/src/opentelemetry-cpp/sdk/src/metrics/state/temporal_metric_storage.cc,std::_Rb_tree<>::operator=(),814,814
+/src/opentelemetry-cpp/sdk/src/metrics/state/temporal_metric_storage.cc,std::_Hashtable<>::_M_rehash(),784,784
+/src/opentelemetry-cpp/sdk/src/metrics/state/temporal_metric_storage.cc,_GLOBAL__sub_I__ZN13opentelemetry2v13sdk7metrics21TemporalMetricStorageC2ENS2_20InstrumentDescriptorENS2_15AggregationTypeEPKNS2_17AggregationConfigE,572,572
+/src/opentelemetry-cpp/sdk/src/metrics/state/temporal_metric_storage.cc,std::_Rb_tree<>::_M_erase(),448,448
+/src/opentelemetry-cpp/sdk/src/metrics/state/temporal_metric_storage.cc,std::__cxx11::_List_base<>::_M_clear(),308,308
+/src/opentelemetry-cpp/sdk/src/metrics/state/temporal_metric_storage.cc,std::_Hashtable<>::_M_insert_unique_node(),296,296
+/src/opentelemetry-cpp/sdk/src/metrics/state/temporal_metric_storage.cc,std::_Sp_counted_ptr<>::_M_dispose(),114,114
+/src/opentelemetry-cpp/sdk/src/metrics/state/temporal_metric_storage.cc,std::_Sp_counted_base<>::_M_destroy(),113,113
+/src/opentelemetry-cpp/sdk/src/metrics/state/temporal_metric_storage.cc,std::__detail::_Hashtable_alloc<>::_M_deallocate_node(),102,102
+/src/opentelemetry-cpp/sdk/src/metrics/state/temporal_metric_storage.cc,_GLOBAL__sub_I__ZN13opentelemetry2v13sdk7metrics21TemporalMetricStorageC2ENS2_20InstrumentDescriptorENS2_15AggregationTypeEPKNS2_17AggregationConfigE.cold,88,88
+/src/opentelemetry-cpp/sdk/src/metrics/state/temporal_metric_storage.cc,opentelemetry::v1::sdk::metrics::kAttributesLimitOverflowKey,32,0
+/src/opentelemetry-cpp/sdk/src/metrics/state/temporal_metric_storage.cc,opentelemetry::v1::sdk::metrics::kOverflowAttributesHash,8,0
+[section .rela.dyn],[section .rela.dyn],8352,8352
+[section .rela.dyn],std::_Sp_counted_ptr<>,3672,3672
+[section .rela.dyn],opentelemetry::v1::nostd::shared_ptr<>::shared_ptr_wrapper,3240,3240
+[section .rela.dyn],std::_Sp_counted_ptr_inplace<>,2808,2808
+[section .rela.dyn],std::_Sp_counted_deleter<>,1944,1944
+[section .rela.dyn],std::thread::_State_impl<>,840,840
+[section .rela.dyn],opentelemetry::v1::sdk::logs::ReadableLogRecord,672,672
+[section .rela.dyn],opentelemetry::v1::metrics::NoopCounter<>,480,480
+[section .rela.dyn],opentelemetry::v1::metrics::NoopUpDownCounter<>,480,480
+[section .rela.dyn],opentelemetry::v1::exporter::otlp::OtlpRecordable,456,456
+[section .rela.dyn],opentelemetry::v1::sdk::metrics::SyncMetricStorage,456,456
+[section .rela.dyn],opentelemetry::v1::sdk::trace::MultiRecordable,456,456
+[section .rela.dyn],opentelemetry::v1::sdk::metrics::Meter,432,432
+[section .rela.dyn],opentelemetry::v1::exporter::otlp::OtlpLogRecordable,408,408
+[section .rela.dyn],opentelemetry::v1::sdk::logs::MultiRecordable,408,408
+[section .rela.dyn],opentelemetry::v1::common::KeyValueIterableView<>,384,384
+[section .rela.dyn],opentelemetry::v1::metrics::NoopHistogram<>,384,384
+[section .rela.dyn],opentelemetry::v1::sdk::metrics::ObserverResultT<>,384,384
+[section .rela.dyn],opentelemetry::v1::sdk::trace::Span,384,384
+[section .rela.dyn],opentelemetry::v1::trace::DefaultSpan,384,384
+[section .rela.dyn],opentelemetry::v1::trace::NoopSpan,384,384
+[section .rela.dyn],std::__detail::_AnyMatcher<>,384,384
+[section .rela.dyn],bench::(anonymous namespace)::OtelCppBackend,360,360
+[section .rela.dyn],opentelemetry::v1::sdk::logs::Logger,360,360
+[section .rela.dyn],opentelemetry::v1::sdk::metrics::AsyncMetricStorage,360,360
+[section .rela.dyn],opentelemetry::v1::sdk::metrics::MetricCollector,312,312
+[section .rela.dyn],opentelemetry::v1::sdk::trace::BatchSpanProcessor,288,288
+[section .rela.dyn],opentelemetry::v1::sdk::logs::BatchLogRecordProcessor,264,264
+[section .rela.dyn],opentelemetry::v1::sdk::metrics::DoubleCounter,264,264
+[section .rela.dyn],opentelemetry::v1::sdk::metrics::DoubleHistogramAggregation,264,264
+[section .rela.dyn],opentelemetry::v1::sdk::metrics::DoubleLastValueAggregation,264,264
+[section .rela.dyn],opentelemetry::v1::sdk::metrics::DoubleSumAggregation,264,264
+[section .rela.dyn],opentelemetry::v1::sdk::metrics::DoubleUpDownCounter,264,264
+[section .rela.dyn],opentelemetry::v1::sdk::metrics::DropAggregation,264,264
+[section .rela.dyn],opentelemetry::v1::sdk::metrics::LongCounter,264,264
+[section .rela.dyn],opentelemetry::v1::sdk::metrics::LongHistogramAggregation,264,264
+[section .rela.dyn],opentelemetry::v1::sdk::metrics::LongLastValueAggregation,264,264
+[section .rela.dyn],opentelemetry::v1::sdk::metrics::LongSumAggregation,264,264
+[section .rela.dyn],opentelemetry::v1::sdk::metrics::LongUpDownCounter,264,264
+[section .rela.dyn],opentelemetry::v1::sdk::trace::MultiSpanProcessor,264,264
+[section .rela.dyn],opentelemetry::v1::exporter::otlp::OtlpGrpcExporter,240,240
+[section .rela.dyn],opentelemetry::v1::exporter::otlp::OtlpGrpcLogRecordExporter,240,240
+[section .rela.dyn],opentelemetry::v1::exporter::otlp::OtlpGrpcMetricExporter,240,240
+[section .rela.dyn],opentelemetry::v1::sdk::logs::MultiLogRecordProcessor,240,240
+[section .rela.dyn],opentelemetry::v1::sdk::metrics::PeriodicExportingMetricReader,240,240
+[section .rela.dyn],opentelemetry::v1::sdk::metrics::SyncMultiMetricStorage,240,240
+[section .rela.dyn],opentelemetry::v1::sdk::metrics::View,240,240
+[section .rela.dyn],opentelemetry::v1::sdk::trace::Tracer,240,240
+[section .rela.dyn],opentelemetry::v1::context::ThreadLocalContextStorage,216,216
+[section .rela.dyn],opentelemetry::v1::sdk::metrics::DoubleHistogram,216,216
+[section .rela.dyn],opentelemetry::v1::sdk::metrics::LongHistogram,216,216
+[section .rela.dyn],opentelemetry::v1::common::NoopKeyValueIterable,192,192
+[section .rela.dyn],opentelemetry::v1::metrics::NoopObservableInstrument,192,192
+[section .rela.dyn],opentelemetry::v1::sdk::metrics::AsyncMultiMetricStorage,192,192
+[section .rela.dyn],opentelemetry::v1::sdk::metrics::DefaultAttributesProcessor,192,192
+[section .rela.dyn],opentelemetry::v1::sdk::metrics::ObservableInstrument,192,192
+[section .rela.dyn],opentelemetry::v1::sdk::trace::AlwaysOnSampler,192,192
+[section .rela.dyn],opentelemetry::v1::sdk::trace::RandomIdGenerator,192,192
+[section .rela.dyn],opentelemetry::v1::trace::SpanContextKeyValueIterableView<>,192,192
+[section .rela.dyn],std::__detail::_BracketMatcher<>,192,192
+[section .rela.dyn],std::__detail::_CharMatcher<>,192,192
+[section .rela.dyn],opentelemetry::v1::nostd::bad_variant_access,168,168
+[section .rela.dyn],opentelemetry::v1::sdk::common::internal_log::DefaultLogHandler,168,168
+[section .rela.dyn],opentelemetry::v1::sdk::common::internal_log::NoopLogHandler,168,168
+[section .rela.dyn],opentelemetry::v1::sdk::logs::LogRecordExporter,168,168
+[section .rela.dyn],opentelemetry::v1::sdk::logs::LoggerProvider,168,168
+[section .rela.dyn],opentelemetry::v1::sdk::metrics::MeterProvider,168,168
+[section .rela.dyn],opentelemetry::v1::sdk::metrics::MetricReader,168,168
+[section .rela.dyn],opentelemetry::v1::sdk::resource::OTELResourceDetector,168,168
+[section .rela.dyn],opentelemetry::v1::sdk::trace::SpanExporter,168,168
+[section .rela.dyn],opentelemetry::v1::sdk::trace::TracerProvider,168,168
+[section .rela.dyn],std::__future_base::_Result<>,168,168
+[section .rela.dyn],std::__future_base::_State_baseV2,168,168
+[section .rela.dyn],opentelemetry::v1::metrics::Counter<>,144,144
+[section .rela.dyn],opentelemetry::v1::metrics::Histogram<>,144,144
+[section .rela.dyn],opentelemetry::v1::metrics::UpDownCounter<>,144,144
+[section .rela.dyn],opentelemetry::v1::sdk::metrics::HistogramAggregationConfig,144,144
+[section .rela.dyn],(),120,120
+[section .rela.dyn],opentelemetry::v1::sdk::trace::TracerContext,120,120
+[section .rela.dyn],opentelemetry::v1::metrics::ObserverResultT<>,96,96
+[section .rela.dyn],opentelemetry::v1::sdk::common::internal_log::LogHandler,96,96
+[section .rela.dyn],opentelemetry::v1::sdk::logs::Recordable,72,72
+[section .rela.dyn],std::_Sp_counted_base<>,72,72
+[section .rela.dyn],bench::IBackend,48,48
+[section .rela.dyn],opentelemetry::v1::common::KeyValueIterable,48,48
+[section .rela.dyn],opentelemetry::v1::context::RuntimeContextStorage,48,48
+[section .rela.dyn],opentelemetry::v1::logs::LogRecord,48,48
+[section .rela.dyn],opentelemetry::v1::logs::Logger,48,48
+[section .rela.dyn],opentelemetry::v1::logs::LoggerProvider,48,48
+[section .rela.dyn],opentelemetry::v1::metrics::Meter,48,48
+[section .rela.dyn],opentelemetry::v1::metrics::MeterProvider,48,48
+[section .rela.dyn],opentelemetry::v1::metrics::ObservableInstrument,48,48
+[section .rela.dyn],opentelemetry::v1::metrics::SynchronousInstrument,48,48
+[section .rela.dyn],opentelemetry::v1::sdk::logs::LogRecordProcessor,48,48
+[section .rela.dyn],opentelemetry::v1::sdk::metrics::Aggregation,48,48
+[section .rela.dyn],opentelemetry::v1::sdk::metrics::AggregationConfig,48,48
+[section .rela.dyn],opentelemetry::v1::sdk::metrics::AsyncWritableMetricStorage,48,48
+[section .rela.dyn],opentelemetry::v1::sdk::metrics::AttributesProcessor,48,48
+[section .rela.dyn],opentelemetry::v1::sdk::metrics::CollectorHandle,48,48
+[section .rela.dyn],opentelemetry::v1::sdk::metrics::MetricProducer,48,48
+[section .rela.dyn],opentelemetry::v1::sdk::metrics::MetricStorage,48,48
+[section .rela.dyn],opentelemetry::v1::sdk::metrics::PushMetricExporter,48,48
+[section .rela.dyn],opentelemetry::v1::sdk::metrics::SyncMetricStorage::SyncMetricStorage()::{lambda()#1},48,48
+[section .rela.dyn],opentelemetry::v1::sdk::metrics::SyncWritableMetricStorage,48,48
+[section .rela.dyn],opentelemetry::v1::sdk::metrics::Synchronous,48,48
+[section .rela.dyn],opentelemetry::v1::sdk::resource::ResourceDetector,48,48
+[section .rela.dyn],opentelemetry::v1::sdk::trace::IdGenerator,48,48
+[section .rela.dyn],opentelemetry::v1::sdk::trace::Recordable,48,48
+[section .rela.dyn],opentelemetry::v1::sdk::trace::Sampler,48,48
+[section .rela.dyn],opentelemetry::v1::sdk::trace::SpanProcessor,48,48
+[section .rela.dyn],opentelemetry::v1::trace::Span,48,48
+[section .rela.dyn],opentelemetry::v1::trace::SpanContextKeyValueIterable,48,48
+[section .rela.dyn],opentelemetry::v1::trace::Tracer,48,48
+[section .rela.dyn],opentelemetry::v1::trace::TracerProvider,48,48
+[section .rela.dyn],std::_Mutex_base<>,48,48
+[section .rela.dyn],std::__cxx11::basic_istringstream<>@GLIBCXX_3.4.21,48,48
+[section .rela.dyn],std::__cxx11::basic_stringstream<>@GLIBCXX_3.4.21,48,48
+[section .rela.dyn],std::__future_base::_State_baseV2::_Setter<>,48,48
+[section .rela.dyn],std::bad_weak_ptr@GLIBCXX_3.4.15,48,48
+[section .rela.dyn],std::basic_ifstream<>@GLIBCXX_3.4,48,48
+[section .rela.dyn],std::enable_shared_from_this<>,48,48
+[section .rela.dyn],std::future_error@GLIBCXX_3.4.14,48,48
+[section .rela.dyn],std::regex_error@GLIBCXX_3.4.15,48,48
+[section .rela.dyn],DW.ref._ZTISt9exception,24,24
+[section .rela.dyn],DW.ref.__gxx_personality_v0,24,24
+[section .rela.dyn],__libc_single_threaded@GLIBC_2.32,24,24
+[section .rela.dyn],google::protobuf::internal::fixed_address_empty_string[abi:cxx11],24,24
+[section .rela.dyn],opentelemetry::proto::collector::logs::v1::ExportLogsServiceRequest,24,24
+[section .rela.dyn],opentelemetry::proto::collector::logs::v1::ExportLogsServiceResponse,24,24
+[section .rela.dyn],opentelemetry::proto::collector::metrics::v1::ExportMetricsServiceRequest,24,24
+[section .rela.dyn],opentelemetry::proto::collector::metrics::v1::ExportMetricsServiceResponse,24,24
+[section .rela.dyn],opentelemetry::proto::collector::trace::v1::ExportTraceServiceRequest,24,24
+[section .rela.dyn],opentelemetry::proto::collector::trace::v1::ExportTraceServiceResponse,24,24
+[section .rela.dyn],opentelemetry::proto::logs::v1::_ResourceLogs_default_instance_,24,24
+[section .rela.dyn],opentelemetry::proto::logs::v1::_ScopeLogs_default_instance_,24,24
+[section .rela.dyn],std::__cxx11::basic_stringbuf<>@GLIBCXX_3.4.21,24,24
+[section .rela.dyn],std::__cxx11::collate<>::id@GLIBCXX_3.4.21,24,24
+[section .rela.dyn],std::basic_filebuf<>@GLIBCXX_3.4,24,24
+[section .rela.dyn],std::basic_ios<>@GLIBCXX_3.4,24,24
+[section .rela.dyn],std::basic_streambuf<>@GLIBCXX_3.4,24,24
+[section .rela.dyn],std::cerr@GLIBCXX_3.4,24,24
+[section .rela.dyn],std::cout@GLIBCXX_3.4,24,24
+[section .rela.dyn],std::ctype<>::id@GLIBCXX_3.4,24,24
+[section .rela.dyn],std::ctype<>@GLIBCXX_3.4,24,24
+[section .rela.dyn],std::locale::facet@GLIBCXX_3.4,24,24
+[section .rela.dyn],std::nothrow@GLIBCXX_3.4,24,24
+[section .rela.dyn],std::out_of_range@GLIBCXX_3.4,24,24
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::DumpOtlpHeaders(),4415,4415
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,std::_Rb_tree<>::_M_erase(),1172,1172
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultGrpcMetricsIsInsecure(),1024,1024
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultGrpcTracesIsInsecure(),1024,1024
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,std::_Rb_tree<>::_M_emplace_equal<>(),968,968
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultHttpLogsEndpoint[abi:cxx11](),916,916
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultHttpMetricsEndpoint[abi:cxx11](),916,916
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultHttpTracesEndpoint[abi:cxx11](),916,916
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultGrpcLogsIsInsecure(),864,864
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,std::_Rb_tree<>::equal_range(),804,804
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultHttpLogsProtocol[abi:cxx11](),772,772
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultHttpMetricsProtocol[abi:cxx11](),772,772
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultHttpTracesProtocol[abi:cxx11](),772,772
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultGrpcLogsEndpoint[abi:cxx11](),724,724
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultGrpcMetricsEndpoint[abi:cxx11](),724,724
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultGrpcTracesEndpoint[abi:cxx11](),724,724
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultMetricsSslClientCertificateString[abi:cxx11](),660,660
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultLogsSslCertificateString[abi:cxx11](),644,644
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultLogsSslClientCertificatePath[abi:cxx11](),644,644
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultLogsSslClientCertificateString[abi:cxx11](),644,644
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultLogsSslClientKeyString[abi:cxx11](),644,644
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultMetricsSslCertificateString[abi:cxx11](),644,644
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultMetricsSslClientCertificatePath[abi:cxx11](),644,644
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultMetricsSslClientKeyString[abi:cxx11](),644,644
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultTracesSslCertificateString[abi:cxx11](),644,644
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultTracesSslClientCertificatePath[abi:cxx11](),644,644
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultTracesSslClientCertificateString[abi:cxx11](),644,644
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultTracesSslClientKeyString[abi:cxx11](),644,644
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultLogsSslTlsCipherSuite[abi:cxx11](),628,628
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultMetricsSslTlsCipherSuite[abi:cxx11](),628,628
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultTracesSslTlsCipherSuite[abi:cxx11](),628,628
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultMetricsCompression[abi:cxx11](),596,596
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultMetricsSslCertificatePath[abi:cxx11](),596,596
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultMetricsSslClientKeyPath[abi:cxx11](),596,596
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultMetricsSslTlsCipher[abi:cxx11](),596,596
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultMetricsSslTlsMaxVersion[abi:cxx11](),596,596
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultMetricsSslTlsMinVersion[abi:cxx11](),596,596
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultTracesCompression[abi:cxx11](),596,596
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultTracesSslCertificatePath[abi:cxx11](),596,596
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultTracesSslClientKeyPath[abi:cxx11](),596,596
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultTracesSslTlsCipher[abi:cxx11](),596,596
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultTracesSslTlsMaxVersion[abi:cxx11](),596,596
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultTracesSslTlsMinVersion[abi:cxx11](),596,596
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultLogsCompression[abi:cxx11](),580,580
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultLogsSslCertificatePath[abi:cxx11](),580,580
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultLogsSslClientKeyPath[abi:cxx11](),580,580
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultLogsSslTlsCipher[abi:cxx11](),580,580
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultLogsSslTlsMaxVersion[abi:cxx11](),580,580
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultLogsSslTlsMinVersion[abi:cxx11](),580,580
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,std::_Hashtable<>::_M_rehash(),392,392
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultTracesHeaders[abi:cxx11](),325,325
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultMetricsHeaders[abi:cxx11](),321,321
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultLogsHeaders[abi:cxx11](),305,305
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultLogsRetryBackoffMultiplier(),252,252
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultLogsRetryInitialBackoff(),252,252
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultMetricsRetryBackoffMultiplier(),252,252
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultMetricsRetryInitialBackoff(),252,252
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultMetricsRetryMaxAttempts(),252,252
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultMetricsRetryMaxBackoff(),252,252
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultTracesRetryBackoffMultiplier(),252,252
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultTracesRetryInitialBackoff(),252,252
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultLogsRetryMaxAttempts(),236,236
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultLogsRetryMaxBackoff(),236,236
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultTracesRetryMaxAttempts(),236,236
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultTracesRetryMaxBackoff(),236,236
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultMetricsTimeout(),220,220
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultTracesTimeout(),220,220
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultLogsTimeout(),204,204
+[section .rodata],[section .rodata],24865,24865
+[section .rodata],std::_Sp_counted_ptr<>,1660,1660
+[section .rodata],std::_Sp_counted_ptr_inplace<>,1541,1541
+[section .rodata],opentelemetry::v1::nostd::shared_ptr<>::shared_ptr_wrapper,1357,1357
+[section .rodata],std::_Sp_counted_deleter<>,1285,1285
+[section .rodata],std::default_delete<>,721,721
+[section .rodata],std::thread::_State_impl<>,696,696
+[section .rodata],std::__detail::_AnyMatcher<>,560,560
+[section .rodata],opentelemetry::v1::common::KeyValueIterableView<>,546,546
+[section .rodata],opentelemetry::v1::trace::SpanContextKeyValueIterableView<>,473,473
+[section .rodata],std::__detail::_BracketMatcher<>,280,280
+[section .rodata],std::__detail::_CharMatcher<>,268,268
+[section .rodata],(),192,192
+[section .rodata],opentelemetry::v1::sdk::metrics::SyncMetricStorage::SyncMetricStorage()::{lambda()#1},165,165
+[section .rodata],opentelemetry::v1::metrics::NoopUpDownCounter<>,128,128
+[section .rodata],opentelemetry::v1::metrics::ObserverResultT<>,128,128
+[section .rodata],opentelemetry::v1::sdk::metrics::ObserverResultT<>,128,128
+[section .rodata],opentelemetry::v1::metrics::NoopHistogram<>,94,94
+[section .rodata],opentelemetry::v1::metrics::UpDownCounter<>,94,94
+[section .rodata],opentelemetry::v1::metrics::NoopCounter<>,90,90
+[section .rodata],opentelemetry::v1::metrics::Histogram<>,84,84
+[section .rodata],opentelemetry::v1::metrics::Counter<>,80,80
+[section .rodata],std::enable_shared_from_this<>,67,67
+[section .rodata],opentelemetry::v1::sdk::common::internal_log::DefaultLogHandler,65,65
+[section .rodata],opentelemetry::v1::exporter::otlp::OtlpGrpcExporter,64,64
+[section .rodata],opentelemetry::v1::exporter::otlp::OtlpGrpcLogRecordExporter,64,64
+[section .rodata],opentelemetry::v1::exporter::otlp::OtlpGrpcMetricExporter,64,64
+[section .rodata],opentelemetry::v1::exporter::otlp::OtlpLogRecordable,64,64
+[section .rodata],opentelemetry::v1::metrics::NoopObservableInstrument,64,64
+[section .rodata],opentelemetry::v1::metrics::ObservableInstrument,64,64
+[section .rodata],opentelemetry::v1::metrics::SynchronousInstrument,64,64
+[section .rodata],opentelemetry::v1::sdk::common::internal_log::LogHandler,64,64
+[section .rodata],opentelemetry::v1::sdk::common::internal_log::NoopLogHandler,64,64
+[section .rodata],opentelemetry::v1::sdk::logs::BatchLogRecordProcessor,64,64
+[section .rodata],opentelemetry::v1::sdk::logs::LogRecordExporter,64,64
+[section .rodata],opentelemetry::v1::sdk::logs::LogRecordProcessor,64,64
+[section .rodata],opentelemetry::v1::sdk::logs::MultiLogRecordProcessor,64,64
+[section .rodata],opentelemetry::v1::sdk::metrics::AggregationConfig,64,64
+[section .rodata],opentelemetry::v1::sdk::metrics::AsyncMetricStorage,64,64
+[section .rodata],opentelemetry::v1::sdk::metrics::AsyncMultiMetricStorage,64,64
+[section .rodata],opentelemetry::v1::sdk::metrics::AsyncWritableMetricStorage,64,64
+[section .rodata],opentelemetry::v1::sdk::metrics::AttributesProcessor,64,64
+[section .rodata],opentelemetry::v1::sdk::metrics::CollectorHandle,64,64
+[section .rodata],opentelemetry::v1::sdk::metrics::DefaultAttributesProcessor,64,64
+[section .rodata],opentelemetry::v1::sdk::metrics::DoubleCounter,64,64
+[section .rodata],opentelemetry::v1::sdk::metrics::DoubleHistogramAggregation,64,64
+[section .rodata],opentelemetry::v1::sdk::metrics::DoubleLastValueAggregation,64,64
+[section .rodata],opentelemetry::v1::sdk::metrics::DoubleUpDownCounter,64,64
+[section .rodata],opentelemetry::v1::sdk::metrics::DropAggregation,64,64
+[section .rodata],opentelemetry::v1::sdk::metrics::HistogramAggregationConfig,64,64
+[section .rodata],opentelemetry::v1::sdk::metrics::LongHistogram,64,64
+[section .rodata],opentelemetry::v1::sdk::metrics::LongHistogramAggregation,64,64
+[section .rodata],opentelemetry::v1::sdk::metrics::LongLastValueAggregation,64,64
+[section .rodata],opentelemetry::v1::sdk::metrics::LongSumAggregation,64,64
+[section .rodata],opentelemetry::v1::sdk::metrics::LongUpDownCounter,64,64
+[section .rodata],opentelemetry::v1::sdk::metrics::MeterProvider,64,64
+[section .rodata],opentelemetry::v1::sdk::metrics::MetricProducer,64,64
+[section .rodata],opentelemetry::v1::sdk::metrics::MetricStorage,64,64
+[section .rodata],opentelemetry::v1::sdk::metrics::PeriodicExportingMetricReader,64,64
+[section .rodata],opentelemetry::v1::sdk::metrics::PushMetricExporter,64,64
+[section .rodata],opentelemetry::v1::sdk::metrics::SyncMultiMetricStorage,64,64
+[section .rodata],opentelemetry::v1::sdk::metrics::SyncWritableMetricStorage,64,64
+[section .rodata],opentelemetry::v1::sdk::resource::OTELResourceDetector,64,64
+[section .rodata],opentelemetry::v1::sdk::resource::ResourceDetector,64,64
+[section .rodata],opentelemetry::v1::sdk::trace::BatchSpanProcessor,64,64
+[section .rodata],opentelemetry::v1::sdk::trace::MultiRecordable,64,64
+[section .rodata],opentelemetry::v1::context::ThreadLocalContextStorage,56,56
+[section .rodata],opentelemetry::v1::trace::SpanContextKeyValueIterable,56,56
+[section .rodata],opentelemetry::v1::sdk::metrics::DoubleSumAggregation,55,55
+[section .rodata],opentelemetry::v1::sdk::metrics::ObservableInstrument,55,55
+[section .rodata],opentelemetry::v1::context::RuntimeContextStorage,52,52
+[section .rodata],opentelemetry::v1::sdk::metrics::SyncMetricStorage,52,52
+[section .rodata],std::_Sp_counted_base<>,52,52
+[section .rodata],opentelemetry::v1::exporter::otlp::OtlpRecordable,51,51
+[section .rodata],opentelemetry::v1::sdk::trace::MultiSpanProcessor,51,51
+[section .rodata],opentelemetry::v1::common::NoopKeyValueIterable,50,50
+[section .rodata],opentelemetry::v1::sdk::metrics::DoubleHistogram,50,50
+[section .rodata],opentelemetry::v1::sdk::metrics::MetricCollector,50,50
+[section .rodata],opentelemetry::v1::sdk::trace::RandomIdGenerator,50,50
+[section .rodata],opentelemetry::v1::sdk::logs::ReadableLogRecord,49,49
+[section .rodata],opentelemetry::v1::sdk::trace::AlwaysOnSampler,48,48
+[section .rodata],std::__future_base::_State_baseV2,48,48
+[section .rodata],opentelemetry::v1::nostd::bad_variant_access,47,47
+[section .rodata],opentelemetry::v1::sdk::logs::MultiRecordable,47,47
+[section .rodata],opentelemetry::v1::sdk::metrics::MetricReader,47,47
+[section .rodata],opentelemetry::v1::sdk::trace::TracerProvider,47,47
+[section .rodata],std::_Mutex_base<>,47,47
+[section .rodata],std::__future_base::_State_baseV2::_Setter<>,47,47
+[section .rodata],opentelemetry::v1::common::KeyValueIterable,46,46
+[section .rodata],opentelemetry::v1::sdk::logs::LoggerProvider,46,46
+[section .rodata],opentelemetry::v1::sdk::metrics::Aggregation,46,46
+[section .rodata],opentelemetry::v1::sdk::metrics::LongCounter,46,46
+[section .rodata],opentelemetry::v1::sdk::metrics::Synchronous,46,46
+[section .rodata],opentelemetry::v1::sdk::trace::SpanProcessor,46,46
+[section .rodata],opentelemetry::v1::sdk::trace::TracerContext,46,46
+[section .rodata],opentelemetry::v1::sdk::trace::SpanExporter,45,45
+[section .rodata],opentelemetry::v1::metrics::MeterProvider,44,44
+[section .rodata],opentelemetry::v1::sdk::trace::IdGenerator,44,44
+[section .rodata],opentelemetry::v1::sdk::trace::Recordable,43,43
+[section .rodata],opentelemetry::v1::trace::TracerProvider,43,43
+[section .rodata],opentelemetry::v1::logs::LoggerProvider,42,42
+[section .rodata],opentelemetry::v1::sdk::logs::Recordable,42,42
+[section .rodata],opentelemetry::v1::trace::DefaultSpan,40,40
+[section .rodata],bench::(anonymous namespace)::OtelCppBackend,39,39
+[section .rodata],opentelemetry::v1::sdk::metrics::Meter,39,39
+[section .rodata],opentelemetry::v1::sdk::trace::Sampler,39,39
+[section .rodata],opentelemetry::v1::sdk::metrics::View,38,38
+[section .rodata],opentelemetry::v1::sdk::trace::Tracer,38,38
+[section .rodata],opentelemetry::v1::sdk::logs::Logger,37,37
+[section .rodata],opentelemetry::v1::logs::LogRecord,36,36
+[section .rodata],opentelemetry::v1::sdk::trace::Span,36,36
+[section .rodata],opentelemetry::v1::trace::NoopSpan,36,36
+[section .rodata],opentelemetry::v1::trace::kSpanKey,36,36
+[section .rodata],opentelemetry::v1::metrics::Meter,35,35
+[section .rodata],opentelemetry::v1::trace::Tracer,34,34
+[section .rodata],opentelemetry::v1::logs::Logger,33,33
+[section .rodata],opentelemetry::v1::trace::Span,32,32
+[section .rodata],std::__future_base::_Result<>,31,31
+[section .rodata],std::_Sp_make_shared_tag,28,28
+[section .rodata],bench::IBackend,18,18
+[section .rodata],opentelemetry::v1::trace::kIsRootSpanKey,16,16
+[section .rodata],_IO_stdin_used,4,4
+/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,absl::otel_v1::variant_internal::VisitIndicesSwitch<>::Run<>(),10638,10638
+/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,opentelemetry::v1::sdk::trace::TracerProvider::GetTracer(),7214,7214
+/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,opentelemetry::v1::sdk::trace::TracerProvider::TracerProvider(),3238,3238
+/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,std::__detail::_Hashtable_alloc<>::_M_allocate_node<>(),2028,2028
+/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,opentelemetry::v1::sdk::trace::TracerContext::~TracerContext(),1136,1136
+/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,opentelemetry::v1::sdk::trace::TracerProvider::~TracerProvider(),968,968
+/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,opentelemetry::v1::sdk::trace::Tracer::~Tracer(),888,888
+/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,std::__detail::_Map_base<>::operator[](),828,828
+/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,opentelemetry::v1::nostd::function_ref<>::BindTo<>()::{lambda()#1}::_FUN(),812,812
+/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,opentelemetry::v1::nostd::shared_ptr<>::shared_ptr_wrapper::~shared_ptr_wrapper(),656,656
+/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,std::_Sp_counted_ptr_inplace<>::_M_dispose(),644,644
+/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,std::vector<>::_M_realloc_insert<>(),552,552
+/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,std::_Sp_counted_ptr<>::_M_dispose(),472,472
+/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,std::vector<>::vector(),456,456
+/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,std::_Hashtable<>::clear(),452,452
+/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,std::_Hashtable<>::_M_rehash(),392,392
+/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,std::_Sp_counted_deleter<>::_M_dispose(),280,280
+/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,std::_Sp_counted_base<>::_M_release(),237,237
+/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,opentelemetry::v1::nostd::shared_ptr<>::shared_ptr_wrapper::Reset(),221,221
+/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,[section .text],179,179
+/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,opentelemetry::v1::nostd::bad_variant_access::~bad_variant_access(),164,164
+/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,std::_Sp_counted_ptr_inplace<>::_M_get_deleter(),144,144
+/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,opentelemetry::v1::sdk::trace::TracerProvider::AddProcessor(),140,140
+/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,std::_Bvector_base<>::_M_deallocate(),124,124
+/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,std::_Sp_counted_deleter<>::_M_get_deleter(),108,108
+/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,[ELF Program Headers],93,93
+/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,opentelemetry::v1::nostd::shared_ptr<>::shared_ptr_wrapper::CopyTo(),92,92
+/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,std::_Sp_counted_deleter<>::~_Sp_counted_deleter(),88,88
+/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,std::_Sp_counted_ptr<>::~_Sp_counted_ptr(),88,88
+/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,std::_Sp_counted_ptr_inplace<>::~_Sp_counted_ptr_inplace(),88,88
+/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,opentelemetry::v1::nostd::shared_ptr<>::shared_ptr_wrapper::MoveTo(),76,76
+/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,std::_Hashtable<>::_M_deallocate_buckets(),76,76
+/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,std::_Sp_make_shared_tag::_S_ti()::__tag,59,59
+/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,opentelemetry::v1::nostd::bad_variant_access::what(),44,44
+/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,opentelemetry::v1::nostd::shared_ptr<>::shared_ptr_wrapper::Get(),44,44
+/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,opentelemetry::v1::sdk::trace::TracerProvider::ForceFlush(),44,44
+/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,opentelemetry::v1::sdk::trace::TracerProvider::GetResource(),44,44
+/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,opentelemetry::v1::sdk::trace::TracerProvider::Shutdown(),44,44
+/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,std::_Sp_counted_deleter<>::_M_destroy(),44,44
+/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,std::_Sp_counted_ptr<>::_M_destroy(),44,44
+/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,std::_Sp_counted_ptr<>::_M_get_deleter(),44,44
+/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,std::_Sp_counted_ptr_inplace<>::_M_destroy(),44,44
+/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,[section .eh_frame],40,40
+/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,opentelemetry::v1::context::ThreadLocalContextStorage::GetStack()::stack_,32,32
+/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,opentelemetry::v1::sdk::common::(anonymous namespace)::TlsRandomNumberGenerator::engine_,16,16
+/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,opentelemetry::v1::sdk::common::Random::GetRandomNumberGenerator()::random_number_generator,16,16
+/src/opentelemetry-cpp/sdk/src/metrics/meter_provider.cc,opentelemetry::v1::sdk::metrics::MeterProvider::GetMeter(),5152,5152
+/src/opentelemetry-cpp/sdk/src/metrics/meter_provider.cc,opentelemetry::v1::sdk::metrics::MeterProvider::MeterProvider(),3352,3352
+/src/opentelemetry-cpp/sdk/src/metrics/meter_provider.cc,std::_Rb_tree<>::_M_erase(),3068,3068
+/src/opentelemetry-cpp/sdk/src/metrics/meter_provider.cc,[section .dynsym],2314,2314
+/src/opentelemetry-cpp/sdk/src/metrics/meter_provider.cc,std::__detail::_Hashtable_alloc<>::_M_allocate_node<>(),2028,2028
+/src/opentelemetry-cpp/sdk/src/metrics/meter_provider.cc,absl::otel_v1::variant_internal::VisitIndicesSwitch<>::Run<>(),1850,1850
+/src/opentelemetry-cpp/sdk/src/metrics/meter_provider.cc,opentelemetry::v1::sdk::common::OrderedAttributeMap::OrderedAttributeMap(),1756,1756
+/src/opentelemetry-cpp/sdk/src/metrics/meter_provider.cc,opentelemetry::v1::sdk::metrics::Meter::~Meter(),1496,1496
+/src/opentelemetry-cpp/sdk/src/metrics/meter_provider.cc,std::_Sp_counted_ptr_inplace<>::_M_dispose(),1264,1264
+/src/opentelemetry-cpp/sdk/src/metrics/meter_provider.cc,std::_Sp_counted_deleter<>::_M_dispose(),1232,1232
+/src/opentelemetry-cpp/sdk/src/metrics/meter_provider.cc,std::_Sp_counted_ptr<>::_M_dispose(),764,764
+/src/opentelemetry-cpp/sdk/src/metrics/meter_provider.cc,std::_Rb_tree<>::_M_get_insert_hint_unique_pos(),696,696
+/src/opentelemetry-cpp/sdk/src/metrics/meter_provider.cc,opentelemetry::v1::sdk::metrics::View::~View(),680,680
+/src/opentelemetry-cpp/sdk/src/metrics/meter_provider.cc,opentelemetry::v1::sdk::metrics::MeterProvider::AddView(),608,608
+/src/opentelemetry-cpp/sdk/src/metrics/meter_provider.cc,_GLOBAL__sub_I__ZN13opentelemetry2v13sdk7metrics13MeterProviderC2ESt10unique_ptrINS2_12MeterContextESt14default_deleteIS5_EE,556,556
+/src/opentelemetry-cpp/sdk/src/metrics/meter_provider.cc,opentelemetry::v1::sdk::metrics::MeterProvider::~MeterProvider(),488,488
+/src/opentelemetry-cpp/sdk/src/metrics/meter_provider.cc,opentelemetry::v1::nostd::shared_ptr<>::shared_ptr_wrapper::~shared_ptr_wrapper(),440,440
+/src/opentelemetry-cpp/sdk/src/metrics/meter_provider.cc,std::_Rb_tree<>::_M_get_insert_unique_pos(),436,436
+/src/opentelemetry-cpp/sdk/src/metrics/meter_provider.cc,opentelemetry::v1::sdk::metrics::MeterProvider::AddMetricReader(),252,252
+/src/opentelemetry-cpp/sdk/src/metrics/meter_provider.cc,opentelemetry::v1::sdk::metrics::View::GetDescription[abi:cxx11](),244,244
+/src/opentelemetry-cpp/sdk/src/metrics/meter_provider.cc,opentelemetry::v1::sdk::metrics::View::GetName[abi:cxx11](),244,244
+/src/opentelemetry-cpp/sdk/src/metrics/meter_provider.cc,opentelemetry::v1::nostd::shared_ptr<>::shared_ptr_wrapper::Reset(),216,216
+/src/opentelemetry-cpp/sdk/src/metrics/meter_provider.cc,std::_Sp_counted_ptr_inplace<>::_M_get_deleter(),144,144
+/src/opentelemetry-cpp/sdk/src/metrics/meter_provider.cc,std::_Sp_counted_deleter<>::_M_get_deleter(),108,108
+/src/opentelemetry-cpp/sdk/src/metrics/meter_provider.cc,opentelemetry::v1::nostd::shared_ptr<>::shared_ptr_wrapper::CopyTo(),92,92
+/src/opentelemetry-cpp/sdk/src/metrics/meter_provider.cc,std::_Sp_counted_deleter<>::~_Sp_counted_deleter(),88,88
+/src/opentelemetry-cpp/sdk/src/metrics/meter_provider.cc,std::_Sp_counted_ptr<>::~_Sp_counted_ptr(),88,88
+/src/opentelemetry-cpp/sdk/src/metrics/meter_provider.cc,std::_Sp_counted_ptr_inplace<>::~_Sp_counted_ptr_inplace(),88,88
+/src/opentelemetry-cpp/sdk/src/metrics/meter_provider.cc,opentelemetry::v1::nostd::throw_bad_variant_access(),86,86
+/src/opentelemetry-cpp/sdk/src/metrics/meter_provider.cc,_GLOBAL__sub_I__ZN13opentelemetry2v13sdk7metrics13MeterProviderC2ESt10unique_ptrINS2_12MeterContextESt14default_deleteIS5_EE.cold,84,84
+/src/opentelemetry-cpp/sdk/src/metrics/meter_provider.cc,opentelemetry::v1::nostd::shared_ptr<>::shared_ptr_wrapper::MoveTo(),76,76
+/src/opentelemetry-cpp/sdk/src/metrics/meter_provider.cc,opentelemetry::v1::nostd::shared_ptr<>::shared_ptr_wrapper::Get(),44,44
+/src/opentelemetry-cpp/sdk/src/metrics/meter_provider.cc,opentelemetry::v1::sdk::metrics::MeterProvider::ForceFlush(),44,44
+/src/opentelemetry-cpp/sdk/src/metrics/meter_provider.cc,opentelemetry::v1::sdk::metrics::MeterProvider::GetResource(),44,44
+/src/opentelemetry-cpp/sdk/src/metrics/meter_provider.cc,opentelemetry::v1::sdk::metrics::MeterProvider::Shutdown(),44,44
+/src/opentelemetry-cpp/sdk/src/metrics/meter_provider.cc,opentelemetry::v1::sdk::metrics::View::GetAggregationConfig(),44,44
+/src/opentelemetry-cpp/sdk/src/metrics/meter_provider.cc,opentelemetry::v1::sdk::metrics::View::GetAggregationType(),44,44
+/src/opentelemetry-cpp/sdk/src/metrics/meter_provider.cc,opentelemetry::v1::sdk::metrics::View::GetAttributesProcessor(),44,44
+/src/opentelemetry-cpp/sdk/src/metrics/meter_provider.cc,std::_Sp_counted_deleter<>::_M_destroy(),44,44
+/src/opentelemetry-cpp/sdk/src/metrics/meter_provider.cc,std::_Sp_counted_ptr<>::_M_destroy(),44,44
+/src/opentelemetry-cpp/sdk/src/metrics/meter_provider.cc,std::_Sp_counted_ptr<>::_M_get_deleter(),44,44
+/src/opentelemetry-cpp/sdk/src/metrics/meter_provider.cc,std::_Sp_counted_ptr_inplace<>::_M_destroy(),44,44
+/src/opentelemetry-cpp/sdk/src/metrics/meter_provider.cc,opentelemetry::v1::sdk::metrics::kAttributesLimitOverflowKey,32,0
+/src/opentelemetry-cpp/sdk/src/metrics/state/sync_metric_storage.cc,absl::otel_v1::variant_internal::VisitIndicesSwitch<>::Run<>(),7494,7494
+/src/opentelemetry-cpp/sdk/src/metrics/state/sync_metric_storage.cc,std::_Rb_tree<>::_M_copy<>(),4232,4232
+/src/opentelemetry-cpp/sdk/src/metrics/state/sync_metric_storage.cc,opentelemetry::v1::sdk::metrics::SyncMetricStorage::RecordDouble(),3912,3912
+/src/opentelemetry-cpp/sdk/src/metrics/state/sync_metric_storage.cc,opentelemetry::v1::sdk::metrics::SyncMetricStorage::RecordLong(),3896,3896
+/src/opentelemetry-cpp/sdk/src/metrics/state/sync_metric_storage.cc,opentelemetry::v1::sdk::metrics::AttributesHashMap::GetOrSetDefault(),2288,2288
+/src/opentelemetry-cpp/sdk/src/metrics/state/sync_metric_storage.cc,opentelemetry::v1::sdk::metrics::AttributesHashMap::GetOrSetOveflowAttributes(),2200,2200
+/src/opentelemetry-cpp/sdk/src/metrics/state/sync_metric_storage.cc,_GLOBAL__sub_I__ZN13opentelemetry2v13sdk7metrics17SyncMetricStorage7CollectEPNS2_15CollectorHandleENS0_5nostd4spanISt10shared_ptrIS4_ELm18446744073709551615EEENS0_6common15SystemTimestampESC_NS6_12function_refIFbNS2_10MetricDataEEEE,1804,1804
+/src/opentelemetry-cpp/sdk/src/metrics/state/sync_metric_storage.cc,opentelemetry::v1::nostd::function_ref<>::BindTo<>()::{lambda()#1}::_FUN(),1108,1108
+/src/opentelemetry-cpp/sdk/src/metrics/state/sync_metric_storage.cc,opentelemetry::v1::sdk::metrics::SyncMetricStorage::Collect(),1024,1024
+/src/opentelemetry-cpp/sdk/src/metrics/state/sync_metric_storage.cc,[section .dynsym],487,487
+/src/opentelemetry-cpp/sdk/src/metrics/state/sync_metric_storage.cc,std::_Rb_tree<>::_M_erase(),448,448
+/src/opentelemetry-cpp/sdk/src/metrics/state/sync_metric_storage.cc,std::vector<>::~vector(),304,304
+/src/opentelemetry-cpp/sdk/src/metrics/state/sync_metric_storage.cc,std::_Hashtable<>::find(),172,172
+/src/opentelemetry-cpp/sdk/src/metrics/state/sync_metric_storage.cc,_GLOBAL__sub_I__ZN13opentelemetry2v13sdk7metrics17SyncMetricStorage7CollectEPNS2_15CollectorHandleENS0_5nostd4spanISt10shared_ptrIS4_ELm18446744073709551615EEENS0_6common15SystemTimestampESC_NS6_12function_refIFbNS2_10MetricDataEEEE.cold,116,116
+/src/opentelemetry-cpp/sdk/src/metrics/state/sync_metric_storage.cc,opentelemetry::v1::sdk::metrics::kAttributesLimitOverflowKey,32,0
+/src/opentelemetry-cpp/sdk/src/metrics/state/sync_metric_storage.cc,opentelemetry::v1::sdk::metrics::SyncMetricStorage::RecordDouble()::hash,16,0
+/src/opentelemetry-cpp/sdk/src/metrics/state/sync_metric_storage.cc,opentelemetry::v1::sdk::metrics::SyncMetricStorage::RecordLong()::hash,16,0
+/src/opentelemetry-cpp/sdk/src/metrics/state/sync_metric_storage.cc,opentelemetry::v1::sdk::metrics::kOverflowAttributesHash,8,0
+/src/opentelemetry-cpp/sdk/src/logs/logger_provider.cc,absl::otel_v1::variant_internal::call_with_indices<>(),13285,13285
+/src/opentelemetry-cpp/sdk/src/logs/logger_provider.cc,opentelemetry::v1::sdk::logs::LoggerProvider::LoggerProvider(),4562,4562
+/src/opentelemetry-cpp/sdk/src/logs/logger_provider.cc,opentelemetry::v1::sdk::logs::LoggerProvider::GetLogger(),3028,3028
+/src/opentelemetry-cpp/sdk/src/logs/logger_provider.cc,opentelemetry::v1::sdk::logs::Logger::~Logger(),1624,1624
+/src/opentelemetry-cpp/sdk/src/logs/logger_provider.cc,opentelemetry::v1::nostd::function_ref<>::BindTo<>()::{lambda()#1}::_FUN(),1076,1076
+/src/opentelemetry-cpp/sdk/src/logs/logger_provider.cc,opentelemetry::v1::sdk::logs::LoggerProvider::~LoggerProvider(),968,968
+/src/opentelemetry-cpp/sdk/src/logs/logger_provider.cc,std::_Sp_counted_deleter<>::_M_dispose(),572,572
+/src/opentelemetry-cpp/sdk/src/logs/logger_provider.cc,std::vector<>::_M_realloc_insert<>(),536,536
+/src/opentelemetry-cpp/sdk/src/logs/logger_provider.cc,std::_Sp_counted_ptr_inplace<>::_M_dispose(),524,524
+/src/opentelemetry-cpp/sdk/src/logs/logger_provider.cc,std::_Sp_counted_ptr<>::_M_dispose(),456,456
+/src/opentelemetry-cpp/sdk/src/logs/logger_provider.cc,opentelemetry::v1::nostd::shared_ptr<>::shared_ptr_wrapper::~shared_ptr_wrapper(),221,221
+/src/opentelemetry-cpp/sdk/src/logs/logger_provider.cc,[section .text],179,179
+/src/opentelemetry-cpp/sdk/src/logs/logger_provider.cc,absl::otel_v1::variant_internal::VisitIndicesFallback<>::Run<>(),156,156
+/src/opentelemetry-cpp/sdk/src/logs/logger_provider.cc,std::_Sp_counted_ptr_inplace<>::_M_get_deleter(),144,144
+/src/opentelemetry-cpp/sdk/src/logs/logger_provider.cc,opentelemetry::v1::sdk::logs::LoggerProvider::AddProcessor(),140,140
+/src/opentelemetry-cpp/sdk/src/logs/logger_provider.cc,std::_Sp_counted_deleter<>::_M_get_deleter(),108,108
+/src/opentelemetry-cpp/sdk/src/logs/logger_provider.cc,std::_Sp_counted_deleter<>::~_Sp_counted_deleter(),88,88
+/src/opentelemetry-cpp/sdk/src/logs/logger_provider.cc,std::_Sp_counted_ptr<>::~_Sp_counted_ptr(),88,88
+/src/opentelemetry-cpp/sdk/src/logs/logger_provider.cc,std::_Sp_counted_ptr_inplace<>::~_Sp_counted_ptr_inplace(),88,88
+/src/opentelemetry-cpp/sdk/src/logs/logger_provider.cc,_GLOBAL__sub_I__ZN13opentelemetry2v13sdk4logs14LoggerProviderC2EOSt10unique_ptrINS2_18LogRecordProcessorESt14default_deleteIS5_EERKNS1_8resource8ResourceE,44,44
+/src/opentelemetry-cpp/sdk/src/logs/logger_provider.cc,opentelemetry::v1::sdk::logs::LoggerProvider::ForceFlush(),44,44
+/src/opentelemetry-cpp/sdk/src/logs/logger_provider.cc,opentelemetry::v1::sdk::logs::LoggerProvider::GetResource(),44,44
+/src/opentelemetry-cpp/sdk/src/logs/logger_provider.cc,opentelemetry::v1::sdk::logs::LoggerProvider::Shutdown(),44,44
+/src/opentelemetry-cpp/sdk/src/logs/logger_provider.cc,std::_Sp_counted_deleter<>::_M_destroy(),44,44
+/src/opentelemetry-cpp/sdk/src/logs/logger_provider.cc,std::_Sp_counted_ptr<>::_M_destroy(),44,44
+/src/opentelemetry-cpp/sdk/src/logs/logger_provider.cc,std::_Sp_counted_ptr<>::_M_get_deleter(),44,44
+/src/opentelemetry-cpp/sdk/src/logs/logger_provider.cc,std::_Sp_counted_ptr_inplace<>::_M_destroy(),44,44
+/src/opentelemetry-cpp/sdk/src/logs/logger_provider.cc,[section .eh_frame],40,40
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,opentelemetry::v1::sdk::trace::Tracer::StartSpan(),11348,11348
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,opentelemetry::v1::trace::Tracer::GetCurrentSpan(),3836,3836
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,opentelemetry::v1::nostd::shared_ptr<>::shared_ptr_wrapper::~shared_ptr_wrapper(),1980,1980
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,[section .dynsym],976,976
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,std::_Rb_tree<>::_M_erase(),952,952
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,opentelemetry::v1::trace::NoopSpan::~NoopSpan(),928,928
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,[ELF Program Headers],691,691
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,opentelemetry::v1::sdk::trace::Tracer::Tracer(),652,652
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,opentelemetry::v1::nostd::shared_ptr<>::shared_ptr_wrapper::Reset(),648,648
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,std::_Sp_counted_deleter<>::_M_dispose(),604,604
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,[section .text],599,599
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,opentelemetry::v1::trace::DefaultSpan::~DefaultSpan(),532,532
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,opentelemetry::v1::nostd::shared_ptr<>::~shared_ptr(),520,520
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,[section .gnu.hash],440,440
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,opentelemetry::v1::context::ThreadLocalContextStorage::Stack::~Stack(),428,428
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,opentelemetry::v1::nostd::shared_ptr<>::shared_ptr_wrapper::CopyTo(),276,276
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,opentelemetry::v1::nostd::shared_ptr<>::shared_ptr_wrapper::MoveTo(),228,228
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,opentelemetry::v1::trace::DefaultSpan::GetContext(),216,216
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,opentelemetry::v1::trace::NoopSpan::GetContext(),216,216
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,[section .eh_frame],180,180
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,opentelemetry::v1::trace::DefaultSpan::AddEvent(),176,176
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,opentelemetry::v1::trace::NoopSpan::AddEvent(),176,176
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,std::_Sp_counted_ptr<>::~_Sp_counted_ptr(),176,176
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,opentelemetry::v1::nostd::unique_ptr<>::delete_ptr(),166,166
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,opentelemetry::v1::nostd::shared_ptr<>::shared_ptr_wrapper::Get(),133,133
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,std::_Sp_counted_deleter<>::_M_get_deleter(),108,108
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,std::_Sp_counted_deleter<>::~_Sp_counted_deleter(),94,94
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,opentelemetry::v1::sdk::trace::Tracer::CloseWithMicroseconds(),60,60
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,std::_Sp_counted_ptr<>::_M_dispose(),60,60
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,std::_Sp_counted_ptr<>::_M_destroy(),50,50
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,opentelemetry::v1::context::ThreadLocalContextStorage::~ThreadLocalContextStorage(),44,44
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,opentelemetry::v1::trace::DefaultSpan::End(),44,44
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,opentelemetry::v1::trace::DefaultSpan::IsRecording(),44,44
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,opentelemetry::v1::trace::DefaultSpan::SetAttribute(),44,44
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,opentelemetry::v1::trace::DefaultSpan::SetStatus(),44,44
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,opentelemetry::v1::trace::DefaultSpan::UpdateName(),44,44
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,opentelemetry::v1::trace::NoopSpan::End(),44,44
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,opentelemetry::v1::trace::NoopSpan::IsRecording(),44,44
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,opentelemetry::v1::trace::NoopSpan::SetAttribute(),44,44
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,opentelemetry::v1::trace::NoopSpan::SetStatus(),44,44
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,opentelemetry::v1::trace::NoopSpan::UpdateName(),44,44
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,std::_Sp_counted_deleter<>::_M_destroy(),44,44
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,std::_Sp_counted_ptr<>::_M_get_deleter(),44,44
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,opentelemetry::v1::trace::TraceState::GetDefault()::ts,40,0
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,[section .note.gnu.build-id],36,36
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,__abi_tag,36,36
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,[section .note.gnu.property],32,32
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,opentelemetry::v1::context::RuntimeContext::GetStorage()::context,32,0
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,[section .interp],28,28
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,[LOAD #2 [R]],4,4
+/src/emit-app/src/backend_otelcpp.cpp,bench::(anonymous namespace)::OtelCppBackend::Init(),3932,3932
+/src/emit-app/src/backend_otelcpp.cpp,opentelemetry::v1::nostd::shared_ptr<>::shared_ptr_wrapper::~shared_ptr_wrapper(),2772,2772
+/src/emit-app/src/backend_otelcpp.cpp,opentelemetry::v1::nostd::shared_ptr<>::shared_ptr_wrapper::Reset(),1428,1428
+/src/emit-app/src/backend_otelcpp.cpp,bench::(anonymous namespace)::OtelCppBackend::EmitRequest(),1228,1228
+/src/emit-app/src/backend_otelcpp.cpp,std::_Construct<>(),1224,1224
+/src/emit-app/src/backend_otelcpp.cpp,opentelemetry::v1::context::ThreadLocalContextStorage::Detach(),1048,1048
+/src/emit-app/src/backend_otelcpp.cpp,absl::otel_v1::variant_internal::VisitIndicesSwitch<>::Run<>(),944,944
+/src/emit-app/src/backend_otelcpp.cpp,std::vector<>::_M_default_append(),776,776
+/src/emit-app/src/backend_otelcpp.cpp,opentelemetry::v1::nostd::shared_ptr<>::shared_ptr_wrapper::CopyTo(),728,728
+/src/emit-app/src/backend_otelcpp.cpp,bench::(anonymous namespace)::OtelCppBackend::~OtelCppBackend(),668,668
+/src/emit-app/src/backend_otelcpp.cpp,opentelemetry::v1::nostd::shared_ptr<>::shared_ptr_wrapper::MoveTo(),616,616
+/src/emit-app/src/backend_otelcpp.cpp,opentelemetry::v1::context::Context::DataList::DataList(),604,604
+/src/emit-app/src/backend_otelcpp.cpp,std::_Sp_counted_ptr<>::_M_dispose(),604,604
+/src/emit-app/src/backend_otelcpp.cpp,bench::(anonymous namespace)::OtelCppBackend::EmitSpan(),588,588
+/src/emit-app/src/backend_otelcpp.cpp,opentelemetry::v1::nostd::shared_ptr<>::shared_ptr(),588,588
+/src/emit-app/src/backend_otelcpp.cpp,opentelemetry::v1::trace::SpanContextKeyValueIterableView<>::do_callback(),492,492
+/src/emit-app/src/backend_otelcpp.cpp,std::__shared_ptr<>::__shared_ptr<>(),476,476
+/src/emit-app/src/backend_otelcpp.cpp,opentelemetry::v1::context::ThreadLocalContextStorage::Stack::Resize(),428,428
+/src/emit-app/src/backend_otelcpp.cpp,opentelemetry::v1::nostd::shared_ptr<>::shared_ptr_wrapper::Get(),392,392
+/src/emit-app/src/backend_otelcpp.cpp,std::_Sp_counted_ptr_inplace<>::_M_get_deleter(),372,372
+/src/emit-app/src/backend_otelcpp.cpp,opentelemetry::v1::context::Context::SetValue(),364,364
+/src/emit-app/src/backend_otelcpp.cpp,std::__shared_count<>::__shared_count<>(),360,360
+/src/emit-app/src/backend_otelcpp.cpp,opentelemetry::v1::context::ThreadLocalContextStorage::Attach(),328,328
+/src/emit-app/src/backend_otelcpp.cpp,opentelemetry::v1::trace::TraceState::GetDefault(),324,324
+/src/emit-app/src/backend_otelcpp.cpp,opentelemetry::v1::trace::Scope::Scope(),304,304
+/src/emit-app/src/backend_otelcpp.cpp,std::_Sp_counted_ptr<>::_M_destroy(),280,280
+/src/emit-app/src/backend_otelcpp.cpp,std::_Sp_counted_ptr<>::_M_get_deleter(),280,280
+/src/emit-app/src/backend_otelcpp.cpp,std::_Sp_counted_ptr<>::~_Sp_counted_ptr(),280,280
+/src/emit-app/src/backend_otelcpp.cpp,opentelemetry::v1::context::ThreadLocalContextStorage::GetCurrent(),256,256
+/src/emit-app/src/backend_otelcpp.cpp,std::default_delete<>::operator()(),256,256
+/src/emit-app/src/backend_otelcpp.cpp,bench::CreateBackend(),248,248
+/src/emit-app/src/backend_otelcpp.cpp,opentelemetry::v1::trace::SpanContextKeyValueIterableView<>::ForEachKeyValue(),244,244
+/src/emit-app/src/backend_otelcpp.cpp,std::_Hashtable<>::~_Hashtable(),232,232
+/src/emit-app/src/backend_otelcpp.cpp,std::_Sp_counted_base<>::_M_release_last_use_cold(),211,211
+/src/emit-app/src/backend_otelcpp.cpp,bench::(anonymous namespace)::OtelCppBackend::EmitLog(),208,208
+/src/emit-app/src/backend_otelcpp.cpp,bench::(anonymous namespace)::OtelCppBackend::EmitRecord(),208,208
+/src/emit-app/src/backend_otelcpp.cpp,opentelemetry::v1::trace::TraceState::~TraceState(),208,208
+/src/emit-app/src/backend_otelcpp.cpp,bench::(anonymous namespace)::OtelCppBackend::Shutdown(),196,196
+/src/emit-app/src/backend_otelcpp.cpp,opentelemetry::v1::sdk::trace::AlwaysOnSampler::ShouldSample(),196,196
+/src/emit-app/src/backend_otelcpp.cpp,opentelemetry::v1::context::RuntimeContext::GetRuntimeContextStorage(),192,192
+/src/emit-app/src/backend_otelcpp.cpp,opentelemetry::v1::common::KeyValueIterableView<>::ForEachKeyValue(),184,184
+/src/emit-app/src/backend_otelcpp.cpp,std::__shared_count<>::~__shared_count(),184,184
+/src/emit-app/src/backend_otelcpp.cpp,std::unique_ptr<>::~unique_ptr(),180,180
+/src/emit-app/src/backend_otelcpp.cpp,std::_Sp_counted_ptr_inplace<>::_M_destroy(),168,168
+/src/emit-app/src/backend_otelcpp.cpp,std::_Sp_counted_ptr_inplace<>::_M_dispose(),168,168
+/src/emit-app/src/backend_otelcpp.cpp,std::_Sp_counted_ptr_inplace<>::~_Sp_counted_ptr_inplace(),168,168
+/src/emit-app/src/backend_otelcpp.cpp,opentelemetry::v1::context::ThreadLocalContextStorage::Stack::~Stack(),152,152
+/src/emit-app/src/backend_otelcpp.cpp,bench::(anonymous namespace)::OtelCppBackend::ForceFlush(),140,140
+/src/emit-app/src/backend_otelcpp.cpp,std::_Sp_counted_deleter<>::_M_get_deleter(),124,124
+/src/emit-app/src/backend_otelcpp.cpp,opentelemetry::v1::context::Context::DataList::~DataList(),120,120
+/src/emit-app/src/backend_otelcpp.cpp,opentelemetry::v1::nostd::shared_ptr<>::~shared_ptr(),112,112
+/src/emit-app/src/backend_otelcpp.cpp,opentelemetry::v1::context::GetDefaultStorage(),96,96
+/src/emit-app/src/backend_otelcpp.cpp,opentelemetry::v1::sdk::resource::Resource::~Resource(),92,92
+/src/emit-app/src/backend_otelcpp.cpp,bench::(anonymous namespace)::OtelCppBackend::Stats(),88,88
+/src/emit-app/src/backend_otelcpp.cpp,std::_Sp_counted_deleter<>::_M_dispose(),80,80
+/src/emit-app/src/backend_otelcpp.cpp,opentelemetry::v1::sdk::trace::AlwaysOnSampler::GetDescription(),72,72
+/src/emit-app/src/backend_otelcpp.cpp,bench::IBackend::EmitLeafPayload(),56,56
+/src/emit-app/src/backend_otelcpp.cpp,opentelemetry::v1::common::KeyValueIterable::~KeyValueIterable(),56,56
+/src/emit-app/src/backend_otelcpp.cpp,opentelemetry::v1::common::KeyValueIterableView<>::size(),56,56
+/src/emit-app/src/backend_otelcpp.cpp,opentelemetry::v1::common::KeyValueIterableView<>::~KeyValueIterableView(),56,56
+/src/emit-app/src/backend_otelcpp.cpp,opentelemetry::v1::common::NoopKeyValueIterable::ForEachKeyValue(),56,56
+/src/emit-app/src/backend_otelcpp.cpp,opentelemetry::v1::common::NoopKeyValueIterable::size(),56,56
+/src/emit-app/src/backend_otelcpp.cpp,opentelemetry::v1::common::NoopKeyValueIterable::~NoopKeyValueIterable(),56,56
+/src/emit-app/src/backend_otelcpp.cpp,opentelemetry::v1::context::RuntimeContextStorage::~RuntimeContextStorage(),56,56
+/src/emit-app/src/backend_otelcpp.cpp,opentelemetry::v1::context::ThreadLocalContextStorage::~ThreadLocalContextStorage(),56,56
+/src/emit-app/src/backend_otelcpp.cpp,opentelemetry::v1::sdk::trace::AlwaysOnSampler::~AlwaysOnSampler(),56,56
+/src/emit-app/src/backend_otelcpp.cpp,opentelemetry::v1::sdk::trace::Sampler::~Sampler(),56,56
+/src/emit-app/src/backend_otelcpp.cpp,opentelemetry::v1::trace::SpanContextKeyValueIterable::~SpanContextKeyValueIterable(),56,56
+/src/emit-app/src/backend_otelcpp.cpp,opentelemetry::v1::trace::SpanContextKeyValueIterableView<>::size(),56,56
+/src/emit-app/src/backend_otelcpp.cpp,opentelemetry::v1::trace::SpanContextKeyValueIterableView<>::~SpanContextKeyValueIterableView(),56,56
+/src/emit-app/src/backend_otelcpp.cpp,std::_Sp_counted_base<>::~_Sp_counted_base(),56,56
+/src/emit-app/src/backend_otelcpp.cpp,std::_Sp_counted_deleter<>::_M_destroy(),56,56
+/src/emit-app/src/backend_otelcpp.cpp,std::_Sp_counted_deleter<>::~_Sp_counted_deleter(),56,56
+/src/opentelemetry-cpp/sdk/src/trace/tracer_context.cc,opentelemetry::v1::sdk::trace::MultiSpanProcessor::~MultiSpanProcessor(),2984,2984
+/src/opentelemetry-cpp/sdk/src/trace/tracer_context.cc,opentelemetry::v1::sdk::trace::MultiSpanProcessor::OnStart(),2552,2552
+/src/opentelemetry-cpp/sdk/src/trace/tracer_context.cc,std::__detail::_Hashtable_alloc<>::_M_allocate_node<>(),2172,2172
+/src/opentelemetry-cpp/sdk/src/trace/tracer_context.cc,opentelemetry::v1::sdk::trace::MultiSpanProcessor::OnEnd(),2144,2144
+/src/opentelemetry-cpp/sdk/src/trace/tracer_context.cc,opentelemetry::v1::sdk::trace::MultiSpanProcessor::MakeRecordable(),1196,1196
+/src/opentelemetry-cpp/sdk/src/trace/tracer_context.cc,opentelemetry::v1::sdk::trace::MultiRecordable::AddEvent(),1064,1064
+/src/opentelemetry-cpp/sdk/src/trace/tracer_context.cc,opentelemetry::v1::sdk::trace::MultiRecordable::SetAttribute(),1000,1000
+/src/opentelemetry-cpp/sdk/src/trace/tracer_context.cc,opentelemetry::v1::sdk::trace::MultiRecordable::SetStatus(),984,984
+/src/opentelemetry-cpp/sdk/src/trace/tracer_context.cc,opentelemetry::v1::sdk::trace::TracerContext::TracerContext(),974,974
+/src/opentelemetry-cpp/sdk/src/trace/tracer_context.cc,opentelemetry::v1::sdk::trace::MultiRecordable::AddLink(),936,936
+/src/opentelemetry-cpp/sdk/src/trace/tracer_context.cc,opentelemetry::v1::sdk::trace::MultiRecordable::SetIdentity(),936,936
+/src/opentelemetry-cpp/sdk/src/trace/tracer_context.cc,opentelemetry::v1::sdk::trace::MultiRecordable::SetName(),936,936
+/src/opentelemetry-cpp/sdk/src/trace/tracer_context.cc,opentelemetry::v1::sdk::trace::MultiRecordable::SetDuration(),872,872
+/src/opentelemetry-cpp/sdk/src/trace/tracer_context.cc,opentelemetry::v1::sdk::trace::MultiRecordable::SetInstrumentationScope(),872,872
+/src/opentelemetry-cpp/sdk/src/trace/tracer_context.cc,opentelemetry::v1::sdk::trace::MultiRecordable::SetResource(),872,872
+/src/opentelemetry-cpp/sdk/src/trace/tracer_context.cc,opentelemetry::v1::sdk::trace::MultiRecordable::SetSpanKind(),872,872
+/src/opentelemetry-cpp/sdk/src/trace/tracer_context.cc,opentelemetry::v1::sdk::trace::MultiRecordable::SetStartTime(),872,872
+/src/opentelemetry-cpp/sdk/src/trace/tracer_context.cc,std::_Rb_tree<>::_M_erase(),788,788
+/src/opentelemetry-cpp/sdk/src/trace/tracer_context.cc,opentelemetry::v1::sdk::trace::MultiSpanProcessor::ForceFlush(),632,632
+/src/opentelemetry-cpp/sdk/src/trace/tracer_context.cc,opentelemetry::v1::sdk::trace::MultiSpanProcessor::Shutdown(),632,632
+/src/opentelemetry-cpp/sdk/src/trace/tracer_context.cc,opentelemetry::v1::sdk::trace::MultiRecordable::~MultiRecordable(),316,316
+/src/opentelemetry-cpp/sdk/src/trace/tracer_context.cc,opentelemetry::v1::sdk::trace::TracerContext::AddProcessor(),220,220
+/src/opentelemetry-cpp/sdk/src/trace/tracer_context.cc,opentelemetry::v1::sdk::trace::TracerContext::ForceFlush(),148,148
+/src/opentelemetry-cpp/sdk/src/trace/tracer_context.cc,opentelemetry::v1::sdk::trace::TracerContext::Shutdown(),148,148
+/src/opentelemetry-cpp/sdk/src/trace/tracer_context.cc,opentelemetry::v1::sdk::trace::MultiRecordable::SetTraceFlags(),128,128
+/src/opentelemetry-cpp/sdk/src/trace/tracer_context.cc,std::unique_ptr<>::~unique_ptr(),60,60
+/src/opentelemetry-cpp/sdk/src/trace/tracer_context.cc,opentelemetry::v1::sdk::trace::Recordable::operator ?::SpanData*(),44,44
+/src/opentelemetry-cpp/sdk/src/trace/tracer_context.cc,opentelemetry::v1::sdk::trace::TracerContext::GetIdGenerator(),44,44
+/src/opentelemetry-cpp/sdk/src/trace/tracer_context.cc,opentelemetry::v1::sdk::trace::TracerContext::GetProcessor(),44,44
+/src/opentelemetry-cpp/sdk/src/trace/tracer_context.cc,opentelemetry::v1::sdk::trace::TracerContext::GetResource(),44,44
+/src/opentelemetry-cpp/sdk/src/trace/tracer_context.cc,opentelemetry::v1::sdk::trace::TracerContext::GetSampler(),44,44
+/src/opentelemetry-cpp/sdk/src/trace/tracer_context.cc,opentelemetry::v1::sdk::trace::MultiRecordable::GetRecordable()::empty,24,0
+/src/opentelemetry-cpp/sdk/src/resource/resource.cc,absl::otel_v1::variant_internal::VisitIndicesSwitch<>::Run<>(),9700,9700
+/src/opentelemetry-cpp/sdk/src/resource/resource.cc,std::_Hashtable<>::_M_assign<>(),4464,4464
+/src/opentelemetry-cpp/sdk/src/resource/resource.cc,opentelemetry::v1::sdk::resource::Resource::Merge(),3930,3930
+/src/opentelemetry-cpp/sdk/src/resource/resource.cc,opentelemetry::v1::sdk::resource::Resource::Create(),2522,2522
+/src/opentelemetry-cpp/sdk/src/resource/resource.cc,opentelemetry::v1::sdk::resource::Resource::GetDefault(),2088,2088
+/src/opentelemetry-cpp/sdk/src/resource/resource.cc,opentelemetry::v1::sdk::resource::Resource::GetEmpty(),632,632
+/src/opentelemetry-cpp/sdk/src/resource/resource.cc,std::_Hashtable<>::_Scoped_node::~_Scoped_node(),392,392
+/src/opentelemetry-cpp/sdk/src/resource/resource.cc,std::_Hashtable<>::find(),380,380
+/src/opentelemetry-cpp/sdk/src/resource/resource.cc,opentelemetry::v1::sdk::resource::Resource::Resource(),312,312
+/src/opentelemetry-cpp/sdk/src/resource/resource.cc,std::_Hashtable<>::_M_insert_unique_node(),296,296
+/src/opentelemetry-cpp/sdk/src/resource/resource.cc,opentelemetry::v1::sdk::resource::Resource::Create()::otel_resource,96,0
+/src/opentelemetry-cpp/sdk/src/resource/resource.cc,opentelemetry::v1::sdk::resource::Resource::GetDefault()::default_resource,96,0
+/src/opentelemetry-cpp/sdk/src/resource/resource.cc,opentelemetry::v1::sdk::resource::Resource::GetEmpty()::empty_resource,96,0
+/src/opentelemetry-cpp/sdk/src/resource/resource.cc,opentelemetry::v1::sdk::resource::Resource::GetAttributes(),44,44
+/src/opentelemetry-cpp/sdk/src/resource/resource.cc,opentelemetry::v1::sdk::resource::Resource::GetSchemaURL[abi:cxx11](),44,44
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_client.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcClient::MakeChannel(),8852,8852
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_client.cc,opentelemetry::v1::ext::http::common::UrlParser::UrlParser(),7000,7000
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_client.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcClient::Shutdown(),1976,1976
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_client.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcClient::MakeClientContext(),1388,1388
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_client.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcClient::OtlpGrpcClient(),944,944
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_client.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcClient::MakeLogsServiceStub(),470,470
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_client.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcClient::MakeMetricsServiceStub(),470,470
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_client.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcClient::MakeTraceServiceStub(),470,470
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_client.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcClient::MutableAsyncData(),412,412
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_client.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcClient::DelegateExport(),372,372
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_client.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcClient::~OtlpGrpcClient(),368,368
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_client.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcClient::RemoveReference(),356,356
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_client.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcClient::AddReference(),320,320
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_client.cc,opentelemetry::v1::ext::http::common::UrlParser::~UrlParser(),224,224
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_client.cc,std::_Sp_counted_ptr_inplace<>::_M_dispose(),216,216
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_client.cc,grpc::SslCredentialsOptions::~SslCredentialsOptions(),160,160
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_client.cc,std::_Sp_counted_ptr_inplace<>::_M_get_deleter(),144,144
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_client.cc,std::_Sp_counted_ptr_inplace<>::~_Sp_counted_ptr_inplace(),88,88
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_client.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcClient::ForceFlush(),44,44
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_client.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcClient::IsShutdown(),44,44
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_client.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcClientReferenceGuard::OtlpGrpcClientReferenceGuard(),44,44
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_client.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcClientReferenceGuard::~OtlpGrpcClientReferenceGuard(),44,44
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_client.cc,std::_Sp_counted_ptr_inplace<>::_M_destroy(),44,44
+/src/opentelemetry-cpp/sdk/src/metrics/meter_context.cc,opentelemetry::v1::sdk::metrics::MeterContext::Shutdown(),3698,3698
+/src/opentelemetry-cpp/sdk/src/metrics/meter_context.cc,std::_Rb_tree<>::_M_erase(),3068,3068
+/src/opentelemetry-cpp/sdk/src/metrics/meter_context.cc,opentelemetry::v1::sdk::metrics::MeterContext::RemoveMeter(),3012,3012
+/src/opentelemetry-cpp/sdk/src/metrics/meter_context.cc,opentelemetry::v1::sdk::metrics::MeterContext::ForceFlush(),2426,2426
+/src/opentelemetry-cpp/sdk/src/metrics/meter_context.cc,std::__detail::_Hashtable_alloc<>::_M_allocate_node<>(),2172,2172
+/src/opentelemetry-cpp/sdk/src/metrics/meter_context.cc,std::vector<>::_M_realloc_insert<>(),1572,1572
+/src/opentelemetry-cpp/sdk/src/metrics/meter_context.cc,opentelemetry::v1::sdk::metrics::MetricCollector::~MetricCollector(),976,976
+/src/opentelemetry-cpp/sdk/src/metrics/meter_context.cc,opentelemetry::v1::sdk::metrics::MeterContext::AddMetricReader(),940,940
+/src/opentelemetry-cpp/sdk/src/metrics/meter_context.cc,opentelemetry::v1::sdk::metrics::MeterContext::MeterContext(),846,846
+/src/opentelemetry-cpp/sdk/src/metrics/meter_context.cc,opentelemetry::v1::sdk::metrics::MeterContext::AddView(),806,806
+/src/opentelemetry-cpp/sdk/src/metrics/meter_context.cc,std::unique_ptr<>::~unique_ptr(),568,568
+/src/opentelemetry-cpp/sdk/src/metrics/meter_context.cc,_GLOBAL__sub_I__ZN13opentelemetry2v13sdk7metrics12MeterContextC2ESt10unique_ptrINS2_12ViewRegistryESt14default_deleteIS5_EERKNS1_8resource8ResourceE,556,556
+/src/opentelemetry-cpp/sdk/src/metrics/meter_context.cc,opentelemetry::v1::sdk::metrics::MeterContext::AddMeter(),506,506
+/src/opentelemetry-cpp/sdk/src/metrics/meter_context.cc,std::__do_uninit_copy<>(),440,440
+/src/opentelemetry-cpp/sdk/src/metrics/meter_context.cc,opentelemetry::v1::sdk::metrics::MeterContext::ForEachMeter(),364,364
+/src/opentelemetry-cpp/sdk/src/metrics/meter_context.cc,std::_Sp_counted_ptr<>::_M_dispose(),316,316
+/src/opentelemetry-cpp/sdk/src/metrics/meter_context.cc,std::vector<>::~vector(),300,300
+/src/opentelemetry-cpp/sdk/src/metrics/meter_context.cc,_GLOBAL__sub_I__ZN13opentelemetry2v13sdk7metrics12MeterContextC2ESt10unique_ptrINS2_12ViewRegistryESt14default_deleteIS5_EERKNS1_8resource8ResourceE.cold,88,88
+/src/opentelemetry-cpp/sdk/src/metrics/meter_context.cc,std::_Sp_counted_ptr<>::~_Sp_counted_ptr(),88,88
+/src/opentelemetry-cpp/sdk/src/metrics/meter_context.cc,opentelemetry::v1::sdk::metrics::MeterContext::GetCollectors(),60,60
+/src/opentelemetry-cpp/sdk/src/metrics/meter_context.cc,opentelemetry::v1::sdk::metrics::MeterContext::GetMeters(),60,60
+/src/opentelemetry-cpp/sdk/src/metrics/meter_context.cc,opentelemetry::v1::sdk::metrics::MeterContext::GetResource(),44,44
+/src/opentelemetry-cpp/sdk/src/metrics/meter_context.cc,opentelemetry::v1::sdk::metrics::MeterContext::GetSDKStartTime(),44,44
+/src/opentelemetry-cpp/sdk/src/metrics/meter_context.cc,opentelemetry::v1::sdk::metrics::MeterContext::GetViewRegistry(),44,44
+/src/opentelemetry-cpp/sdk/src/metrics/meter_context.cc,std::_Sp_counted_ptr<>::_M_destroy(),44,44
+/src/opentelemetry-cpp/sdk/src/metrics/meter_context.cc,std::_Sp_counted_ptr<>::_M_get_deleter(),44,44
+/src/opentelemetry-cpp/sdk/src/metrics/meter_context.cc,opentelemetry::v1::sdk::metrics::kAttributesLimitOverflowKey,32,0
+/src/opentelemetry-cpp/sdk/src/metrics/state/observable_registry.cc,opentelemetry::v1::sdk::metrics::ObservableRegistry::Observe(),4570,4570
+/src/opentelemetry-cpp/sdk/src/metrics/state/observable_registry.cc,std::_Rb_tree<>::_M_erase(),3068,3068
+/src/opentelemetry-cpp/sdk/src/metrics/state/observable_registry.cc,opentelemetry::v1::sdk::metrics::ObserverResultT<>::~ObserverResultT(),2408,2408
+/src/opentelemetry-cpp/sdk/src/metrics/state/observable_registry.cc,std::__detail::_Map_base<>::operator[](),2200,2200
+/src/opentelemetry-cpp/sdk/src/metrics/state/observable_registry.cc,opentelemetry::v1::sdk::metrics::ObserverResultT<>::Observe(),2064,2064
+/src/opentelemetry-cpp/sdk/src/metrics/state/observable_registry.cc,std::_Sp_counted_ptr<>::_M_dispose(),1344,1344
+/src/opentelemetry-cpp/sdk/src/metrics/state/observable_registry.cc,opentelemetry::v1::nostd::shared_ptr<>::shared_ptr_wrapper::~shared_ptr_wrapper(),880,880
+/src/opentelemetry-cpp/sdk/src/metrics/state/observable_registry.cc,std::operator==(),828,828
+/src/opentelemetry-cpp/sdk/src/metrics/state/observable_registry.cc,std::_Hashtable<>::_M_rehash(),784,784
+/src/opentelemetry-cpp/sdk/src/metrics/state/observable_registry.cc,opentelemetry::v1::sdk::metrics::ObservableRegistry::RemoveCallback(),664,664
+/src/opentelemetry-cpp/sdk/src/metrics/state/observable_registry.cc,_GLOBAL__sub_I__ZN13opentelemetry2v13sdk7metrics18ObservableRegistry11AddCallbackEPFvN4absl7otel_v17variantIJNS0_5nostd10shared_ptrINS0_7metrics15ObserverResultTIlEEEENS8_INSA_IdEEEEEEEPvESG_PNS9_20ObservableInstrumentE,556,556
+/src/opentelemetry-cpp/sdk/src/metrics/state/observable_registry.cc,opentelemetry::v1::sdk::metrics::ObservableRegistry::AddCallback(),497,497
+/src/opentelemetry-cpp/sdk/src/metrics/state/observable_registry.cc,std::vector<>::_M_realloc_insert<>(),484,484
+/src/opentelemetry-cpp/sdk/src/metrics/state/observable_registry.cc,opentelemetry::v1::sdk::metrics::ObservableRegistry::CleanupCallback(),472,472
+/src/opentelemetry-cpp/sdk/src/metrics/state/observable_registry.cc,opentelemetry::v1::nostd::shared_ptr<>::shared_ptr_wrapper::Reset(),432,432
+/src/opentelemetry-cpp/sdk/src/metrics/state/observable_registry.cc,std::vector<>::_M_erase(),276,276
+/src/opentelemetry-cpp/sdk/src/metrics/state/observable_registry.cc,absl::otel_v1::variant_internal::VisitIndicesSwitch<>::Run<>(),274,274
+/src/opentelemetry-cpp/sdk/src/metrics/state/observable_registry.cc,opentelemetry::v1::nostd::shared_ptr<>::shared_ptr_wrapper::CopyTo(),184,184
+/src/opentelemetry-cpp/sdk/src/metrics/state/observable_registry.cc,std::_Sp_counted_ptr<>::~_Sp_counted_ptr(),176,176
+/src/opentelemetry-cpp/sdk/src/metrics/state/observable_registry.cc,opentelemetry::v1::nostd::shared_ptr<>::shared_ptr_wrapper::MoveTo(),152,152
+/src/opentelemetry-cpp/sdk/src/metrics/state/observable_registry.cc,_GLOBAL__sub_I__ZN13opentelemetry2v13sdk7metrics18ObservableRegistry11AddCallbackEPFvN4absl7otel_v17variantIJNS0_5nostd10shared_ptrINS0_7metrics15ObserverResultTIlEEEENS8_INSA_IdEEEEEEEPvESG_PNS9_20ObservableInstrumentE.cold,89,89
+/src/opentelemetry-cpp/sdk/src/metrics/state/observable_registry.cc,opentelemetry::v1::nostd::shared_ptr<>::shared_ptr_wrapper::Get(),88,88
+/src/opentelemetry-cpp/sdk/src/metrics/state/observable_registry.cc,std::_Sp_counted_ptr<>::_M_destroy(),88,88
+/src/opentelemetry-cpp/sdk/src/metrics/state/observable_registry.cc,std::_Sp_counted_ptr<>::_M_get_deleter(),88,88
+/src/opentelemetry-cpp/sdk/src/metrics/state/observable_registry.cc,opentelemetry::v1::sdk::metrics::NoopAsyncWritableMetricStorage::RecordDouble(),44,44
+/src/opentelemetry-cpp/sdk/src/metrics/state/observable_registry.cc,opentelemetry::v1::sdk::metrics::NoopAsyncWritableMetricStorage::RecordLong(),44,44
+/src/opentelemetry-cpp/sdk/src/metrics/state/observable_registry.cc,opentelemetry::v1::sdk::metrics::ObservableRegistry::Observe()::default_attribute_processor,32,32
+/src/opentelemetry-cpp/sdk/src/metrics/state/observable_registry.cc,opentelemetry::v1::sdk::metrics::kAttributesLimitOverflowKey,32,0
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_exporter.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcExporter::Export(),7704,7704
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_exporter.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcExporter::OtlpGrpcExporter(),7380,7380
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_exporter.cc,std::_Rb_tree<>::_M_copy<>(),1212,1212
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_exporter.cc,std::_Rb_tree<>::_M_erase(),1172,1172
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_exporter.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcExporter::~OtlpGrpcExporter(),1168,1168
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_exporter.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcExporter::ForceFlush(),348,348
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_exporter.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcExporter::Shutdown(),292,292
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_exporter.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcExporter::MakeRecordable(),128,128
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_exporter.cc,std::_Sp_counted_deleter<>::_M_get_deleter(),108,108
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_exporter.cc,google::protobuf::internal::arena_destruct_object<>(),92,92
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_exporter.cc,std::_Sp_counted_deleter<>::~_Sp_counted_deleter(),88,88
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_exporter.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcExporter::isShutdown(),60,60
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_exporter.cc,std::_Sp_counted_deleter<>::_M_dispose(),60,60
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_exporter.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcExporter::GetClient(),44,44
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_exporter.cc,std::_Sp_counted_deleter<>::_M_destroy(),44,44
+[section .gcc_except_table],,19318,19318
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_metric_exporter.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcMetricExporter::OtlpGrpcMetricExporter(),7544,7544
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_metric_exporter.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcMetricExporter::Export(),5950,5950
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_metric_exporter.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcMetricExporter::~OtlpGrpcMetricExporter(),1216,1216
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_metric_exporter.cc,std::_Rb_tree<>::_M_copy<>(),1212,1212
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_metric_exporter.cc,std::_Rb_tree<>::_M_erase(),1172,1172
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_metric_exporter.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcMetricExporter::ForceFlush(),348,348
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_metric_exporter.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcMetricExporter::Shutdown(),292,292
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_metric_exporter.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcMetricExporter::GetAggregationTemporality(),160,160
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_metric_exporter.cc,std::_Sp_counted_deleter<>::_M_get_deleter(),108,108
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_metric_exporter.cc,google::protobuf::internal::arena_destruct_object<>(),92,92
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_metric_exporter.cc,std::_Sp_counted_deleter<>::~_Sp_counted_deleter(),88,88
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_metric_exporter.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcMetricExporter::isShutdown(),60,60
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_metric_exporter.cc,std::_Sp_counted_deleter<>::_M_dispose(),60,60
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_metric_exporter.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcMetricExporter::GetClient(),44,44
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_metric_exporter.cc,std::_Sp_counted_deleter<>::_M_destroy(),44,44
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_log_record_exporter.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcLogRecordExporter::OtlpGrpcLogRecordExporter(),7380,7380
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_log_record_exporter.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcLogRecordExporter::Export(),6026,6026
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_log_record_exporter.cc,std::_Rb_tree<>::_M_copy<>(),1212,1212
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_log_record_exporter.cc,std::_Rb_tree<>::_M_erase(),1172,1172
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_log_record_exporter.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcLogRecordExporter::~OtlpGrpcLogRecordExporter(),1168,1168
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_log_record_exporter.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcLogRecordExporter::ForceFlush(),348,348
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_log_record_exporter.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcLogRecordExporter::Shutdown(),292,292
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_log_record_exporter.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcLogRecordExporter::MakeRecordable(),144,144
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_log_record_exporter.cc,std::_Sp_counted_deleter<>::_M_get_deleter(),108,108
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_log_record_exporter.cc,google::protobuf::internal::arena_destruct_object<>(),88,88
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_log_record_exporter.cc,std::_Sp_counted_deleter<>::~_Sp_counted_deleter(),88,88
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_log_record_exporter.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcLogRecordExporter::isShutdown(),60,60
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_log_record_exporter.cc,std::_Sp_counted_deleter<>::_M_dispose(),60,60
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_log_record_exporter.cc,_GLOBAL__sub_I__ZN13opentelemetry2v18exporter4otlp25OtlpGrpcLogRecordExporterC2Ev,44,44
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_log_record_exporter.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcLogRecordExporter::GetClient(),44,44
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_log_record_exporter.cc,std::_Sp_counted_deleter<>::_M_destroy(),44,44
+/src/opentelemetry-cpp/sdk/src/metrics/aggregation/histogram_aggregation.cc,opentelemetry::v1::sdk::metrics::DoubleHistogramAggregation::Merge(),2632,2632
+/src/opentelemetry-cpp/sdk/src/metrics/aggregation/histogram_aggregation.cc,opentelemetry::v1::sdk::metrics::LongHistogramAggregation::Merge(),2628,2628
+/src/opentelemetry-cpp/sdk/src/metrics/aggregation/histogram_aggregation.cc,opentelemetry::v1::sdk::metrics::DoubleHistogramAggregation::Diff(),2340,2340
+/src/opentelemetry-cpp/sdk/src/metrics/aggregation/histogram_aggregation.cc,opentelemetry::v1::sdk::metrics::LongHistogramAggregation::Diff(),2340,2340
+/src/opentelemetry-cpp/sdk/src/metrics/aggregation/histogram_aggregation.cc,opentelemetry::v1::sdk::metrics::DoubleHistogramAggregation::DoubleHistogramAggregation(),1516,1516
+/src/opentelemetry-cpp/sdk/src/metrics/aggregation/histogram_aggregation.cc,opentelemetry::v1::sdk::metrics::LongHistogramAggregation::LongHistogramAggregation(),1516,1516
+/src/opentelemetry-cpp/sdk/src/metrics/aggregation/histogram_aggregation.cc,opentelemetry::v1::sdk::metrics::DoubleHistogramAggregation::ToPoint(),774,774
+/src/opentelemetry-cpp/sdk/src/metrics/aggregation/histogram_aggregation.cc,opentelemetry::v1::sdk::metrics::LongHistogramAggregation::ToPoint(),774,774
+/src/opentelemetry-cpp/sdk/src/metrics/aggregation/histogram_aggregation.cc,opentelemetry::v1::sdk::metrics::DoubleHistogramAggregation::Aggregate(),638,638
+/src/opentelemetry-cpp/sdk/src/metrics/aggregation/histogram_aggregation.cc,opentelemetry::v1::sdk::metrics::LongHistogramAggregation::Aggregate(),590,590
+/src/opentelemetry-cpp/sdk/src/metrics/aggregation/histogram_aggregation.cc,std::vector<>::operator=(),500,500
+/src/opentelemetry-cpp/sdk/src/metrics/aggregation/histogram_aggregation.cc,std::vector<>::_M_assign_aux<>(),420,420
+/src/opentelemetry-cpp/sdk/src/metrics/aggregation/histogram_aggregation.cc,opentelemetry::v1::sdk::metrics::DoubleHistogramAggregation::~DoubleHistogramAggregation(),284,284
+/src/opentelemetry-cpp/sdk/src/metrics/aggregation/histogram_aggregation.cc,opentelemetry::v1::sdk::metrics::LongHistogramAggregation::~LongHistogramAggregation(),284,284
+/src/opentelemetry-cpp/sdk/src/metrics/aggregation/histogram_aggregation.cc,opentelemetry::v1::sdk::metrics::HistogramAggregationConfig::~HistogramAggregationConfig(),212,212
+/src/opentelemetry-cpp/sdk/src/metrics/export/periodic_exporting_metric_reader.cc,opentelemetry::v1::sdk::metrics::PeriodicExportingMetricReader::PeriodicExportingMetricReader(),4524,4524
+/src/opentelemetry-cpp/sdk/src/metrics/export/periodic_exporting_metric_reader.cc,opentelemetry::v1::sdk::metrics::PeriodicExportingMetricReader::CollectAndExportOnce(),2556,2556
+/src/opentelemetry-cpp/sdk/src/metrics/export/periodic_exporting_metric_reader.cc,opentelemetry::v1::sdk::metrics::PeriodicExportingMetricReader::DoBackgroundWork(),2291,2291
+/src/opentelemetry-cpp/sdk/src/metrics/export/periodic_exporting_metric_reader.cc,opentelemetry::v1::sdk::metrics::PeriodicExportingMetricReader::CollectAndExportOnce()::{lambda()#1}::operator()()::{lambda()#1}::operator()(),1928,1928
+/src/opentelemetry-cpp/sdk/src/metrics/export/periodic_exporting_metric_reader.cc,std::promise<>::~promise(),1180,1180
+/src/opentelemetry-cpp/sdk/src/metrics/export/periodic_exporting_metric_reader.cc,opentelemetry::v1::sdk::metrics::PeriodicExportingMetricReader::~PeriodicExportingMetricReader(),904,904
+/src/opentelemetry-cpp/sdk/src/metrics/export/periodic_exporting_metric_reader.cc,opentelemetry::v1::sdk::metrics::PeriodicExportingMetricReader::OnForceFlush(),860,860
+/src/opentelemetry-cpp/sdk/src/metrics/export/periodic_exporting_metric_reader.cc,std::thread::_State_impl<>::_M_run(),798,798
+/src/opentelemetry-cpp/sdk/src/metrics/export/periodic_exporting_metric_reader.cc,std::thread::_State_impl<>::~_State_impl(),372,372
+/src/opentelemetry-cpp/sdk/src/metrics/export/periodic_exporting_metric_reader.cc,opentelemetry::v1::sdk::metrics::PeriodicExportingMetricReader::OnInitialized(),296,296
+/src/opentelemetry-cpp/sdk/src/metrics/export/periodic_exporting_metric_reader.cc,std::__future_base::_State_baseV2::~_State_baseV2(),252,252
+/src/opentelemetry-cpp/sdk/src/metrics/export/periodic_exporting_metric_reader.cc,std::__future_base::_State_baseV2::_M_do_set(),212,212
+/src/opentelemetry-cpp/sdk/src/metrics/export/periodic_exporting_metric_reader.cc,std::__future_base::_Result<>::~_Result(),164,164
+/src/opentelemetry-cpp/sdk/src/metrics/export/periodic_exporting_metric_reader.cc,std::_Sp_counted_ptr_inplace<>::_M_get_deleter(),144,144
+/src/opentelemetry-cpp/sdk/src/metrics/export/periodic_exporting_metric_reader.cc,opentelemetry::v1::sdk::metrics::PeriodicExportingMetricReader::OnShutDown(),128,128
+/src/opentelemetry-cpp/sdk/src/metrics/export/periodic_exporting_metric_reader.cc,std::_Function_handler<>::_M_manager(),92,92
+/src/opentelemetry-cpp/sdk/src/metrics/export/periodic_exporting_metric_reader.cc,std::once_flag::_Prepare_execution::_Prepare_execution<>()::{lambda()#1}::_FUN(),92,92
+/src/opentelemetry-cpp/sdk/src/metrics/export/periodic_exporting_metric_reader.cc,std::_Sp_counted_ptr_inplace<>::~_Sp_counted_ptr_inplace(),88,88
+/src/opentelemetry-cpp/sdk/src/metrics/export/periodic_exporting_metric_reader.cc,std::_Function_handler<>::_M_invoke(),60,60
+/src/opentelemetry-cpp/sdk/src/metrics/export/periodic_exporting_metric_reader.cc,std::_Sp_counted_ptr_inplace<>::_M_dispose(),60,60
+/src/opentelemetry-cpp/sdk/src/metrics/export/periodic_exporting_metric_reader.cc,opentelemetry::v1::nostd::function_ref<>::BindTo<>()::{lambda()#1}::_FUN(),44,44
+/src/opentelemetry-cpp/sdk/src/metrics/export/periodic_exporting_metric_reader.cc,opentelemetry::v1::sdk::metrics::PeriodicExportingMetricReader::GetAggregationTemporality(),44,44
+/src/opentelemetry-cpp/sdk/src/metrics/export/periodic_exporting_metric_reader.cc,std::_Sp_counted_ptr_inplace<>::_M_destroy(),44,44
+/src/opentelemetry-cpp/sdk/src/metrics/export/periodic_exporting_metric_reader.cc,std::__exception_ptr::__dest_thunk<>(),44,44
+/src/opentelemetry-cpp/sdk/src/metrics/export/periodic_exporting_metric_reader.cc,std::__future_base::_Result<>::_M_destroy(),44,44
+/src/opentelemetry-cpp/sdk/src/metrics/export/periodic_exporting_metric_reader.cc,std::__future_base::_State_baseV2::_M_complete_async(),44,44
+/src/opentelemetry-cpp/sdk/src/metrics/export/periodic_exporting_metric_reader.cc,std::__future_base::_State_baseV2::_M_is_deferred_future(),44,44
+[section .dynstr],[section .dynstr],14379,14379
+[section .dynstr],std::__cxx11::basic_istringstream<>@GLIBCXX_3.4.21,128,128
+[section .dynstr],std::__cxx11::basic_stringstream<>@GLIBCXX_3.4.21,126,126
+[section .dynstr],std::_Sp_counted_base<>,112,112
+[section .dynstr],std::_Mutex_base<>,102,102
+[section .dynstr],std::basic_ifstream<>@GLIBCXX_3.4,88,88
+[section .dynstr],opentelemetry::proto::collector::metrics::v1::ExportMetricsServiceResponse,79,79
+[section .dynstr],opentelemetry::proto::collector::metrics::v1::ExportMetricsServiceRequest,78,78
+[section .dynstr],opentelemetry::proto::collector::trace::v1::ExportTraceServiceResponse,75,75
+[section .dynstr],opentelemetry::proto::collector::trace::v1::ExportTraceServiceRequest,74,74
+[section .dynstr],opentelemetry::proto::collector::logs::v1::ExportLogsServiceResponse,73,73
+[section .dynstr],opentelemetry::proto::collector::logs::v1::ExportLogsServiceRequest,72,72
+[section .dynstr],opentelemetry::proto::logs::v1::_ResourceLogs_default_instance_,67,67
+[section .dynstr],google::protobuf::internal::fixed_address_empty_string[abi:cxx11],65,65
+[section .dynstr],opentelemetry::proto::logs::v1::_ScopeLogs_default_instance_,64,64
+[section .dynstr],std::__cxx11::basic_stringbuf<>@GLIBCXX_3.4.21,60,60
+[section .dynstr],std::basic_streambuf<>@GLIBCXX_3.4,45,45
+[section .dynstr],std::basic_filebuf<>@GLIBCXX_3.4,43,43
+[section .dynstr],std::bad_weak_ptr@GLIBCXX_3.4.15,42,42
+[section .dynstr],std::future_error@GLIBCXX_3.4.14,42,42
+[section .dynstr],std::regex_error@GLIBCXX_3.4.15,40,40
+[section .dynstr],std::basic_ios<>@GLIBCXX_3.4,38,38
+[section .dynstr],std::__cxx11::collate<>::id@GLIBCXX_3.4.21,29,29
+[section .dynstr],std::_Sp_make_shared_tag,28,28
+[section .dynstr],__libc_single_threaded@GLIBC_2.32,23,23
+[section .dynstr],std::locale::facet@GLIBCXX_3.4,22,22
+[section .dynstr],std::out_of_range@GLIBCXX_3.4,21,21
+[section .dynstr],std::ctype<>::id@GLIBCXX_3.4,19,19
+[section .dynstr],std::ctype<>@GLIBCXX_3.4,16,16
+[section .dynstr],std::nothrow@GLIBCXX_3.4,13,13
+[section .dynstr],std::cerr@GLIBCXX_3.4,10,10
+[section .dynstr],std::cout@GLIBCXX_3.4,10,10
+/src/opentelemetry-cpp/sdk/src/common/env_variables.cc,opentelemetry::v1::sdk::common::GetUintEnvironmentVariable(),4223,4223
+/src/opentelemetry-cpp/sdk/src/common/env_variables.cc,opentelemetry::v1::sdk::common::GetFloatEnvironmentVariable(),4195,4195
+/src/opentelemetry-cpp/sdk/src/common/env_variables.cc,opentelemetry::v1::sdk::common::GetDurationEnvironmentVariable(),2567,2567
+/src/opentelemetry-cpp/sdk/src/common/env_variables.cc,opentelemetry::v1::sdk::common::GetBoolEnvironmentVariable(),2559,2559
+/src/opentelemetry-cpp/sdk/src/common/env_variables.cc,opentelemetry::v1::sdk::common::GetStringEnvironmentVariable(),772,772
+/src/opentelemetry-cpp/sdk/src/common/env_variables.cc,opentelemetry::v1::sdk::common::GetRawEnvironmentVariable(),756,756
+[section .data.rel.ro],std::_Sp_counted_ptr<>,1368,1368
+[section .data.rel.ro],opentelemetry::v1::nostd::shared_ptr<>::shared_ptr_wrapper,1200,1200
+[section .data.rel.ro],std::_Sp_counted_ptr_inplace<>,1056,1056
+[section .data.rel.ro],std::_Sp_counted_deleter<>,752,752
+[section .data.rel.ro],[section .data.rel.ro],320,320
+[section .data.rel.ro],std::thread::_State_impl<>,320,320
+[section .data.rel.ro],opentelemetry::v1::sdk::logs::ReadableLogRecord,248,248
+[section .data.rel.ro],std::__cxx11::basic_stringstream<>@GLIBCXX_3.4.21,200,200
+[section .data.rel.ro],opentelemetry::v1::sdk::metrics::SyncMetricStorage,192,192
+[section .data.rel.ro],opentelemetry::v1::metrics::NoopCounter<>,176,176
+[section .data.rel.ro],opentelemetry::v1::metrics::NoopUpDownCounter<>,176,176
+[section .data.rel.ro],opentelemetry::v1::exporter::otlp::OtlpRecordable,160,160
+[section .data.rel.ro],opentelemetry::v1::sdk::metrics::AsyncMetricStorage,160,160
+[section .data.rel.ro],opentelemetry::v1::sdk::trace::MultiRecordable,160,160
+[section .data.rel.ro],opentelemetry::v1::sdk::metrics::Meter,152,152
+[section .data.rel.ro],opentelemetry::v1::common::KeyValueIterableView<>,144,144
+[section .data.rel.ro],opentelemetry::v1::exporter::otlp::OtlpLogRecordable,144,144
+[section .data.rel.ro],opentelemetry::v1::metrics::NoopHistogram<>,144,144
+[section .data.rel.ro],opentelemetry::v1::sdk::logs::MultiRecordable,144,144
+[section .data.rel.ro],opentelemetry::v1::sdk::metrics::MetricCollector,144,144
+[section .data.rel.ro],opentelemetry::v1::sdk::metrics::ObserverResultT<>,144,144
+[section .data.rel.ro],opentelemetry::v1::sdk::trace::Span,136,136
+[section .data.rel.ro],opentelemetry::v1::trace::DefaultSpan,136,136
+[section .data.rel.ro],opentelemetry::v1::trace::NoopSpan,136,136
+[section .data.rel.ro],bench::(anonymous namespace)::OtelCppBackend,128,128
+[section .data.rel.ro],opentelemetry::v1::sdk::logs::Logger,128,128
+[section .data.rel.ro],std::__cxx11::basic_stringbuf<>@GLIBCXX_3.4.21,128,128
+[section .data.rel.ro],std::__detail::_AnyMatcher<>,128,128
+[section .data.rel.ro],std::basic_filebuf<>@GLIBCXX_3.4,128,128
+[section .data.rel.ro],std::basic_streambuf<>@GLIBCXX_3.4,128,128
+[section .data.rel.ro],opentelemetry::v1::sdk::metrics::DoubleCounter,120,120
+[section .data.rel.ro],opentelemetry::v1::sdk::metrics::DoubleUpDownCounter,120,120
+[section .data.rel.ro],opentelemetry::v1::sdk::metrics::LongCounter,120,120
+[section .data.rel.ro],opentelemetry::v1::sdk::metrics::LongUpDownCounter,120,120
+[section .data.rel.ro],opentelemetry::v1::sdk::trace::Tracer,112,112
+[section .data.rel.ro],std::__cxx11::basic_istringstream<>@GLIBCXX_3.4.21,112,112
+[section .data.rel.ro],std::basic_ifstream<>@GLIBCXX_3.4,112,112
+[section .data.rel.ro],opentelemetry::v1::sdk::metrics::DoubleHistogram,104,104
+[section .data.rel.ro],opentelemetry::v1::sdk::metrics::LongHistogram,104,104
+[section .data.rel.ro],opentelemetry::v1::sdk::trace::BatchSpanProcessor,104,104
+[section .data.rel.ro],opentelemetry::v1::sdk::logs::BatchLogRecordProcessor,96,96
+[section .data.rel.ro],opentelemetry::v1::sdk::metrics::DoubleHistogramAggregation,96,96
+[section .data.rel.ro],opentelemetry::v1::sdk::metrics::DoubleLastValueAggregation,96,96
+[section .data.rel.ro],opentelemetry::v1::sdk::metrics::DoubleSumAggregation,96,96
+[section .data.rel.ro],opentelemetry::v1::sdk::metrics::DropAggregation,96,96
+[section .data.rel.ro],opentelemetry::v1::sdk::metrics::LongHistogramAggregation,96,96
+[section .data.rel.ro],opentelemetry::v1::sdk::metrics::LongLastValueAggregation,96,96
+[section .data.rel.ro],opentelemetry::v1::sdk::metrics::LongSumAggregation,96,96
+[section .data.rel.ro],opentelemetry::v1::sdk::trace::MultiSpanProcessor,96,96
+[section .data.rel.ro],opentelemetry::v1::exporter::otlp::OtlpGrpcExporter,88,88
+[section .data.rel.ro],opentelemetry::v1::exporter::otlp::OtlpGrpcLogRecordExporter,88,88
+[section .data.rel.ro],opentelemetry::v1::exporter::otlp::OtlpGrpcMetricExporter,88,88
+[section .data.rel.ro],opentelemetry::v1::sdk::logs::MultiLogRecordProcessor,88,88
+[section .data.rel.ro],opentelemetry::v1::sdk::metrics::MetricReader,88,88
+[section .data.rel.ro],opentelemetry::v1::sdk::metrics::PeriodicExportingMetricReader,88,88
+[section .data.rel.ro],opentelemetry::v1::sdk::metrics::SyncMultiMetricStorage,88,88
+[section .data.rel.ro],opentelemetry::v1::sdk::metrics::View,88,88
+[section .data.rel.ro],opentelemetry::v1::context::ThreadLocalContextStorage,80,80
+[section .data.rel.ro],opentelemetry::v1::sdk::logs::LogRecordExporter,80,80
+[section .data.rel.ro],opentelemetry::v1::sdk::trace::SpanExporter,80,80
+[section .data.rel.ro],std::future_error@GLIBCXX_3.4.14,80,80
+[section .data.rel.ro],std::regex_error@GLIBCXX_3.4.15,80,80
+[section .data.rel.ro],opentelemetry::v1::common::NoopKeyValueIterable,72,72
+[section .data.rel.ro],opentelemetry::v1::metrics::NoopObservableInstrument,72,72
+[section .data.rel.ro],opentelemetry::v1::sdk::metrics::AsyncMultiMetricStorage,72,72
+[section .data.rel.ro],opentelemetry::v1::sdk::metrics::DefaultAttributesProcessor,72,72
+[section .data.rel.ro],opentelemetry::v1::sdk::metrics::ObservableInstrument,72,72
+[section .data.rel.ro],opentelemetry::v1::sdk::trace::AlwaysOnSampler,72,72
+[section .data.rel.ro],opentelemetry::v1::sdk::trace::RandomIdGenerator,72,72
+[section .data.rel.ro],opentelemetry::v1::trace::SpanContextKeyValueIterableView<>,72,72
+[section .data.rel.ro],opentelemetry::v1::nostd::bad_variant_access,64,64
+[section .data.rel.ro],opentelemetry::v1::sdk::common::internal_log::DefaultLogHandler,64,64
+[section .data.rel.ro],opentelemetry::v1::sdk::common::internal_log::NoopLogHandler,64,64
+[section .data.rel.ro],opentelemetry::v1::sdk::logs::LoggerProvider,64,64
+[section .data.rel.ro],opentelemetry::v1::sdk::metrics::MeterProvider,64,64
+[section .data.rel.ro],opentelemetry::v1::sdk::resource::OTELResourceDetector,64,64
+[section .data.rel.ro],opentelemetry::v1::sdk::trace::TracerProvider,64,64
+[section .data.rel.ro],std::__detail::_BracketMatcher<>,64,64
+[section .data.rel.ro],std::__detail::_CharMatcher<>,64,64
+[section .data.rel.ro],std::__future_base::_Result<>,64,64
+[section .data.rel.ro],std::__future_base::_State_baseV2,64,64
+[section .data.rel.ro],std::bad_weak_ptr@GLIBCXX_3.4.15,64,64
+[section .data.rel.ro],opentelemetry::v1::sdk::common::internal_log::LogHandler,56,56
+[section .data.rel.ro],opentelemetry::v1::sdk::metrics::HistogramAggregationConfig,56,56
+[section .data.rel.ro],std::ctype<>@GLIBCXX_3.4,56,56
+[section .data.rel.ro],(),48,48
+[section .data.rel.ro],opentelemetry::v1::metrics::Counter<>,48,48
+[section .data.rel.ro],opentelemetry::v1::metrics::Histogram<>,48,48
+[section .data.rel.ro],opentelemetry::v1::metrics::UpDownCounter<>,48,48
+[section .data.rel.ro],opentelemetry::v1::sdk::trace::TracerContext,48,48
+[section .data.rel.ro],opentelemetry::proto::collector::metrics::v1::ExportMetricsServiceRequest,32,32
+[section .data.rel.ro],opentelemetry::v1::metrics::ObserverResultT<>,32,32
+[section .data.rel.ro],std::basic_ios<>@GLIBCXX_3.4,32,32
+[section .data.rel.ro],std::out_of_range@GLIBCXX_3.4,32,32
+[section .data.rel.ro],opentelemetry::proto::collector::logs::v1::ExportLogsServiceRequest,24,24
+[section .data.rel.ro],opentelemetry::proto::collector::logs::v1::ExportLogsServiceResponse,24,24
+[section .data.rel.ro],opentelemetry::proto::collector::metrics::v1::ExportMetricsServiceResponse,24,24
+[section .data.rel.ro],opentelemetry::proto::collector::trace::v1::ExportTraceServiceRequest,24,24
+[section .data.rel.ro],opentelemetry::proto::collector::trace::v1::ExportTraceServiceResponse,24,24
+[section .data.rel.ro],opentelemetry::v1::sdk::logs::Recordable,24,24
+[section .data.rel.ro],std::_Sp_counted_base<>,24,24
+[section .data.rel.ro],bench::IBackend,16,16
+[section .data.rel.ro],opentelemetry::v1::common::KeyValueIterable,16,16
+[section .data.rel.ro],opentelemetry::v1::context::RuntimeContextStorage,16,16
+[section .data.rel.ro],opentelemetry::v1::logs::LogRecord,16,16
+[section .data.rel.ro],opentelemetry::v1::logs::Logger,16,16
+[section .data.rel.ro],opentelemetry::v1::logs::LoggerProvider,16,16
+[section .data.rel.ro],opentelemetry::v1::metrics::Meter,16,16
+[section .data.rel.ro],opentelemetry::v1::metrics::MeterProvider,16,16
+[section .data.rel.ro],opentelemetry::v1::metrics::ObservableInstrument,16,16
+[section .data.rel.ro],opentelemetry::v1::metrics::SynchronousInstrument,16,16
+[section .data.rel.ro],opentelemetry::v1::sdk::logs::LogRecordProcessor,16,16
+[section .data.rel.ro],opentelemetry::v1::sdk::metrics::Aggregation,16,16
+[section .data.rel.ro],opentelemetry::v1::sdk::metrics::AggregationConfig,16,16
+[section .data.rel.ro],opentelemetry::v1::sdk::metrics::AsyncWritableMetricStorage,16,16
+[section .data.rel.ro],opentelemetry::v1::sdk::metrics::AttributesProcessor,16,16
+[section .data.rel.ro],opentelemetry::v1::sdk::metrics::CollectorHandle,16,16
+[section .data.rel.ro],opentelemetry::v1::sdk::metrics::MetricProducer,16,16
+[section .data.rel.ro],opentelemetry::v1::sdk::metrics::MetricStorage,16,16
+[section .data.rel.ro],opentelemetry::v1::sdk::metrics::PushMetricExporter,16,16
+[section .data.rel.ro],opentelemetry::v1::sdk::metrics::SyncMetricStorage::SyncMetricStorage()::{lambda()#1},16,16
+[section .data.rel.ro],opentelemetry::v1::sdk::metrics::SyncWritableMetricStorage,16,16
+[section .data.rel.ro],opentelemetry::v1::sdk::metrics::Synchronous,16,16
+[section .data.rel.ro],opentelemetry::v1::sdk::resource::ResourceDetector,16,16
+[section .data.rel.ro],opentelemetry::v1::sdk::trace::IdGenerator,16,16
+[section .data.rel.ro],opentelemetry::v1::sdk::trace::Recordable,16,16
+[section .data.rel.ro],opentelemetry::v1::sdk::trace::Sampler,16,16
+[section .data.rel.ro],opentelemetry::v1::sdk::trace::SpanProcessor,16,16
+[section .data.rel.ro],opentelemetry::v1::trace::Span,16,16
+[section .data.rel.ro],opentelemetry::v1::trace::SpanContextKeyValueIterable,16,16
+[section .data.rel.ro],opentelemetry::v1::trace::Tracer,16,16
+[section .data.rel.ro],opentelemetry::v1::trace::TracerProvider,16,16
+[section .data.rel.ro],std::_Mutex_base<>,16,16
+[section .data.rel.ro],std::__future_base::_State_baseV2::_Setter<>,16,16
+[section .data.rel.ro],std::enable_shared_from_this<>,16,16
+[section .data.rel.ro],std::locale::facet@GLIBCXX_3.4,16,16
+[section .data.rel.ro],std::nothrow@GLIBCXX_3.4,8,8
+/src/opentelemetry-cpp/sdk/src/metrics/state/metric_collector.cc,opentelemetry::v1::sdk::metrics::MetricCollector::Produce(),3304,3304
+/src/opentelemetry-cpp/sdk/src/metrics/state/metric_collector.cc,std::_Rb_tree<>::_M_erase(),3068,3068
+/src/opentelemetry-cpp/sdk/src/metrics/state/metric_collector.cc,opentelemetry::v1::sdk::metrics::MetricCollector::GetAggregationTemporality(),2358,2358
+/src/opentelemetry-cpp/sdk/src/metrics/state/metric_collector.cc,std::__do_uninit_copy<>(),1444,1444
+/src/opentelemetry-cpp/sdk/src/metrics/state/metric_collector.cc,std::vector<>::~vector(),780,780
+/src/opentelemetry-cpp/sdk/src/metrics/state/metric_collector.cc,_GLOBAL__sub_I__ZN13opentelemetry2v13sdk7metrics15MetricCollectorC2EPNS2_12MeterContextESt10shared_ptrINS2_12MetricReaderEE,556,556
+/src/opentelemetry-cpp/sdk/src/metrics/state/metric_collector.cc,std::vector<>::_M_realloc_insert<>(),552,552
+/src/opentelemetry-cpp/sdk/src/metrics/state/metric_collector.cc,opentelemetry::v1::nostd::function_ref<>::BindTo<>()::{lambda()#1}::_FUN(),412,412
+/src/opentelemetry-cpp/sdk/src/metrics/state/metric_collector.cc,opentelemetry::v1::sdk::metrics::MetricCollector::MetricCollector(),226,226
+/src/opentelemetry-cpp/sdk/src/metrics/state/metric_collector.cc,_GLOBAL__sub_I__ZN13opentelemetry2v13sdk7metrics15MetricCollectorC2EPNS2_12MeterContextESt10shared_ptrINS2_12MetricReaderEE.cold,84,84
+/src/opentelemetry-cpp/sdk/src/metrics/state/metric_collector.cc,opentelemetry::v1::sdk::metrics::MetricCollector::ForceFlush(),44,44
+/src/opentelemetry-cpp/sdk/src/metrics/state/metric_collector.cc,opentelemetry::v1::sdk::metrics::MetricCollector::Shutdown(),44,44
+/src/opentelemetry-cpp/sdk/src/metrics/state/metric_collector.cc,opentelemetry::v1::sdk::metrics::kAttributesLimitOverflowKey,32,0
+/src/opentelemetry-cpp/sdk/src/logs/multi_recordable.cc,opentelemetry::v1::sdk::logs::MultiRecordable::SetAttribute(),988,988
+/src/opentelemetry-cpp/sdk/src/logs/multi_recordable.cc,opentelemetry::v1::sdk::logs::MultiRecordable::SetEventId(),960,960
+/src/opentelemetry-cpp/sdk/src/logs/multi_recordable.cc,opentelemetry::v1::sdk::logs::MultiRecordable::SetBody(),908,908
+/src/opentelemetry-cpp/sdk/src/logs/multi_recordable.cc,opentelemetry::v1::sdk::logs::MultiRecordable::SetInstrumentationScope(),908,908
+/src/opentelemetry-cpp/sdk/src/logs/multi_recordable.cc,opentelemetry::v1::sdk::logs::MultiRecordable::SetObservedTimestamp(),908,908
+/src/opentelemetry-cpp/sdk/src/logs/multi_recordable.cc,opentelemetry::v1::sdk::logs::MultiRecordable::SetResource(),908,908
+/src/opentelemetry-cpp/sdk/src/logs/multi_recordable.cc,opentelemetry::v1::sdk::logs::MultiRecordable::SetSeverity(),908,908
+/src/opentelemetry-cpp/sdk/src/logs/multi_recordable.cc,opentelemetry::v1::sdk::logs::MultiRecordable::SetSpanId(),908,908
+/src/opentelemetry-cpp/sdk/src/logs/multi_recordable.cc,opentelemetry::v1::sdk::logs::MultiRecordable::SetTimestamp(),908,908
+/src/opentelemetry-cpp/sdk/src/logs/multi_recordable.cc,opentelemetry::v1::sdk::logs::MultiRecordable::SetTraceFlags(),908,908
+/src/opentelemetry-cpp/sdk/src/logs/multi_recordable.cc,opentelemetry::v1::sdk::logs::MultiRecordable::SetTraceId(),908,908
+/src/opentelemetry-cpp/sdk/src/logs/multi_recordable.cc,opentelemetry::v1::sdk::logs::MultiRecordable::AddRecordable(),626,626
+/src/opentelemetry-cpp/sdk/src/logs/multi_recordable.cc,opentelemetry::v1::sdk::logs::MultiRecordable::ReleaseRecordable(),600,600
+/src/opentelemetry-cpp/sdk/src/logs/multi_recordable.cc,opentelemetry::v1::sdk::logs::MultiRecordable::~MultiRecordable(),472,472
+/src/opentelemetry-cpp/sdk/src/logs/multi_recordable.cc,std::_Hashtable<>::_M_rehash(),392,392
+/src/opentelemetry-cpp/sdk/src/logs/multi_recordable.cc,opentelemetry::v1::sdk::logs::MultiRecordable::GetRecordable(),300,300
+/src/opentelemetry-cpp/sdk/src/logs/multi_recordable.cc,std::unique_ptr<>::~unique_ptr(),60,60
+/src/opentelemetry-cpp/sdk/src/logs/multi_recordable.cc,opentelemetry::v1::sdk::logs::MultiRecordable::GetRecordable()::empty,8,0
+/src/opentelemetry-cpp/sdk/src/metrics/metric_reader.cc,opentelemetry::v1::sdk::metrics::MetricReader::Collect(),4218,4218
+/src/opentelemetry-cpp/sdk/src/metrics/metric_reader.cc,opentelemetry::v1::sdk::metrics::MetricReader::Shutdown(),3608,3608
+/src/opentelemetry-cpp/sdk/src/metrics/metric_reader.cc,opentelemetry::v1::sdk::metrics::MetricReader::ForceFlush(),3592,3592
+/src/opentelemetry-cpp/sdk/src/metrics/metric_reader.cc,std::_Rb_tree<>::_M_erase(),448,448
+/src/opentelemetry-cpp/sdk/src/metrics/metric_reader.cc,opentelemetry::v1::sdk::metrics::MetricReader::SetMetricProducer(),76,76
+/src/opentelemetry-cpp/sdk/src/metrics/metric_reader.cc,opentelemetry::v1::sdk::metrics::MetricReader::MetricReader(),60,60
+/src/opentelemetry-cpp/sdk/src/metrics/metric_reader.cc,opentelemetry::v1::sdk::metrics::MetricReader::IsShutdown(),44,44
+/src/opentelemetry-cpp/sdk/src/metrics/metric_reader.cc,opentelemetry::v1::sdk::metrics::MetricReader::OnInitialized(),44,44
+/src/emit-app/src/control_socket.cpp,bench::RunControlLoop(),5212,5212
+/src/emit-app/src/control_socket.cpp,bench::SerializeRunResult[abi:cxx11](),1068,1068
+/src/emit-app/src/control_socket.cpp,bench::(anonymous namespace)::ExtractUint64Field(),972,972
+/src/emit-app/src/control_socket.cpp,std::vector<>::_M_realloc_insert<>(),572,572
+/src/emit-app/src/control_socket.cpp,std::__cxx11::basic_string<>::_M_mutate(),479,479
+/src/emit-app/src/control_socket.cpp,std::__str_concat<>(),428,428
+/src/emit-app/src/control_socket.cpp,std::stop_token::_Stop_state_t::_M_request_stop(),404,404
+/src/emit-app/src/control_socket.cpp,std::__cxx11::basic_string<>::_M_replace(),401,401
+/src/emit-app/src/control_socket.cpp,bench::(anonymous namespace)::WorkerThread(),380,380
+/src/emit-app/src/control_socket.cpp,std::__cxx11::basic_string<>::_M_assign(),366,366
+/src/emit-app/src/control_socket.cpp,std::__cxx11::basic_string<>::reserve(),312,312
+/src/emit-app/src/control_socket.cpp,std::operator+<>(),312,312
+/src/emit-app/src/control_socket.cpp,std::jthread::jthread<>(),300,300
+/src/emit-app/src/control_socket.cpp,std::jthread::~jthread(),172,172
+/src/emit-app/src/control_socket.cpp,std::vector<>::~vector(),148,148
+/src/emit-app/src/control_socket.cpp,std::stop_source::~stop_source(),96,96
+/src/emit-app/src/control_socket.cpp,std::thread::_State_impl<>::_M_run(),88,88
+/src/emit-app/src/control_socket.cpp,std::thread::_State_impl<>::~_State_impl(),72,72
+/src/emit-app/src/control_socket.cpp,std::thread::_M_thread_deps_never_run(),56,56
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_metric_utils.cc,std::_Rb_tree<>::_M_copy<>(),4232,4232
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_metric_utils.cc,opentelemetry::v1::exporter::otlp::OtlpMetricUtils::ConvertHistogramMetric(),1906,1906
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_metric_utils.cc,opentelemetry::v1::exporter::otlp::OtlpMetricUtils::GetAggregationType(),1056,1056
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_metric_utils.cc,opentelemetry::v1::exporter::otlp::OtlpMetricUtils::PopulateResourceMetrics(),684,684
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_metric_utils.cc,opentelemetry::v1::exporter::otlp::OtlpMetricUtils::ConvertSumMetric(),634,634
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_metric_utils.cc,opentelemetry::v1::exporter::otlp::OtlpMetricUtils::PopulateInstrumentInfoMetrics(),608,608
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_metric_utils.cc,opentelemetry::v1::exporter::otlp::OtlpMetricUtils::ConvertGaugeMetric(),586,586
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_metric_utils.cc,std::_Rb_tree<>::_M_erase(),448,448
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_metric_utils.cc,absl::otel_v1::variant_internal::VisitIndicesSwitch<>::Run<>(),226,226
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_metric_utils.cc,opentelemetry::v1::exporter::otlp::OtlpMetricUtils::PopulateRequest(),208,208
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_metric_utils.cc,opentelemetry::v1::exporter::otlp::OtlpMetricUtils::ChooseTemporalitySelector(),140,140
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_metric_utils.cc,opentelemetry::v1::exporter::otlp::OtlpMetricUtils::DeltaTemporalitySelector(),92,92
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_metric_utils.cc,std::_Function_handler<>::_M_manager(),92,92
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_metric_utils.cc,opentelemetry::v1::exporter::otlp::OtlpMetricUtils::LowMemoryTemporalitySelector(),76,76
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_metric_utils.cc,opentelemetry::v1::exporter::otlp::OtlpMetricUtils::GetProtoAggregationTemporality(),60,60
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_metric_utils.cc,opentelemetry::v1::exporter::otlp::OtlpMetricUtils::CumulativeTemporalitySelector(),44,44
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_metric_utils.cc,std::_Function_handler<>::_M_invoke(),44,44
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_recordable_utils.cc,opentelemetry::v1::exporter::otlp::OtlpRecordableUtils::PopulateRequest(),6168,6168
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_recordable_utils.cc,std::__detail::_Map_base<>::operator[](),1064,1064
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_recordable_utils.cc,std::__detail::_Equality<>::_M_equal(),948,948
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_recordable_utils.cc,std::_Hashtable<>::_M_rehash(),784,784
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_recordable_utils.cc,std::_Hashtable<>::_Scoped_node::~_Scoped_node(),660,660
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_recordable_utils.cc,std::_Hashtable<>::~_Hashtable(),492,492
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_recordable_utils.cc,std::vector<>::_M_realloc_insert<>(),484,484
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_recordable_utils.cc,_GLOBAL__sub_I__ZN13opentelemetry2v18exporter4otlp19OtlpRecordableUtils15PopulateRequestERKNS0_5nostd4spanISt10unique_ptrINS0_3sdk5trace10RecordableESt14default_deleteIS9_EELm18446744073709551615EEEPNS_5proto9collector5trace2v125ExportTraceServiceRequestE,44,44
+/src/opentelemetry-cpp/sdk/src/trace/batch_span_processor.cc,opentelemetry::v1::sdk::trace::BatchSpanProcessor::OnEnd(),2566,2566
+/src/opentelemetry-cpp/sdk/src/trace/batch_span_processor.cc,opentelemetry::v1::sdk::trace::BatchSpanProcessor::BatchSpanProcessor(),1642,1642
+/src/opentelemetry-cpp/sdk/src/trace/batch_span_processor.cc,opentelemetry::v1::sdk::trace::BatchSpanProcessor::Export(),1570,1570
+/src/opentelemetry-cpp/sdk/src/trace/batch_span_processor.cc,opentelemetry::v1::sdk::trace::BatchSpanProcessor::ForceFlush(),860,860
+/src/opentelemetry-cpp/sdk/src/trace/batch_span_processor.cc,opentelemetry::v1::sdk::trace::BatchSpanProcessor::~BatchSpanProcessor(),660,660
+/src/opentelemetry-cpp/sdk/src/trace/batch_span_processor.cc,opentelemetry::v1::sdk::trace::BatchSpanProcessor::DoBackgroundWork(),636,636
+/src/opentelemetry-cpp/sdk/src/trace/batch_span_processor.cc,std::vector<>::_M_realloc_insert<>(),484,484
+/src/opentelemetry-cpp/sdk/src/trace/batch_span_processor.cc,opentelemetry::v1::sdk::trace::BatchSpanProcessor::NotifyCompletion(),348,348
+/src/opentelemetry-cpp/sdk/src/trace/batch_span_processor.cc,opentelemetry::v1::sdk::trace::BatchSpanProcessor::Shutdown(),312,312
+/src/opentelemetry-cpp/sdk/src/trace/batch_span_processor.cc,opentelemetry::v1::sdk::trace::BatchSpanProcessor::GetWaitAdjustedTime(),276,276
+/src/opentelemetry-cpp/sdk/src/trace/batch_span_processor.cc,std::thread::_State_impl<>::~_State_impl(),164,164
+/src/opentelemetry-cpp/sdk/src/trace/batch_span_processor.cc,std::_Sp_counted_ptr_inplace<>::_M_get_deleter(),144,144
+/src/opentelemetry-cpp/sdk/src/trace/batch_span_processor.cc,std::default_delete<>::operator()<>(),140,140
+/src/opentelemetry-cpp/sdk/src/trace/batch_span_processor.cc,opentelemetry::v1::sdk::trace::BatchSpanProcessor::DrainQueue(),124,124
+/src/opentelemetry-cpp/sdk/src/trace/batch_span_processor.cc,opentelemetry::v1::sdk::trace::BatchSpanProcessor::MakeRecordable(),124,124
+/src/opentelemetry-cpp/sdk/src/trace/batch_span_processor.cc,std::_Sp_counted_ptr_inplace<>::_M_dispose(),88,88
+/src/opentelemetry-cpp/sdk/src/trace/batch_span_processor.cc,std::_Sp_counted_ptr_inplace<>::~_Sp_counted_ptr_inplace(),88,88
+/src/opentelemetry-cpp/sdk/src/trace/batch_span_processor.cc,std::thread::_State_impl<>::_M_run(),76,76
+/src/opentelemetry-cpp/sdk/src/trace/batch_span_processor.cc,opentelemetry::v1::sdk::trace::BatchSpanProcessor::OnStart(),44,44
+/src/opentelemetry-cpp/sdk/src/trace/batch_span_processor.cc,std::_Sp_counted_ptr_inplace<>::_M_destroy(),44,44
+[Unmapped],,0,9922
+/src/opentelemetry-cpp/sdk/src/metrics/aggregation/sum_aggregation.cc,opentelemetry::v1::sdk::metrics::DoubleSumAggregation::Aggregate(),2286,2286
+/src/opentelemetry-cpp/sdk/src/metrics/aggregation/sum_aggregation.cc,opentelemetry::v1::sdk::metrics::LongSumAggregation::Aggregate(),2238,2238
+/src/opentelemetry-cpp/sdk/src/metrics/aggregation/sum_aggregation.cc,opentelemetry::v1::sdk::metrics::DoubleSumAggregation::Diff(),930,930
+/src/opentelemetry-cpp/sdk/src/metrics/aggregation/sum_aggregation.cc,opentelemetry::v1::sdk::metrics::DoubleSumAggregation::Merge(),930,930
+/src/opentelemetry-cpp/sdk/src/metrics/aggregation/sum_aggregation.cc,opentelemetry::v1::sdk::metrics::LongSumAggregation::Diff(),930,930
+/src/opentelemetry-cpp/sdk/src/metrics/aggregation/sum_aggregation.cc,opentelemetry::v1::sdk::metrics::LongSumAggregation::Merge(),930,930
+/src/opentelemetry-cpp/sdk/src/metrics/aggregation/sum_aggregation.cc,opentelemetry::v1::sdk::metrics::DoubleSumAggregation::ToPoint(),316,316
+/src/opentelemetry-cpp/sdk/src/metrics/aggregation/sum_aggregation.cc,opentelemetry::v1::sdk::metrics::LongSumAggregation::ToPoint(),316,316
+/src/opentelemetry-cpp/sdk/src/metrics/aggregation/sum_aggregation.cc,opentelemetry::v1::sdk::metrics::DoubleSumAggregation::DoubleSumAggregation(),152,152
+/src/opentelemetry-cpp/sdk/src/metrics/aggregation/sum_aggregation.cc,opentelemetry::v1::sdk::metrics::LongSumAggregation::LongSumAggregation(),152,152
+/src/opentelemetry-cpp/sdk/src/metrics/aggregation/sum_aggregation.cc,opentelemetry::v1::sdk::metrics::DoubleSumAggregation::~DoubleSumAggregation(),88,88
+/src/opentelemetry-cpp/sdk/src/metrics/aggregation/sum_aggregation.cc,opentelemetry::v1::sdk::metrics::LongSumAggregation::~LongSumAggregation(),88,88
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_populate_attribute_utils.cc,opentelemetry::v1::exporter::otlp::OtlpPopulateAttributeUtils::PopulateAnyValue(),6168,6168
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_populate_attribute_utils.cc,opentelemetry::v1::exporter::otlp::OtlpPopulateAttributeUtils::PopulateAttribute(),2832,2832
+/src/opentelemetry-cpp/sdk/src/logs/batch_log_record_processor.cc,opentelemetry::v1::sdk::logs::BatchLogRecordProcessor::BatchLogRecordProcessor(),2432,2432
+/src/opentelemetry-cpp/sdk/src/logs/batch_log_record_processor.cc,opentelemetry::v1::sdk::logs::BatchLogRecordProcessor::Export(),1574,1574
+/src/opentelemetry-cpp/sdk/src/logs/batch_log_record_processor.cc,opentelemetry::v1::sdk::logs::BatchLogRecordProcessor::ForceFlush(),828,828
+/src/opentelemetry-cpp/sdk/src/logs/batch_log_record_processor.cc,opentelemetry::v1::sdk::logs::BatchLogRecordProcessor::~BatchLogRecordProcessor(),660,660
+/src/opentelemetry-cpp/sdk/src/logs/batch_log_record_processor.cc,opentelemetry::v1::sdk::logs::BatchLogRecordProcessor::DoBackgroundWork(),636,636
+/src/opentelemetry-cpp/sdk/src/logs/batch_log_record_processor.cc,std::vector<>::_M_realloc_insert<>(),484,484
+/src/opentelemetry-cpp/sdk/src/logs/batch_log_record_processor.cc,opentelemetry::v1::sdk::logs::BatchLogRecordProcessor::NotifyCompletion(),348,348
+/src/opentelemetry-cpp/sdk/src/logs/batch_log_record_processor.cc,opentelemetry::v1::sdk::logs::BatchLogRecordProcessor::Shutdown(),312,312
+/src/opentelemetry-cpp/sdk/src/logs/batch_log_record_processor.cc,opentelemetry::v1::sdk::logs::BatchLogRecordProcessor::GetWaitAdjustedTime(),276,276
+/src/opentelemetry-cpp/sdk/src/logs/batch_log_record_processor.cc,opentelemetry::v1::sdk::logs::BatchLogRecordProcessor::OnEmit(),252,252
+/src/opentelemetry-cpp/sdk/src/logs/batch_log_record_processor.cc,std::thread::_State_impl<>::~_State_impl(),164,164
+/src/opentelemetry-cpp/sdk/src/logs/batch_log_record_processor.cc,std::_Sp_counted_ptr_inplace<>::_M_get_deleter(),144,144
+/src/opentelemetry-cpp/sdk/src/logs/batch_log_record_processor.cc,std::default_delete<>::operator()<>(),140,140
+/src/opentelemetry-cpp/sdk/src/logs/batch_log_record_processor.cc,opentelemetry::v1::sdk::logs::BatchLogRecordProcessor::DrainQueue(),124,124
+/src/opentelemetry-cpp/sdk/src/logs/batch_log_record_processor.cc,opentelemetry::v1::sdk::logs::BatchLogRecordProcessor::MakeRecordable(),124,124
+/src/opentelemetry-cpp/sdk/src/logs/batch_log_record_processor.cc,std::_Sp_counted_ptr_inplace<>::_M_dispose(),88,88
+/src/opentelemetry-cpp/sdk/src/logs/batch_log_record_processor.cc,std::_Sp_counted_ptr_inplace<>::~_Sp_counted_ptr_inplace(),88,88
+/src/opentelemetry-cpp/sdk/src/logs/batch_log_record_processor.cc,std::thread::_State_impl<>::_M_run(),76,76
+/src/opentelemetry-cpp/sdk/src/logs/batch_log_record_processor.cc,std::_Sp_counted_ptr_inplace<>::_M_destroy(),44,44
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_recordable.cc,opentelemetry::v1::exporter::otlp::OtlpRecordable::AddLink(),1674,1674
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_recordable.cc,opentelemetry::v1::exporter::otlp::OtlpRecordable::SetIdentity(),1674,1674
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_recordable.cc,opentelemetry::v1::nostd::function_ref<>::BindTo<>()::{lambda()#1}::_FUN(),1356,1356
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_recordable.cc,opentelemetry::v1::exporter::otlp::OtlpRecordable::AddEvent(),646,646
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_recordable.cc,opentelemetry::v1::exporter::otlp::OtlpRecordable::SetStatus(),582,582
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_recordable.cc,opentelemetry::v1::exporter::otlp::OtlpRecordable::SetName(),502,502
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_recordable.cc,opentelemetry::v1::exporter::otlp::OtlpRecordable::GetProtoInstrumentationScope(),196,196
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_recordable.cc,opentelemetry::v1::exporter::otlp::OtlpRecordable::SetAttribute(),168,168
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_recordable.cc,opentelemetry::v1::exporter::otlp::OtlpRecordable::~OtlpRecordable(),168,168
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_recordable.cc,opentelemetry::v1::exporter::otlp::OtlpRecordable::GetInstrumentationLibrarySchemaURL[abi:cxx11](),124,124
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_recordable.cc,opentelemetry::v1::exporter::otlp::OtlpRecordable::GetResourceSchemaURL[abi:cxx11](),124,124
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_recordable.cc,opentelemetry::v1::exporter::otlp::OtlpRecordable::ProtoResource(),112,112
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_recordable.cc,opentelemetry::v1::exporter::otlp::OtlpRecordable::SetDuration(),60,60
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_recordable.cc,opentelemetry::v1::exporter::otlp::OtlpRecordable::SetSpanKind(),60,60
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_recordable.cc,opentelemetry::v1::exporter::otlp::OtlpRecordable::GetInstrumentationScope(),44,44
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_recordable.cc,opentelemetry::v1::exporter::otlp::OtlpRecordable::GetResource(),44,44
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_recordable.cc,opentelemetry::v1::exporter::otlp::OtlpRecordable::SetInstrumentationScope(),44,44
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_recordable.cc,opentelemetry::v1::exporter::otlp::OtlpRecordable::SetResource(),44,44
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_recordable.cc,opentelemetry::v1::exporter::otlp::OtlpRecordable::SetStartTime(),44,44
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_recordable.cc,opentelemetry::v1::exporter::otlp::OtlpRecordable::SetTraceFlags(),44,44
+/src/opentelemetry-cpp/sdk/src/logs/logger.cc,opentelemetry::v1::sdk::logs::Logger::CreateLogRecord(),5460,5460
+/src/opentelemetry-cpp/sdk/src/logs/logger.cc,opentelemetry::v1::logs::Logger::Log(),1200,1200
+/src/opentelemetry-cpp/sdk/src/logs/logger.cc,opentelemetry::v1::sdk::logs::Logger::Logger(),380,380
+/src/opentelemetry-cpp/sdk/src/logs/logger.cc,opentelemetry::v1::sdk::logs::Logger::EmitLogRecord(),224,224
+/src/opentelemetry-cpp/sdk/src/logs/logger.cc,opentelemetry::v1::nostd::function_ref<>::BindTo<>()::{lambda()#1}::_FUN(),140,140
+/src/opentelemetry-cpp/sdk/src/logs/logger.cc,opentelemetry::v1::logs::Logger::EnabledImplementation(),88,88
+/src/opentelemetry-cpp/sdk/src/logs/logger.cc,_GLOBAL__sub_I__ZN13opentelemetry2v13sdk4logs6LoggerC2ENS0_5nostd11string_viewESt10shared_ptrINS2_13LoggerContextEESt10unique_ptrINS1_20instrumentationscope20InstrumentationScopeESt14default_deleteISB_EE,48,48
+/src/opentelemetry-cpp/sdk/src/logs/logger.cc,opentelemetry::v1::sdk::logs::Logger::GetInstrumentationScope(),44,44
+/src/opentelemetry-cpp/sdk/src/logs/logger.cc,opentelemetry::v1::sdk::logs::Logger::GetName(),44,44
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,opentelemetry::v1::sdk::resource::OTELResourceDetector::Detect(),3160,3160
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,[section .dynsym],1894,1894
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,std::__detail::_Map_base<>::operator[](),636,636
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,opentelemetry::v1::sdk::resource::OTELResourceDetector::~OTELResourceDetector(),88,88
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,[section .dynstr],84,84
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,opentelemetry::v1::sdk::resource::ResourceDetector::Create(),72,72
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,opentelemetry::v1::sdk::resource::OTEL_RESOURCE_ATTRIBUTES,48,32
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,std::_Mutex_base<>,48,48
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,std::_Sp_counted_base<>,48,48
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,std::__cxx11::basic_istringstream<>@GLIBCXX_3.4.21,48,48
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,std::__cxx11::basic_stringstream<>@GLIBCXX_3.4.21,48,48
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,std::bad_weak_ptr@GLIBCXX_3.4.15,48,48
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,std::basic_ifstream<>@GLIBCXX_3.4,48,48
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,std::future_error@GLIBCXX_3.4.14,48,48
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,std::regex_error@GLIBCXX_3.4.15,48,48
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,std::vector<>::_M_realloc_insert<>(),48,48
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,opentelemetry::v1::sdk::resource::OTEL_SERVICE_NAME,32,32
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,__libc_single_threaded@GLIBC_2.32,24,24
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,google::protobuf::internal::fixed_address_empty_string[abi:cxx11],24,24
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,opentelemetry::proto::collector::logs::v1::ExportLogsServiceRequest,24,24
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,opentelemetry::proto::collector::logs::v1::ExportLogsServiceResponse,24,24
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,opentelemetry::proto::collector::metrics::v1::ExportMetricsServiceRequest,24,24
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,opentelemetry::proto::collector::metrics::v1::ExportMetricsServiceResponse,24,24
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,opentelemetry::proto::collector::trace::v1::ExportTraceServiceRequest,24,24
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,opentelemetry::proto::collector::trace::v1::ExportTraceServiceResponse,24,24
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,opentelemetry::proto::logs::v1::_ResourceLogs_default_instance_,24,24
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,opentelemetry::proto::logs::v1::_ScopeLogs_default_instance_,24,24
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,std::_Sp_counted_base<>::_M_destroy(),24,24
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,std::_Sp_counted_base<>::_M_release(),24,24
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,std::_Sp_counted_base<>::_M_release_last_use_cold(),24,24
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,std::_Sp_counted_ptr<>::_M_dispose(),24,24
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,std::_Sp_make_shared_tag,24,24
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,std::_Sp_make_shared_tag::_S_ti()::__tag,24,24
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,std::__cxx11::basic_string<>::_M_assign(),24,24
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,std::__cxx11::basic_string<>::_M_mutate(),24,24
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,std::__cxx11::basic_string<>::_M_replace(),24,24
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,std::__cxx11::basic_string<>::reserve(),24,24
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,std::__cxx11::basic_stringbuf<>@GLIBCXX_3.4.21,24,24
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,std::__cxx11::collate<>::id@GLIBCXX_3.4.21,24,24
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,std::basic_filebuf<>@GLIBCXX_3.4,24,24
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,std::basic_ios<>@GLIBCXX_3.4,24,24
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,std::basic_streambuf<>@GLIBCXX_3.4,24,24
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,std::cerr@GLIBCXX_3.4,24,24
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,std::cout@GLIBCXX_3.4,24,24
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,std::ctype<>::do_narrow(),24,24
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,std::ctype<>::do_widen(),24,24
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,std::ctype<>::id@GLIBCXX_3.4,24,24
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,std::ctype<>@GLIBCXX_3.4,24,24
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,std::locale::facet@GLIBCXX_3.4,24,24
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,std::nothrow@GLIBCXX_3.4,24,24
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,std::out_of_range@GLIBCXX_3.4,24,24
+/src/opentelemetry-cpp/sdk/src/metrics/async_instruments.cc,std::_Rb_tree<>::_M_erase(),3068,3068
+/src/opentelemetry-cpp/sdk/src/metrics/async_instruments.cc,opentelemetry::v1::sdk::metrics::ObservableInstrument::ObservableInstrument(),960,960
+/src/opentelemetry-cpp/sdk/src/metrics/async_instruments.cc,opentelemetry::v1::sdk::metrics::ObservableInstrument::~ObservableInstrument(),720,720
+/src/opentelemetry-cpp/sdk/src/metrics/async_instruments.cc,_GLOBAL__sub_I__ZN13opentelemetry2v13sdk7metrics20ObservableInstrumentC2ENS2_20InstrumentDescriptorESt10unique_ptrINS2_26AsyncWritableMetricStorageESt14default_deleteIS6_EESt10shared_ptrINS2_18ObservableRegistryEE,556,556
+/src/opentelemetry-cpp/sdk/src/metrics/async_instruments.cc,_GLOBAL__sub_I__ZN13opentelemetry2v13sdk7metrics20ObservableInstrumentC2ENS2_20InstrumentDescriptorESt10unique_ptrINS2_26AsyncWritableMetricStorageESt14default_deleteIS6_EESt10shared_ptrINS2_18ObservableRegistryEE.cold,88,88
+/src/opentelemetry-cpp/sdk/src/metrics/async_instruments.cc,opentelemetry::v1::sdk::metrics::ObservableInstrument::AddCallback(),76,76
+/src/opentelemetry-cpp/sdk/src/metrics/async_instruments.cc,opentelemetry::v1::sdk::metrics::ObservableInstrument::RemoveCallback(),76,76
+/src/opentelemetry-cpp/sdk/src/metrics/async_instruments.cc,opentelemetry::v1::sdk::metrics::ObservableInstrument::GetInstrumentDescriptor(),44,44
+/src/opentelemetry-cpp/sdk/src/metrics/async_instruments.cc,opentelemetry::v1::sdk::metrics::ObservableInstrument::GetMetricStorage(),44,44
+/src/opentelemetry-cpp/sdk/src/metrics/async_instruments.cc,opentelemetry::v1::sdk::metrics::kAttributesLimitOverflowKey,32,0
+/src/opentelemetry-cpp/sdk/src/metrics/async_instruments.cc,opentelemetry::v1::sdk::logs::MultiRecordable::GetRecordable()::empty,8,0
+[section .rela.plt],,5472,5472
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_log_recordable.cc,opentelemetry::v1::exporter::otlp::OtlpLogRecordable::SetSeverity(),3178,3178
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_log_recordable.cc,opentelemetry::v1::exporter::otlp::OtlpLogRecordable::SetTraceId(),386,386
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_log_recordable.cc,opentelemetry::v1::exporter::otlp::OtlpLogRecordable::SetSpanId(),314,314
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_log_recordable.cc,opentelemetry::v1::exporter::otlp::OtlpLogRecordable::SetAttribute(),168,168
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_log_recordable.cc,opentelemetry::v1::exporter::otlp::OtlpLogRecordable::~OtlpLogRecordable(),168,168
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_log_recordable.cc,opentelemetry::v1::exporter::otlp::OtlpLogRecordable::SetBody(),152,152
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_log_recordable.cc,opentelemetry::v1::exporter::otlp::OtlpLogRecordable::GetInstrumentationScope(),60,60
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_log_recordable.cc,opentelemetry::v1::exporter::otlp::OtlpLogRecordable::GetResource(),60,60
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_log_recordable.cc,_GLOBAL__sub_I__ZNK13opentelemetry2v18exporter4otlp17OtlpLogRecordable11GetResourceEv,44,44
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_log_recordable.cc,opentelemetry::v1::exporter::otlp::OtlpLogRecordable::SetEventId(),44,44
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_log_recordable.cc,opentelemetry::v1::exporter::otlp::OtlpLogRecordable::SetInstrumentationScope(),44,44
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_log_recordable.cc,opentelemetry::v1::exporter::otlp::OtlpLogRecordable::SetObservedTimestamp(),44,44
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_log_recordable.cc,opentelemetry::v1::exporter::otlp::OtlpLogRecordable::SetResource(),44,44
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_log_recordable.cc,opentelemetry::v1::exporter::otlp::OtlpLogRecordable::SetTimestamp(),44,44
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_log_recordable.cc,opentelemetry::v1::exporter::otlp::OtlpLogRecordable::SetTraceFlags(),44,44
+/src/opentelemetry-cpp/sdk/src/common/global_log_handler.cc,opentelemetry::v1::sdk::common::internal_log::DefaultLogHandler::Handle(),2122,2122
+/src/opentelemetry-cpp/sdk/src/common/global_log_handler.cc,opentelemetry::v1::sdk::common::internal_log::GlobalLogHandler::SetLogHandler(),540,540
+/src/opentelemetry-cpp/sdk/src/common/global_log_handler.cc,opentelemetry::v1::sdk::common::internal_log::(anonymous namespace)::GlobalLogHandlerData::Instance(),308,308
+/src/opentelemetry-cpp/sdk/src/common/global_log_handler.cc,opentelemetry::v1::sdk::common::internal_log::GlobalLogHandler::GetLogHandler(),304,304
+/src/opentelemetry-cpp/sdk/src/common/global_log_handler.cc,opentelemetry::v1::sdk::common::internal_log::(anonymous namespace)::GlobalLogHandlerData::~GlobalLogHandlerData(),260,260
+/src/opentelemetry-cpp/sdk/src/common/global_log_handler.cc,opentelemetry::v1::sdk::common::internal_log::GlobalLogHandler::SetLogLevel(),148,148
+/src/opentelemetry-cpp/sdk/src/common/global_log_handler.cc,opentelemetry::v1::sdk::common::internal_log::GlobalLogHandler::GetLogLevel(),144,144
+/src/opentelemetry-cpp/sdk/src/common/global_log_handler.cc,opentelemetry::v1::sdk::common::internal_log::DefaultLogHandler::~DefaultLogHandler(),88,88
+/src/opentelemetry-cpp/sdk/src/common/global_log_handler.cc,opentelemetry::v1::sdk::common::internal_log::LogHandler::~LogHandler(),88,88
+/src/opentelemetry-cpp/sdk/src/common/global_log_handler.cc,opentelemetry::v1::sdk::common::internal_log::NoopLogHandler::~NoopLogHandler(),88,88
+/src/opentelemetry-cpp/sdk/src/common/global_log_handler.cc,std::_Sp_counted_ptr<>::~_Sp_counted_ptr(),88,88
+/src/opentelemetry-cpp/sdk/src/common/global_log_handler.cc,std::_Sp_counted_ptr<>::_M_dispose(),60,60
+/src/opentelemetry-cpp/sdk/src/common/global_log_handler.cc,opentelemetry::v1::sdk::common::internal_log::NoopLogHandler::Handle(),44,44
+/src/opentelemetry-cpp/sdk/src/common/global_log_handler.cc,std::_Sp_counted_ptr<>::_M_destroy(),44,44
+/src/opentelemetry-cpp/sdk/src/common/global_log_handler.cc,std::_Sp_counted_ptr<>::_M_get_deleter(),44,44
+/src/opentelemetry-cpp/sdk/src/common/global_log_handler.cc,opentelemetry::v1::sdk::common::internal_log::(anonymous namespace)::GlobalLogHandlerData::Instance()::instance,40,0
+/src/opentelemetry-cpp/sdk/src/common/global_log_handler.cc,opentelemetry::v1::sdk::common::internal_log::(anonymous namespace)::GlobalLogHandlerData::is_singleton_destroyed,8,0
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_exporter_options.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcExporterOptions::OtlpGrpcExporterOptions(),2400,2400
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_exporter_options.cc,std::_Rb_tree<>::_M_erase(),1172,1172
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_exporter_options.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcClientOptions::~OtlpGrpcClientOptions(),376,376
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_exporter_options.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcExporterOptions::~OtlpGrpcExporterOptions(),376,376
+/src/opentelemetry-cpp/sdk/src/trace/span.cc,opentelemetry::v1::sdk::trace::Span::~Span(),1108,1108
+/src/opentelemetry-cpp/sdk/src/trace/span.cc,opentelemetry::v1::sdk::trace::Span::AddEvent(),976,976
+/src/opentelemetry-cpp/sdk/src/trace/span.cc,opentelemetry::v1::sdk::trace::Span::Span(),688,688
+/src/opentelemetry-cpp/sdk/src/trace/span.cc,opentelemetry::v1::sdk::trace::Span::End(),232,232
+/src/opentelemetry-cpp/sdk/src/trace/span.cc,opentelemetry::v1::sdk::trace::Span::GetContext(),216,216
+/src/opentelemetry-cpp/sdk/src/trace/span.cc,opentelemetry::v1::nostd::function_ref<>::BindTo<>()::{lambda()#1}::_FUN(),212,212
+/src/opentelemetry-cpp/sdk/src/trace/span.cc,opentelemetry::v1::sdk::trace::Span::SetAttribute(),172,172
+/src/opentelemetry-cpp/sdk/src/trace/span.cc,opentelemetry::v1::sdk::trace::Span::SetStatus(),172,172
+/src/opentelemetry-cpp/sdk/src/trace/span.cc,opentelemetry::v1::sdk::trace::Span::UpdateName(),152,152
+/src/opentelemetry-cpp/sdk/src/trace/span.cc,opentelemetry::v1::sdk::trace::Span::IsRecording(),116,116
+/src/opentelemetry-cpp/sdk/src/trace/span.cc,opentelemetry::v1::common::KeyValueIterableView<>::~KeyValueIterableView(),88,88
+/src/opentelemetry-cpp/sdk/src/trace/span.cc,opentelemetry::v1::common::KeyValueIterableView<>::ForEachKeyValue(),44,44
+/src/opentelemetry-cpp/sdk/src/trace/span.cc,opentelemetry::v1::common::KeyValueIterableView<>::size(),44,44
+/src/opentelemetry-cpp/sdk/src/trace/span.cc,opentelemetry::v1::sdk::trace::Recordable::SetTraceFlags(),44,44
+/src/opentelemetry-cpp/sdk/src/trace/span.cc,opentelemetry::v1::sdk::GetEmptyAttributes()::kEmptyAttributes,16,0
+/src/opentelemetry-cpp/sdk/src/trace/span.cc,opentelemetry::v1::sdk::trace::MultiRecordable::GetRecordable()::empty,8,0
+/src/opentelemetry-cpp/sdk/src/trace/span.cc,opentelemetry::v1::sdk::GetEmptyAttributes()::array,1,1
+/src/opentelemetry-cpp/sdk/src/logs/multi_log_record_processor.cc,std::vector<>::~vector(),1276,1276
+/src/opentelemetry-cpp/sdk/src/logs/multi_log_record_processor.cc,opentelemetry::v1::sdk::logs::MultiLogRecordProcessor::~MultiLogRecordProcessor(),900,900
+/src/opentelemetry-cpp/sdk/src/logs/multi_log_record_processor.cc,std::vector<>::_M_realloc_insert<>(),468,468
+/src/opentelemetry-cpp/sdk/src/logs/multi_log_record_processor.cc,opentelemetry::v1::sdk::logs::MultiLogRecordProcessor::ForceFlush(),328,328
+/src/opentelemetry-cpp/sdk/src/logs/multi_log_record_processor.cc,opentelemetry::v1::sdk::logs::MultiLogRecordProcessor::MakeRecordable(),316,316
+/src/opentelemetry-cpp/sdk/src/logs/multi_log_record_processor.cc,opentelemetry::v1::sdk::logs::MultiLogRecordProcessor::MultiLogRecordProcessor(),296,296
+/src/opentelemetry-cpp/sdk/src/logs/multi_log_record_processor.cc,opentelemetry::v1::sdk::logs::MultiLogRecordProcessor::Shutdown(),280,280
+/src/opentelemetry-cpp/sdk/src/logs/multi_log_record_processor.cc,opentelemetry::v1::sdk::logs::MultiLogRecordProcessor::OnEmit(),212,212
+/src/opentelemetry-cpp/sdk/src/logs/multi_log_record_processor.cc,opentelemetry::v1::sdk::logs::MultiLogRecordProcessor::AddProcessor(),108,108
+/src/opentelemetry-cpp/sdk/src/metrics/aggregation/lastvalue_aggregation.cc,opentelemetry::v1::sdk::metrics::LongLastValueAggregation::Merge(),1106,1106
+/src/opentelemetry-cpp/sdk/src/metrics/aggregation/lastvalue_aggregation.cc,opentelemetry::v1::sdk::metrics::DoubleLastValueAggregation::Diff(),1036,1036
+/src/opentelemetry-cpp/sdk/src/metrics/aggregation/lastvalue_aggregation.cc,opentelemetry::v1::sdk::metrics::DoubleLastValueAggregation::Aggregate(),392,392
+/src/opentelemetry-cpp/sdk/src/metrics/aggregation/lastvalue_aggregation.cc,opentelemetry::v1::sdk::metrics::LongLastValueAggregation::Aggregate(),360,360
+/src/opentelemetry-cpp/sdk/src/metrics/aggregation/lastvalue_aggregation.cc,opentelemetry::v1::sdk::metrics::DoubleLastValueAggregation::ToPoint(),316,316
+/src/opentelemetry-cpp/sdk/src/metrics/aggregation/lastvalue_aggregation.cc,opentelemetry::v1::sdk::metrics::LongLastValueAggregation::ToPoint(),316,316
+/src/opentelemetry-cpp/sdk/src/metrics/aggregation/lastvalue_aggregation.cc,opentelemetry::v1::sdk::metrics::DoubleLastValueAggregation::DoubleLastValueAggregation(),152,152
+/src/opentelemetry-cpp/sdk/src/metrics/aggregation/lastvalue_aggregation.cc,opentelemetry::v1::sdk::metrics::LongLastValueAggregation::LongLastValueAggregation(),152,152
+/src/opentelemetry-cpp/sdk/src/metrics/aggregation/lastvalue_aggregation.cc,opentelemetry::v1::sdk::metrics::DoubleLastValueAggregation::~DoubleLastValueAggregation(),88,88
+/src/opentelemetry-cpp/sdk/src/metrics/aggregation/lastvalue_aggregation.cc,opentelemetry::v1::sdk::metrics::LongLastValueAggregation::~LongLastValueAggregation(),88,88
+/src/opentelemetry-cpp/sdk/src/metrics/aggregation/lastvalue_aggregation.cc,opentelemetry::v1::sdk::metrics::DoubleLastValueAggregation::Merge(),70,70
+/src/opentelemetry-cpp/sdk/src/metrics/state/filtered_ordered_attribute_map.cc,opentelemetry::v1::sdk::metrics::FilteredOrderedAttributeMap::FilteredOrderedAttributeMap(),1956,1956
+/src/opentelemetry-cpp/sdk/src/metrics/state/filtered_ordered_attribute_map.cc,opentelemetry::v1::nostd::function_ref<>::BindTo<>()::{lambda()#1}::_FUN(),1692,1692
+/src/opentelemetry-cpp/sdk/src/metrics/state/filtered_ordered_attribute_map.cc,std::__do_uninit_copy<>(),408,408
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_log_record_exporter_options.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcLogRecordExporterOptions::OtlpGrpcLogRecordExporterOptions(),2400,2400
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_log_record_exporter_options.cc,std::_Rb_tree<>::_M_erase(),1172,1172
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_log_record_exporter_options.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcLogRecordExporterOptions::~OtlpGrpcLogRecordExporterOptions(),376,376
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_metric_exporter_options.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcMetricExporterOptions::OtlpGrpcMetricExporterOptions(),2400,2400
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_metric_exporter_options.cc,std::_Rb_tree<>::_M_erase(),1172,1172
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_metric_exporter_options.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcMetricExporterOptions::~OtlpGrpcMetricExporterOptions(),376,376
+[section .plt],,3664,3664
+/src/emit-app/src/main.cpp,main,2592,2592
+/src/emit-app/src/main.cpp,(anonymous namespace)::EnvOr[abi:cxx11](),248,248
+/src/emit-app/src/main.cpp,std::__cxx11::basic_string<>::basic_string<>(),208,208
+/src/emit-app/src/main.cpp,bench::BackendOptions::~BackendOptions(),128,128
+/src/emit-app/src/main.cpp,__clang_call_terminate,8,8
+/src/opentelemetry-cpp/sdk/src/logs/readable_log_record.cc,opentelemetry::v1::sdk::logs::ReadableLogRecord::GetDefaultInstrumentationScope(),1156,1156
+/src/opentelemetry-cpp/sdk/src/logs/readable_log_record.cc,_GLOBAL__sub_I__ZNK13opentelemetry2v13sdk4logs17ReadableLogRecord15GetSeverityTextEv,662,662
+/src/opentelemetry-cpp/sdk/src/logs/readable_log_record.cc,opentelemetry::v1::logs::SeverityNumToText,400,0
+/src/opentelemetry-cpp/sdk/src/logs/readable_log_record.cc,opentelemetry::v1::sdk::logs::ReadableLogRecord::GetDefaultResource(),328,328
+/src/opentelemetry-cpp/sdk/src/logs/readable_log_record.cc,std::unique_ptr<>::~unique_ptr(),224,224
+/src/opentelemetry-cpp/sdk/src/logs/readable_log_record.cc,opentelemetry::v1::sdk::resource::Resource::~Resource(),144,144
+/src/opentelemetry-cpp/sdk/src/logs/readable_log_record.cc,opentelemetry::v1::sdk::logs::ReadableLogRecord::GetSeverityText(),124,124
+/src/opentelemetry-cpp/sdk/src/logs/readable_log_record.cc,opentelemetry::v1::sdk::logs::ReadableLogRecord::GetDefaultResource()::default_resource,96,0
+/src/opentelemetry-cpp/sdk/src/logs/readable_log_record.cc,opentelemetry::v1::sdk::logs::ReadableLogRecord::GetDefaultInstrumentationScope()::default_scope,32,0
+/src/opentelemetry-cpp/sdk/src/logs/readable_log_record.cc,_start,8,8
+/src/opentelemetry-cpp/sdk/src/logs/logger_context.cc,std::__detail::_Hashtable_alloc<>::_M_allocate_node<>(),2172,2172
+/src/opentelemetry-cpp/sdk/src/logs/logger_context.cc,opentelemetry::v1::sdk::logs::LoggerContext::LoggerContext(),746,746
+/src/opentelemetry-cpp/sdk/src/logs/logger_context.cc,opentelemetry::v1::sdk::logs::LoggerContext::AddProcessor(),76,76
+/src/opentelemetry-cpp/sdk/src/logs/logger_context.cc,opentelemetry::v1::sdk::logs::LoggerContext::ForceFlush(),44,44
+/src/opentelemetry-cpp/sdk/src/logs/logger_context.cc,opentelemetry::v1::sdk::logs::LoggerContext::GetProcessor(),44,44
+/src/opentelemetry-cpp/sdk/src/logs/logger_context.cc,opentelemetry::v1::sdk::logs::LoggerContext::GetResource(),44,44
+/src/opentelemetry-cpp/sdk/src/logs/logger_context.cc,opentelemetry::v1::sdk::logs::LoggerContext::Shutdown(),44,44
+/src/opentelemetry-cpp/sdk/src/common/random.cc,opentelemetry::v1::sdk::common::(anonymous namespace)::TlsRandomNumberGenerator::Seed(),883,883
+/src/opentelemetry-cpp/sdk/src/common/random.cc,std::vector<>::_M_realloc_insert<>(),558,558
+/src/opentelemetry-cpp/sdk/src/common/random.cc,opentelemetry::v1::sdk::common::Random::GenerateRandomBuffer(),500,500
+/src/opentelemetry-cpp/sdk/src/common/random.cc,opentelemetry::v1::sdk::common::Random::GenerateRandom64(),220,220
+/src/opentelemetry-cpp/sdk/src/common/random.cc,opentelemetry::v1::sdk::common::Random::GetRandomNumberGenerator(),152,152
+/src/opentelemetry-cpp/sdk/src/common/random.cc,opentelemetry::v1::sdk::common::(anonymous namespace)::TlsRandomNumberGenerator::OnFork(),44,44
+/src/opentelemetry-cpp/sdk/src/common/random.cc,opentelemetry::v1::sdk::common::(anonymous namespace)::TlsRandomNumberGenerator::flag,1,0
+[section .data],[section .data],2216,2216
+[section .data],DW.ref._ZTISt9exception,8,8
+[section .data],DW.ref.__gxx_personality_v0,8,8
+[ELF Section Headers],,0,2048
+[section .got.plt],,1848,1848
+[section .dynamic],,1472,1472
+/src/emit-app/src/histogram.cpp,bench::Histogram::Percentile(),504,504
+/src/emit-app/src/histogram.cpp,[section .dynsym],373,373
+/src/emit-app/src/histogram.cpp,bench::Histogram::Record(),168,168
+/src/emit-app/src/histogram.cpp,bench::Histogram::Buckets(),144,144
+/src/emit-app/src/histogram.cpp,bench::Histogram::Count(),56,56
+/src/emit-app/src/histogram.cpp,bench::Histogram::Max(),56,56
+/src/emit-app/src/histogram.cpp,bench::Histogram::Min(),56,56
+[section .bss],[section .bss],446,0
+[section .bss],std::cerr@GLIBCXX_3.4,288,0
+[section .bss],std::cout@GLIBCXX_3.4,272,0
+[section .bss],opentelemetry::proto::logs::v1::_ResourceLogs_default_instance_,64,0
+[section .bss],opentelemetry::proto::logs::v1::_ScopeLogs_default_instance_,64,0
+[section .bss],google::protobuf::internal::fixed_address_empty_string[abi:cxx11],32,0
+[section .bss],opentelemetry::v1::logs::SeverityNumToText,16,0
+[section .bss],opentelemetry::v1::sdk::GetEmptyAttributes()::kEmptyAttributes,16,0
+[section .bss],opentelemetry::v1::sdk::logs::MultiRecordable::GetRecordable()::empty,16,0
+[section .bss],completed.0,8,0
+[section .bss],opentelemetry::v1::context::RuntimeContext::GetStorage()::context,8,0
+[section .bss],opentelemetry::v1::sdk::common::internal_log::(anonymous namespace)::GlobalLogHandlerData::Instance()::instance,8,0
+[section .bss],opentelemetry::v1::sdk::logs::ReadableLogRecord::GetDefaultResource()::default_resource,8,0
+[section .bss],opentelemetry::v1::sdk::metrics::Meter::GetNoopObservableInsrument()::noop_instrument,8,0
+[section .bss],opentelemetry::v1::sdk::metrics::Meter::ValidateInstrument()::instrument_validator,8,0
+[section .bss],opentelemetry::v1::sdk::metrics::ObservableRegistry::Observe()::default_attribute_processor,8,0
+[section .bss],opentelemetry::v1::sdk::metrics::ViewRegistry::FindViews()::view,8,0
+[section .bss],opentelemetry::v1::sdk::resource::Resource::Create()::otel_resource,8,0
+[section .bss],opentelemetry::v1::sdk::resource::Resource::GetDefault()::default_resource,8,0
+[section .bss],opentelemetry::v1::sdk::resource::Resource::GetEmpty()::empty_resource,8,0
+[section .bss],std::__cxx11::collate<>::id@GLIBCXX_3.4.21,8,0
+[section .bss],std::ctype<>::id@GLIBCXX_3.4,8,0
+[section .bss],__libc_single_threaded@GLIBC_2.32,1,0
+/src/opentelemetry-cpp/sdk/src/metrics/export/periodic_exporting_metric_reader_factory.cc,opentelemetry::v1::sdk::metrics::PeriodicExportingMetricReaderFactory::Create(),912,912
+/src/opentelemetry-cpp/sdk/src/metrics/export/periodic_exporting_metric_reader_factory.cc,opentelemetry::v1::sdk::metrics::PeriodicExportingMetricReaderRuntimeOptions::~PeriodicExportingMetricReaderRuntimeOptions(),364,364
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_client_factory.cc,std::_Sp_counted_ptr_inplace<>::_M_get_deleter(),288,288
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_client_factory.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcClientFactory::Create(),233,233
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_client_factory.cc,std::_Sp_counted_ptr_inplace<>::~_Sp_counted_ptr_inplace(),176,176
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_client_factory.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcClientFactory::CreateReferenceGuard(),164,164
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_client_factory.cc,std::_Sp_counted_ptr_inplace<>::_M_destroy(),88,88
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_client_factory.cc,std::_Sp_counted_ptr_inplace<>::_M_dispose(),88,88
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_exporter_factory.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcExporterFactory::Create(),710,710
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_log_record_exporter_factory.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcLogRecordExporterFactory::Create(),710,710
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_metric_exporter_factory.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcMetricExporterFactory::Create(),710,710
+/src/opentelemetry-cpp/sdk/src/logs/batch_log_record_processor_factory.cc,opentelemetry::v1::sdk::logs::BatchLogRecordProcessorFactory::Create(),670,670
+/src/opentelemetry-cpp/sdk/src/trace/batch_span_processor_factory.cc,opentelemetry::v1::sdk::trace::BatchSpanProcessorFactory::Create(),670,670
+[section .gnu.version],,614,614
+[section .gnu.version_r],,496,496
+/src/emit-app/src/workload.cpp,bench::ParseWorkloadMode(),248,248
+/src/emit-app/src/workload.cpp,bench::EmitOnce(),80,80
+/src/emit-app/src/workload.cpp,[section .dynsym],76,76
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_utils.cc,opentelemetry::v1::exporter::otlp::grpc_utils::grpc_status_code_to_string(),336,336
+/src/opentelemetry-cpp/sdk/src/trace/random_id_generator.cc,opentelemetry::v1::sdk::trace::RandomIdGenerator::GenerateSpanId(),120,120
+/src/opentelemetry-cpp/sdk/src/trace/random_id_generator.cc,opentelemetry::v1::sdk::trace::RandomIdGenerator::GenerateTraceId(),120,120
+/src/opentelemetry-cpp/sdk/src/trace/random_id_generator.cc,opentelemetry::v1::sdk::trace::RandomIdGenerator::~RandomIdGenerator(),88,88
+[section .shstrtab],,0,303
+[section .text],[section .text],202,202
+[section .text],_start,38,38
+[section .text],__clang_call_terminate,16,16
+[section .text],pthread_atfork,16,16
+[section .text],_GLOBAL__sub_I__ZNK13opentelemetry2v13sdk4logs17ReadableLogRecord15GetSeverityTextEv,10,10
+[section .text],opentelemetry::v1::sdk::common::platform::AtFork(),7,7
+[section .text],std::__cxx11::basic_string<>::basic_string<>(),4,4
+[section .eh_frame],[section .eh_frame],120,120
+[section .eh_frame],__clang_call_terminate,28,28
+[section .eh_frame],_start,24,24
+[section .eh_frame],pthread_atfork,24,24
+/src/opentelemetry-cpp/sdk/src/logs/exporter.cc,opentelemetry::v1::sdk::logs::LogRecordExporter::~LogRecordExporter(),88,88
+/src/opentelemetry-cpp/sdk/src/logs/exporter.cc,opentelemetry::v1::sdk::logs::LogRecordExporter::ForceFlush(),44,44
+/src/opentelemetry-cpp/sdk/src/logs/exporter.cc,opentelemetry::v1::sdk::logs::LogRecordExporter::LogRecordExporter(),44,44
+/src/opentelemetry-cpp/sdk/src/trace/exporter.cc,opentelemetry::v1::sdk::trace::SpanExporter::~SpanExporter(),88,88
+/src/opentelemetry-cpp/sdk/src/trace/exporter.cc,opentelemetry::v1::sdk::trace::SpanExporter::ForceFlush(),44,44
+/src/opentelemetry-cpp/sdk/src/trace/exporter.cc,opentelemetry::v1::sdk::trace::SpanExporter::SpanExporter(),44,44
+[section .got],,152,152
+[section .init_array],,32,96
+[section .comment],,0,84
+[section .tbss],,64,0
+/src/opentelemetry-cpp/sdk/src/common/platform/fork_unix.cc,opentelemetry::v1::sdk::common::platform::AtFork(),41,41
+/src/opentelemetry-cpp/sdk/src/common/platform/fork_unix.cc,pthread_atfork,12,12
+[section .eh_frame_hdr],,28,28
+[section .init],,27,27
+[LOAD #5 [RW]],,16,16
+[LOAD #3 [RX]],,13,13
+[section .fini],pthread_atfork,13,13
+[section .fini_array],,8,8
+[section .plt.got],,8,8
+[LOAD #4 [R]],std::_Sp_counted_ptr<>,3,3
+[LOAD #2 [R]],,1,1
