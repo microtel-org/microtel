@@ -466,7 +466,7 @@ compileunits,symbols,vmsize,filesize
 /src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultMetricsTimeout(),220,220
 /src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultTracesTimeout(),220,220
 /src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,opentelemetry::v1::exporter::otlp::GetOtlpDefaultLogsTimeout(),204,204
-[section .rodata],[section .rodata],24865,24865
+[section .rodata],[section .rodata],24897,24897
 [section .rodata],std::_Sp_counted_ptr<>,1660,1660
 [section .rodata],std::_Sp_counted_ptr_inplace<>,1541,1541
 [section .rodata],opentelemetry::v1::nostd::shared_ptr<>::shared_ptr_wrapper,1357,1357
@@ -986,7 +986,7 @@ compileunits,symbols,vmsize,filesize
 /src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_exporter.cc,std::_Sp_counted_deleter<>::_M_dispose(),60,60
 /src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_exporter.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcExporter::GetClient(),44,44
 /src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_exporter.cc,std::_Sp_counted_deleter<>::_M_destroy(),44,44
-[section .gcc_except_table],,19318,19318
+[section .gcc_except_table],,19326,19326
 /src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_metric_exporter.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcMetricExporter::OtlpGrpcMetricExporter(),7544,7544
 /src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_metric_exporter.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcMetricExporter::Export(),5950,5950
 /src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_metric_exporter.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcMetricExporter::~OtlpGrpcMetricExporter(),1216,1216
@@ -1338,7 +1338,7 @@ compileunits,symbols,vmsize,filesize
 /src/opentelemetry-cpp/sdk/src/trace/batch_span_processor.cc,std::thread::_State_impl<>::_M_run(),76,76
 /src/opentelemetry-cpp/sdk/src/trace/batch_span_processor.cc,opentelemetry::v1::sdk::trace::BatchSpanProcessor::OnStart(),44,44
 /src/opentelemetry-cpp/sdk/src/trace/batch_span_processor.cc,std::_Sp_counted_ptr_inplace<>::_M_destroy(),44,44
-[Unmapped],,0,9922
+[Unmapped],,0,9802
 /src/opentelemetry-cpp/sdk/src/metrics/aggregation/sum_aggregation.cc,opentelemetry::v1::sdk::metrics::DoubleSumAggregation::Aggregate(),2286,2286
 /src/opentelemetry-cpp/sdk/src/metrics/aggregation/sum_aggregation.cc,opentelemetry::v1::sdk::metrics::LongSumAggregation::Aggregate(),2238,2238
 /src/opentelemetry-cpp/sdk/src/metrics/aggregation/sum_aggregation.cc,opentelemetry::v1::sdk::metrics::DoubleSumAggregation::Diff(),930,930
@@ -1547,10 +1547,10 @@ compileunits,symbols,vmsize,filesize
 /src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_metric_exporter_options.cc,std::_Rb_tree<>::_M_erase(),1172,1172
 /src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_metric_exporter_options.cc,opentelemetry::v1::exporter::otlp::OtlpGrpcMetricExporterOptions::~OtlpGrpcMetricExporterOptions(),376,376
 [section .plt],,3664,3664
-/src/emit-app/src/main.cpp,main,2592,2592
+/src/emit-app/src/main.cpp,main,2652,2652
 /src/emit-app/src/main.cpp,(anonymous namespace)::EnvOr[abi:cxx11](),248,248
 /src/emit-app/src/main.cpp,std::__cxx11::basic_string<>::basic_string<>(),208,208
-/src/emit-app/src/main.cpp,bench::BackendOptions::~BackendOptions(),128,128
+/src/emit-app/src/main.cpp,bench::BackendOptions::~BackendOptions(),148,148
 /src/emit-app/src/main.cpp,__clang_call_terminate,8,8
 /src/opentelemetry-cpp/sdk/src/logs/readable_log_record.cc,opentelemetry::v1::sdk::logs::ReadableLogRecord::GetDefaultInstrumentationScope(),1156,1156
 /src/opentelemetry-cpp/sdk/src/logs/readable_log_record.cc,_GLOBAL__sub_I__ZNK13opentelemetry2v13sdk4logs17ReadableLogRecord15GetSeverityTextEv,662,662

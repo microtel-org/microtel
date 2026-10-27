@@ -2,32 +2,32 @@
  "microtel": {
   "binary": {
    "buckets": {
-    "microtel": 678130,
-    "toml++": 55943,
-    "upb": 31012,
-    "emit-app": 29396,
-    "unattributed": 177447
+    "microtel": 704006,
+    "toml++": 55949,
+    "upb": 32678,
+    "emit-app": 31252,
+    "unattributed": 180827
    },
    "sections": {
-    "[section .rela.dyn]": 46224,
-    "[section .rodata]": 36886,
-    "[section .gcc_except_table]": 31848,
-    "[section .text]": 7259,
-    "[section .data.rel.ro]": 17168,
-    "[section .dynstr]": 7410,
-    "[Unmapped]": 6092,
-    "[section .dynsym]": 6017,
-    "[section .rela.plt]": 5640,
+    "[section .rela.dyn]": 46680,
+    "[section .rodata]": 37782,
+    "[section .gcc_except_table]": 32816,
+    "[section .text]": 7255,
+    "[section .data.rel.ro]": 17392,
+    "[section .dynstr]": 7417,
+    "[Unmapped]": 6844,
+    "[section .dynsym]": 6041,
+    "[section .rela.plt]": 5664,
     "[section .eh_frame]": 956,
-    "[section .plt]": 3776,
+    "[section .plt]": 3792,
     "[section .tbss]": 0,
     "[ELF Section Headers]": 2048,
-    "[section .got.plt]": 1904,
-    "[section .data]": 928,
+    "[section .got.plt]": 1912,
+    "[section .data]": 944,
     "[section .eh_frame_hdr]": 124,
     "[section .gnu.version_r]": 672,
     "[section .dynamic]": 592,
-    "[section .gnu.version]": 556,
+    "[section .gnu.version]": 558,
     "[ELF Program Headers]": 432,
     "[section .bss]": 0,
     "[section .shstrtab]": 303,
@@ -40,11 +40,11 @@
     "[section .interp]": 28,
     "[section .init]": 27,
     "[section .plt.got]": 24,
-    "[LOAD #5 [RW]]": 16,
     "[section .init_array]": 16,
-    "[LOAD #2 [R]]": 15,
+    "[LOAD #2 [R]]": 14,
     "[LOAD #3 [RX]]": 13,
     "[section .fini]": 13,
+    "[LOAD #5 [RW]]": 8,
     "[section .fini_array]": 8,
     "[LOAD #4 [R]]": 4
    },
@@ -60,11 +60,11 @@
     "[LOAD #5 [RW]]": 0
    },
    "stdcxx_inlined": {
-    "microtel": 482215,
-    "emit-app": 20286
+    "microtel": 499962,
+    "emit-app": 21719
    },
    "unknown_cu": {},
-   "bloaty_total": 971928
+   "bloaty_total": 1004712
   },
   "shared": {
    "OpenSSL": {
@@ -101,17 +101,17 @@
   "binary": {
    "buckets": {
     "opentelemetry-cpp": 853160,
-    "emit-app": 44946,
+    "emit-app": 45026,
     "header-inlined third-party": 7812,
-    "unattributed": 162490
+    "unattributed": 162410
    },
    "sections": {
     "[section .rela.dyn]": 43056,
-    "[section .rodata]": 40632,
-    "[section .gcc_except_table]": 19318,
+    "[section .rodata]": 40664,
+    "[section .gcc_except_table]": 19326,
     "[section .dynstr]": 16083,
     "[section .data.rel.ro]": 14392,
-    "[Unmapped]": 9922,
+    "[Unmapped]": 9802,
     "[section .rela.plt]": 5472,
     "[section .plt]": 3664,
     "[section .data]": 2232,
@@ -141,7 +141,7 @@
    "upb_in_sections": {},
    "stdcxx_inlined": {
     "opentelemetry-cpp": 542110,
-    "emit-app": 22131
+    "emit-app": 22183
    },
    "unknown_cu": {},
    "bloaty_total": 1068408

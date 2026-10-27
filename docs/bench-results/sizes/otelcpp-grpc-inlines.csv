@@ -1,9 +1,9 @@
 inlines,vmsize,filesize
 [section .eh_frame],75400,75400
 [section .rela.dyn],46560,46560
-[section .rodata],40653,40653
+[section .rodata],40685,40685
 /usr/include/c++/13/bits/char_traits.h:435,27151,27151
-[section .gcc_except_table],19318,19318
+[section .gcc_except_table],19326,19326
 /usr/include/c++/13/bits/new_allocator.h:172,18577,18577
 [section .dynstr],17017,17017
 [section .eh_frame_hdr],16572,16572
@@ -11,7 +11,7 @@ inlines,vmsize,filesize
 /usr/include/c++/13/bits/basic_string.h:264,11215,11215
 /usr/include/c++/13/bits/basic_string.h:289,11210,11210
 /usr/include/c++/13/bits/basic_string.h:223,11069,11069
-[Unmapped],0,9922
+[Unmapped],0,9802
 /usr/include/c++/13/bits/stl_construct.h:162,9149,9149
 /usr/include/c++/13/istream:106,7660,7660
 /usr/include/c++/13/bits/shared_ptr_base.h:337,7651,7651
@@ -179,14 +179,14 @@ inlines,vmsize,filesize
 /src/opentelemetry-cpp/sdk/include/opentelemetry/sdk/common/attributemap_hash.h:39,822,822
 /src/opentelemetry-cpp/api/include/opentelemetry/nostd/string_view.h:46,820,820
 /usr/include/c++/13/bits/shared_ptr_base.h:919,818,818
+/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:223,793,793
 /usr/include/c++/13/bits/basic_string.h:266,792,792
-/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:223,785,785
 [ELF Program Headers],784,784
 /usr/include/c++/13/bits/stl_tree.h:209,776,776
+/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:264,767,767
 /usr/include/c++/13/bits/locale_classes.tcc:94,754,754
 /usr/include/c++/13/ext/atomicity.h:92,753,753
 /src/opentelemetry-cpp/api/include/opentelemetry/nostd/internal/absl/types/../types/internal/variant.h:1316,746,746
-/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:264,745,745
 /src/opentelemetry-cpp/api/include/opentelemetry/trace/trace_state.h:45,737,737
 /src/opentelemetry-cpp/sdk/include/opentelemetry/sdk/trace/multi_recordable.h:44,729,729
 /usr/include/c++/13/bits/stl_tree.h:208,726,726
@@ -226,10 +226,10 @@ inlines,vmsize,filesize
 /usr/include/c++/13/bits/char_traits.h:376,568,568
 /usr/include/c++/13/bits/new_allocator.h:138,568,568
 /src/opentelemetry-cpp/sdk/include/opentelemetry/sdk/metrics/state/metric_collector.h:45,566,566
+/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/new_allocator.h:172,566,566
 /src/opentelemetry-cpp/api/include/opentelemetry/nostd/internal/absl/types/../types/internal/variant.h:1396,563,563
 /src/opentelemetry-cpp/api/include/opentelemetry/nostd/string_view.h:147,560,560
 /usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/char_traits.h:358,557,557
-/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/new_allocator.h:172,556,556
 /usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/shared_ptr_base.h:337,548,548
 /usr/include/c++/13/bits/shared_ptr_base.h:428,547,547
 /usr/include/c++/13/sstream:1153,546,546
@@ -279,19 +279,19 @@ inlines,vmsize,filesize
 /usr/include/c++/13/bits/stl_vector.h:115,451,451
 /usr/include/c++/13/bits/shared_ptr_base.h:908,450,450
 /usr/include/c++/13/bits/unique_ptr.h:176,448,448
-/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:0,447,447
 /usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:218,445,445
 /usr/include/c++/13/bits/basic_string.h:389,445,445
+/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:0,444,444
 [section .gnu.hash],440,440
 /usr/include/c++/13/bits/stl_tree.h:1941,439,439
 /src/opentelemetry-cpp/sdk/include/opentelemetry/sdk/metrics/observer_result.h:29,438,438
+/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/new_allocator.h:0,433,433
 /usr/include/c++/13/bits/std_function.h:161,433,433
 /src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc:71,432,432
 /usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/ostream:667,429,429
 /usr/include/c++/13/bits/stl_iterator.h:1111,428,428
 /usr/include/c++/13/bits/hashtable_policy.h:828,427,427
 /usr/include/c++/13/bits/new_allocator.h:104,427,427
-/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/new_allocator.h:0,426,426
 /opt/otelcpp/include/opentelemetry/nostd/shared_ptr.h:118,424,424
 /usr/include/c++/13/bits/hashtable.h:1609,424,424
 /usr/include/c++/13/bits/shared_ptr_base.h:1101,424,424
@@ -428,13 +428,13 @@ inlines,vmsize,filesize
 /usr/include/c++/13/bits/shared_ptr_base.h:917,270,270
 /opt/otelcpp/include/opentelemetry/nostd/shared_ptr.h:104,269,269
 /src/opentelemetry-cpp/api/include/opentelemetry/nostd/internal/absl/types/../types/internal/variant.h:1049,267,267
+/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:241,267,267
 /usr/include/c++/13/bits/basic_string.h:1459,266,266
 /opt/otelcpp/include/opentelemetry/trace/span_context.h:54,265,265
 /src/opentelemetry-cpp/api/include/opentelemetry/nostd/shared_ptr.h:72,265,265
 /usr/include/c++/13/bits/std_function.h:292,265,265
 /usr/include/c++/13/bits/stl_tree.h:368,264,264
 /usr/include/c++/13/bits/hashtable_policy.h:2046,263,263
-/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:241,262,262
 /src/opentelemetry-cpp/sdk/src/logs/multi_recordable.cc:118,261,261
 /usr/include/c++/13/bits/basic_string.h:901,261,261
 /usr/include/c++/13/bits/hashtable.h:1671,260,260
@@ -547,6 +547,7 @@ inlines,vmsize,filesize
 /src/opentelemetry-cpp/sdk/include/opentelemetry/sdk/metrics/meter.h:39,191,191
 /src/opentelemetry-cpp/sdk/include/opentelemetry/sdk/trace/multi_span_processor.h:115,191,191
 /usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/shared_ptr_base.h:428,191,191
+/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:193,190,190
 /usr/include/c++/13/bits/std_function.h:274,190,190
 /usr/include/c++/13/bits/stl_algobase.h:1467,190,190
 /usr/include/c++/13/bits/unique_ptr.h:140,190,190
@@ -555,7 +556,6 @@ inlines,vmsize,filesize
 /usr/include/c++/13/bits/regex_compiler.tcc:394,188,188
 /usr/include/c++/13/bits/regex_executor.tcc:540,188,188
 /src/opentelemetry-cpp/sdk/src/logs/multi_log_record_processor.cc:135,187,187
-/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:193,187,187
 /usr/include/c++/13/bits/stl_bvector.h:443,186,186
 /usr/include/c++/13/bits/stl_tree.h:198,186,186
 /usr/include/c++/13/bits/stl_tree.h:200,186,186
@@ -576,13 +576,13 @@ inlines,vmsize,filesize
 /src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_metric_exporter.cc:179,180,180
 /usr/include/c++/13/bits/stl_tree.h:2381,180,180
 /usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:213,179,179
+/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:250,179,179
 /usr/include/c++/13/bits/regex_compiler.tcc:544,179,179
 /usr/include/c++/13/bits/std_function.h:387,179,179
 /usr/include/c++/13/bits/shared_ptr_base.h:600,178,178
 /usr/include/c++/13/bits/basic_string.h:646,177,177
 /src/opentelemetry-cpp/api/include/opentelemetry/nostd/internal/absl/types/../types/internal/variant.h:1429,176,176
 /src/opentelemetry-cpp/sdk/src/logs/multi_recordable.cc:96,176,176
-/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:250,176,176
 /usr/include/c++/13/bits/basic_string.h:3190,176,176
 /usr/include/c++/13/bits/hashtable.h:2574,176,176
 /src/opentelemetry-cpp/api/include/opentelemetry/context/context.h:74,175,175
@@ -764,7 +764,6 @@ inlines,vmsize,filesize
 /usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/stl_construct.h:97,136,136
 /usr/include/c++/13/bits/std_mutex.h:113,136,136
 /src/opentelemetry-cpp/sdk/include/opentelemetry/sdk/logs/multi_recordable.h:26,135,135
-/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:1079,135,135
 /usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/char_traits.h:389,135,135
 /usr/include/c++/13/bits/stl_tree.h:1002,135,135
 /usr/include/google/protobuf/arena_impl.h:469,135,135
@@ -776,6 +775,7 @@ inlines,vmsize,filesize
 /src/opentelemetry-cpp/sdk/src/logs/multi_log_record_processor.cc:34,132,132
 /src/opentelemetry-cpp/sdk/src/metrics/export/periodic_exporting_metric_reader.cc:55,132,132
 /src/opentelemetry-cpp/sdk/src/metrics/export/periodic_exporting_metric_reader.cc:75,132,132
+/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:1079,132,132
 /usr/include/c++/13/bits/regex_compiler.tcc:358,132,132
 /usr/include/c++/13/bits/regex_compiler.tcc:365,132,132
 /usr/include/c++/13/bits/regex_compiler.tcc:370,132,132
@@ -1034,6 +1034,7 @@ inlines,vmsize,filesize
 /usr/include/c++/13/bits/stl_tree.h:1983,98,98
 /usr/include/c++/13/bits/stl_tree.h:212,98,98
 /usr/include/c++/13/bits/stl_tree.h:2547,98,98
+/build/emit-app//src/emit-app/src/main.cpp:0,97,97
 /usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:400,97,97
 /src/opentelemetry-cpp/api/include/opentelemetry/nostd/internal/absl/types/../types/internal/variant.h:611,96,96
 /src/opentelemetry-cpp/sdk/include/opentelemetry/sdk/trace/multi_span_processor.h:165,96,96
@@ -1069,7 +1070,6 @@ inlines,vmsize,filesize
 /usr/include/c++/13/bits/stl_algobase.h:1170,93,93
 /usr/include/c++/13/bits/stl_bvector.h:552,93,93
 /usr/include/google/protobuf/arenastring.h:429,93,93
-/build/emit-app//src/emit-app/src/main.cpp:0,92,92
 /src/opentelemetry-cpp/api/include/opentelemetry/nostd/variant.h:36,92,92
 /src/opentelemetry-cpp/sdk/include/opentelemetry/sdk/common/circular_buffer_range.h:44,92,92
 /src/opentelemetry-cpp/sdk/include/opentelemetry/sdk/metrics/observer_result.h:34,92,92
@@ -1326,7 +1326,6 @@ inlines,vmsize,filesize
 /src/opentelemetry-cpp/sdk/include/opentelemetry/sdk/trace/multi_span_processor.h:158,74,74
 /src/opentelemetry-cpp/sdk/src/metrics/aggregation/lastvalue_aggregation.cc:112,74,74
 /src/opentelemetry-cpp/sdk/src/metrics/aggregation/lastvalue_aggregation.cc:52,74,74
-/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:189,74,74
 /usr/include/c++/13/bits/hashtable.h:1610,74,74
 /usr/include/c++/13/bits/regex_automaton.h:319,74,74
 /usr/include/c++/13/bits/regex_executor.h:247,74,74
@@ -1366,6 +1365,7 @@ inlines,vmsize,filesize
 /opt/otelcpp/include/opentelemetry/nostd/internal/absl/types/../types/internal/variant.h:656,71,71
 /src/opentelemetry-cpp/sdk/include/opentelemetry/sdk/metrics/aggregation/default_aggregation.h:39,71,71
 /src/opentelemetry-cpp/sdk/src/logs/multi_recordable.cc:39,71,71
+/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:189,71,71
 /usr/include/c++/13/bits/hashtable.h:1392,71,71
 /usr/include/c++/13/bits/regex_executor.tcc:312,71,71
 /usr/include/c++/13/bits/regex_scanner.tcc:200,71,71
@@ -1624,6 +1624,7 @@ inlines,vmsize,filesize
 /usr/include/c++/13/bits/std_function.h:411,58,58
 /usr/include/c++/13/bits/stl_algo.h:2249,58,58
 /usr/include/c++/13/bits/stl_bvector.h:551,58,58
+/build/emit-app//src/emit-app/src/main.cpp:47,57,57
 /opt/otelcpp/include/opentelemetry/context/runtime_context.h:304,57,57
 /src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc:37,57,57
 /src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc:88,57,57
@@ -1750,6 +1751,7 @@ inlines,vmsize,filesize
 /src/opentelemetry-cpp/sdk/src/metrics/meter.cc:462,54,54
 /src/opentelemetry-cpp/sdk/src/trace/tracer.cc:154,54,54
 /src/opentelemetry-cpp/sdk/src/trace/tracer_context.cc:32,54,54
+/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:230,54,54
 /usr/include/c++/13/bits/basic_string.h:765,54,54
 /usr/include/c++/13/bits/deque.tcc:493,54,54
 /usr/include/c++/13/bits/regex_compiler.h:360,54,54
@@ -1836,7 +1838,6 @@ inlines,vmsize,filesize
 /src/opentelemetry-cpp/sdk/src/metrics/sync_instruments.cc:111,51,51
 /src/opentelemetry-cpp/sdk/src/metrics/sync_instruments.cc:148,51,51
 /src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc:48,51,51
-/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:230,51,51
 /usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.tcc:149,51,51
 /usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/stl_vector.h:0,51,51
 /usr/include/c++/13/bits/basic_string.tcc:202,51,51
@@ -2208,7 +2209,6 @@ inlines,vmsize,filesize
 /usr/include/c++/13/bits/stl_tree.h:2382,43,43
 /usr/include/c++/13/bits/vector.tcc:468,43,43
 /build/emit-app//src/emit-app/src/control_socket.cpp:185,42,42
-/build/emit-app//src/emit-app/src/main.cpp:47,42,42
 /build/otelcpp/generated/third_party/opentelemetry-proto/opentelemetry/proto/common/v1/common.pb.h:1171,42,42
 /opt/otelcpp/include/opentelemetry/nostd/unique_ptr.h:138,42,42
 /src/opentelemetry-cpp/api/include/opentelemetry/nostd/function_ref.h:37,42,42
@@ -2485,8 +2485,8 @@ inlines,vmsize,filesize
 /usr/include/c++/13/future:108,38,38
 /usr/include/c++/13/future:595,38,38
 /build/emit-app//src/emit-app/src/histogram.cpp:55,37,37
-/build/emit-app//src/emit-app/src/main.cpp:69,37,37
-/build/emit-app//src/emit-app/src/main.cpp:81,37,37
+/build/emit-app//src/emit-app/src/main.cpp:73,37,37
+/build/emit-app//src/emit-app/src/main.cpp:85,37,37
 /opt/otelcpp/include/opentelemetry/context/runtime_context.h:277,37,37
 /opt/otelcpp/include/opentelemetry/trace/span_context_kv_iterable_view.h:0,37,37
 /src/opentelemetry-cpp/api/include/opentelemetry/common/kv_properties.h:59,37,37
@@ -3090,7 +3090,6 @@ inlines,vmsize,filesize
 /usr/include/c++/13/ostream:572,29,29
 /usr/include/grpcpp/client_context.h:274,29,29
 /usr/include/grpcpp/security/credentials.h:150,29,29
-/build/emit-app//src/emit-app/src/main.cpp:36,28,28
 /build/otelcpp/generated/third_party/opentelemetry-proto/opentelemetry/proto/logs/v1/logs.pb.h:1169,28,28
 /opt/otelcpp/include/opentelemetry/context/runtime_context.h:76,28,28
 /opt/otelcpp/include/opentelemetry/nostd/shared_ptr.h:58,28,28
@@ -3251,7 +3250,7 @@ inlines,vmsize,filesize
 /build/emit-app//src/emit-app/src/main.cpp:45,26,26
 /build/emit-app//src/emit-app/src/main.cpp:57,26,26
 /build/emit-app//src/emit-app/src/main.cpp:58,26,26
-/build/emit-app//src/emit-app/src/main.cpp:88,26,26
+/build/emit-app//src/emit-app/src/main.cpp:92,26,26
 /build/otelcpp/generated/third_party/opentelemetry-proto/opentelemetry/proto/metrics/v1/metrics.pb.h:3900,26,26
 /build/otelcpp/generated/third_party/opentelemetry-proto/opentelemetry/proto/metrics/v1/metrics.pb.h:4981,26,26
 /opt/otelcpp/include/opentelemetry/context/runtime_context.h:93,26,26
@@ -3322,6 +3321,7 @@ inlines,vmsize,filesize
 /usr/include/c++/13/future:428,26,26
 /usr/include/c++/13/ostream:169,26,26
 /build/emit-app//src/emit-app/src/main.cpp:22,25,25
+/build/emit-app//src/emit-app/src/main.cpp:36,25,25
 /build/otelcpp/generated/third_party/opentelemetry-proto/opentelemetry/proto/common/v1/common.pb.h:865,25,25
 /opt/otelcpp/include/opentelemetry/nostd/internal/absl/types/../types/internal/variant.h:657,25,25
 /opt/otelcpp/include/opentelemetry/nostd/internal/absl/types/../types/internal/variant.h:986,25,25
@@ -3641,7 +3641,6 @@ inlines,vmsize,filesize
 /opt/otelcpp/include/opentelemetry/context/runtime_context.h:207,21,21
 /opt/otelcpp/include/opentelemetry/context/runtime_context.h:288,21,21
 /opt/otelcpp/include/opentelemetry/trace/span_context_kv_iterable_view.h:112,21,21
-/src/emit-app/include/backend.hpp:38,21,21
 /src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_client.cc:528,21,21
 /src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_client.cc:638,21,21
 /src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_client_factory.cc:16,21,21
@@ -3729,8 +3728,8 @@ inlines,vmsize,filesize
 /build/emit-app//src/emit-app/src/histogram.cpp:18,20,20
 /build/emit-app//src/emit-app/src/main.cpp:20,20,20
 /build/emit-app//src/emit-app/src/main.cpp:28,20,20
-/build/emit-app//src/emit-app/src/main.cpp:66,20,20
-/build/emit-app//src/emit-app/src/main.cpp:78,20,20
+/build/emit-app//src/emit-app/src/main.cpp:70,20,20
+/build/emit-app//src/emit-app/src/main.cpp:82,20,20
 /build/emit-app//src/emit-app/src/workload.cpp:32,20,20
 /build/otelcpp/generated/third_party/opentelemetry-proto/opentelemetry/proto/metrics/v1/metrics.pb.h:4946,20,20
 /build/otelcpp/generated/third_party/opentelemetry-proto/opentelemetry/proto/trace/v1/trace.pb.h:1166,20,20
@@ -3837,6 +3836,7 @@ inlines,vmsize,filesize
 /build/emit-app//src/emit-app/src/backend_otelcpp.cpp:117,19,19
 /build/emit-app//src/emit-app/src/histogram.cpp:115,19,19
 /build/emit-app//src/emit-app/src/histogram.cpp:119,19,19
+/build/emit-app//src/emit-app/src/main.cpp:62,19,19
 /build/otelcpp/generated/third_party/opentelemetry-proto/opentelemetry/proto/common/v1/common.pb.h:1175,19,19
 /build/otelcpp/generated/third_party/opentelemetry-proto/opentelemetry/proto/resource/v1/resource.pb.h:83,19,19
 /build/otelcpp/generated/third_party/opentelemetry-proto/opentelemetry/proto/trace/v1/trace.pb.h:2638,19,19
@@ -3926,7 +3926,7 @@ inlines,vmsize,filesize
 /build/emit-app//src/emit-app/src/control_socket.cpp:238,18,18
 /build/emit-app//src/emit-app/src/control_socket.cpp:336,18,18
 /build/emit-app//src/emit-app/src/main.cpp:23,18,18
-/build/emit-app//src/emit-app/src/main.cpp:71,18,18
+/build/emit-app//src/emit-app/src/main.cpp:75,18,18
 /build/otelcpp/generated/third_party/opentelemetry-proto/opentelemetry/proto/common/v1/common.pb.h:1260,18,18
 /build/otelcpp/generated/third_party/opentelemetry-proto/opentelemetry/proto/common/v1/common.pb.h:1600,18,18
 /build/otelcpp/generated/third_party/opentelemetry-proto/opentelemetry/proto/logs/v1/logs.pb.h:1034,18,18
@@ -4064,8 +4064,8 @@ inlines,vmsize,filesize
 /build/emit-app//src/emit-app/src/control_socket.cpp:183,17,17
 /build/emit-app//src/emit-app/src/control_socket.cpp:253,17,17
 /build/emit-app//src/emit-app/src/control_socket.cpp:40,17,17
-/build/emit-app//src/emit-app/src/main.cpp:73,17,17
 /build/emit-app//src/emit-app/src/main.cpp:77,17,17
+/build/emit-app//src/emit-app/src/main.cpp:81,17,17
 /build/otelcpp/generated/third_party/opentelemetry-proto/opentelemetry/proto/common/v1/common.pb.h:1157,17,17
 /build/otelcpp/generated/third_party/opentelemetry-proto/opentelemetry/proto/trace/v1/trace.pb.h:3094,17,17
 /opt/otelcpp/include/opentelemetry/nostd/internal/absl/types/../types/internal/variant.h:358,17,17
@@ -4150,7 +4150,7 @@ inlines,vmsize,filesize
 /build/emit-app//src/emit-app/src/histogram.cpp:122,16,16
 /build/emit-app//src/emit-app/src/histogram.cpp:45,16,16
 /build/emit-app//src/emit-app/src/histogram.cpp:80,16,16
-/build/emit-app//src/emit-app/src/main.cpp:65,16,16
+/build/emit-app//src/emit-app/src/main.cpp:69,16,16
 /build/otelcpp/generated/third_party/opentelemetry-proto/opentelemetry/proto/logs/v1/logs.pb.h:723,16,16
 /build/otelcpp/generated/third_party/opentelemetry-proto/opentelemetry/proto/logs/v1/logs.pb.h:725,16,16
 /build/otelcpp/generated/third_party/opentelemetry-proto/opentelemetry/proto/metrics/v1/metrics.pb.h:3902,16,16
@@ -4172,7 +4172,7 @@ inlines,vmsize,filesize
 /opt/otelcpp/include/opentelemetry/sdk/trace/sampler.h:74,16,16
 /opt/otelcpp/include/opentelemetry/trace/span_context_kv_iterable.h:21,16,16
 /opt/otelcpp/include/opentelemetry/trace/span_context_kv_iterable_view.h:56,16,16
-/src/emit-app/include/backend.hpp:92,16,16
+/src/emit-app/include/backend.hpp:93,16,16
 /src/opentelemetry-cpp/api/include/opentelemetry/common/key_value_iterable_view.h:79,16,16
 /src/opentelemetry-cpp/api/include/opentelemetry/common/timestamp.h:104,16,16
 /src/opentelemetry-cpp/api/include/opentelemetry/metrics/noop.h:102,16,16
@@ -4383,7 +4383,7 @@ inlines,vmsize,filesize
 /build/emit-app//src/emit-app/src/control_socket.cpp:197,15,15
 /build/emit-app//src/emit-app/src/control_socket.cpp:219,15,15
 /build/emit-app//src/emit-app/src/control_socket.cpp:245,15,15
-/build/emit-app//src/emit-app/src/main.cpp:84,15,15
+/build/emit-app//src/emit-app/src/main.cpp:88,15,15
 /build/otelcpp/generated/third_party/opentelemetry-proto/opentelemetry/proto/metrics/v1/metrics.pb.h:5239,15,15
 /opt/otelcpp/include/opentelemetry/common/key_value_iterable_view.h:66,15,15
 /opt/otelcpp/include/opentelemetry/context/context.h:135,15,15
@@ -4681,6 +4681,7 @@ inlines,vmsize,filesize
 /opt/otelcpp/include/opentelemetry/logs/logger.h:78,13,13
 /opt/otelcpp/include/opentelemetry/nostd/shared_ptr.h:85,13,13
 /opt/otelcpp/include/opentelemetry/trace/span_context_kv_iterable_view.h:79,13,13
+/src/emit-app/include/backend.hpp:38,13,13
 /src/opentelemetry-cpp/api/include/opentelemetry/trace/context.h:23,13,13
 /src/opentelemetry-cpp/api/include/opentelemetry/trace/span_context.h:60,13,13
 /src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_client.cc:270,13,13
@@ -4786,7 +4787,7 @@ inlines,vmsize,filesize
 /build/emit-app//src/emit-app/src/control_socket.cpp:196,12,12
 /build/emit-app//src/emit-app/src/main.cpp:33,12,12
 /build/emit-app//src/emit-app/src/main.cpp:54,12,12
-/build/emit-app//src/emit-app/src/main.cpp:86,12,12
+/build/emit-app//src/emit-app/src/main.cpp:90,12,12
 /build/otelcpp/generated/third_party/opentelemetry-proto/opentelemetry/proto/collector/logs/v1/logs_service.pb.h:83,12,12
 /build/otelcpp/generated/third_party/opentelemetry-proto/opentelemetry/proto/collector/metrics/v1/metrics_service.pb.h:83,12,12
 /build/otelcpp/generated/third_party/opentelemetry-proto/opentelemetry/proto/collector/trace/v1/trace_service.pb.h:83,12,12
@@ -5442,7 +5443,7 @@ inlines,vmsize,filesize
 /build/emit-app//src/emit-app/src/control_socket.cpp:318,9,9
 /build/emit-app//src/emit-app/src/control_socket.cpp:50,9,9
 /build/emit-app//src/emit-app/src/histogram.cpp:50,9,9
-/build/emit-app//src/emit-app/src/main.cpp:82,9,9
+/build/emit-app//src/emit-app/src/main.cpp:86,9,9
 /build/otelcpp/generated/third_party/opentelemetry-proto/opentelemetry/proto/logs/v1/logs.pb.h:1085,9,9
 /build/otelcpp/generated/third_party/opentelemetry-proto/opentelemetry/proto/logs/v1/logs.pb.h:1553,9,9
 /build/otelcpp/generated/third_party/opentelemetry-proto/opentelemetry/proto/logs/v1/logs.pb.h:1664,9,9
@@ -6229,7 +6230,7 @@ inlines,vmsize,filesize
 /build/emit-app//src/emit-app/src/histogram.cpp:101,5,5
 /build/emit-app//src/emit-app/src/histogram.cpp:106,5,5
 /build/emit-app//src/emit-app/src/histogram.cpp:111,5,5
-/build/emit-app//src/emit-app/src/main.cpp:61,5,5
+/build/emit-app//src/emit-app/src/main.cpp:65,5,5
 /build/otelcpp/generated/third_party/opentelemetry-proto/opentelemetry/proto/common/v1/common.pb.h:1233,5,5
 /build/otelcpp/generated/third_party/opentelemetry-proto/opentelemetry/proto/metrics/v1/metrics.pb.h:5427,5,5
 /build/otelcpp/generated/third_party/opentelemetry-proto/opentelemetry/proto/trace/v1/trace.pb.h:1160,5,5

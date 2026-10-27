@@ -3607,7 +3607,7 @@ compileunits,inlines,vmsize,filesize
 /src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc:1014,2,2
 /src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc:1032,2,2
 /src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc:996,2,2
-[section .rodata],,40632,40632
+[section .rodata],,40664,40664
 /src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,[section .eh_frame],2088,2088
 /src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,/usr/include/c++/13/bits/char_traits.h:435,1108,1108
 /src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,/usr/include/c++/13/bits/stl_construct.h:162,1103,1103
@@ -5808,7 +5808,7 @@ compileunits,inlines,vmsize,filesize
 /src/emit-app/src/backend_otelcpp.cpp,/opt/otelcpp/include/opentelemetry/sdk/trace/sampler.h:74,16,16
 /src/emit-app/src/backend_otelcpp.cpp,/opt/otelcpp/include/opentelemetry/trace/span_context_kv_iterable.h:21,16,16
 /src/emit-app/src/backend_otelcpp.cpp,/opt/otelcpp/include/opentelemetry/trace/span_context_kv_iterable_view.h:56,16,16
-/src/emit-app/src/backend_otelcpp.cpp,/src/emit-app/include/backend.hpp:92,16,16
+/src/emit-app/src/backend_otelcpp.cpp,/src/emit-app/include/backend.hpp:93,16,16
 /src/emit-app/src/backend_otelcpp.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/charconv.h:0,16,16
 /src/emit-app/src/backend_otelcpp.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/charconv.h:65,16,16
 /src/emit-app/src/backend_otelcpp.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/shared_ptr_base.h:134,16,16
@@ -7966,7 +7966,7 @@ compileunits,inlines,vmsize,filesize
 /src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_exporter.cc,/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_exporter.cc:102,3,3
 /src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_exporter.cc,/usr/include/c++/13/bits/stl_tree.h:1904,3,3
 /src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_exporter.cc,/usr/include/google/protobuf/arena_impl.h:468,3,3
-[section .gcc_except_table],,19318,19318
+[section .gcc_except_table],,19326,19326
 /src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_metric_exporter.cc,[section .eh_frame],1080,1080
 /src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_metric_exporter.cc,/usr/include/c++/13/bits/shared_ptr_base.h:337,620,620
 /src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_metric_exporter.cc,/usr/include/c++/13/bits/shared_ptr_base.h:1070,467,467
@@ -10923,7 +10923,7 @@ compileunits,inlines,vmsize,filesize
 /src/opentelemetry-cpp/sdk/src/trace/batch_span_processor.cc,/src/opentelemetry-cpp/sdk/include/opentelemetry/sdk/common/atomic_unique_ptr.h:28,2,2
 /src/opentelemetry-cpp/sdk/src/trace/batch_span_processor.cc,/src/opentelemetry-cpp/sdk/include/opentelemetry/sdk/common/atomic_unique_ptr.h:55,2,2
 /src/opentelemetry-cpp/sdk/src/trace/batch_span_processor.cc,/src/opentelemetry-cpp/sdk/include/opentelemetry/sdk/common/circular_buffer.h:104,2,2
-[Unmapped],,0,9922
+[Unmapped],,0,9802
 /src/opentelemetry-cpp/sdk/src/metrics/aggregation/sum_aggregation.cc,[section .eh_frame],1016,1016
 /src/opentelemetry-cpp/sdk/src/metrics/aggregation/sum_aggregation.cc,/usr/include/c++/13/bits/this_thread_sleep.h:80,479,479
 /src/opentelemetry-cpp/sdk/src/metrics/aggregation/sum_aggregation.cc,/usr/include/c++/13/bits/atomic_base.h:523,306,306
@@ -12838,13 +12838,13 @@ compileunits,inlines,vmsize,filesize
 /src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_metric_exporter_options.cc,/usr/include/c++/13/bits/basic_string.h:189,4,4
 /src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_metric_exporter_options.cc,/usr/include/c++/13/bits/stl_tree.h:199,4,4
 [section .plt],,3664,3664
-/src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:223,215,215
+/src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:223,223,223
 /src/emit-app/src/main.cpp,[section .eh_frame],188,188
-/src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:264,164,164
-/src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/new_allocator.h:172,126,126
-/src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:241,112,112
+/src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:264,186,186
+/src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/new_allocator.h:172,136,136
+/src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:241,117,117
 /src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/ext/string_conversions.h:0,112,112
-/src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:0,92,92
+/src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:0,97,97
 /src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/char_traits.h:358,84,84
 /src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/char_traits.h:435,84,84
 /src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.tcc:144,75,75
@@ -12853,26 +12853,25 @@ compileunits,inlines,vmsize,filesize
 /src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:427,66,66
 /src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/new_allocator.h:134,64,64
 /src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/ext/string_conversions.h:87,60,60
+/src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:47,57,57
 /src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/ext/string_conversions.h:66,54,54
-/src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:0,53,53
 /src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/ext/string_conversions.h:82,52,52
 /src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/ext/string_conversions.h:84,52,52
+/src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:0,50,50
 /src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/ext/string_conversions.h:85,48,48
 /src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/ext/string_conversions.h:88,48,48
+/src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/new_allocator.h:0,47,47
 /src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.tcc:143,46,46
-/src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:47,42,42
-/src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/new_allocator.h:0,40,40
 /src/emit-app/src/main.cpp,[section .eh_frame_hdr],40,40
-/src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:69,37,37
-/src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:81,37,37
+/src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:73,37,37
+/src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:85,37,37
 /src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.tcc:227,36,36
 /src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/new_allocator.h:151,36,36
 /src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:218,33,33
+/src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:250,33,33
 /src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/char_traits.h:399,33,33
 /src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:213,31,31
-/src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:250,30,30
 /src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/new_allocator.h:140,30,30
-/src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:36,28,28
 /src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:37,26,26
 /src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:38,26,26
 /src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:39,26,26
@@ -12881,36 +12880,38 @@ compileunits,inlines,vmsize,filesize
 /src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:45,26,26
 /src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:57,26,26
 /src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:58,26,26
-/src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:88,26,26
+/src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:92,26,26
+/src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:230,26,26
 /src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:22,25,25
-/src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:230,23,23
-/src/emit-app/src/main.cpp,/src/emit-app/include/backend.hpp:38,21,21
-/src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:1079,21,21
+/src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:36,25,25
+/src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:193,21,21
 /src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:20,20,20
 /src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:28,20,20
-/src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:66,20,20
-/src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:78,20,20
+/src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:70,20,20
+/src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:82,20,20
+/src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:62,19,19
 /src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.tcc:0,19,19
 /src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:23,18,18
-/src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:71,18,18
-/src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:193,18,18
+/src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:75,18,18
+/src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:1079,18,18
 /src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/unique_ptr.h:99,18,18
-/src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:73,17,17
 /src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:77,17,17
-/src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:65,16,16
-/src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:84,15,15
+/src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:81,17,17
+/src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:69,16,16
+/src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:88,15,15
 /src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/ostream:572,15,15
 /src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/ostream:573,15,15
 /src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:34,14,14
 /src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:56,14,14
-/src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:189,13,13
+/src/emit-app/src/main.cpp,/src/emit-app/include/backend.hpp:38,13,13
 /src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/ostream:574,13,13
 /src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:33,12,12
 /src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:54,12,12
-/src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:86,12,12
+/src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:90,12,12
 /src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:646,12,12
 /src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:643,11,11
-/src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:82,9,9
+/src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:189,10,10
+/src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:86,9,9
 /src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:650,9,9
 /src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:21,8,8
 /src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:43,8,8
@@ -12919,7 +12920,7 @@ compileunits,inlines,vmsize,filesize
 /src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:1072,7,7
 /src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/unique_ptr.h:0,7,7
 /src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/ostream:0,7,7
-/src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:61,5,5
+/src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:65,5,5
 /src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:645,5,5
 /src/emit-app/src/main.cpp,/build/emit-app//src/emit-app/src/main.cpp:55,4,4
 /src/emit-app/src/main.cpp,/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/char_traits.h:0,4,4

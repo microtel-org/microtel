@@ -1,13 +1,13 @@
 sections,vmsize,filesize
-.text,799920,799920
+.text,800000,800000
 .eh_frame,75400,75400
 .rela.dyn,46560,46560
-.rodata,40656,40656
-.gcc_except_table,19318,19318
+.rodata,40688,40688
+.gcc_except_table,19326,19326
 .dynstr,17018,17018
 .eh_frame_hdr,16576,16576
 .data.rel.ro,14632,14632
-[Unmapped],0,9917
+[Unmapped],0,9797
 .dynsym,7368,7368
 .rela.plt,5472,5472
 .plt,3664,3664
