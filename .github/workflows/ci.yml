@@ -707,6 +707,10 @@ jobs:
           apt-get install -y --no-install-recommends \
             g++ make cmake perl python3-venv ca-certificates git
       - uses: actions/checkout@v4
+      # The workspace belongs to the runner's uid, not the container's root,
+      # so git refuses to `git archive` it without this.
+      - name: Trust the workspace
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Install Conan
         run: |
           python3 -m venv /opt/conan
