@@ -2,12 +2,12 @@
 
 | | |
 |---|---|
-| **Build** | The bench SUT images `bench-sut-otelcpp-grpc` and `bench-sut-microtel` built 2026-09-27 03:50 UTC from master at about `6c2fe10` (just before the v1.2.0 tag): the same images, and the same `/emit_app` binaries, as the [2026-09-27 benchmark run](../README.md). Measured 2026-10-26. |
+| **Build** | The bench SUT images `bench-sut-otelcpp-grpc` and `bench-sut-microtel` built 2026-10-26 23:29–23:31 UTC from the v1.2.4 release commit, `84ac4c0` before #462 was rebased onto master and `5bbc655` after (the rebase changed only docs and packaging metadata): the same images, and the same `/emit_app` binaries, as the [v1.2.4 benchmark run](../README.md). Measured 2026-10-26. |
 | **Packages** | Ubuntu 24.04 (`ubuntu:24.04`) runtime packages in each image; versions [below](#versions). opentelemetry-cpp v1.19.0, built from source. |
 | **Method** | Each `/emit_app`, stripped (GNU strip 2.42), split by compile unit with [bloaty](https://github.com/google/bloaty) (upstream `f1a83e6`), using the unstripped binary as `--debug-file`. Plus every shared library `ldd` resolves in the image, sized from the file on disk; two that ship unstripped are counted stripped. [Commands](#commands). |
 
-These figures replace the "benchmark binary size" comparison (43.1 MB against
-17.5 MB) that the benchmark README used to report. That compared the
+These figures replace the "benchmark binary size" comparison (withdrawn: 43.1 MB
+against 17.5 MB) that the benchmark README used to report. That compared the
 executables' file sizes with debug info (over 92% of each) and without the
 shared libraries they load. #445 tracks fixing the benchmark driver.
 
@@ -33,10 +33,10 @@ loader (`ld-linux-x86-64.so.2`) and `linux-vdso.so.1` are excluded.
 | re2 | shared library | 400,480 | 0.4 | 1.6% |
 | c-ares | shared library | 157,792 | 0.2 | 0.6% |
 | zlib | shared library | 113,000 | 0.1 | 0.4% |
-| emit-app | in binary | 44,946 | 0.0 | 0.2% |
+| emit-app | in binary | 45,026 | 0.0 | 0.2% |
 | libaddress_sorting.so.29 (gRPC package, not in the listed gRPC set) | shared library | 14,648 | 0.0 | 0.1% |
 | header-inlined third-party (protobuf/gRPC headers) | in binary | 7,812 | 0.0 | 0.0% |
-| unattributed (bloaty [section]/[Unmapped]/ELF rows, see below) | in binary | 162,490 | 0.2 | 0.6% |
+| unattributed (bloaty [section]/[Unmapped]/ELF rows, see below) | in binary | 162,410 | 0.2 | 0.6% |
 | **Total, incl. C/C++ runtime** | | **25,387,416** | **25.4** | 100.0% |
 | **Total, excl. C/C++ runtime** | | **19,530,128** | **19.5** | |
 
@@ -51,30 +51,30 @@ sections, so both footprints are now debug-free and comparable.
 
 | Library | Where | Bytes | MB | % of total |
 |---|---|---:|---:|---:|
-| OpenSSL (libssl + libcrypto) | shared library | 6,005,912 | 6.0 | 45.8% |
-| C/C++ runtime (libstdc++, libgcc_s, libc, libm) | shared library | 5,857,288 | 5.9 | 44.6% |
-| microtel (static) | in binary | 678,130 | 0.7 | 5.2% |
+| OpenSSL (libssl + libcrypto) | shared library | 6,005,912 | 6.0 | 45.7% |
+| C/C++ runtime (libstdc++, libgcc_s, libc, libm) | shared library | 5,857,288 | 5.9 | 44.5% |
+| microtel (static) | in binary | 704,006 | 0.7 | 5.4% |
 | nghttp2 | shared library | 170,352 | 0.2 | 1.3% |
 | zlib | shared library | 113,000 | 0.1 | 0.9% |
-| toml++ (header-only) | in binary | 55,943 | 0.1 | 0.4% |
-| upb (vendored, incl. utf8_range) | in binary | 31,012 | 0.0 | 0.2% |
-| emit-app | in binary | 29,396 | 0.0 | 0.2% |
-| unattributed (bloaty [section]/[Unmapped]/ELF rows, see below) | in binary | 177,447 | 0.2 | 1.4% |
-| **Total, incl. C/C++ runtime** | | **13,118,480** | **13.1** | 100.0% |
-| **Total, excl. C/C++ runtime** | | **7,261,192** | **7.3** | |
+| toml++ (header-only) | in binary | 55,949 | 0.1 | 0.4% |
+| upb (vendored, incl. utf8_range) | in binary | 32,678 | 0.0 | 0.2% |
+| emit-app | in binary | 31,252 | 0.0 | 0.2% |
+| unattributed (bloaty [section]/[Unmapped]/ELF rows, see below) | in binary | 180,827 | 0.2 | 1.4% |
+| **Total, incl. C/C++ runtime** | | **13,151,264** | **13.2** | 100.0% |
+| **Total, excl. C/C++ runtime** | | **7,293,976** | **7.3** | |
 
 ## Subtotals
 
 Computed from exact bytes, not from the rounded rows above. The shared base is the same
-files in both images (same Ubuntu packages, same sizes).
+files in both images, byte for byte (one zlib package revision differs; see [Versions](#versions)).
 
 | Subtotal | otelcpp-grpc bytes | MB | microtel bytes | MB |
 |---|---:|---:|---:|---:|
 | Shared base (OpenSSL + zlib + C/C++ runtime) | 11,976,200 | 12.0 | 11,976,200 | 12.0 |
-| Telemetry stack (everything else) | 13,411,216 | 13.4 | 1,142,280 | 1.1 |
-| **Total** | 25,387,416 | 25.4 | 13,118,480 | 13.1 |
+| Telemetry stack (everything else) | 13,411,216 | 13.4 | 1,175,064 | 1.2 |
+| **Total** | 25,387,416 | 25.4 | 13,151,264 | 13.2 |
 
-Telemetry-stack ratio, otelcpp-grpc / microtel: 13,411,216 / 1,142,280 = **11.7×** (unrounded 11.7407).
+Telemetry-stack ratio, otelcpp-grpc / microtel: 13,411,216 / 1,175,064 = **11.4×** (unrounded 11.4132).
 
 ## Inside the stripped /emit_app
 
@@ -88,9 +88,9 @@ shows how much of each bucket it is.
 | Bucket | Bytes | % of stripped binary | of which inlined libstdc++ template code |
 |---|---:|---:|---:|
 | opentelemetry-cpp (static) | 853,160 | 79.9% | 542,110 |
-| emit-app | 44,946 | 4.2% | 22,131 |
+| emit-app | 45,026 | 4.2% | 22,183 |
 | header-inlined third-party (protobuf/gRPC headers) | 7,812 | 0.7% | 0 |
-| unattributed | 162,490 | 15.2% | 0 |
+| unattributed | 162,410 | 15.2% | 0 |
 | **Total = stripped /emit_app** | **1,068,408** | 100.0% | |
 
 bloaty `[section]` / `[Unmapped]` / ELF rows (bytes no compile unit claims), all in "unattributed":
@@ -98,11 +98,11 @@ bloaty `[section]` / `[Unmapped]` / ELF rows (bytes no compile unit claims), all
 | bloaty row | Bytes |
 |---|---:|
 | `[section .rela.dyn]` | 43,056 |
-| `[section .rodata]` | 40,632 |
-| `[section .gcc_except_table]` | 19,318 |
+| `[section .rodata]` | 40,664 |
+| `[section .gcc_except_table]` | 19,326 |
 | `[section .dynstr]` | 16,083 |
 | `[section .data.rel.ro]` | 14,392 |
-| `[Unmapped]` | 9,922 |
+| `[Unmapped]` | 9,802 |
 | `[section .rela.plt]` | 5,472 |
 | `[section .plt]` | 3,664 |
 | `[section .data]` | 2,232 |
@@ -126,41 +126,41 @@ bloaty `[section]` / `[Unmapped]` / ELF rows (bytes no compile unit claims), all
 | `[section .plt.got]` | 8 |
 | `[LOAD #4 [R]]` | 3 |
 | `[LOAD #2 [R]]` | 1 |
-| **Sum (= unattributed)** | **162,490** |
+| **Sum (= unattributed)** | **162,410** |
 
-### microtel (971,928 B stripped)
+### microtel (1,004,712 B stripped)
 
 | Bucket | Bytes | % of stripped binary | of which inlined libstdc++ template code |
 |---|---:|---:|---:|
-| microtel (static) | 678,130 | 69.8% | 482,215 |
-| toml++ (header-only) | 55,943 | 5.8% | 0 |
-| upb (vendored, incl. utf8_range) | 31,012 | 3.2% | 0 |
-| emit-app | 29,396 | 3.0% | 20,286 |
-| unattributed | 177,447 | 18.3% | 0 |
-| **Total = stripped /emit_app** | **971,928** | 100.0% | |
+| microtel (static) | 704,006 | 70.1% | 499,962 |
+| toml++ (header-only) | 55,949 | 5.6% | 0 |
+| upb (vendored, incl. utf8_range) | 32,678 | 3.3% | 0 |
+| emit-app | 31,252 | 3.1% | 21,719 |
+| unattributed | 180,827 | 18.0% | 0 |
+| **Total = stripped /emit_app** | **1,004,712** | 100.0% | |
 
 bloaty `[section]` / `[Unmapped]` / ELF rows, all in "unattributed". These are net of the
 20,374 B of upb/utf8_range symbols recovered from them (see "upb" below):
 
 | bloaty row | Bytes |
 |---|---:|
-| `[section .rela.dyn]` | 46,224 |
-| `[section .rodata]` | 36,886 |
-| `[section .gcc_except_table]` | 31,848 |
-| `[section .data.rel.ro]` | 17,168 |
-| `[section .dynstr]` | 7,410 |
-| `[section .text]` | 7,259 |
-| `[Unmapped]` | 6,092 |
-| `[section .dynsym]` | 6,017 |
-| `[section .rela.plt]` | 5,640 |
-| `[section .plt]` | 3,776 |
+| `[section .rela.dyn]` | 46,680 |
+| `[section .rodata]` | 37,782 |
+| `[section .gcc_except_table]` | 32,816 |
+| `[section .data.rel.ro]` | 17,392 |
+| `[section .dynstr]` | 7,417 |
+| `[section .text]` | 7,255 |
+| `[Unmapped]` | 6,844 |
+| `[section .dynsym]` | 6,041 |
+| `[section .rela.plt]` | 5,664 |
+| `[section .plt]` | 3,792 |
 | `[ELF Section Headers]` | 2,048 |
-| `[section .got.plt]` | 1,904 |
+| `[section .got.plt]` | 1,912 |
 | `[section .eh_frame]` | 956 |
-| `[section .data]` | 928 |
+| `[section .data]` | 944 |
 | `[section .gnu.version_r]` | 672 |
 | `[section .dynamic]` | 592 |
-| `[section .gnu.version]` | 556 |
+| `[section .gnu.version]` | 558 |
 | `[ELF Program Headers]` | 432 |
 | `[section .shstrtab]` | 303 |
 | `[section .got]` | 184 |
@@ -173,18 +173,18 @@ bloaty `[section]` / `[Unmapped]` / ELF rows, all in "unattributed". These are n
 | `[section .interp]` | 28 |
 | `[section .init]` | 27 |
 | `[section .plt.got]` | 24 |
-| `[LOAD #5 [RW]]` | 16 |
 | `[section .init_array]` | 16 |
-| `[LOAD #2 [R]]` | 15 |
+| `[LOAD #2 [R]]` | 14 |
 | `[LOAD #3 [RX]]` | 13 |
 | `[section .fini]` | 13 |
+| `[LOAD #5 [RW]]` | 8 |
 | `[section .fini_array]` | 8 |
 | `[LOAD #4 [R]]` | 4 |
-| **Sum (= unattributed)** | **177,447** |
+| **Sum (= unattributed)** | **180,827** |
 
 ## Reconciliation
 
-- Bucket sums equal the stripped file size exactly for both SUTs (971,928 and 1,068,408 B);
+- Bucket sums equal the stripped file size exactly for both SUTs (1,004,712 and 1,068,408 B);
   bloaty's own `compileunits` total equals the file size too. Gap: 0 B.
 - These totals do **not** reconcile with the withdrawn 43.1 / 17.5 MB, and are not meant to:
   those were unstripped `/emit_app` file sizes with no shared libraries. Of the withdrawn
@@ -197,10 +197,10 @@ bloaty `[section]` / `[Unmapped]` / ELF rows, all in "unattributed". These are n
   `CMAKE_CXX_FLAGS`, so they are compiled without debug info and bloaty files their code under
   `[section .text]` etc. They are recovered from the unstripped symbol table: 108 symbols
   matching `upb|utf8_range`, 20,374 B across sections (15,472 in `.text`). The other
-  10,638 B of the upb row is upb header code inlined into microtel's C++ compile units
+  12,304 B of the upb row is upb header code inlined into microtel's C++ compile units
   (`/src/third_party/upb/...`). upb-generated accessors in `/src/gen/opentelemetry/proto`
-  (2,300 B inlined) are left in **microtel**, per ICP 0020's "not upb runtime symbols".
-- **toml++** is header-only; all 55,943 B are code inlined from
+  (2,587 B inlined) are left in **microtel**, per ICP 0020's "not upb runtime symbols".
+- **toml++** is header-only; all 55,949 B are code inlined from
   `_deps/tomlplusplus-src/include/toml++/impl/*` into `src/common/config/toml_loader.cpp`.
 - **"absl" in otelcpp-grpc is not Abseil.** The 28,715 B of inlined code under `.../absl/` paths
   comes from opentelemetry-cpp's own copy (`opentelemetry/nostd/internal/absl`, the build
@@ -208,7 +208,7 @@ bloaty `[section]` / `[Unmapped]` / ELF rows, all in "unattributed". These are n
   `/usr/include/absl`. The header-inlined row is 7,715 B from `/usr/include/google/protobuf`
   plus 97 B from `/usr/include/grpcpp`.
 - **Other third-party headers left inside their compile unit's bucket** (no bucket was asked
-  for): libstdc++ (last column above), tl-expected in microtel (4,662 B),
+  for): libstdc++ (last column above), tl-expected in microtel (4,945 B),
   opentelemetry-cpp's generated `.pb.h` code in otelcpp-grpc (`/build/otelcpp/generated`,
   3,660 B), `/usr/include/x86_64-linux-gnu/c++` (1,459 B).
 - **emit-app** rows include microtel / opentelemetry-cpp API header code inlined into the
@@ -234,15 +234,16 @@ in the runtime images:
 
 | Package | Version | Image |
 |---|---|---|
-| libprotobuf32t64 | 3.21.12-8.2ubuntu0.3 | otelcpp-grpc |
+| libprotobuf32t64 | 3.21.12-8.2ubuntu0.4 | otelcpp-grpc |
 | libgrpc++1.51t64 | 1.51.1-4.1build5 | otelcpp-grpc |
 | libgrpc29t64 | 1.51.1-4.1build5 | otelcpp-grpc |
 | libabsl20220623t64 | 20220623.1-3.1ubuntu3.2 | otelcpp-grpc |
-| libcares2 | 1.27.0-1.0ubuntu1 | otelcpp-grpc |
+| libcares2 | 1.27.0-1.0ubuntu1.1 | otelcpp-grpc |
 | libre2-10 | 20230301-3build1 | otelcpp-grpc |
 | libnghttp2-14 | 1.59.0-1ubuntu0.4 | microtel |
-| libssl3t64 | 3.0.13-0ubuntu3.15 | both |
-| zlib1g | 1:1.3.dfsg-3.1ubuntu2.2 | both |
+| libssl3t64 | 3.0.13-0ubuntu3.16 | both |
+| zlib1g | 1:1.3.dfsg-3.1ubuntu2.2 | otelcpp-grpc |
+| zlib1g | 1:1.3.dfsg-3.1ubuntu2.3 | microtel (same `libz.so.1.3`, 113,000 B, byte for byte) |
 | libstdc++6 / libgcc-s1 | 14.2.0-4ubuntu2~24.04.1 | both |
 | libc6 | 2.39-0ubuntu8.9 | both |
 

@@ -4,7 +4,7 @@
 
 | Version | Status | Security updates |
 |---|---|---|
-| 1.2.x | current release (1.2.3) | ✅ supported — fixes land in the latest 1.2 patch |
+| 1.2.x | current release (1.2.4) | ✅ supported — fixes land in the latest 1.2 patch |
 | 1.1.x | superseded minor | ❌ unsupported — upgrade to 1.2.x |
 | < 1.1 | development snapshots | ❌ unsupported — use 1.2.x |
 
@@ -22,9 +22,11 @@ The policy this matrix will follow as further releases land:
 
 **Please do not open a public GitHub issue for security vulnerabilities.**
 
-Send a private report to: **security@microtel.example** *(placeholder — replace before first public release)*
-
-Or, if GitHub Private Vulnerability Reporting is enabled on the repository, use that.
+Report it privately through GitHub: open the repository's
+[Security tab](https://github.com/microtel-org/microtel/security) and choose
+**Report a vulnerability**
+([new advisory form](https://github.com/microtel-org/microtel/security/advisories/new)).
+Only the maintainers see the report.
 
 What to include:
 

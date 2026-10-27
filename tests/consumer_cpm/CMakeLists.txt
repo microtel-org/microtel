@@ -28,7 +28,7 @@ file(DOWNLOAD
      EXPECTED_HASH SHA256=${CPM_SHA256})
 include(${CMAKE_CURRENT_BINARY_DIR}/cmake/CPM.cmake)
 
-CPMAddPackage("gh:microtel-org/microtel@1.2.3")
+CPMAddPackage("gh:microtel-org/microtel@1.2.4")
 
 add_executable(microtel_consumer_smoke ../consumer/main.cpp)
 target_link_libraries(microtel_consumer_smoke PRIVATE microtel::microtel)

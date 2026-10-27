@@ -1,73 +1,74 @@
 compileunits,vmsize,filesize
-/src/src/common/config/toml_loader.cpp,137368,137368
-/src/src/sdk/sdk_meter.cpp,100864,100864
+/src/src/common/config/toml_loader.cpp,138224,138224
+/src/src/sdk/sdk_meter.cpp,98904,98904
 /src/src/sdk/resource_builder.cpp,66470,66470
-/src/src/sdk/sdk_builder.cpp,56224,56224
-[section .rela.dyn],46440,46440
+/src/src/sdk/sdk_builder.cpp,56064,56064
+[section .rela.dyn],46896,46896
 /src/src/transport/http2_transport.cpp,39992,39992
-[section .rodata],36968,36968
-[section .gcc_except_table],31848,31848
-/src/src/sdk/sdk_provider.cpp,26816,26816
+[section .rodata],37864,37864
+[section .gcc_except_table],32816,32816
+/src/src/sdk/sdk_provider.cpp,29096,29096
 /src/src/wire/http/http_wire_codec.cpp,22888,22888
-[section .text],22731,22731
+/src/src/common/config/env_resolver.cpp,22824,22824
+[section .text],22727,22727
 /src/src/wire/grpc/grpc_wire_codec.cpp,20704,20704
 /src/src/sdk/batch_span_processor.cpp,19728,19728
-/src/src/sdk/metric_producer.cpp,19536,19536
-/src/src/common/config/env_resolver.cpp,18648,18648
-[section .data.rel.ro],14951,17512
-/src/src/wire/encoder/otlp_encoder.cpp,16808,16808
+/src/src/wire/encoder/otlp_encoder.cpp,19480,19480
+/src/src/sdk/metric_producer.cpp,19456,19456
+[section .data.rel.ro],15175,17736
 /src/src/exporter/otlp_metric_exporter.cpp,16272,16272
+/src/src/common/config/config_validator.cpp,16176,16176
 /src/src/exporter/otlp_exporter.cpp,15384,15384
-/src/src/sdk/batch_log_record_processor.cpp,13976,13976
-/src/src/sdk/metric_sum_storage.cpp,13232,13232
-/src/src/sdk/metric_exp_histogram_storage.cpp,12840,12840
-/src/src/sdk/metric_histogram_storage.cpp,12560,12560
-/src/bench/emit-app/src/backend_microtel.cpp,12503,12503
+/src/src/sdk/metric_sum_storage.cpp,15240,15240
+/src/bench/emit-app/src/backend_microtel.cpp,14279,14279
+/src/src/sdk/batch_log_record_processor.cpp,14072,14072
+/src/src/sdk/metric_exp_histogram_storage.cpp,13136,13136
+/src/src/sdk/metric_histogram_storage.cpp,12760,12760
 /src/bench/emit-app/src/control_socket.cpp,11934,11934
-/src/src/common/config/config_validator.cpp,11736,11736
 /src/src/exporter/otlp_log_exporter.cpp,11696,11696
-/src/src/sdk/metric_attribute_set.cpp,10824,10824
+/src/src/sdk/metric_attribute_set.cpp,10823,10823
 /src/src/sdk/sdk_span.cpp,9320,9320
-/src/src/sdk/metric_gauge_storage.cpp,8736,8736
-[section .dynstr],7410,7410
+/src/src/api/trace_state.cpp,9048,9048
+/src/src/sdk/metric_gauge_storage.cpp,8848,8848
+[section .dynstr],7417,7417
+[Unmapped],0,6844
+/src/src/sdk/sdk_tracer.cpp,6709,6709
 /src/src/sdk/sampler_factories.cpp,6480,6480
-/src/src/sdk/sdk_tracer.cpp,6237,6237
-[Unmapped],0,6092
-[section .dynsym],6017,6017
+[section .dynsym],6041,6041
 /src/src/wire/custom/export_transport_codec.cpp,5760,5760
-[section .rela.plt],5640,5640
+[section .rela.plt],5664,5664
 /src/src/transport/epoll_reactor.cpp,5200,5200
 /src/src/exporter/retry_engine.cpp,5104,5104
 [section .eh_frame],4476,4476
-[section .plt],3776,3776
+[section .plt],3792,3792
 /src/src/common/config/concentrator_config.cpp,3600,3600
+/src/src/common/config/auth_providers.cpp,3552,3552
+/src/src/sdk/span_limits.cpp,3320,3320
 /src/src/wire/gzip.cpp,3280,3280
-/src/bench/emit-app/src/main.cpp,3184,3184
-/src/src/common/config/auth_providers.cpp,2784,2784
+/src/bench/emit-app/src/main.cpp,3264,3264
 /src/src/common/config/table_merge.cpp,2624,2624
 [section .tbss],2585,0
-/src/src/sdk/span_limits.cpp,2376,2376
+/src/src/common/log_sink.cpp,2544,2544
 /src/src/sdk/provider_registry.cpp,2296,2296
 /src/src/wire/grpc/grpc_status.cpp,2216,2216
 /src/src/sdk/periodic_exporting_metric_reader.cpp,2064,2064
 [ELF Section Headers],0,2048
-[section .got.plt],1904,1904
+[section .got.plt],1912,1912
 /src/src/api/context.cpp,1792,1792
-/src/src/common/log_sink.cpp,1488,1488
+/src/src/sdk/sdk_logger.cpp,1745,1745
 /src/src/transport/nosignal_io.cpp,1488,1488
-/src/src/sdk/sdk_logger.cpp,1448,1448
 /src/bench/emit-app/src/histogram.cpp,1371,1371
 /src/src/sdk/diagnostics_counters.cpp,1360,1360
-/src/src/wire/otlp_response.cpp,1336,1336
+/src/src/wire/otlp_response.cpp,1359,1359
 /src/src/sdk/view_registry.cpp,1016,1016
-[section .data],948,948
+[section .data],964,964
 [section .eh_frame_hdr],844,844
 /src/src/sdk/noop_span.cpp,728,728
 /src/src/transport/connect_error.cpp,688,688
 [section .gnu.version_r],672,672
 [section .dynamic],592,592
-[section .gnu.version],556,556
-/src/src/wire/encoder/trace_request_concat.cpp,500,500
+[section .gnu.version],558,558
+/src/src/wire/encoder/trace_request_concat.cpp,505,505
 [ELF Program Headers],432,432
 /src/bench/emit-app/src/workload.cpp,404,404
 [section .bss],320,0
@@ -82,10 +83,10 @@ compileunits,vmsize,filesize
 [section .interp],28,28
 [section .init],27,27
 [section .plt.got],24,24
-[LOAD #5 [RW]],20,16
 [section .init_array],0,16
-[LOAD #2 [R]],15,15
+[LOAD #2 [R]],14,14
 [LOAD #3 [RX]],13,13
 [section .fini],13,13
+[LOAD #5 [RW]],12,8
 [section .fini_array],0,8
 [LOAD #4 [R]],4,4

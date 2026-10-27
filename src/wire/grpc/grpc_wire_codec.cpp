@@ -42,7 +42,7 @@ constexpr std::string_view kRetryInfoTypeUrl = "type.googleapis.com/google.rpc.R
 // version half checked against `kVersionString` at compile time. It had read
 // "microtel-cpp/0.1.0" since M4 with nothing to catch the drift.
 constexpr std::string_view kUserAgentPrefix = "microtel-cpp/";
-constexpr std::string_view kUserAgent = "microtel-cpp/1.2.3";
+constexpr std::string_view kUserAgent = "microtel-cpp/1.2.4";
 static_assert(kUserAgent.substr(kUserAgentPrefix.size()) == kVersionString,
               "gRPC user-agent must carry microtel::kVersionString "
               "(grpc-wire-protocol.md §2.1)");

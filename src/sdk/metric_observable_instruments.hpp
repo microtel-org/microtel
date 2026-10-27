@@ -175,11 +175,14 @@ public:
         data.is_monotonic = m_monotonic;
         data.temporality = temporality;
         const bool delta = temporality == internal::AggregationTemporality::Delta;
+        SeriesStarts observed_starts;
         for (const auto& [attr_set, value] : m_result.Map())
         {
             const auto pairs = attr_set.Pairs();
+            const auto known = m_series_start.find(attr_set);
             const auto series_start =
-                m_series_start.try_emplace(attr_set, m_last_collect).first->second;
+                known != m_series_start.end() ? known->second : m_last_collect;
+            observed_starts.emplace(attr_set, series_start);
             data.points.push_back(internal::NumberPoint{
                 .attributes = std::vector<KeyValue>(pairs.begin(), pairs.end()),
                 .start_time = delta ? m_last_collect : series_start,
@@ -194,6 +197,9 @@ public:
             // it is new, and its first observation is reported in full.
             m_previous = m_result.Map();
         }
+        // Likewise for starts: a series that returns starts afresh, and this
+        // map never holds more than one collection's series.
+        m_series_start = std::move(observed_starts);
         m_last_collect = collection_time;
         return internal::MetricRecord{
             .name = m_name,
@@ -225,9 +231,12 @@ private:
     ObservableResult<T> m_result;
     /// Each series' observation in the previous delta collection.
     std::unordered_map<AttributeSet, T, AttributeSetHash> m_previous;
-    /// Each series' start: the collection before it was first observed.
-    std::unordered_map<AttributeSet, std::chrono::system_clock::time_point, AttributeSetHash>
-        m_series_start;
+    using SeriesStarts =
+        std::unordered_map<AttributeSet, std::chrono::system_clock::time_point, AttributeSetHash>;
+
+    /// Each series observed in the previous collection, with its start: the
+    /// collection before it was first observed, or before it last returned.
+    SeriesStarts m_series_start;
     /// The previous collection's time; this stream's creation before the first.
     std::chrono::system_clock::time_point m_last_collect = std::chrono::system_clock::now();
 };

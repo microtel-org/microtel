@@ -1,35 +1,51 @@
 # Committed benchmark snapshot
 
-These files are one benchmark run, committed verbatim so the numbers in the
+These files are one benchmark snapshot, committed so the numbers in the
 root [`README.md`](../../README.md) can be checked from a clone. The build
 doesn't produce them. A local `cd bench && ./bench.sh` writes to
 `bench/results/`, which is gitignored, so the README used to link a path that
 only existed for people who had run the harness themselves.
 
-The snapshot was refreshed on 2026-09-27 for the v1.2.0 tag, from a clean
-checkout of the release candidate (`6c2fe10`, which the release commit changes
-only in version literals and docs), on the same host as the previous snapshot
-(Ryzen 5 5600G, 12 cores, `performance` governor, SMT on, podman 5.8.4, kernel
-7.1.13-200.fc44). Host load was 0.15 at the start. Before committing, the
-environment block was diffed against the previous snapshot as
-[`docs/releasing.md`](../releasing.md) §5 requires, and every identity field
-matched, governor included, so the deltas below are like for like.
+The snapshot was refreshed on 2026-10-27 for the v1.2.4 tag, from the
+release commit `5bbc655` (`source_commit` in `results.json`). The images were
+built from `84ac4c0` (`images_built_from`), the same commit before #462 was
+rebased onto master; the rebase changed only docs and packaging metadata. It ran
+on the same machine as the previous snapshot (Ryzen 5 5600G, 6 cores / 12
+threads, `performance` governor, SMT on). The host's software did change: the
+kernel went from 7.1.13-200.fc44 to 7.2.11-200.fc44 and podman from 5.8.4 to
+5.8.9. Diffing the environment block, as [`docs/releasing.md`](../releasing.md)
+§5 requires, showed those two fields, so the old snapshot's numbers are not a
+like-for-like baseline. [Changes since the previous snapshot](#changes-since-the-previous-snapshot)
+compares old and new code on today's host instead.
+
+**The snapshot merges five interleaved runs.** Each run is the full
+`hot-loop-traces` profile (four SUTs, 10 samples each). Each run of the v1.2.4
+images was preceded by a run of the previous snapshot's 2026-09-27 images,
+alternating old, new, old, new… five times, so host drift falls on both alike.
+`results.json` holds the 50 samples per SUT from the five v1.2.4 runs, with
+each run's start time, load and sample counts in `interleaved_runs`.
+`results.md` and `plots.html` are rendered from it by the driver's own
+writers. otelcpp-http has 40 samples, not 50: in run 4 its container didn't
+report ready within the driver's 60 s and was skipped. Run 4 also started at
+host load 0.68, above the driver's 0.5 warning threshold, and the warning is
+kept.
 
 ## Summary
 
 This is the table the root README's performance claims are read off.
-Hot-loop traces, 10 000 spans per sample × 10 samples, each SDK exporting to
-a local blackhole sink over a container network, one host (Podman; AMD Ryzen 5
-5600G, `performance` governor, SMT on).
+Hot-loop traces, 10 000 spans per sample, 50 samples per SUT (40 for
+otelcpp-http) from five interleaved runs, each SDK exporting to a local
+blackhole sink over a container network, one host (Podman; AMD Ryzen 5 5600G,
+`performance` governor, SMT on). Medians:
 
 | Metric | microtel (HTTP) | microtel (gRPC) | otelcpp (gRPC) | otelcpp (HTTP) |
 |---|---|---|---|---|
-| Span emit p50 | **217 ns** | **218 ns** | 832 ns | 804 ns |
-| Span emit p95 | **478 ns** | **474 ns** | 3 246 ns | 2 738 ns |
-| Spans / sec | **1 540 963** | 1 232 937 | 715 498 | 810 803 |
-| Flush p50 | 2.7 ms | 4.3 ms | 2.0 ms | 1.9 ms |
-| Delivery rate | **100%** | **100%** | 95.2% | 97.0% |
-| Wire bytes / span | **62.2** | **62.2** | 68.1 | 68.1 |
+| Span emit p50 | **226 ns** | **220 ns** | 820 ns | 807 ns |
+| Span emit p95 | **486 ns** | **471 ns** | 3 364 ns | 2 882 ns |
+| Spans / sec | **1 386 999** | 1 013 479 | 739 338 | 807 350 |
+| Flush p50 | 3.2 ms | 6.1 ms | 2.0 ms | 1.9 ms |
+| Delivery rate | **100%** | **100%** | 94.2% | 96.3% |
+| Wire bytes / span | 68.2 | 68.2 | 68.1 | 68.1 |
 
 **Span emit** times one whole `EmitSpan()` call of the benchmark app
 ([`control_socket.cpp`](../../bench/emit-app/src/control_socket.cpp), the
@@ -43,7 +59,7 @@ the row "StartSpan".
 the stripped benchmark executable plus every shared library it loads, Ubuntu
 24.04 packages, split per library with bloaty. The telemetry stack is
 **13.4 MB** for opentelemetry-cpp with its OTLP/gRPC exporter (gRPC, protobuf,
-Abseil, c-ares, re2 and the OTLP proto libraries) against **1.1 MB** for
+Abseil, c-ares, re2 and the OTLP proto libraries) against **1.2 MB** for
 microtel (with nghttp2, upb and toml++), on top of the same **12.0 MB** shared
 base of OpenSSL, zlib and the C/C++ runtime that both load.
 
@@ -63,10 +79,27 @@ The leaf's flash, RAM and stack on Cortex-M0+, Cortex-M4 and aarch64 are in
 
 ## Changes since the previous snapshot
 
-Throughput is within this host's spread: microtel +2.6% (1,540,963 spans/sec),
-microtel-grpc −5.1%, and the unchanged otelcpp SUTs −5.6% (gRPC) and −4.2%
-(HTTP). Span emit p50 is 217 ns for microtel against 832 ns for otelcpp-gRPC,
-a 3.8× ratio.
+**The span-emit ratio fell from 3.8× to 3.6×, and the change is the host's,
+not the code's.** Span emit p50 is 226 ns for microtel against 820 ns for
+otelcpp-gRPC, 3.63×; the previous snapshot measured 3.83×. Over the same five
+interleaved rounds the previous snapshot's 2026-09-27 images measured 3.59×
+on today's host (p50 227 ns against 816 ns). Old and new code are within 1.5%
+of each other at p50 for every SUT, and within 1% at p95 for all but
+otelcpp-http (−4.4%, an SUT whose code didn't change). The ratio moved with
+the kernel and podman updates above.
+
+**Throughput.** On today's host, old images against new, medians of 50
+samples each: microtel 1,512,908 → 1,386,999 spans/sec (−8.3%), microtel-grpc
+1,289,564 → 1,013,479 (−21.4%), otelcpp-grpc −1.0% and otelcpp-http +0.6%. The
+emit loop takes the same time; the difference is all in the flush, which
+spans/sec includes. microtel's spans now carry the OTLP `flags` field (#452),
+as opentelemetry-cpp's already did, so wire bytes per span went from 62.2 to
+68.2, and a 512-span batch from 31.8 KB to 34.9 KB per request. That crosses
+32 KiB, and the bench sink's handling time steps up by ~80 µs for requests
+above 32 KiB; cause under investigation
+([#460](https://github.com/microtel-org/microtel/issues/460)). A pre-#452
+build shows the same step once its batches pass 32 KiB. Over OTLP/HTTP there
+is no step, and the flush grows with the extra bytes.
 
 **The benchmark binary size row is withdrawn.** It compared the benchmark
 executables' file sizes, which were over 92% debug info and left out the
@@ -74,9 +107,9 @@ shared libraries each executable loads. [`sizes/library-sizes.md`](sizes/library
 and #445 tracks the driver fix. The leaf's footprint is in
 [`leaf-footprint.md`](leaf-footprint.md).
 
-The other two profiles from the same session: `realistic-request` shows 100%
-delivery for both SUTs, and `compression` shows 342.2 B/span uncompressed
-against 39.1 gzip'd (8.7×), both unchanged.
+`realistic-request` and `compression` were not rerun for v1.2.4. Their last
+figures, from 2026-09-27: `realistic-request` 100% delivery for both SUTs, and
+`compression` 342.2 B/span uncompressed against 39.1 gzip'd (8.7×).
 
 ## Files
 
@@ -91,21 +124,15 @@ against 39.1 gzip'd (8.7×), both unchanged.
 
 | Field | Value |
 |---|---|
-| Profile | `hot-loop-traces` — 10 000 spans/sample, 10 samples, 1 000 warmup spans, blackhole sink |
+| Profile | `hot-loop-traces` — 10 000 spans/sample, 10 samples per run × 5 interleaved runs, 1 000 warmup spans, blackhole sink |
 | SUTs | `microtel`, `microtel-grpc`, `otelcpp-grpc`, `otelcpp-http` |
-| Generated | 2026-09-27 (release candidate `6c2fe10`) |
-| Host | AMD Ryzen 5 5600G, 12 physical cores, Fedora, podman 5.8.4 |
+| Generated | 2026-10-27 (release commit `5bbc655`; images built from `84ac4c0`, its pre-rebase SHA) |
+| Host | AMD Ryzen 5 5600G, 6 physical cores / 12 threads, Fedora, kernel 7.2.11-200.fc44, podman 5.8.9 |
 
-The run carries one warning, left in `results.md` and `results.json`: SMT
-was enabled. It widens the spread but doesn't change the order-of-magnitude
-comparisons in the README. The governor warning the previous snapshot carried
-is gone because this run used `performance`.
-
-Two other profiles, `realistic-request` and `compression`, were run on the same
-host in the same session. They aren't committed here, since this directory
-holds only the profile the root README quotes, but the delivery and
-compression figures above come from them. Each profile started with host
-load below 0.5 and the governor at `performance`, checked before and after.
+The snapshot carries two warnings, left in `results.md` and `results.json`:
+SMT was enabled, which widens the spread, and run 4 started at load 0.68.
+`results.md`'s profile table shows the profile's 10 samples per run; the
+summary rows are over all five runs.
 
 ## Refreshing it
 
@@ -116,6 +143,12 @@ cp bench/results/{plots.html,results.json,results.md} docs/bench-results/
 
 Then update the [Summary](#summary) table above, and the ratio claims in the
 root `README.md`, so they agree with the new run.
+
+For v1.2.4 the five runs were made with `./bench.sh --no-build --out <dir>`,
+retagging the `bench-sut-*` images between the old and new sets, and merged
+by concatenating each SUT's samples in run order and rendering with
+`driver.report.build_results`, `write_json`, `write_markdown` and
+`driver.plots.write_plots`.
 
 **Diff the `environment` block against the outgoing snapshot before you
 commit** ([`docs/releasing.md`](../releasing.md) §5). A run from a different
