@@ -1,7 +1,7 @@
 # microtel
 
 <p align="center">
-  <img alt="microtel: OpenTelemetry for C++ without the gRPC tax. Speaks OTLP over gRPC and HTTP with no grpc++, abseil or protobuf; about 3.6x faster spans than opentelemetry-cpp in the project's benchmark; a microcontroller client of about 9 KB flash with no heap." src="docs/assets/microtel-hero.png" width="720">
+  <img alt="microtel: OpenTelemetry for C++ without the gRPC tax. Speaks OTLP over gRPC and HTTP with no grpc++, abseil or protobuf; about 3.6× less time per span than opentelemetry-cpp in the project's benchmark; a microcontroller client of about 9 KB flash with no heap." src="docs/assets/microtel-hero.png" width="720">
 </p>
 
 An OpenTelemetry-compatible runtime and OTLP exporter for C++20, for traces,

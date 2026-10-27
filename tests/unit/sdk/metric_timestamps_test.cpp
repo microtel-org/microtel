@@ -146,6 +146,29 @@ TEST(MetricTimestampsTest, SumCumulative_LateSeriesStartsAtItsOwnFirstMeasuremen
     ExpectWithin(PointFor(d2.points, SeriesB()).start_time, first_b);
 }
 
+// Unlike an observable series, a synchronous one isn't absent from a
+// collection just because nothing was measured in its interval: storage still
+// reports it, so it keeps its start.
+TEST(MetricTimestampsTest, SumCumulative_QuietSeriesKeepsItsStart)
+{
+    mts::SumStorage<std::int64_t> storage{/*monotonic=*/true};
+    const Collections c;
+    storage.Add(1, SeriesA());
+    storage.Add(1, SeriesB());
+    const auto d1 = storage.Collect(kCumulative, c.first);
+    ASSERT_EQ(d1.points.size(), 2U);
+    const TimePoint start_b = PointFor(d1.points, SeriesB()).start_time;
+
+    storage.Add(1, SeriesA());
+    (void)storage.Collect(kCumulative, c.second);
+    storage.Add(1, SeriesA());
+    const auto d3 = storage.Collect(kCumulative, c.third);
+
+    ASSERT_EQ(d3.points.size(), 2U);
+    EXPECT_EQ(PointFor(d3.points, SeriesB()).start_time, start_b);
+    EXPECT_EQ(std::get<std::int64_t>(PointFor(d3.points, SeriesB()).value), 1);
+}
+
 TEST(MetricTimestampsTest, SumDelta_WindowsChainFromCreation)
 {
     Window created{.before = Clock::now(), .after = {}};
