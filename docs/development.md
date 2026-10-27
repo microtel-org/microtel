@@ -136,7 +136,7 @@ This table is the definition of the tracks.
 
 **Directories owned:**
 - `src/transport/` — `ITransport` implementation, the I/O loop, per-stream state.
-- `src/common/raii/` — `Socket`, `SslCtx`, `SslSession`, `Nghttp2Session`. (Shared resource — RAII wrappers serve every track but are implemented and tested under D.)
+- `src/common/raii/` — `UniqueFd`, `SslCtx`, `SslSession`, `Nghttp2Session`, `BioMethod`, `DeflateStream`, `InflateStream` (the list is `memory-model.md` §4.2). (Shared resource — RAII wrappers serve every track but are implemented and tested under D.)
 
 **Provides:**
 - `ITransport` (`interfaces.md` §4.1).

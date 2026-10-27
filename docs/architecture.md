@@ -73,7 +73,7 @@ The exporter respects the result returned by the codec — including retry class
 
 **Does not own:** anything about HTTP, gRPC, framing, headers, or transport. The encoder produces protobuf bytes; downstream layers wrap them.
 
-**Containment rule (non-negotiable).** `src/wire/encoder/` is the **only** place in the codebase that includes upb headers or references upb symbols. No upb type appears in any header outside this directory. Violating this is rejected at review.
+**Containment rule (non-negotiable).** `src/wire/encoder/` is the **only** runtime directory that includes upb headers or references upb symbols. No upb type appears in any runtime header outside this directory. Violating this is rejected at review. Outside the runtime, the leaf's upb backend `leaf/src/backend_upb.c` ([ICP 0031](icps/0031-leaf-concentrator-in-v1.3.md)) and the vendored and generated code under `third_party/upb/` and `gen/` include upb too; no upb type appears in the leaf's public header ([ICP 0040](icps/0040-contract-docs-match-the-code.md)).
 
 **Output type.** `EncodedPayload` — owned bytes plus size, shaped as `std::unique_ptr<std::byte[]>` + `std::size_t`. Move-only. The encoder allocates the buffer on every call; the upb arena is destroyed when `Encode()` returns. See `memory-model.md` for the per-encode arena rule and the rationale.
 
@@ -107,7 +107,7 @@ The deeper implementation notes for the gRPC codec — state machine, byte-level
 
 **Provides:** `ITransport` — `Connect`, `Send`, `Close`, plus a callback path for `OnResponse`. The interface is the seam where an `nghttp3`-based HTTP/3 transport could drop in for v1.6+; no HTTP/3 work in v1.
 
-**Consumes:** `IReactor` (the epoll abstraction, present primarily as a test seam), the RAII wrappers in `src/common/raii/` (`Socket`, `SslCtx`, `SslSession`, `Nghttp2Session`).
+**Consumes:** `IReactor` (the epoll abstraction, present primarily as a test seam), the RAII wrappers in `src/common/raii/` (`UniqueFd`, `SslCtx`, `SslSession`, `Nghttp2Session`, `BioMethod`).
 
 **Absent with an application `ExportTransport`.** `Build()` constructs no `Http2Transport` and no reactor, so there is no I/O thread, and `Provider::Connect()` succeeds without doing anything. The library still links nghttp2, OpenSSL and zlib; compiling them out belongs to ICP 0030's feature selection ([ICP 0036](icps/0036-custom-export-transport.md) Decision 5).
 
@@ -117,7 +117,7 @@ The deeper implementation notes for the gRPC codec — state machine, byte-level
 
 A small set of shared, layer-independent services:
 
-- **`src/common/raii/`** — `UniqueFd`, `SslCtx`, `SslSession`, `Nghttp2Session`. Each is move-only, has a `noexcept` destructor, and exposes `Release()` for explicit ownership transfer. (`UpbArena` follows the same contract but lives in `src/wire/encoder/`, since including it means including upb.)
+- **`src/common/raii/`** — `UniqueFd`, `SslCtx`, `SslSession`, `Nghttp2Session`, `BioMethod`, `DeflateStream`, `InflateStream`. Each is move-only and has a `noexcept` destructor; those whose resource something can take over expose `Release()` for explicit ownership transfer. (`UpbArena` follows the same contract but lives in `src/wire/encoder/`, since including it means including upb.) The authoritative list and contract are `memory-model.md` §4.2.
 - **`src/common/config/`** (Track E) — `microtel.toml` parser, env-var resolution, validation. Returns a frozen, validated `Config` value to the SDK.
 - **Logging** — spdlog-by-default (header-only, `SPDLOG_USE_STD_FORMAT`), with a minimal stderr fallback when `MICROTEL_USE_SPDLOG=OFF`. Sink injection via `LogSink` (public). Internal diagnostics are **never** routed back through microtel's own OTLP exporter — see `error-model.md` §9.
 - **Errors and limits** — `microtel::Error`, `ConfigError`, the lifecycle `Status` enum, the byte / record / response / trailer / decompression budget constants from `memory-model.md` §6.
@@ -218,7 +218,7 @@ D and F are foundational and finish first. Then A, B, C, E proceed concurrently.
 - **Partial success** — an OTLP response indicating some items were rejected. Recorded in diagnostics and **not** retried (retry would re-send accepted items too).
 - **Retry budget** — the maximum elapsed time across all retries of a single batch. Exhaustion drops the batch with the `retry_budget_exhausted` reason.
 - **Drop counter** — a per-reason counter incremented by the layer that drops a record / batch. Exposed via `Provider::GetExporterHealth()`.
-- **RAII wrapper** — a move-only C++ type whose destructor releases an underlying C resource (socket, OpenSSL handle, nghttp2 session, upb arena). All in `src/common/raii/`.
+- **RAII wrapper** — a move-only C++ type whose destructor releases an underlying C resource (file descriptor, OpenSSL handle, nghttp2 session, zlib stream, upb arena). All in `src/common/raii/` except `UpbArena`, which lives in `src/wire/encoder/`; the list is `memory-model.md` §4.2.
 - **Track A–F** — the parallel implementation tracks unblocked after M2 lands. See §7.
 - **ICP** — Interface Change Proposal. A short markdown document recording a breaking change to a locked interface or to a durable architecture document. See `docs/icps/README.md`.
 - **Sequence diagram** — a normative flow diagram in `docs/sequences/`. Eight in v1: connection establishment, retry-after-failure, GOAWAY handling, shutdown drain, fork survival, backpressure-and-drop, partial-success handling, gRPC trailer-only and multi-frame parsing.

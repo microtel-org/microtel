@@ -407,3 +407,42 @@ rather than confusing it.
 **One job, default configuration.** `MICROTEL_USE_SPDLOG=OFF` changes no
 exported target — only the self-describing `microtel_WITH_SPDLOG` variable —
 so a CI matrix axis for it would re-assert the same thing.
+
+## Amendment — 2026-10-27: the graph as exported at v1.2.4 ([ICP 0040](0040-contract-docs-match-the-code.md))
+
+The dependency graph under "What exists to export" stopped matching the code
+after the gzip amendment above. `microtel_api` and `microtel_custom_wire`
+(ICP 0036) were added, and several edges were never drawn. No decision above
+changes. This is the graph the installed `MicrotelTargets.cmake` exports at
+v1.2.4: fifteen static libraries plus the `microtel_headers` INTERFACE
+target. `PRIVATE` edges are exported as `LINK_ONLY`.
+
+```
+microtel::microtel (INTERFACE) ── microtel_sdk
+
+microtel_sdk ──┬─ microtel_api                 (PUBLIC)
+               ├─ microtel_config
+               ├─ microtel_exporter ── microtel_encoder
+               ├─ microtel_transport ─┬─ microtel_common
+               │                      └─ OpenSSL::SSL, OpenSSL::Crypto, nghttp2
+               ├─ microtel_http_wire ─┬─ microtel_otlp_response
+               │                      └─ microtel_gzip ── zlib
+               ├─ microtel_grpc_wire ─┬─ microtel_otlp_response, microtel_gzip
+               │                      └─ microtel_common
+               ├─ microtel_custom_wire ── microtel_common
+               ├─ microtel_encoder ─┬─ microtel_api
+               │                    └─ microtel_upb_gen ── microtel_upb_runtime ── microtel_utf8_range
+               └─ OpenSSL::SSL, nghttp2     (its sources include the transport header, #473)
+
+microtel_headers (INTERFACE, carries include/)   (linked by every C++ library above)
+```
+
+- **Decision 2's "not supported" row** gains `microtel::api`,
+  `microtel::custom_wire` and `microtel::headers`.
+  `microtel::microtel` remains the only supported name.
+- **The leaf targets** (`microtel::leaf`, `microtel::nanopb_gen` and
+  `microtel::nanopb`, behind `COMPONENTS leaf`) are as
+  [ICP 0031](0031-leaf-concentrator-in-v1.3.md) defines them, and are not
+  redrawn here.
+- **The Conan recipe** declares one component per library with these edges
+  as its `requires`, so Conan derives the same link order (#475).

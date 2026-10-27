@@ -60,7 +60,7 @@ class EncodedPayload {
     std::unique_ptr<std::byte[]> bytes;   // owned
     std::size_t                  size;
 public:
-    // move-only; no copy; release() returns the unique_ptr
+    // move-only; no copy; Release() returns the unique_ptr
 };
 ```
 
@@ -271,7 +271,7 @@ The transport increments `connect_failure` directly. All other counters are incr
 
 #### Purpose
 
-Encodes a `BatchHandle` into OTLP protobuf bytes. The only place in the codebase that includes upb headers (LOCKED — `memory-model.md` §3.1).
+Encodes a `BatchHandle` into OTLP protobuf bytes. Its directory, `src/wire/encoder/`, is the only runtime directory that includes upb headers (LOCKED — `memory-model.md` §3.1). Outside the runtime, the leaf's `leaf/src/backend_upb.c` ([ICP 0031](icps/0031-leaf-concentrator-in-v1.3.md)) and the vendored and generated code under `third_party/upb/` and `gen/` include them too ([ICP 0040](icps/0040-contract-docs-match-the-code.md)).
 
 #### Contract
 
@@ -314,7 +314,7 @@ Created by the `Provider` at `Build()` time. Owned by the `Provider`. Stateless,
 #### Mock and fake
 
 - **Mock** at `tests/mocks/mock_otlp_encoder.hpp`. Returns a configured `EncodedPayload` (typically a small canned byte sequence). Used by exporter and codec tests.
-- **Fake** at `tests/fakes/fake_otlp_encoder.hpp`. Implements the encoder using a hand-rolled protobuf writer (no upb dependency in tests). Used by integration tests that want byte-level fidelity without bringing in the full upb generated code in test fixtures.
+- No fake. Tests that need real encoded bytes use the production `wire::OtlpEncoder`.
 
 #### Consumers
 
@@ -339,8 +339,14 @@ public:
 
     [[nodiscard]] virtual WireResult
         Send(EncodedPayload&& payload, Duration deadline) = 0;
+
+    // Default: calls Send for each payload in turn (ICP 0007).
+    [[nodiscard]] virtual std::vector<WireResult>
+        SendAll(std::vector<EncodedPayload> payloads, Duration deadline);
 };
 ```
+
+**`SendAll`** ([ICP 0007](icps/0007-wire-codec-send-all.md)) submits N payloads and waits for all of them. Results come back in the order of `payloads`, one per payload, each classified as `Send` would classify it. The default implementation loops over `Send`, which is correct for any codec. `HttpWireCodec` overrides it to submit every payload as a concurrent HTTP/2 stream before waiting, so N round trips collapse into one. The same caller and threading rules as `Send` apply.
 
 **Preconditions.** None. If the underlying `ITransport` is not connected,
 `Send` connects it first (ICP 0017). A failed connect attempt is reported as
@@ -352,7 +358,7 @@ an ordinary `retryable` `WireResult`, not a distinct error shape.
 
 #### Lifetime
 
-Created by the `Provider` at `Build()` time, paired 1:1 with the transport for that endpoint. Owned by the `Provider`.
+Created by the `Provider` at `Build()` time: one codec per signal (traces, metrics, logs), all three bound to the Provider's one transport (`src/sdk/sdk_builder.cpp:BuildWireCodec`, [ICP 0040](icps/0040-contract-docs-match-the-code.md)). Owned by the `Provider`. Each codec still has a single caller, its signal's exporter worker.
 
 #### Threading
 
@@ -381,7 +387,7 @@ The actual protocol-specific tests live in `tests/wire/` and `tests/grpc-wire/` 
 
 #### Consumers
 
-`IExporter`.
+`IExporter`, `IMetricExporter` and `ILogExporter`, one codec each.
 
 ---
 
@@ -421,7 +427,7 @@ enum class ExportResult : std::uint8_t
 
 **Postconditions.** `Export` is non-blocking — it hands the batch to the exporter worker via the worker's task queue and returns immediately. Successful return does **not** mean the batch was sent — only that it was accepted into the pipeline.
 
-**Invariants.** One exporter per `Provider`. The exporter owns its worker thread and its associated synchronisation.
+**Invariants.** One `IExporter`, the trace exporter, per `Provider`. Metrics and logs have their own exporters (`IMetricExporter`, `ILogExporter`), each with its own worker thread (`SdkProvider::m_metric_exporter`, `SdkProvider::m_log_exporter`; [ICP 0040](icps/0040-contract-docs-match-the-code.md)). The exporter owns its worker thread and its associated synchronisation.
 
 #### Lifetime
 
