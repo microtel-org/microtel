@@ -1,14 +1,15 @@
 # ICP 0040: Contract docs match the code (interfaces, RAII, upb, install graph)
 
-**Status:** Draft — 2026-10-27.
+**Status:** Accepted — 2026-10-27.
 **Affected interfaces / docs:**
 - `docs/interfaces.md` §3.1, §4.2, §4.3, §4.4
 - `docs/memory-model.md` §3.2, §4.2 (both LOCKED)
 - `docs/architecture.md` §3 (encoder containment rule, transport "Consumes", `src/common/raii/` entry, glossary)
 - `docs/development.md` (the `src/common/raii/` line)
 - `docs/icps/0020-install-and-package-config.md` (an amendment: the dependency graph and the Decision 2 table)
+- `CLAUDE.md` rule 9 (its wrapper list becomes a pointer to `memory-model.md` §4.2)
 
-**Affected tracks:** docs only. No header, source or behaviour changes.
+**Affected tracks:** docs and agent instructions only. No header, source or behaviour changes.
 
 ## Summary
 
@@ -60,14 +61,22 @@ way, the headers below are bugs. They are not: the documents are stale. ICP
 - **Same names elsewhere.** `architecture.md` and `development.md` get the
   same names: `UniqueFd` replaces `Socket`, and the wrapper lists include the
   three missing ones.
+- **Point 4 of the wrapper contract is restated as a rule.** Today it
+  requires every wrapper to expose `Release()`, which `DeflateStream` and
+  `InflateStream` don't. The new point 4 reads:
 
-**Decision needed.** `DeflateStream` and `InflateStream` have no `Release()`,
-so they break point 4 of the LOCKED wrapper contract. The proposal is to
-restate point 4 as applying to *handle* wrappers (one C handle with a
-sentinel empty state). The two stream wrappers are exempt: each owns an
-initialised `z_stream` whose only valid disposal is `deflateEnd` /
-`inflateEnd`, so handing it out raw has no safe consumer. The alternative is
-to add `Release()` to both, which is code with no caller.
+  > `Release()` is required where a C API or caller can take ownership of the
+  > resource; wrappers around state that no API adopts (e.g. `z_stream`) don't
+  > provide it.
+
+  Where it is provided, the rest of point 4 is unchanged: it returns the
+  handle and leaves the wrapper empty, with the destructor a no-op on the
+  empty state. The two zlib stream wrappers comply by rule, not by name: an
+  initialised `z_stream` can only be disposed of with `deflateEnd` or
+  `inflateEnd`, and no API takes one over.
+
+The §3.2 and §4.2 naming fixes, and the three added wrappers, were signed off
+as naming and inventory corrections under this ICP.
 
 **3. upb containment (item 10).** Three statements are reworded:
 - `architecture.md` §3: "the **only** place in the codebase that includes upb
@@ -106,14 +115,18 @@ v1.2.4:
 
 The Conan recipe's components mirror this graph since #475.
 
+**5. CLAUDE.md rule 9.** The rule names four wrappers, which is the same
+short list that drifted in `memory-model.md`. Its list is replaced with a
+pointer to `memory-model.md` §4.2, the only authoritative list of RAII
+wrappers. The rule keeps its other requirements: wrappers live in
+`src/common/raii/`, are move-only and have a `noexcept` destructor. It also
+keeps the `UpbArena` exception, and its `Release()` wording follows point 4
+above.
+
 ## Migration
 
 None for code. Contributors and agents reading these sections now see the
 names the code uses.
-
-CLAUDE.md rule 9 lists the same four wrappers. It omits `BioMethod`,
-`DeflateStream` and `InflateStream` but is otherwise correct. Changing
-CLAUDE.md is the maintainer's call and is not part of this ICP.
 
 ## Rationale & alternatives
 
