@@ -234,7 +234,7 @@ Every cell with a square-bracket range is `[p25–p75]`. Cells without ranges ar
 ## 7. Reproducibility Guarantees
 
 - **Pinned versions.** Every external dep (compiler image, OS base, otel-cpp release tag, microtel commit, collector release) is pinned in `bench/versions.lock`. Updates are a deliberate PR.
-- **Deterministic workload.** Workload generation uses a seeded PRNG; the same seed + profile yields the same sequence of spans/metrics/logs.
+- **Deterministic workload.** A profile emits the same sequence every run: the same names, counts and attributes, with no randomness in the workload itself. The driver's `--seed` flag is a placeholder and is not used. Trace and span IDs come from each SDK's own ID generator and differ between runs; only the concentrator SUT's emulated leaves seed theirs, from the leaf's index.
 - **SUT order.** The driver runs SUTs in registry order and does not shuffle them. Releases control for time-ordered drift by interleaving instead: the v1.2.4 snapshot merged five runs of the full profile, each run of the new images preceded by a run of the outgoing snapshot's images on the same host (old, new, old, new…), so drift falls on both alike. The interleaving is done by hand, not by the driver.
 - **Cold cache, warm process.** Each repetition starts a fresh SUT process, runs `warmup_seconds` of traffic that is discarded, then measures.
 - **Environment guards.** The driver warns, and still runs, if it detects (`bench/driver/env_fingerprint.py`):

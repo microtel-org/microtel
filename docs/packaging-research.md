@@ -188,7 +188,7 @@ Notes on the sketch:
   opens 2027-03-13.
 - **Port name.** The guide asks that a search for the name lead to the
   project. "Microtel" is also a hotel brand, so reviewers may ask for
-  `chanderraja-microtel`.
+  `microtel-org-microtel`.
 - **Hard-coded `-Werror`.** It is set in 13 library and tool `CMakeLists.txt` files under `src/`, `leaf/` and `tools/`. The
   host GCC 15 already gives false positives on the metric `std::variant`
   files. A port must build with whatever compiler vcpkg CI uses, both now
@@ -347,7 +347,7 @@ Registry availability:
 3. **Public since when?** Has the GitHub repository been public since
    2026-05-04? That date decides whether vcpkg's maturity gate opens in
    November 2026 or March 2027.
-4. **Port name.** Is `chanderraja-microtel` acceptable if `microtel` is
+4. **Port name.** Is `microtel-org-microtel` acceptable if `microtel` is
    judged ambiguous?
 5. **Leaf in packages.** Should the experimental leaf ship as a package
    feature/option now (it builds offline), or wait for it to leave

@@ -44,11 +44,13 @@ required, so a C++23-only regression can currently merge.
 
 ### Design intent (not all implemented)
 
-The table below is the originally designed job set. Several rows —
-`build-and-test`, `static-analysis`, `license-scan`, `fuzz-smoke`, `fuzz-soak`,
-`release` — do **not** exist as jobs today; their function is either covered by the as-built jobs above under
-different names, or still outstanding. Treat this as the target, not as a
-description of the pipeline.
+The table below is the originally designed job set. Five rows don't exist
+under those names but are covered by as-built jobs: `build-and-test` by
+`compile`, `static-analysis` by `format-check` and `tidy-check`, `fuzz-smoke` by
+`corpus-check` (which replays committed crash inputs and does not fuzz),
+`fuzz-soak` by the weekly `fuzz.yml`, and `release` by `release.yml`, which runs
+on `v*` tags. `license-scan` was never built. Treat this as the target, not as
+a description of the pipeline.
 
 | Job | When | Blocking? | Approx. duration |
 |---|---|---|---|
@@ -67,62 +69,50 @@ description of the pipeline.
 
 ## Per-job detail
 
-### `.github/workflows/build-and-test.yml`
+### `compile` (job in `.github/workflows/ci.yml`)
 
-The bread-and-butter check. Builds on a matrix of (compiler × build-type × architecture) and runs every test category.
+Builds and runs the tests on a 2×2 matrix: C++20 and C++23, each with
+`g++-13` and `clang-18`, on `ubuntu-latest` (x86_64) with CMake's default build
+type. There is no ARM64 runtime build; the only aarch64 cells are the leaf's
+(`leaf-footprint`, `leaf-target`).
 
-**Matrix:**
-- compiler: `gcc-12`, `gcc-13`, `clang-16`, `clang-17`
-- build_type: `Debug`, `Release`, `RelWithDebInfo`
-- arch: `x86_64`, `arm64`
+Each cell configures with the header check, tests, the glog and log4cxx
+bridges and the leaf on (upb encoder under gcc, nanopb under clang). The C++20
+cells also build the concentrator, and `cxx20 / clang` builds the examples.
+Then `cmake --build` and `ctest --output-on-failure`, unfiltered. Only the
+cxx20 pair is required.
 
-**Steps:**
-1. Checkout, with submodules.
-2. Install deps (`nghttp2`, `openssl`, `zlib`, `cmake`, `ninja`).
-3. `cmake --preset ci-${{ matrix.build_type }}-${{ matrix.compiler }}`.
-4. `cmake --build build --parallel`.
-5. `ctest --test-dir build --output-on-failure`.
-
-**Pass condition:** all matrix cells green.
-
-**As built, for step 5 and the conformance step this section used to list.**
 The ctest labels that exist are `unit`, `integration` and `conformance` — set
 in [`tests/CMakeLists.txt`](../tests/CMakeLists.txt),
 [`tests/integration/CMakeLists.txt`](../tests/integration/CMakeLists.txt) and
 [`tests/conformance/CMakeLists.txt`](../tests/conformance/CMakeLists.txt)
 respectively. There is no `wire` label: the byte-level wire tests live under
-`tests/unit/wire/` (and `tests/unit/wire/grpc/`) and carry `unit`. The
-as-built `compile` job runs `ctest` unfiltered rather than by label regex, and
-conformance is not a step in any build job — it is the separate `conformance`
-job documented below.
+`tests/unit/wire/` (and `tests/unit/wire/grpc/`) and carry `unit`. Conformance
+against the collector is the separate `conformance` job documented below.
 
-### `.github/workflows/static-analysis.yml`
+### `format-check` and `tidy-check` (jobs in `.github/workflows/ci.yml`)
 
-clang-format and clang-tidy enforcement.
+`format-check` (check name `clang-format`) installs Ubuntu's `clang-format-18`
+(18.1.3) and runs [`ci/scripts/format-check.sh`](../ci/scripts/format-check.sh)
+over `include/`, `src/`, `tests/`, `ci/`, `examples/` and `leaf/`. It fails on
+any drift.
 
-**Steps:**
-1. Checkout.
-2. Install `clang-format-17`, `clang-tidy-17`.
-3. Run `clang-format --dry-run --Werror` on `src/`, `include/`, `tests/`. Fails on any drift.
-4. Run `clang-tidy` on changed `.cpp` files (using `compile_commands.json` from a CMake build). Fail on any warning.
-5. Run `cppcheck` as a secondary check (informational, not blocking).
+`tidy-check` (check name `clang-tidy`) configures with `clang-18` and every
+optional target on (header check, tests, the otelcpp shim, both log bridges,
+the leaf with upb, fuzz harnesses, concentrator) to get a complete
+`compile_commands.json`, then runs `clang-tidy-18` through
+[`ci/scripts/tidy-check.sh`](../ci/scripts/tidy-check.sh). On a PR it lints
+the TUs changed against the base SHA; on a push to `master` it lints all of
+them. Any warning fails. There is no cppcheck step.
 
-**Pass condition:** clang-format and clang-tidy clean.
+### `sanitizers` (job in `.github/workflows/ci.yml`)
 
-### `.github/workflows/sanitizers.yml`
-
-Three sanitizer build configurations, run separately because they're slow and somewhat incompatible with each other.
-
-**Matrix:**
-- sanitizer: `address`, `thread`, `undefined`
-
-**Steps per cell:**
-1. Configure with `-DCMAKE_BUILD_TYPE=Debug -DMICROTEL_SANITIZER=${{ matrix.sanitizer }}`.
-2. Build.
-3. Run unit + integration test labels.
-4. Capture sanitizer output; fail on any sanitizer error.
-
-**Pass condition:** all three sanitizer builds green on the same test corpus that `build-and-test` runs.
+Three cells, `asan`, `tsan` and `ubsan`, run separately because the sanitizers
+don't combine. Each configures C++20 with `clang-18`, the same options as
+`compile` plus the leaf (upb) and the concentrator, and
+`-DMICROTEL_SANITIZER=<cell>`, then runs the whole ctest suite with
+`detect_leaks=1` (asan) and `halt_on_error=1` (tsan, ubsan). All three are
+required.
 
 ### `coverage` (job in `.github/workflows/ci.yml`)
 
@@ -449,17 +439,6 @@ Tier 1 wire regression cannot merge: Tier 1 is the compatibility promise
 [`compatibility-matrix.md`](compatibility-matrix.md) §7 makes testable. The cost
 is that every PR depends on pulling a third-party container image.
 
-### `.github/workflows/license-scan.yml`
-
-License compliance check over vendored and generated code.
-
-**Steps:**
-1. Run a license-detection tool (e.g., `scancode-toolkit` or `licensee`) over `third_party/`.
-2. Verify each `third_party/<dep>/README.md` records the upstream license and SHA.
-3. Generate `THIRD_PARTY_NOTICES.md` from the vendored licenses; fail if it differs from the committed version.
-
-**Pass condition:** all vendored licenses recognized and compatible with Apache 2.0; notices file matches.
-
 ### `.github/workflows/fuzz.yml`
 
 Runs every harness in [`tests/fuzz/`](../tests/fuzz/README.md) weekly (Wednesday 04:00 UTC) and on manual dispatch; it is not a per-PR gate. Each run first replays the committed `crashes/` inputs, then fuzzes each harness for 120 seconds (adjustable on a dispatch) from its `corpus/` seeds, and uploads any crashing input as an artifact.
@@ -522,13 +501,11 @@ That is the only one. `release.yml` publishes with the workflow's own `github.to
 
 ---
 
-## Status badges (for README.md)
+## Status badges
 
-```markdown
-![build](https://github.com/<org>/microtel/actions/workflows/build-and-test.yml/badge.svg)
-![sanitizers](https://github.com/<org>/microtel/actions/workflows/sanitizers.yml/badge.svg)
-![coverage](https://codecov.io/gh/<org>/microtel/branch/main/graph/badge.svg)
-```
+The root `README.md` carries three: CI (`ci.yml`), the latest release, and the
+SonarCloud quality gate. There is no coverage badge; coverage is reported by
+the `coverage` job and SonarCloud.
 
 ---
 

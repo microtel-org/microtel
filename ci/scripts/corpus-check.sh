@@ -38,7 +38,8 @@ if [[ ! -d "$BUILD_DIR" ]]; then
     echo "corpus-check: fuzz targets are clang-only; build them with" >&2
     echo "    cmake -S . -B $BUILD_DIR \\" >&2
     echo "          -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \\" >&2
-    echo "          -DMICROTEL_BUILD_FUZZ=ON -DMICROTEL_BUILD_LEAF=ON -DMICROTEL_BUILD_TESTS=OFF" >&2
+    echo "          -DMICROTEL_BUILD_FUZZ=ON -DMICROTEL_BUILD_LEAF=ON -DMICROTEL_BUILD_TESTS=OFF \\" >&2
+    echo "          -DMICROTEL_WITH_CONCENTRATOR=ON" >&2
     echo "    cmake --build $BUILD_DIR" >&2
     exit 2
 fi
