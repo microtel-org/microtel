@@ -233,6 +233,18 @@ target_include_directories(export_transport_builder_test
 target_compile_options(export_transport_builder_test PRIVATE
     -Wno-missing-field-initializers)
 
+# The trace, metric and log workers share one OtlpEncoder; run under TSan.
+microtel_add_test(
+    NAME    shared_encoder_concurrency_test
+    SOURCES shared_encoder_concurrency_test.cpp
+    LIBS    microtel_sdk)
+target_include_directories(shared_encoder_concurrency_test
+    PRIVATE
+        ${PROJECT_SOURCE_DIR}/src
+        ${PROJECT_SOURCE_DIR}/tests)
+target_compile_options(shared_encoder_concurrency_test PRIVATE
+    -Wno-missing-field-initializers)
+
 # Issue #267: SdkBuilder::Build and Provider::SetBatchOptions share one
 # BatchOptions validator — code, TOML and the setter over one table of cases.
 microtel_add_test(
