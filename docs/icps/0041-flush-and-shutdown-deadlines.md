@@ -1,6 +1,6 @@
 # ICP 0041: Flush and shutdown wait for what was queued, under one deadline
 
-**Status:** Draft — 2026-10-27.
+**Status:** Accepted — 2026-10-27.
 **Affected interfaces / docs:**
 - `docs/threading-model.md` §5.3 (LOCKED): two bullets replaced, text below
 - `include/microtel/provider.hpp`: the `ForceFlush` Doxygen, text below
@@ -9,7 +9,7 @@
 - code: `src/exporter/otlp_{exporter,metric_exporter,log_exporter}.cpp`,
   `src/exporter/retry_engine.{hpp,cpp}`,
   `src/sdk/periodic_exporting_metric_reader.cpp`, `src/sdk/sdk_provider.cpp`,
-  `src/sdk/sdk_builder.cpp`
+  `src/sdk/sdk_builder.cpp`, `src/transport/http2_transport.cpp` (`Send`)
 
 **Affected tracks:** SDK and exporter, on the flush and shutdown paths only.
 There is no public API change: the `ForceFlush` and `Shutdown` signatures and
@@ -89,19 +89,15 @@ that collection.
   `ForceFlushTimeout` or `ShutdownTimeout` drop, as now.
 - **`ForceFlush` never cancels anything.** At its deadline it returns, and
   sends in flight carry on.
-- **`Shutdown` cancels the export in flight at its deadline.** An exporter
-  whose wait expires calls its `on_shutdown_timeout` hook before it joins its
-  worker. Today only an `ExportTransport` Provider wires this hook. With this
-  ICP:
-  - **`ExportTransport`**: the hook calls `ExportTransportChannel::CancelInFlight`,
-    which calls the application's `ExportTransport::Cancel()`. This is
-    unchanged.
-  - **HTTP/2 and gRPC**: new. The hook calls `ITransport::Close(0ms)`. That
-    stops the I/O thread and completes every in-flight and queued stream as
-    `Cancelled`. The codec's wait returns, and the worker finishes. The
-    Provider's own `Close` later in the sequence returns `AlreadyShutDown`,
-    which the fold absorbs. Every stage after that point has no time left
-    anyway, because the deadline is shared.
+- **`Shutdown` cancels the export in flight at its deadline**, once, from
+  the Provider: see "Shared transport" below.
+  - **`ExportTransport`**: `ExportTransportChannel::CancelInFlight`, which
+    calls the application's `ExportTransport::Cancel()`, as today.
+  - **HTTP/2 and gRPC (new)**: `ITransport::Close(0ms)`. It stops the I/O
+    thread, and every in-flight and queued request completes as `Cancelled`.
+    The codec's wait returns, and the worker finishes. The Provider's own
+    `Close` later in the sequence returns `AlreadyShutDown`, which the fold
+    absorbs.
 - **The bound.** `Shutdown` returns within `timeout` plus the cancellation
   latency of the one send in flight:
   - over HTTP/2, the I/O thread's exit after a reactor wake, since the sockets
@@ -127,6 +123,66 @@ that collection.
   returns `TimedOut` at 2 s with the log stage signalled, so the logs are
   exported, instead of skipped.
 
+**Shared transport.**
+
+Traces, metrics and logs share one transport: one `Http2Transport`, or one
+`ExportTransportChannel`. Cancelling it stops all three signals, so it may
+happen only once, and only at the overall `Shutdown` deadline. It never
+happens at one stage's sub-deadline, and never from `ForceFlush`.
+
+- **The Provider owns the call.** `SdkProvider` gets one
+  `CancelAtShutdownDeadline()`:
+  - It returns at once if `Shutdown` hasn't begun. `ForceFlush` therefore
+    never cancels anything, even if a hook were reached from it.
+  - Otherwise it sleeps until the Provider's shutdown deadline, if that is
+    still in the future. Then it cancels the transport, exactly once. A
+    `std::atomic<bool>` exchange elects the one caller; any later caller
+    returns.
+  - It cancels with `Close(0ms)` for HTTP/2, or `CancelInFlight()` for
+    `ExportTransport`.
+- **Why the exporters' hooks don't do it themselves.** A hook can't fire
+  early on its own account: `OtlpExporter::Shutdown` calls it only when its
+  bounded wait has expired with the worker unfinished, just before it joins
+  that worker. But "expired" is measured against the timeout the exporter
+  was handed, and a caller can hand it less than the time remaining. For
+  example, the metric reader spends part of its share joining its own
+  thread before it shuts its exporter down.
+  - So each exporter's `on_shutdown_timeout` is wired to the Provider's
+    `CancelAtShutdownDeadline()`, never to the transport itself.
+  - A hook that fires before the deadline waits for it inside the Provider.
+    That costs nothing: the exporter would otherwise block in `join` on the
+    same worker.
+  - A hook that fires after the cancel is a no-op.
+  - The ICP 0036 hooks, which today call `CancelInFlight` directly, move to
+    the same call.
+- **`Close()` from the shutdown thread while a worker is mid-send.** Two
+  things make it safe:
+  - **Connection state is touched only on the I/O thread.** That means the
+    nghttp2 session, the stream maps and the socket. `Close` publishes
+    `Closed`, sets `m_stop` and wakes the reactor, so the shutdown is
+    *posted to the transport loop*. It waits for the loop to exit and joins
+    it. Only then does it complete the abandoned streams' promises and free
+    the session.
+  - **The only structure a worker shares with `Close` is the pending queue,
+    under `m_pending_mu`.** Today `Send` checks `m_state` *outside* that
+    lock. A `Close` between the check and the push leaves a request queued
+    after `Close` drained the queue. Its promise is never set, and the codec
+    waits out `per_export`. This can't happen today, because `Close` runs
+    only after every worker has been joined. This ICP makes it possible, so
+    the fix includes it: `Send` re-checks `m_state` under `m_pending_mu`
+    before the push. Then a request is either drained and completed by
+    `Close`, or refused as not connected.
+  - `Connect` already refuses a `Closed` transport (`ClaimConnectSlot`), so a
+    worker's lazy reconnect can't reopen it.
+- **The test.** A TSan test is required, in the HTTP/2 cancel PR:
+  - a real `Http2Transport` against a local peer that accepts a stream and
+    never answers, so a send is in flight;
+  - a second worker submitting in a loop;
+  - `Provider::Shutdown(short)`.
+
+  It asserts that `Shutdown` returns within the bound, that every submitted
+  request's future completes, and that TSan reports nothing.
+
 **3. Document changes.**
 
 `threading-model.md` §5.3. The bullet "**Every component runs even if an
@@ -143,10 +199,12 @@ is handed …" becomes:
 
 > Each component implements its own drain against the time remaining it is
 > handed — the worker finishing the batches queued when `Shutdown` began, the
-> I/O thread completing its in-flight request and closing the socket. An
-> exporter whose wait expires cancels its in-flight send through its
-> `on_shutdown_timeout` hook before joining its worker: the
-> `ExportTransport`'s `Cancel()`, or the HTTP/2 transport's `Close(0ms)`.
+> I/O thread completing its in-flight request and closing the socket. The
+> transport is shared by all three signals, so the in-flight send is
+> cancelled once, by the Provider, at the overall deadline: the
+> `ExportTransport`'s `Cancel()`, or the HTTP/2 transport's `Close(0ms)`. An
+> exporter whose wait expires reaches that through its `on_shutdown_timeout`
+> hook before joining its worker; it never cancels the transport itself.
 > Those contracts belong to the components, not to a Provider-level state
 > machine.
 
