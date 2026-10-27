@@ -287,7 +287,10 @@ m_shut_down = true
   does not gate the export path, and it is not a progress indicator: it is `true`
   for the whole of the teardown and afterwards, with no intermediate value.
 - **Every component runs even if an earlier one timed out.** A partial teardown
-  would leak threads and sockets. The statuses fold worst-first — `Failed` >
+  would leak threads and sockets. They share one deadline: `Shutdown` computes
+  `now + timeout` on entry and hands each component the time remaining, 0 ms
+  once it has passed ([ICP 0041](icps/0041-flush-and-shutdown-deadlines.md)).
+  The statuses fold worst-first — `Failed` >
   `TimedOut` > `Completed` > `AlreadyShutDown` — into the single `Status` the
   caller sees (`WorseOf` in `sdk_provider.cpp`), and a `TimedOut` fold records
   exactly one `ShutdownTimeout` drop however many components ran out of time.

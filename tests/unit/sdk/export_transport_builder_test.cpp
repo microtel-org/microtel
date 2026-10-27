@@ -611,6 +611,32 @@ TEST(ExportTransportBuilderTest, Shutdown_WithNothingInFlight_NeverCallsCancel)
     EXPECT_EQ(mock->cancel_call_count.load(), 0);
 }
 
+// #486: a trace stage that runs out of time no longer stops the log flush.
+TEST(ExportTransportBuilderTest, ForceFlush_ASlowTraceSend_StillFlushesTheLogs)
+{
+    Owned t;
+    t.fake->send_delay.at(static_cast<std::size_t>(mt::ExportSignal::Traces)) = 3s;
+    auto result =
+        mt::SdkBuilder()
+            .WithBatch(mt::BatchOptions{.schedule_delay = 60s})
+            .WithExportTransport(std::move(t.owner),
+                                 mt::ExportTransportOptions{.metrics = false, .logs = true})
+            .Build();
+    ASSERT_TRUE(result.has_value());
+    const auto provider = *result;
+
+    EndOneSpan(*provider);
+    provider->GetLogger("l")->Emit(mt::LogRecord{});
+    const auto start = std::chrono::steady_clock::now();
+    EXPECT_EQ(provider->ForceFlush(500ms), mt::Status::TimedOut);
+    EXPECT_LT(std::chrono::steady_clock::now() - start, 1500ms) << "one deadline for every stage";
+
+    // The 60 s schedule delay means only the flush can have sent the logs.
+    EXPECT_TRUE(t.fake->WaitForSends(mt::ExportSignal::Logs, 1, 2s))
+        << "the log stage was skipped after the trace stage timed out";
+    (void)provider->Shutdown(1s);
+}
+
 // ---------------------------------------------------------------------------
 // Concurrency (run under TSAN): three signals through one transport
 // ---------------------------------------------------------------------------

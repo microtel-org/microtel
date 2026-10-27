@@ -9,6 +9,7 @@
 #include "microtel/status.hpp"
 
 #include <chrono>
+#include <thread>
 #include <utility>
 #include <vector>
 
@@ -37,6 +38,10 @@ public:
 
     microtel::Status force_flush_result = microtel::Status::Completed;
     microtel::Status shutdown_result = microtel::Status::Completed;
+    /// How long `ForceFlush` / `Shutdown` take before returning, whatever
+    /// timeout they are handed: a stage that uses up part of a deadline.
+    std::chrono::milliseconds force_flush_delay{0};
+    std::chrono::milliseconds shutdown_delay{0};
 
     /// The `Context` each `OnStart` arrived with, in call order. Kept by value
     /// because a `Context` copy is `noexcept` and allocation-free — its two
@@ -65,12 +70,14 @@ public:
         std::chrono::milliseconds /*timeout*/) noexcept override
     {
         ++force_flush_call_count;
+        std::this_thread::sleep_for(force_flush_delay);
         return force_flush_result;
     }
 
     [[nodiscard]] microtel::Status Shutdown(std::chrono::milliseconds /*timeout*/) noexcept override
     {
         ++shutdown_call_count;
+        std::this_thread::sleep_for(shutdown_delay);
         return shutdown_result;
     }
 };

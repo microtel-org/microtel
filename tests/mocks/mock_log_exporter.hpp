@@ -29,6 +29,9 @@ public:
     int export_call_count = 0;
     int force_flush_call_count = 0;
     int shutdown_call_count = 0;
+    /// The timeout each call was handed; -1 until the first call.
+    std::chrono::milliseconds last_force_flush_timeout{-1};
+    std::chrono::milliseconds last_shutdown_timeout{-1};
 
     // --- ILogExporter ---
 
@@ -38,16 +41,17 @@ public:
         return export_result;
     }
 
-    [[nodiscard]] microtel::Status ForceFlush(
-        std::chrono::milliseconds /*timeout*/) noexcept override
+    [[nodiscard]] microtel::Status ForceFlush(std::chrono::milliseconds timeout) noexcept override
     {
         ++force_flush_call_count;
+        last_force_flush_timeout = timeout;
         return force_flush_result;
     }
 
-    [[nodiscard]] microtel::Status Shutdown(std::chrono::milliseconds /*timeout*/) noexcept override
+    [[nodiscard]] microtel::Status Shutdown(std::chrono::milliseconds timeout) noexcept override
     {
         ++shutdown_call_count;
+        last_shutdown_timeout = timeout;
         return shutdown_result;
     }
 };

@@ -5,6 +5,7 @@
 
 #include "microtel/export_transport.hpp"
 
+#include <array>
 #include <chrono>
 #include <condition_variable>
 #include <cstddef>
@@ -23,6 +24,8 @@ namespace microtel::testing
 /// - `block_until_cancel`: every `Send` waits — past its deadline — until
 ///   `Cancel`, then returns `NonRetryable`. It models the transport that
 ///   ignores its deadline, the one `Cancel` exists for.
+/// - `send_delay`, per signal: `Send` takes that long before answering, or
+///   returns `NonRetryable` as soon as `Cancel` is called.
 /// - `throw_std` / `throw_non_std`: `Send` throws instead of answering.
 ///
 /// Thread-safe: a Provider with metrics and logs on calls `Send` from up to
@@ -47,6 +50,8 @@ public:
     std::deque<SendResult> scripted_results;
     SendResult default_result{.outcome = SendOutcome::Success};
     bool block_until_cancel = false;
+    /// Indexed by `ExportSignal`.
+    std::array<std::chrono::milliseconds, 3> send_delay{};
     bool throw_std = false;
     bool throw_non_std = false;
 
@@ -68,6 +73,13 @@ public:
         if (block_until_cancel)
         {
             m_cv.wait(lock, [this] { return m_cancel_calls > 0; });
+            return SendResult{.outcome = SendOutcome::NonRetryable, .message = "cancelled"};
+        }
+        const std::chrono::milliseconds delay =
+            send_delay.at(static_cast<std::size_t>(request.signal));
+        if (delay > std::chrono::milliseconds{0} &&
+            m_cv.wait_for(lock, delay, [this] { return m_cancel_calls > 0; }))
+        {
             return SendResult{.outcome = SendOutcome::NonRetryable, .message = "cancelled"};
         }
         if (!scripted_results.empty())
@@ -103,6 +115,26 @@ public:
     {
         std::unique_lock lock{m_mu};
         return m_cv.wait_for(lock, timeout, [this, n] { return m_sent.size() >= n; });
+    }
+
+    /// @brief Wait until at least @p n requests for @p signal have arrived, or
+    ///        @p timeout.
+    [[nodiscard]] bool WaitForSends(ExportSignal signal,
+                                    std::size_t n,
+                                    std::chrono::milliseconds timeout) const
+    {
+        std::unique_lock lock{m_mu};
+        return m_cv.wait_for(lock,
+                             timeout,
+                             [this, signal, n]
+                             {
+                                 std::size_t count = 0;
+                                 for (const auto& r : m_sent)
+                                 {
+                                     count += r.signal == signal ? 1U : 0U;
+                                 }
+                                 return count >= n;
+                             });
     }
 
 private:

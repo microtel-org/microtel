@@ -15,6 +15,7 @@
 #include "microtel/tracer.hpp"
 
 #include "fakes/fake_exporter.hpp"
+#include "fakes/fake_span_processor.hpp"
 #include "helpers/thread_ids.hpp"
 #include "mocks/mock_exporter.hpp"
 #include "mocks/mock_log_exporter.hpp"
@@ -132,6 +133,48 @@ std::unique_ptr<mts::SdkProvider> MakeProviderWithMetricExporter(mtm::MockSpanPr
     });
 }
 
+/// How long a slow stage takes, against `kTimeout`.
+constexpr auto kStageDelay = std::chrono::milliseconds(300);
+
+/// A provider whose span processor is a fake that can take time, with the
+/// trace exporter, log exporter and transport as mocks the test can inspect.
+struct StagedProvider
+{
+    mtm::FakeSpanProcessor* processor = nullptr;
+    mtm::MockExporter* exporter = nullptr;
+    mtm::MockLogExporter* log_exporter = nullptr;
+    mtm::MockTransport* transport = nullptr;
+    std::unique_ptr<mts::SdkProvider> provider;
+};
+
+StagedProvider MakeStagedProvider()
+{
+    auto proc = std::make_unique<mtm::FakeSpanProcessor>();
+    auto exp = std::make_unique<mtm::MockExporter>();
+    auto log_exp = std::make_unique<mtm::MockLogExporter>();
+    auto transport = std::make_unique<mtm::MockTransport>();
+    StagedProvider s{.processor = proc.get(),
+                     .exporter = exp.get(),
+                     .log_exporter = log_exp.get(),
+                     .transport = transport.get(),
+                     .provider = nullptr};
+    s.provider = std::make_unique<mts::SdkProvider>(mts::SdkProviderArgs{
+        .diagnostics = std::make_unique<mts::DiagnosticsCounters>(),
+        .encoder = nullptr,
+        .auth = nullptr,
+        .transport = std::move(transport),
+        .codec = nullptr,
+        .exporter = std::move(exp),
+        .processor = std::move(proc),
+        .resource = std::make_shared<mt::Resource>(),
+        .sampler = mt::MakeAlwaysOnSampler(),
+        .span_limits = {},
+        .connect_opts = {},
+        .log_exporter = std::move(log_exp),
+    });
+    return s;
+}
+
 }  // namespace
 
 // ---------------------------------------------------------------------------
@@ -153,23 +196,75 @@ TEST(SdkProviderTest, ForceFlush_CallsBothProcessorAndExporter)
     EXPECT_EQ(exp->force_flush_call_count, 1);
 }
 
-// If the processor times out the exporter must NOT be flushed — its queue
-// may still contain in-flight data, so calling ForceFlush on it would give
-// a misleading Completed result.
-TEST(SdkProviderTest, ForceFlush_ProcessorTimedOut_ExporterNotFlushed)
+// ---------------------------------------------------------------------------
+// One deadline, every stage, the worst status (ICP 0041, #486)
+// ---------------------------------------------------------------------------
+
+// A stage that fails or times out no longer stops the stages after it: the
+// trace exporter and the log exporter are still flushed, and the caller sees
+// the worst status.
+TEST(SdkProviderTest, ForceFlush_ProcessorTimedOut_EveryLaterStageStillRuns)
 {
-    mtm::MockSpanProcessor* proc = nullptr;
-    mtm::MockExporter* exp = nullptr;         // NOLINT(misc-const-correctness)
-    mtm::MockTransport* transport = nullptr;  // NOLINT(misc-const-correctness)
-    auto provider = MakeProvider(&proc, &exp, &transport);
+    auto s = MakeStagedProvider();
+    s.processor->force_flush_result = mt::Status::TimedOut;
 
-    proc->force_flush_result = mt::Status::TimedOut;
+    EXPECT_EQ(s.provider->ForceFlush(kTimeout), mt::Status::TimedOut);
+    EXPECT_EQ(s.exporter->force_flush_call_count, 1);
+    EXPECT_EQ(s.log_exporter->force_flush_call_count, 1);
+}
 
-    const auto status = provider->ForceFlush(kTimeout);
+TEST(SdkProviderTest, ForceFlush_FoldsTheWorstStatus)
+{
+    auto s = MakeStagedProvider();
+    s.exporter->force_flush_result = mt::Status::Failed;
+    s.log_exporter->force_flush_result = mt::Status::TimedOut;
 
-    EXPECT_EQ(status, mt::Status::TimedOut);
-    EXPECT_EQ(proc->force_flush_call_count, 1);
-    EXPECT_EQ(exp->force_flush_call_count, 0);
+    EXPECT_EQ(s.provider->ForceFlush(kTimeout), mt::Status::Failed);
+    EXPECT_EQ(s.log_exporter->force_flush_call_count, 1);
+}
+
+TEST(SdkProviderTest, ForceFlush_StagesShareOneDeadline)
+{
+    auto s = MakeStagedProvider();
+    s.processor->force_flush_delay = kStageDelay;
+
+    ASSERT_EQ(s.provider->ForceFlush(kTimeout), mt::Status::Completed);
+    EXPECT_LE(s.exporter->last_force_flush_timeout, kTimeout - kStageDelay);
+    EXPECT_LE(s.log_exporter->last_force_flush_timeout, kTimeout - kStageDelay);
+}
+
+TEST(SdkProviderTest, ForceFlush_PastTheDeadline_LaterStagesStillRunWithNoTime)
+{
+    auto s = MakeStagedProvider();
+    s.processor->force_flush_delay = kTimeout + kStageDelay;
+
+    (void)s.provider->ForceFlush(kTimeout);
+    EXPECT_EQ(s.exporter->force_flush_call_count, 1);
+    EXPECT_EQ(s.exporter->last_force_flush_timeout, std::chrono::milliseconds{0});
+    EXPECT_EQ(s.log_exporter->last_force_flush_timeout, std::chrono::milliseconds{0});
+}
+
+// With every stage running, a ForceFlush after Shutdown would otherwise reach
+// exporters whose workers are already joined and wait out the timeout.
+TEST(SdkProviderTest, ForceFlush_AfterShutdown_ReturnsAlreadyShutDownAndFlushesNothing)
+{
+    auto s = MakeStagedProvider();
+    ASSERT_EQ(s.provider->Shutdown(kTimeout), mt::Status::Completed);
+
+    EXPECT_EQ(s.provider->ForceFlush(kTimeout), mt::Status::AlreadyShutDown);
+    EXPECT_EQ(s.processor->force_flush_call_count, 0);
+    EXPECT_EQ(s.exporter->force_flush_call_count, 0);
+}
+
+TEST(SdkProviderTest, Shutdown_StagesShareOneDeadline)
+{
+    auto s = MakeStagedProvider();
+    s.processor->shutdown_delay = kStageDelay;
+
+    ASSERT_EQ(s.provider->Shutdown(kTimeout), mt::Status::Completed);
+    EXPECT_LE(s.log_exporter->last_shutdown_timeout, kTimeout - kStageDelay);
+    EXPECT_LE(s.exporter->last_shutdown_timeout, kTimeout - kStageDelay);
+    EXPECT_LE(s.transport->last_close_timeout, kTimeout - kStageDelay);
 }
 
 // ---------------------------------------------------------------------------
