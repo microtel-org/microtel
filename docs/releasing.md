@@ -122,10 +122,10 @@ goes through a PR like anything else:
 ```bash
 git switch master && git pull
 git switch -c release/vX.Y.Z
-# edit the five literals + SECURITY.md
+# edit every literal and pin in §1 + SECURITY.md
 ci/scripts/version-drift-check.sh
 git commit -am "chore: vX.Y.Z"
-# plus the published benchmark snapshot — see §6
+# plus the published benchmark snapshot — see §5
 gh pr create --title "release: vX.Y.Z" --milestone "…" --body "…"
 # merge once CI is green
 ```
@@ -272,6 +272,15 @@ quotes it, so the two must agree, and a release is when they are made to agree.
    rather than carrying the old ones forward.** v1.1.0's p50 ratio
    went 4.0× → 3.5× purely because percentiles stopped being bucket midpoints on
    both sides; a stale ratio would have read as a regression.
+5. Refresh the two size snapshots beside it.
+   [`sizes/library-sizes.md`](bench-results/sizes/library-sizes.md): re-run its
+   Commands section against the SUT images step 1 built, regenerate the tables
+   with `group.py` and `render.py`, and update the **Build** row with the image
+   date and the commit they were built from.
+   [`leaf-footprint.md`](bench-results/leaf-footprint.md): re-run
+   `ci/scripts/leaf-footprint.sh` and `ci/scripts/leaf-target.sh` for every
+   target and backend, as its Reproducing section says, and update the tables
+   and the dated paragraph under its title, naming the commit measured.
 
 **Sanity-compare against the previous snapshot before committing.** Compare the
 `environment` block first (`cpu_model`, `cpu_physical_cores`, governor, load
@@ -355,7 +364,9 @@ long-term-support window for a major line is in
 [ ] src/wire/grpc/grpc_wire_codec.cpp  kUserAgent
 [ ] tools/preflight/preflight.cpp  kVersion
 [ ] leaf/include/microtel/leaf.h  MICROTEL_LEAF_VERSION_MAJOR / _MINOR / _PATCH
+[ ] leaf/CMakeLists.txt  project(microtel_leaf VERSION …)
 [ ] README (Status, git clone, FetchContent GIT_TAG, CPM @version) and CONTRIBUTING.md
+[ ] tests/consumer_fetchcontent GIT_TAG and tests/consumer_cpm @version
 [ ] ci/scripts/version-drift-check.sh passes locally
 [ ] test-presence satisfied by a real test, not the [refactor] label
 [ ] COMPATIBILITY mode still right (major bumps only)
@@ -363,6 +374,7 @@ long-term-support window for a major line is in
 [ ] docs/bench-results/ refreshed from a run on the snapshot's own host
 [ ] environment block diffed against the outgoing snapshot (see #277)
 [ ] bench-results summary table and root README agree, and the ratio claims were re-derived
+[ ] bench-results/sizes/library-sizes.md and leaf-footprint.md re-measured, commit recorded
 [ ] measurement-vs-performance shifts annotated where a reader will see them
 [ ] release PR merged with CI green
 [ ] annotated tag vX.Y.Z on the master merge commit, pushed

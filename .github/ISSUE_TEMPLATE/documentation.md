@@ -1,5 +1,3 @@
-<!-- Save as .github/ISSUE_TEMPLATE/documentation.md -->
-
 ---
 name: Documentation issue
 about: Report a documentation bug, gap, or unclear passage

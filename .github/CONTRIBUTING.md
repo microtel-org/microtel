@@ -18,7 +18,7 @@ Where the project most wants help:
 |---|---|
 | Bug reports with a minimal reproduction | Changes to a locked interface — open an [ICP](../docs/icps/) |
 | Fixes that arrive with the failing test that proves them | New runtime dependencies — an ICP, and a high bar: the closure is the project's whole reason to exist |
-| Conformance and interop coverage for metrics and logs (implemented, not yet conformance-tested — see [docs/compatibility-matrix.md](../docs/compatibility-matrix.md) §2) | Large features that aren't on the [roadmap](../docs/roadmap.md) — file a feature request so scope is agreed before you write code |
+| Interop coverage for metrics and logs beyond the pinned collector — see [docs/compatibility-matrix.md](../docs/compatibility-matrix.md) §2 | Large features that aren't on the [roadmap](../docs/roadmap.md) — file a feature request so scope is agreed before you write code |
 | Platform, compiler and toolchain ports | Vendor-specific exporters — better as your own repo than as a fork of this one |
 | Comparison data with `opentelemetry-cpp` for benchmarks | Style / formatting PRs that don't change correctness — `clang-format` owns that, and CI runs it |
 | Issues for ambiguities or contradictions in the design docs | |
@@ -71,7 +71,6 @@ The project uses pull requests on GitHub. The same process applies to everyone, 
 - Short summary line (≤ 72 characters).
 - Optional longer body explaining *why*, not *what*.
 - Reference the issue if applicable: `Fixes #42` or `Refs #42`.
-- Sign off every commit (`git commit -s`); see [License and DCO](#license-and-dco).
 
 ### Interface changes
 
@@ -104,13 +103,11 @@ Reviewers do *not* spend time on style — that's `clang-format`'s job. PRs that
 
 A formal code of conduct will be adopted before the first public release. In the meantime: be respectful, be constructive, and assume good faith.
 
-## License and DCO
+## License
 
 By contributing, you agree that your contributions are licensed under the project's [Apache 2.0 license](../LICENSE).
 
-microtel uses the [Developer Certificate of Origin](https://developercertificate.org/) (DCO), not a CLA. Every commit must carry a `Signed-off-by:` line whose name and email match the commit author. It certifies that you wrote the change, or otherwise have the right to submit it under the project's license. `git commit -s` adds the line for you; to sign off commits already on a branch, run `git rebase --signoff master`.
-
-There is nothing to sign up front and no agreement to file. Commits merged before the DCO was adopted are not re-signed.
+There is nothing to sign up front and no agreement to file.
 
 ---
 

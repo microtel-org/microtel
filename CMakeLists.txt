@@ -13,7 +13,7 @@ cmake_minimum_required(VERSION 3.20)
 project(microtel
         VERSION 1.2.3
         LANGUAGES C CXX
-        DESCRIPTION "Lightweight OpenTelemetry-compatible trace runtime built on nghttp2")
+        DESCRIPTION "Lightweight OpenTelemetry-compatible runtime for traces, metrics and logs, built on nghttp2")
 
 # TRUE when microtel is the top-level project, FALSE under add_subdirectory()
 # or FetchContent. Developer-only parts (tests, the header check, the spdlog

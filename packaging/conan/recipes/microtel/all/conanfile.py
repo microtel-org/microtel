@@ -13,8 +13,9 @@ required_conan_version = ">=2.1"
 
 class MicrotelConan(ConanFile):
     name = "microtel"
-    description = ("Lightweight OpenTelemetry trace runtime and OTLP exporter (OTLP/HTTP and "
-                   "OTLP/gRPC) built on nghttp2, without the gRPC or protobuf C++ libraries")
+    description = ("Lightweight OpenTelemetry runtime and OTLP exporter for traces, metrics and "
+                   "logs (OTLP/HTTP and OTLP/gRPC) built on nghttp2, without the gRPC or "
+                   "protobuf C++ libraries")
     # microtel, then vendored upb (BSD-3-Clause), utf8_range (MIT) and
     # tl::expected (CC0-1.0). The leaf option adds nanopb (Zlib).
     license = ("Apache-2.0", "BSD-3-Clause", "MIT", "CC0-1.0")

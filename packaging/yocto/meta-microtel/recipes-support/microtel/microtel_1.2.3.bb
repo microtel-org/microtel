@@ -1,4 +1,4 @@
-SUMMARY = "Lightweight OpenTelemetry trace runtime and OTLP exporter"
+SUMMARY = "Lightweight OpenTelemetry runtime and OTLP exporter for traces, metrics and logs"
 DESCRIPTION = "microtel is a C++20 OpenTelemetry-compatible runtime with an \
 OTLP/HTTP and OTLP/gRPC exporter built on nghttp2 and a vendored upb, without \
 the gRPC or protobuf C++ libraries. Optional: the C11 'leaf' library for \
