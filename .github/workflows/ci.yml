@@ -687,6 +687,45 @@ jobs:
       - name: Assert the shim does not alter the dependency closure
         run: ci/scripts/symbol-scan.sh --prefix install-tree
 
+  # The Conan recipe on HEAD, in a container with no system nghttp2, OpenSSL or
+  # zlib headers. Every other job installs them into /usr/include, which hides
+  # a target that includes a dependency's header without linking it (#473).
+  # Not a required check.
+  conan-clean:
+    runs-on: ubuntu-latest
+    container: ubuntu:24.04
+    timeout-minutes: 60
+    needs: changes
+    if: ${{ !cancelled() && needs.changes.outputs.code != 'false' }}
+    name: conan-clean
+    steps:
+      # git before checkout, so actions/checkout makes a real clone that
+      # conan-clean.sh can `git archive`.
+      - name: Install toolchain (no -dev packages for microtel's dependencies)
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            g++ make cmake perl python3-venv ca-certificates git
+      - uses: actions/checkout@v4
+      # The workspace belongs to the runner's uid, not the container's root,
+      # so git refuses to `git archive` it without this.
+      - name: Trust the workspace
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - name: Install Conan
+        run: |
+          python3 -m venv /opt/conan
+          /opt/conan/bin/pip install conan
+          echo /opt/conan/bin >> "$GITHUB_PATH"
+      - name: Cache Conan packages
+        uses: actions/cache@v4
+        with:
+          path: /github/home/.conan2/p
+          key: conan-clean-${{ hashFiles('packaging/conan/recipes/microtel/all/conanfile.py') }}
+      - name: Detect profile
+        run: conan profile detect
+      - name: conan create on HEAD
+        run: ci/scripts/conan-clean.sh
+
   conformance:
     runs-on: ubuntu-latest
     needs: changes

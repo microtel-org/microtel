@@ -22,7 +22,7 @@ target_include_directories(epoll_reactor_test
 microtel_add_test(
     NAME    http2_transport_test
     SOURCES http2_transport_test.cpp
-    LIBS    microtel_transport)
+    LIBS    microtel_transport OpenSSL::SSL PkgConfig::NGHTTP2)
 
 target_include_directories(http2_transport_test
     PRIVATE ${PROJECT_SOURCE_DIR}/src)
