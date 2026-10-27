@@ -26,7 +26,7 @@ finishing and stabilizing that code, not writing it.
 | v1.2 Leaf / concentrator | Done, experimental (ICP 0031, ICP 0036) | Leaf programming and concentrator deployment guides; v2.0 stabilises the API |
 | v1.2.2 Patch | Done | Static request headers validated at `Build()`, and the auth callback's value on each export ([ICP 0038](icps/0038-reject-reserved-request-headers.md), #412); OTel key=value env lists trimmed and percent-decoded (#413); a Meter, its instruments and a Logger may outlive the Provider (#259, #417) |
 | v1.2.3 Patch | Done | Install story: vcpkg port, Conan 2 recipe, use as a FetchContent/CPM subproject, `find_package(microtel COMPONENTS leaf concentrator)`, and a source archive with its SHA-512 on each release (#432) |
-| v1.2.4 Patch | Done, release pending (#462) | Exponential histograms encoded (#447); metric data points carry time and start time ([ICP 0039](icps/0039-metric-start-timestamps.md), #449); observable sums report deltas under delta temporality (#453); span and link `trace_state` and flags encoded (#452); metrics conformance against the collector on both protocols, and a known-limitations section in the README (#459) |
+| v1.2.4 Patch | Done (#462) | Exponential histograms encoded (#447); metric data points carry time and start time ([ICP 0039](icps/0039-metric-start-timestamps.md), #449); observable sums report deltas under delta temporality (#453); span and link `trace_state` and flags encoded (#452); metrics conformance against the collector on both protocols, and a known-limitations section in the README (#459) |
 | v1.3 Metrics | Mostly done, experimental | Async-callback deadline (#237); View aggregation override; per-instrument temporality; OTel exemplar reservoirs and `OTEL_METRICS_EXEMPLAR_FILTER`; exemplar export (#454); per-kind Delta/LowMemory presets (#455); `Timer`/`Counter` sugar; collector conformance for the cardinality-overflow series (#302) |
 | v1.4 Control plane | Not started | Unix-socket server, `microtelctl`, threat model, operator guide (ICP 0024); mTLS rotation (#296, #297) |
 | Tier 3 otel-cpp shim | Done for all three signals, experimental | Beta gates in §10 (real-world app testing, frozen API, deprecation policy) |
@@ -435,7 +435,7 @@ The `bench/` directory evolves alongside the project:
 
 ### Community and governance
 - **Pre-1.0:** small core team; CODEOWNERS for each track.
-- **v1.0 → v1.4:** maintain DCO sign-off, security policy, regular release cadence (monthly pre-1.0, quarterly stable).
+- **v1.0 → v1.4:** maintain the security policy and a regular release cadence (monthly pre-1.0, quarterly stable).
 - **v2.0:** consider donating to a foundation (CNCF if the leaf/concentrator pattern resonates) — depends on adoption signals.
 - **v3.0:** stable maintainer model with multiple organizations contributing if the project has reached real adoption.
 
