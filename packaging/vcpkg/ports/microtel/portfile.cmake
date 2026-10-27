@@ -26,6 +26,10 @@ else()
         REF "v${VERSION}"
         SHA512 8a133cf10eef52e09990caef6fc83e877cd38e8d7a944f8748382abd3784fa4650b172239fe4c91ab622fc2635c82c47f375bac0ca501f54018294dd70a5ceaa
         HEAD_REF master
+        PATCHES
+            # #473: microtel_sdk links nghttp2 and OpenSSL. Fixed after v1.2.4;
+            # drop this at the next release.
+            link-nghttp2-openssl.patch
     )
 endif()
 

@@ -22,6 +22,7 @@ LIC_FILES_CHKSUM = "file://LICENSE;md5=86d3f3a95c324c9479bd8986968f4327"
 SRC_URI = " \
     https://github.com/microtel-org/microtel/archive/refs/tags/v${PV}.tar.gz;downloadfilename=${BP}.tar.gz;name=microtel \
     https://github.com/marzer/tomlplusplus/archive/refs/tags/v${TOMLPP_PV}.tar.gz;downloadfilename=tomlplusplus-${TOMLPP_PV}.tar.gz;name=tomlplusplus;subdir=${BP}/_deps \
+    file://link-nghttp2-openssl.patch \
 "
 TOMLPP_PV = "3.4.0"
 SRC_URI[microtel.sha256sum] = "6d3184d5ab9a7fe9154aca7f81e45908af82e54a8be1b6e7f0834a2546209a7e"
