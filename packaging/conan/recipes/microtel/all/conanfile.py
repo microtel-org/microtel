@@ -106,26 +106,54 @@ class MicrotelConan(ConanFile):
     def package_info(self):
         self.cpp_info.set_property("cmake_file_name", "microtel")
 
-        # The supported target. The archives are listed in link order: each
-        # one before the archives it depends on.
-        core = self.cpp_info.components["core"]
-        core.set_property("cmake_target_name", "microtel::microtel")
-        # microtel_api comes after microtel_encoder: the encoder calls
-        # TraceState (#473).
-        core.libs = [
-            "microtel_sdk", "microtel_config", "microtel_exporter",
-            "microtel_transport", "microtel_http_wire", "microtel_grpc_wire",
-            "microtel_otlp_response", "microtel_gzip", "microtel_custom_wire",
-            "microtel_common", "microtel_encoder", "microtel_api", "microtel_upb_gen",
-            "microtel_upb_runtime", "microtel_utf8_range",
-        ]
+        # One component per installed target, with the requires of its
+        # INTERFACE_LINK_LIBRARIES in the exported MicrotelTargets.cmake.
+        # Conan derives the link order from them (#473).
+        headers = self.cpp_info.components["headers"]
+        headers.set_property("cmake_target_name", "microtel::headers")
         # tl::expected is installed under include/microtel/vendor so that it
         # cannot clash with a consumer's own copy.
-        core.includedirs = ["include", os.path.join("include", "microtel", "vendor")]
-        core.requires = ["openssl::ssl", "openssl::crypto", "libnghttp2::nghttp2", "zlib::zlib"]
-        core.system_libs = ["pthread"]
+        headers.includedirs = ["include", os.path.join("include", "microtel", "vendor")]
+        headers.libdirs = []
 
+        libraries = {
+            "api": ["headers"],
+            "common": ["headers"],
+            "config": ["headers"],
+            "sdk": ["headers", "api", "config", "exporter", "transport", "http_wire", "grpc_wire",
+                    "custom_wire", "encoder", "openssl::ssl", "libnghttp2::nghttp2"],
+            "exporter": ["headers", "encoder"],
+            "transport": ["headers", "common", "openssl::ssl", "openssl::crypto",
+                          "libnghttp2::nghttp2"],
+            "otlp_response": ["headers"],
+            "gzip": ["headers", "zlib::zlib"],
+            "http_wire": ["headers", "otlp_response", "gzip"],
+            "grpc_wire": ["headers", "otlp_response", "gzip", "common"],
+            "custom_wire": ["headers", "common"],
+            "encoder": ["headers", "api", "upb_gen"],
+            "upb_gen": ["upb_runtime"],
+            "upb_runtime": ["utf8_range"],
+            "utf8_range": [],
+        }
         if self.options.leaf:
-            leaf = self.cpp_info.components["leaf"]
-            leaf.set_property("cmake_target_name", "microtel::leaf")
-            leaf.libs = ["microtel_leaf", "microtel_nanopb_gen", "microtel_nanopb"]
+            libraries.update({
+                "leaf": ["nanopb_gen"],
+                "nanopb_gen": ["nanopb"],
+                "nanopb": [],
+            })
+        for name, requires in libraries.items():
+            component = self.cpp_info.components[name]
+            component.set_property("cmake_target_name", f"microtel::{name}")
+            component.libs = [f"microtel_{name}"]
+            component.requires = requires
+            component.includedirs = []
+        self.cpp_info.components["common"].system_libs = ["pthread"]
+        if self.options.leaf:
+            self.cpp_info.components["leaf"].includedirs = ["include"]
+
+        # The supported target.
+        core = self.cpp_info.components["microtel"]
+        core.set_property("cmake_target_name", "microtel::microtel")
+        core.requires = ["sdk"]
+        core.includedirs = []
+        core.libdirs = []
