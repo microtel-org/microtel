@@ -118,7 +118,8 @@ time. Threading and re-entrancy must be pinned given the strict threading model.
 - Callbacks are registered at instrument creation, and additionally via
   `Meter::RegisterCallback(...)` which returns an **RAII registration handle**
   (move-only; unregisters on destruction — consistent with the project's RAII
-  rules).
+  rules). **Status: planned, not built.** `Meter::RegisterCallback` does not
+  exist; callbacks are given only at instrument creation.
 - Callbacks run **on the MetricReader's collection thread, never on a caller
   hot path.** They are serialized per collection cycle and bounded by a
   per-collection deadline; a callback that exceeds it is abandoned, its
@@ -177,6 +178,8 @@ example trace.
 - **Default filter = `trace_based`** (OTel default): an exemplar is recorded only
   when a *sampled* span is active in the current `Context`. Honor
   `OTEL_METRICS_EXEMPLAR_FILTER` (`always_off` | `always_on` | `trace_based`).
+  **Status: planned, not built.** `OTEL_METRICS_EXEMPLAR_FILTER` is not read;
+  the filter is always `trace_based`.
 - Captured fields: `trace_id`, `span_id`, timestamp, value, and any filtered
   attributes.
 - **Dependency:** exemplars read the current span from the thread-local
@@ -206,6 +209,7 @@ example trace.
   `Histogram<T>::Record(value, AttributeSpan)`, etc.
 - `mt::Timer` sugar: RAII; records elapsed wall-time to a bound `Histogram` on
   destruction (completes the v1.1-deferred sugar piece).
+  **Status: planned, not built.** There is no `mt::Timer`.
 
 ## §9 Memory & threading model
 
@@ -219,6 +223,7 @@ example trace.
   stance as ICP 0003's span-allocation decision; not premature in v1.2.
 - A per-metrics memory budget is added to `MemoryLimitOptions` (additive public
   field — no ICP needed, unlike the `DropReason` change in §2).
+  **Status: planned, not built.** `MemoryLimitOptions` has no metrics field.
 - Collection (callback invocation + snapshot) runs on the reader thread; caller
   threads only touch the live aggregation state under the per-instrument lock.
 
@@ -242,6 +247,9 @@ example trace.
   `WithMetricReader(...)`, `WithMetricTemporality(pref)`,
   `WithMetricLimits(MetricLimitOptions)`, `WithView(...)`,
   `WithExemplarFilter(...)`.
+  **Status: planned, not built.** `WithPeriodicMetricReader`,
+  `WithMetricReader` and `WithExemplarFilter` do not exist; the interval is
+  set with `WithMetricInterval(interval)`.
 - Env vars honored: `OTEL_METRIC_EXPORT_INTERVAL`,
   `OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE`,
   `OTEL_METRICS_EXEMPLAR_FILTER`.

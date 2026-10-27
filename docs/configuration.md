@@ -46,7 +46,7 @@ Method calls on `SdkBuilder`. Highest precedence. Each `WithXxx` call records th
 
 ### 2.2 Environment variables
 
-Read at `Build()` time. Both `OTEL_*` and `MICROTEL_*` namespaces. Per-signal env vars that v1 does not implement (e.g., `OTEL_EXPORTER_OTLP_METRICS_ENDPOINT`) are **ignored, not rejected** — they belong to a future signal and should not break trace-only deployments.
+Read at `Build()` time. Both `OTEL_*` and `MICROTEL_*` namespaces. Per-signal exporter env vars (e.g., `OTEL_EXPORTER_OTLP_METRICS_ENDPOINT`, `OTEL_EXPORTER_OTLP_LOGS_ENDPOINT`) are not implemented and are **ignored, not rejected**. Traces, metrics and logs all export through the shared `OTEL_EXPORTER_OTLP_*` settings. The one per-signal variable read is `OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE` (§3.13).
 
 The key=value list variables (`OTEL_EXPORTER_OTLP_HEADERS`, `OTEL_RESOURCE_ATTRIBUTES`, `MICROTEL_CONCENTRATOR_RESOURCE_ATTRIBUTES`) use the W3C Baggage list format without metadata, as the OTel spec specifies. Whitespace around each key and value is dropped, so `a=1, b=2` sets `b`. Values are percent-decoded: `authorization=Bearer%20<token>` sends `Bearer <token>`, and a literal `%` is `%25`. Keys are not decoded. A `%` not followed by two hex digits fails `Build()` with `EnvParseFailure` (issue #413).
 

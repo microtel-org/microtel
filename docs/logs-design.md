@@ -143,7 +143,8 @@ fills `trace_id`, `span_id`, and `trace_flags` from
 `ICurrentSpanSource::GetCurrentSpan()` — the same seam metrics already use for
 exemplars. If the caller set `trace_id` explicitly, the SDK never overwrites it.
 Correlation is disabled by a builder flag / `microtel.toml` setting for callers
-who bridge already-correlated records.
+who bridge already-correlated records. **Status: planned, not built.** There is
+no such flag or setting; correlation is always on.
 
 `observed_time` is stamped to `system_clock::now()` at `Emit()` when unset;
 `time` is left untouched (0 = unknown, per the L2 header contract).
@@ -151,7 +152,8 @@ who bridge already-correlated records.
 ## §5 Attribute limits & drop accounting
 
 **Decision.** A per-record attribute cap (default 128, configurable) is enforced
-at `Emit()`; excess attributes are dropped and `dropped_attributes_count` is
+at `Emit()` (**Status: planned, not built:** the cap is fixed at 128, with no
+public setting); excess attributes are dropped and `dropped_attributes_count` is
 incremented on the record, matching the OTLP field already present in
 `LogRecord`.
 
@@ -199,16 +201,19 @@ GetLogger(std::string_view name, std::string_view version = {}) = 0;
 the lazy metrics `GetMeter`), caches `SdkLogger`s per `(name, version)`, and
 returns a shared no-op logger when no logs exporter is configured. `SdkBuilder`
 gains `WithLogExporter(...)` (or auto-enables logs when a logs endpoint is
-configured). Adding a pure-virtual method to the public `Provider` is a breaking
+configured). **Status: planned, not built.** There is no `WithLogExporter`. Adding a pure-virtual method to the public `Provider` is a breaking
 change to a locked interface → **L5 lands behind its own ICP.**
 
 ## §9 Configuration & compatibility
 
 **Decision.** Standard OTel env precedence: `OTEL_EXPORTER_OTLP_LOGS_ENDPOINT`,
 `OTEL_EXPORTER_OTLP_LOGS_PROTOCOL`, `OTEL_EXPORTER_OTLP_LOGS_HEADERS`, falling
-back to the generic `OTEL_EXPORTER_OTLP_*`. `microtel.toml` gains a `[logs]`
+back to the generic `OTEL_EXPORTER_OTLP_*`. **Status: planned, not built.**
+No `OTEL_EXPORTER_OTLP_LOGS_*` variable is read; logs use the generic
+`OTEL_EXPORTER_OTLP_*`. `microtel.toml` gains a `[logs]`
 section paralleling `[traces]`/`[metrics]`, with `endpoint`, `protocol`,
-`batch`, and `correlation` keys. Logs are opt-in: absent any logs config, the
+`batch`, and `correlation` keys. **Status: planned, not built.** There is no
+`[logs]` table. Logs are opt-in: absent any logs config, the
 provider returns no-op loggers and spins up no log worker.
 
 ## §10 Log bridge adapters (L6, #304)

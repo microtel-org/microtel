@@ -75,8 +75,9 @@ The planned set mirrors the v1.1 public surface; issue
 Logs, supported since v1.2, are in [`logs/`](logs/); the log bridges have
 their own READMEs ([spdlog](../src/adapters/spdlog/README.md),
 [glog](../src/adapters/glog/README.md), [log4cxx](../src/adapters/log4cxx/README.md)).
-A metrics example will follow when metrics get conformance coverage in v1.3
-(see [`docs/roadmap.md`](../docs/roadmap.md)).
+Metrics now have conformance coverage against the collector on both protocols
+([http](../tests/conformance/http/metrics_test.cpp), [grpc](../tests/conformance/grpc/metrics_test.cpp));
+a metrics example is not written yet (see [`docs/roadmap.md`](../docs/roadmap.md)).
 
 ### The leaf example
 

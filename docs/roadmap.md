@@ -1,20 +1,20 @@
 # microtel Roadmap: From Exporter-First v1 to Full OpenTelemetry Coverage
 
 **Companion to:** the design documents indexed in [`docs/README.md`](README.md)
-**Status:** Draft v0.1. Implementation status updated 2026-10-03 against v1.2.2.
+**Status:** Draft v0.1. Implementation status updated 2026-10-27 against v1.2.4.
 **Scope:** Multi-year evolution from a traces-only exporter through full OTel SDK conformance and embedded deployments.
 
 ---
 
-## Implementation status (as of v1.2.2)
+## Implementation status (as of v1.2.4)
 
 The release themes in §4 were planned as a sequence, but the code did not
 follow it exactly. Metrics, logs, the spdlog log bridge and the otel-cpp shim
 were all built during the v1 milestones (M12–M17), ahead of their themes. Logs
 became supported in v1.2, with collector conformance tests, retry and three log
 bridges. Metrics and the otel-cpp shim still ship as **experimental**: they
-work and are tested, but carry no compatibility promise, and metrics have no
-collector conformance coverage yet. The v1.3 theme is therefore mostly about
+work and are tested, but carry no compatibility promise. Metrics gained
+collector conformance tests in v1.2.4. The v1.3 theme is therefore mostly about
 finishing and stabilizing that code, not writing it.
 
 | Theme | Status | What remains |
@@ -25,6 +25,8 @@ finishing and stabilizing that code, not writing it.
 | v1.2 Logs | Done, supported | Logs cookbook (docs only) |
 | v1.2 Leaf / concentrator | Done, experimental (ICP 0031, ICP 0036) | Leaf programming and concentrator deployment guides; v2.0 stabilises the API |
 | v1.2.2 Patch | Done | Static request headers validated at `Build()`, and the auth callback's value on each export ([ICP 0038](icps/0038-reject-reserved-request-headers.md), #412); OTel key=value env lists trimmed and percent-decoded (#413); a Meter, its instruments and a Logger may outlive the Provider (#259, #417) |
+| v1.2.3 Patch | Done | Install story: vcpkg port, Conan 2 recipe, use as a FetchContent/CPM subproject, `find_package(microtel COMPONENTS leaf concentrator)`, and a source archive with its SHA-512 on each release (#432) |
+| v1.2.4 Patch | Done, release pending (#462) | Exponential histograms encoded (#447); metric data points carry time and start time ([ICP 0039](icps/0039-metric-start-timestamps.md), #449); observable sums report deltas under delta temporality (#453); span and link `trace_state` and flags encoded (#452); metrics conformance against the collector on both protocols, and a known-limitations section in the README (#459) |
 | v1.3 Metrics | Mostly done, experimental | Async-callback deadline (#237); View aggregation override; per-instrument temporality; OTel exemplar reservoirs and `OTEL_METRICS_EXEMPLAR_FILTER`; exemplar export (#454); per-kind Delta/LowMemory presets (#455); `Timer`/`Counter` sugar; collector conformance for the cardinality-overflow series (#302) |
 | v1.4 Control plane | Not started | Unix-socket server, `microtelctl`, threat model, operator guide (ICP 0024); mTLS rotation (#296, #297) |
 | Tier 3 otel-cpp shim | Done for all three signals, experimental | Beta gates in §10 (real-world app testing, frozen API, deprecation policy) |
