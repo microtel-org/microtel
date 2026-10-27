@@ -144,7 +144,7 @@ names the code uses.
 
 ## Amendment (2026-10-27): `IOtlpEncoder` threading (`interfaces.md` §4.2)
 
-**Status:** Draft.
+**Status:** Accepted — 2026-10-27.
 
 `interfaces.md` §4.2 Threading says that `Encode` "is called only by the
 exporter worker (LOCKED)" and that the interface "is **not** thread-safe".
