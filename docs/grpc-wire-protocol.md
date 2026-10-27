@@ -368,7 +368,7 @@ End-to-end against a real OpenTelemetry Collector container. Validates the codec
 
 libFuzzer harness over the response-parser entry point. Inputs: arbitrary byte sequences claiming to be HTTP/2 frames containing gRPC payloads. Goal: zero crashes, zero ASAN/UBSAN findings, bounded memory growth even on adversarial inputs.
 
-Was a v1.0 release gate. Every PR replays the committed crash inputs (`corpus-check` in `ci.yml`); fuzzing itself runs weekly and on manual dispatch (`fuzz.yml`, 120 s per harness by default). See `ci-architecture.md`.
+Was a v1.0 release gate. Every PR builds the fuzz harnesses and replays any committed crash inputs, of which there are none yet (`corpus-check` in `ci.yml`); fuzzing runs weekly (`fuzz.yml`). See `ci-architecture.md`.
 
 ---
 
