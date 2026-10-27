@@ -35,6 +35,7 @@ it is the job's `name:` field, which for matrix jobs is expanded per cell.
 | `ci.yml` | `consumer-package` | `consumer-package (fetchcontent)`, `consumer-package (cpm)`, `consumer-package (vcpkg)` | ❌ |
 | `ci.yml` | `corpus-check` | `corpus-check` | ❌ |
 | `ci.yml` | `otelcpp-shim` | `otelcpp-shim` | ❌ |
+| `ci.yml` | `conan-clean` | `conan-clean` (the Conan recipe on HEAD in an `ubuntu:24.04` container with no system nghttp2, OpenSSL or zlib headers; `ci/scripts/conan-clean.sh`) | ❌ |
 | `sonarqube.yml` | — | `scan` | ❌ |
 | `fuzz.yml`, `soak.yml`, `interop.yml`, `benchmark.yml` | — | scheduled / on-demand | ❌ |
 | `tidy-nightly.yml` | `tidy-full` | `clang-tidy (full)`, nightly / on-demand | ❌ |
