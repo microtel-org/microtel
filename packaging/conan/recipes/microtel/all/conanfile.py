@@ -110,11 +110,13 @@ class MicrotelConan(ConanFile):
         # one before the archives it depends on.
         core = self.cpp_info.components["core"]
         core.set_property("cmake_target_name", "microtel::microtel")
+        # microtel_api comes after microtel_encoder: the encoder calls
+        # TraceState (#473).
         core.libs = [
-            "microtel_sdk", "microtel_api", "microtel_config", "microtel_exporter",
+            "microtel_sdk", "microtel_config", "microtel_exporter",
             "microtel_transport", "microtel_http_wire", "microtel_grpc_wire",
             "microtel_otlp_response", "microtel_gzip", "microtel_custom_wire",
-            "microtel_common", "microtel_encoder", "microtel_upb_gen",
+            "microtel_common", "microtel_encoder", "microtel_api", "microtel_upb_gen",
             "microtel_upb_runtime", "microtel_utf8_range",
         ]
         # tl::expected is installed under include/microtel/vendor so that it
