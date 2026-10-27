@@ -118,7 +118,7 @@ figures, from 2026-09-27: `realistic-request` 100% delivery for both SUTs, and
 | [`results.md`](results.md) | Generated summary: environment, profile, warnings, results table. Start here. |
 | [`results.json`](results.json) | Raw per-sample data, schema version 1.0. What the plots and the summary are rendered from. |
 | [`plots.html`](plots.html) | Interactive charts. Loads plotly from a CDN, so it needs network to render. |
-| [`leaf-footprint.md`](leaf-footprint.md) | Not part of the benchmark run: the experimental leaf's flash and RAM for both encoder backends, as the `leaf-footprint` CI job measures them. Refreshed per release. |
+| [`leaf-footprint.md`](leaf-footprint.md) | Not part of the benchmark run: the experimental leaf's flash and RAM for both encoder backends, as the `leaf-footprint` CI job measures them. Refreshed for a release when `leaf/` changed. |
 
 ## This snapshot
 

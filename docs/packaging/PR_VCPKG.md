@@ -33,7 +33,7 @@ release with the same options. Bump both at each release (`docs/releasing.md` §
    project, and "Microtel" is also a hotel chain. Check
    <https://repology.org/project/microtel/versions> and a web search for
    "microtel C++". If neither leads here, rename the port
-   `chanderraja-microtel`: the directory, the `"name"` in `vcpkg.json`, and
+   `microtel-org-microtel`: the directory, the `"name"` in `vcpkg.json`, and
    the PR title. The CMake package stays `microtel`.
 3. **Vendored code.** The guide says "do not use vendored dependencies".
    microtel compiles in upb, utf8_range and (with `leaf`) nanopb, every global

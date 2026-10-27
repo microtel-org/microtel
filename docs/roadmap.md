@@ -89,8 +89,9 @@ The leaf ships as experimental in v1.2 with both encoder backends ([ICP 0031](ic
 > source under `include/microtel-shim/`, never as a prebuilt library (see
 > [ICP 0014](icps/0014-otelcpp-shim-and-rule-13.md)). It is experimental;
 > the beta gates in §10 are not met. Tier 1 and Tier 2 columns still describe
-> the *supported* signals: metrics and logs are on the wire today, but they
-> are not claimed at those tiers until their conformance coverage lands.
+> the *supported* signals. Logs are claimed at both from v1.2. Metrics are on
+> the wire today but are not claimed at those tiers until v1.3, when they
+> become supported.
 
 ---
 

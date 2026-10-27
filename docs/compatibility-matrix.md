@@ -153,9 +153,10 @@ open at the time of writing.
   consumer source changes. Evidence: `tests/unit/api/trace_state_test.cpp`
   (W3C vector suite), `tests/unit/api/propagator_test.cpp`,
   `tests/unit/adapters/otelcpp_context_conversion_test.cpp`.
-- **`HealthSnapshot::drop_counters` is live** (issue #169, fixed). 20 of 24
-  `DropReason` counters have producers; the remaining four await their
-  enforcement features (issue #181) and read zero. The conformance tests
+- **`HealthSnapshot::drop_counters` is live** (issue #169, fixed). 26 of 27
+  `DropReason` counters have producers. `metric_callback_timeout` reads zero
+  until the per-collection callback deadline lands with v1.3 metrics
+  ([`error-model.md`](error-model.md)). The conformance tests
   assert the wired counters directly.
 - **gRPC failures name the status** (issue #171, fixed). Both the
   `grpc-status` name and number and the collector's percent-decoded

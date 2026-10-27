@@ -16,6 +16,9 @@ encode figures were re-measured 2026-10-01 with the same toolchains, after the
 runner was given enough stack to measure them (see below); every other figure
 is unchanged.
 
+**Not re-measured for v1.2.4.** Since v1.2.3 the leaf changed only in its
+version literals and one line of `leaf/DEVELOPMENT.md`.
+
 ## Side by side
 
 The same minimal trace-only probe on every target, both backends. Flash is

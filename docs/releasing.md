@@ -277,10 +277,13 @@ quotes it, so the two must agree, and a release is when they are made to agree.
    Commands section against the SUT images step 1 built, regenerate the tables
    with `group.py` and `render.py`, and update the **Build** row with the image
    date and the commit they were built from.
-   [`leaf-footprint.md`](bench-results/leaf-footprint.md): re-run
+   [`leaf-footprint.md`](bench-results/leaf-footprint.md): if `leaf/` changed
+   since the last release beyond its version literals
+   (`git diff --stat <previous tag> -- leaf/`), re-run
    `ci/scripts/leaf-footprint.sh` and `ci/scripts/leaf-target.sh` for every
    target and backend, as its Reproducing section says, and update the tables
    and the dated paragraph under its title, naming the commit measured.
+   Otherwise add a line saying which release it was not re-measured for.
 
 **Sanity-compare against the previous snapshot before committing.** Compare the
 `environment` block first (`cpu_model`, `cpu_physical_cores`, governor, load
@@ -374,7 +377,7 @@ long-term-support window for a major line is in
 [ ] docs/bench-results/ refreshed from a run on the snapshot's own host
 [ ] environment block diffed against the outgoing snapshot (see #277)
 [ ] bench-results summary table and root README agree, and the ratio claims were re-derived
-[ ] bench-results/sizes/library-sizes.md and leaf-footprint.md re-measured, commit recorded
+[ ] bench-results/sizes/library-sizes.md re-measured, commit recorded; leaf-footprint.md re-measured if leaf/ changed
 [ ] measurement-vs-performance shifts annotated where a reader will see them
 [ ] release PR merged with CI green
 [ ] annotated tag vX.Y.Z on the master merge commit, pushed
