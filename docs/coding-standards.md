@@ -177,7 +177,7 @@ The full RAII rules are CLAUDE.md rules 5–11. Recap:
 - **Move-only by default** for resource-owning types.
 - **Rule of zero** where possible; **rule of five** when custom resource handling is required (all five members specified, no compiler-generated mix).
 
-Custom RAII wrappers in `src/common/raii/`: `UniqueFd`, `SslCtx`, `SslSession`, `Nghttp2Session`. Each is move-only with a `noexcept` destructor and a `Release()` method for explicit ownership transfer.
+Custom RAII wrappers live in `src/common/raii/`. The authoritative list, and the wrapper contract, is [`memory-model.md`](memory-model.md) §4.2 ([ICP 0040](icps/0040-contract-docs-match-the-code.md)). Each is move-only with a `noexcept` destructor, and has a `Release()` method for explicit ownership transfer where a C API or caller can take ownership of the resource.
 
 `UpbArena` follows the same contract but lives in [`src/wire/encoder/`](../src/wire/encoder/), not `src/common/raii/`: including it means including a upb header, and upb is confined to the encoder directory (rule 13).
 
