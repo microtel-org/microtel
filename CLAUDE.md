@@ -64,7 +64,7 @@ These are non-negotiable. Violations produce PRs that fail CI or get rejected in
 6. **No raw `new`/`delete`** in production code. Use `std::make_unique` / `std::make_shared`.
 7. **Raw pointers are non-owning by definition.** A function taking `T*` does not delete; a function returning `T*` returns a borrowed reference whose lifetime is documented in Doxygen.
 8. **`std::shared_ptr` requires justification in code review.** Default to `std::unique_ptr`. Use `std::weak_ptr` for breaking cycles.
-9. **Custom RAII wrappers** for C resources live in `src/common/raii/`: `UniqueFd`, `SslCtx`, `SslSession`, `Nghttp2Session`. Each is move-only with a `noexcept` destructor and a `Release()` method. **Exception:** `UpbArena` lives in `src/wire/encoder/` — including it means including a upb header, and rule 13 confines upb to that directory.
+9. **Custom RAII wrappers** for C resources live in `src/common/raii/`. The authoritative list, and the wrapper contract, is [`docs/memory-model.md`](docs/memory-model.md) §4.2 ([ICP 0040](docs/icps/0040-contract-docs-match-the-code.md)). Each is move-only with a `noexcept` destructor, and has a `Release()` method where a C API or caller can take ownership of the resource. **Exception:** `UpbArena` lives in `src/wire/encoder/` — including it means including a upb header, and rule 13 confines upb to that directory.
 10. **Resource-owning types are move-only by default.** Add copy semantics only with explicit justification.
 11. **Rule of zero or rule of five.** Never the compiler-generated mix.
 

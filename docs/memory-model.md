@@ -56,7 +56,7 @@ Rationale recorded in ICP 0001:
 
 If a future change wants per-batch arenas (e.g., for a profile signal where re-encoding cost matters), it is an ICP. The burden of proof is on the proposer to show the cost analysis above no longer holds.
 
-### 3.2 `EncodedPayload` shape (LOCKED)
+### 3.2 `EncodedPayload` shape (LOCKED — cites `include/microtel/internal/encoded_payload.hpp:EncodedPayload`)
 
 `IOtlpEncoder::Encode()` returns:
 
@@ -64,16 +64,17 @@ If a future change wants per-batch arenas (e.g., for a profile signal where re-e
 class EncodedPayload
 {
 public:
+    EncodedPayload() noexcept = default;  // the empty payload
     EncodedPayload(std::unique_ptr<std::byte[]> bytes, std::size_t size) noexcept;
-    EncodedPayload(EncodedPayload&&) noexcept = default;
-    EncodedPayload& operator=(EncodedPayload&&) noexcept = default;
     EncodedPayload(const EncodedPayload&) = delete;
     EncodedPayload& operator=(const EncodedPayload&) = delete;
-    ~EncodedPayload() = default;
+    EncodedPayload(EncodedPayload&&) noexcept = default;
+    EncodedPayload& operator=(EncodedPayload&&) noexcept = default;
+    ~EncodedPayload() noexcept = default;
 
-    [[nodiscard]] std::span<const std::byte> bytes() const noexcept;
-    [[nodiscard]] std::size_t size() const noexcept;
-    [[nodiscard]] std::unique_ptr<std::byte[]> release() && noexcept;
+    [[nodiscard]] std::span<const std::byte> Bytes() const noexcept;
+    [[nodiscard]] std::size_t Size() const noexcept;
+    [[nodiscard]] std::unique_ptr<std::byte[]> Release() && noexcept;  // leaves it empty
 
 private:
     std::unique_ptr<std::byte[]> m_bytes;
@@ -132,22 +133,25 @@ No heap memory is allocated on the unsampled-span hot path (§7).
 
 ### 4.2 C resources (RAII-wrapped)
 
-All in `src/common/raii/`. Each is move-only, has a `noexcept` destructor, and exposes `release()` for explicit ownership transfer.
+This table is the authoritative list of microtel's RAII wrappers ([ICP 0040](icps/0040-contract-docs-match-the-code.md)). All are in `src/common/raii/` except `UpbArena`, which lives in `src/wire/encoder/` because including it means including a upb header (§3.1). Each is move-only, has a `noexcept` destructor, and, where something can take ownership of the resource, exposes `Release()` (point 4 below).
 
 | RAII type | Owns | Created by | Notes |
 |---|---|---|---|
-| `Socket` | `int` file descriptor | transport (on `Connect`) | Calls `close(2)` on destruction. |
+| `UniqueFd` | `int` file descriptor | transport (the socket, on `Connect`), `EpollReactor` (the epoll and wake descriptors), resource detectors (files read once) | Calls `close(2)` on destruction. |
 | `SslCtx` | `SSL_CTX*` | transport, on `Connect` | `SSL_CTX_free` on destruction. Owned by `Transport` — one per transport, so a process running several named profiles has one per profile (v1.1, [ICP 0027](icps/0027-multi-profile-threading.md)). See [ICP 0003 §3.1](icps/0003-m0-deferred-decisions.md#31-sslctx-ownership--per-transport). |
 | `SslSession` | `SSL*` | transport (per connection) | `SSL_free` on destruction. Cleanly closes the session if open. |
 | `Nghttp2Session` | `nghttp2_session*` | transport (per connection) | `nghttp2_session_del` on destruction. |
+| `BioMethod` | `BIO_METHOD*` | transport (`MakeBioMethod`, the SIGPIPE-safe socket BIO) | `BIO_meth_free` on destruction. |
+| `DeflateStream` | zlib `z_stream` set up by `deflateInit2` | gzip (per compression) | `deflateEnd` on destruction if `Init` succeeded. No `Release()` (point 4). |
+| `InflateStream` | zlib `z_stream` set up by `inflateInit2` | gzip (per decompression) | `inflateEnd` on destruction if `Init` succeeded. No `Release()` (point 4). |
 | `UpbArena` | `upb_Arena*` | encoder (per `Encode()` call) | `upb_Arena_Free` on destruction. **Never escapes `src/wire/encoder/`** (§3). |
 
-**RAII wrapper contract (LOCKED).** Each wrapper:
+**RAII wrapper contract (LOCKED — cites `src/common/raii/unique_fd.hpp:Release`, `src/common/raii/deflate_stream.hpp:DeflateStream`).** Each wrapper:
 
 1. Is move-only — copy constructor and copy assignment are `= delete`.
 2. Has a `noexcept` destructor.
 3. Has a `noexcept` move constructor and move assignment.
-4. Exposes `release()` returning the underlying handle and leaving the wrapper in an "empty" state (handle equal to a documented sentinel; destructor on the empty state is a no-op).
+4. `Release()` is required where a C API or caller can take ownership of the resource; wrappers around state that no API adopts (e.g. `z_stream`) don't provide it. Where provided, `Release()` returns the underlying handle and leaves the wrapper in an "empty" state (handle equal to a documented sentinel; destructor on the empty state is a no-op).
 5. Has no copyable shadow — no `clone()`, no implicit conversion to the underlying handle.
 
 ### 4.3 Synchronisation primitives and threads
@@ -259,7 +263,7 @@ process start                  shutdown
 Transport::Connect()
    │
    ▼
-[Socket]                       
+[UniqueFd]                     
 [SslCtx]   ◄── one per Transport, shared across that transport's reconnects
 [SslSession]                   
 [Nghttp2Session]               
@@ -281,10 +285,10 @@ Transport::Close(timeout)
    ▼
 [Nghttp2Session] destroyed
 [SslSession]     destroyed (clean shutdown if reachable)
-[Socket]         destroyed (close)
+[UniqueFd]       destroyed (close)
 ```
 
-`SslCtx` is shared across reconnects, **one per `Transport`**; `SslSession`, `Nghttp2Session`, and `Socket` are per-connection and owned by the `Transport`. Reconnect after a socket-level failure releases the per-connection trio and creates a new one with backoff.
+`SslCtx` is shared across reconnects, **one per `Transport`**; `SslSession`, `Nghttp2Session`, and the socket's `UniqueFd` are per-connection and owned by the `Transport`. Reconnect after a socket-level failure releases the per-connection trio and creates a new one with backoff.
 
 This said "one per process" until v1.1, contradicting §4.2's table two sections up and the code both, which have had `Http2Transport::m_ssl_ctx` — a per-transport member — since [ICP 0003](icps/0003-m0-deferred-decisions.md) §3.1 decided it. The two readings were indistinguishable while a process built one `Provider`; multi-profile ([ICP 0027](icps/0027-multi-profile-threading.md)) makes them differ, because each named profile builds its own transport and so owns its own `SslCtx`, socket and reactor.
 
@@ -386,7 +390,7 @@ The sampled path may allocate but does so within bounds:
 
 ### 8.5 Transport
 
-- nghttp2 owns its own buffers; microtel does not allocate on the I/O thread per-frame. Per-connection allocations (`Socket`, `SslSession`, `Nghttp2Session`) happen at `Connect()` and reconnect.
+- nghttp2 owns its own buffers; microtel does not allocate on the I/O thread per-frame. Per-connection allocations (the socket's `UniqueFd`, `SslSession`, `Nghttp2Session`) happen at `Connect()` and reconnect.
 
 ---
 
