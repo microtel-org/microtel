@@ -56,3 +56,49 @@ per `Provider`.
 - Tests: `tests/unit/sdk/metric_timestamps_test.cpp`. The metrics
   conformance suite (pre-launch PR) adds `0 < start <= time` against the
   collector on both protocols.
+
+## Amendment (2026-10-26): observable sums under delta (#450, #453)
+
+The rules above cover timestamps. #453 also fixed the *values* an
+ObservableCounter or ObservableUpDownCounter reports under delta temporality,
+which were cumulative totals labelled as delta. The specification states the
+goal but not three of the cases, so this records what microtel chose.
+
+What the SDK specification says (`sdk.md` at the commit above):
+
+- `## MetricReader`: "For asynchronous instruments with Delta temporality,
+  this means converting Cumulative to Delta aggregation temporality", and "For
+  asynchronous instruments with Delta or Cumulative aggregation temporality,
+  MetricReader.Collect MUST only receive data points with measurements recorded
+  since the previous collection."
+- `### Observations inside asynchronous callbacks`: "The implementation SHOULD
+  NOT produce aggregated metric data for a previously-observed attribute set
+  which is not observed during a successful callback."
+
+Neither section says how the conversion handles the cases below. The
+[supplementary guidelines](https://github.com/open-telemetry/opentelemetry-specification/blob/5740e9af3c82/specification/metrics/supplementary-guidelines.md#asynchronous-example-delta-temporality)
+("Asynchronous example: Delta temporality") show the first two only as worked
+values, and don't cover the third:
+
+- **First observation of a series: reported in full.** The example reports
+  pid 1001's first value, 50, as its first delta.
+- **A series a collection doesn't observe is forgotten.** It gets no point
+  (the "SHOULD NOT" above), and its last value is dropped. When it is observed
+  again it is a new series, and its first value is reported in full. The
+  example's restarted pid 1001 reports 10, its own count, not a difference from
+  the old process. Under cumulative temporality too, a returning series is
+  new: it starts at the collection before it came back, which tells a backend
+  its value restarted. The stored values (`m_previous`) and the per-series
+  start times both hold only the series observed in the last collection, so
+  neither grows past the cardinality limit plus the overflow series.
+- **A monotonic counter whose value goes down has reset.** Its new value is
+  the delta, so a monotonic sum never reports a negative delta. Not addressed
+  by either document; it is how Prometheus `rate()` treats a counter that
+  goes down. An up-down counter is not
+  monotonic, so it reports the change, negative or not.
+
+Cumulative collections report the observation unchanged, and their starts
+follow the rules above, a returning series counting as new. Tests:
+`tests/unit/sdk/metric_observable_delta_test.cpp`, and
+`ObservableSumCumulative_ReturningSeriesStartsAfresh` in
+`tests/unit/sdk/metric_timestamps_test.cpp`.
