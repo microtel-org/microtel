@@ -2,8 +2,8 @@
 
 A Yocto Project / OpenEmbedded layer for
 [microtel](https://github.com/microtel-org/microtel), a C++20 OpenTelemetry
-trace runtime with an OTLP/HTTP and OTLP/gRPC exporter built on nghttp2 and
-a vendored upb.
+runtime for traces, metrics and logs, with an OTLP/HTTP and OTLP/gRPC exporter
+built on nghttp2 and a vendored upb.
 
 | | |
 |---|---|

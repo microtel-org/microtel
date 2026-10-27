@@ -23,7 +23,7 @@ Nothing reads either mechanically.
 |---|---|---|
 | OTLP/HTTP traces | Supported over TLS; **unsupported over plaintext against HTTP/1.1-only receivers** — see §4 | `tests/conformance/http/` |
 | OTLP/gRPC traces | Supported, plaintext and TLS | `tests/conformance/grpc/` |
-| OTLP metrics, both protocols | Implemented, **not** conformance-tested | unit tests only; collector conformance is deferred to v1.3 ([`interop-matrix.md`](interop-matrix.md) §6) |
+| OTLP metrics, both protocols | Supported, conformance-tested (OTLP/HTTP over TLS, OTLP/gRPC over plaintext, as for logs). OTLP/HTTP metrics share the plaintext gap in §4 | `tests/conformance/{http,grpc}/metrics_test.cpp` |
 | OTLP logs, both protocols | Supported, conformance-tested in v1.2 (OTLP/HTTP over TLS, OTLP/gRPC over plaintext; TLS and auth are the transport the trace rows already cover). OTLP/HTTP logs share the plaintext gap in §4 | `tests/conformance/{http,grpc}/logs_test.cpp`; `Provider::GetLogger` per [ICP 0012](icps/0012-provider-get-logger.md) |
 | W3C Baggage propagation | Supported in v1.1 — `W3CBaggagePropagator`, full grammar, percent-encoding, opaque property tail, and the 180 / 4096 / 8192 limits | `tests/unit/api/baggage_test.cpp`, `tests/unit/api/baggage_propagator_test.cpp`, `tests/fuzz/baggage_fuzz.cpp`; [ICP 0025](icps/0025-propagation-core.md) §2 |
 | OTel SDK env vars (subset) | Partial | `tests/unit/common/config/`, [`configuration.md`](configuration.md) §3 |
@@ -33,12 +33,11 @@ Nothing reads either mechanically.
 | `opentelemetry-python` API shim | Not in v1 — Python ships post-v1.0 as M18 | [ICP 0013](icps/0013-rescope-defer-python-bindings.md) |
 | Collector versions | Pinned matrix | [`interop-matrix.md`](interop-matrix.md) §2 |
 
-The metrics row is where this file is deliberately at odds with the
-v1.0 design's "Planned": the code exists and is unit-tested, but no test has ever
-asked a real collector to decode a microtel metric payload, so nothing
-here claims one will. Logs left that state in v1.2 (issue #303), when the
-conformance suites started asserting on what the collector decodes from
-microtel's log exports.
+Logs and metrics were both once implemented and unit-tested but never decoded
+by a real collector. Logs left that state in v1.2 (issue #303) and metrics in
+PR #459, when the conformance suites started asserting on what the collector
+decodes from microtel's exports. The cardinality-overflow series is not yet
+conformance-tested ([`interop-matrix.md`](interop-matrix.md) §6).
 
 ---
 

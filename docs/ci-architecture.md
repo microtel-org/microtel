@@ -22,13 +22,19 @@ it is the job's `name:` field, which for matrix jobs is expanded per cell.
 | `ci.yml` | `sanitizers` | `asan`, `tsan`, `ubsan` | ✅ |
 | `ci.yml` | `coverage` | `coverage` | ✅ |
 | `ci.yml` | `test-presence` | `test-presence` | ❌ (see below) |
-| `ci.yml` | `regen-check` | `regen-check` | ❌ (see below) |
+| `ci.yml` | `regen-check` | `regen-check` | ✅ |
 | `ci.yml` | `symbol-scan` | `symbol-scan` | ✅ |
 | `ci.yml` | `leaf-standalone` | `leaf-standalone / nanopb`, `leaf-standalone / upb` | ❌ |
 | `ci.yml` | `leaf-footprint` | `leaf-footprint / <cortex-m0plus, cortex-m4, aarch64> / <nanopb, upb>` (six cells) | ❌ |
 | `ci.yml` | `leaf-target` | `leaf-target / cortex-m0plus`, `leaf-target / cortex-m4`, `leaf-target / aarch64`, `leaf-target / i686` | ❌ |
 | `ci.yml` | `version-drift-check` | `version-drift-check` | ✅ |
-| `ci.yml` | `conformance` | `conformance` | ❌ (see below) |
+| `ci.yml` | `conformance` | `conformance` | ✅ |
+| `ci.yml` | `citation-check` | `citation-check` | ✅ |
+| `ci.yml` | `system-deps` | `system-deps` | ✅ |
+| `ci.yml` | `consumer-smoke` | `consumer-smoke` | ❌ |
+| `ci.yml` | `consumer-package` | `consumer-package (fetchcontent)`, `consumer-package (cpm)`, `consumer-package (vcpkg)` | ❌ |
+| `ci.yml` | `corpus-check` | `corpus-check` | ❌ |
+| `ci.yml` | `otelcpp-shim` | `otelcpp-shim` | ❌ |
 | `sonarqube.yml` | — | `scan` | ❌ |
 | `fuzz.yml`, `soak.yml`, `interop.yml`, `benchmark.yml` | — | scheduled / on-demand | ❌ |
 | `tidy-nightly.yml` | `tidy-full` | `clang-tidy (full)`, nightly / on-demand | ❌ |
@@ -39,8 +45,8 @@ required, so a C++23-only regression can currently merge.
 ### Design intent (not all implemented)
 
 The table below is the originally designed job set. Several rows —
-`build-and-test`, `static-analysis`, `license-scan`, `release` — do **not** exist
-as jobs today; their function is either covered by the as-built jobs above under
+`build-and-test`, `static-analysis`, `license-scan`, `fuzz-smoke`, `fuzz-soak`,
+`release` — do **not** exist as jobs today; their function is either covered by the as-built jobs above under
 different names, or still outstanding. Treat this as the target, not as a
 description of the pipeline.
 
@@ -191,7 +197,7 @@ Verifies that regenerating the proto accessors produces a zero-diff result again
 
 **When it runs:** every PR and every push to `master`. It carries **no path filter** — an earlier version of this document claimed it was skipped unless `proto/`, `third_party/upb/`, or `gen/` changed; that was never implemented.
 
-**Not currently a required status check.** Because it runs unconditionally, requiring it is safe (a path-filtered job could never be required — the check would never report and would block every PR that didn't trigger it). Whether to require it is an open decision; the argument for is that a stale `gen/` means the shipped encoder disagrees with the pinned `opentelemetry-proto`, which is a Tier 1 wire-compatibility break.
+**A required status check.** Because it runs unconditionally, requiring it is safe (a path-filtered job could never be required — the check would never report and would block every PR that didn't trigger it). The reason to require it is that a stale `gen/` means the shipped encoder disagrees with the pinned `opentelemetry-proto`, which is a Tier 1 wire-compatibility break.
 
 ### `symbol-scan` (job in `.github/workflows/ci.yml`)
 
@@ -437,12 +443,11 @@ exports `MICROTEL_CONFORMANCE_REQUIRE`: with it set, an unset variable is a test
 failure rather than a skip
 ([`tests/conformance/support/conformance_env.hpp`](../tests/conformance/support/conformance_env.hpp)).
 
-**Not currently a required status check.** The required list is in
-[`branch-protection.md`](branch-protection.md) and `conformance` is not on it,
-so a Tier 1 wire regression can merge today. Whether to require it is an open
-decision: the argument for is that Tier 1 is the compatibility promise
-[`compatibility-matrix.md`](compatibility-matrix.md) §7 makes testable, and the argument against is making every PR depend on
-pulling a third-party container image.
+**A required status check.** The required list is in
+[`branch-protection.md`](branch-protection.md) and `conformance` is on it, so a
+Tier 1 wire regression cannot merge: Tier 1 is the compatibility promise
+[`compatibility-matrix.md`](compatibility-matrix.md) §7 makes testable. The cost
+is that every PR depends on pulling a third-party container image.
 
 ### `.github/workflows/license-scan.yml`
 
@@ -455,12 +460,11 @@ License compliance check over vendored and generated code.
 
 **Pass condition:** all vendored licenses recognized and compatible with Apache 2.0; notices file matches.
 
-### `.github/workflows/fuzz-smoke.yml` and `fuzz-soak.yml`
+### `.github/workflows/fuzz.yml`
 
-Fuzz targets: TOML parser, gRPC trailer parser, response decompression, OTLP response parser.
+Runs every harness in [`tests/fuzz/`](../tests/fuzz/README.md) weekly (Wednesday 04:00 UTC) and on manual dispatch; it is not a per-PR gate. Each run first replays the committed `crashes/` inputs, then fuzzes each harness for 120 seconds (adjustable on a dispatch) from its `corpus/` seeds, and uploads any crashing input as an artifact.
 
-- **Smoke:** 60-second budget per target on every PR. Fail on crashes or sanitizer errors.
-- **Soak:** 8-hour overnight cron. Crashes generate issues; corpus is uploaded to artifact storage for replay.
+The per-PR half is the `corpus-check` job in `ci.yml`, which replays the committed `crashes/` inputs with [`ci/scripts/corpus-check.sh`](../ci/scripts/corpus-check.sh). It is not a required status check.
 
 ### `.github/workflows/sonarqube.yml`
 
@@ -495,16 +499,14 @@ The workflow also carries a `workflow_dispatch` trigger, so a scan can be fired 
 
 ### `.github/workflows/release.yml`
 
-Triggered on tags matching `v*.*.*`. Builds and publishes:
+Triggered on tags matching `v*`, or by `workflow_dispatch` for an existing tag. One job, `source-archive`:
 
-- `.deb` packages.
-- `.rpm` packages.
-- Python wheels via `cibuildwheel` for manylinux_2_28.
-- A source tarball with `THIRD_PARTY_NOTICES.md` included.
-- A SBOM (CycloneDX or SPDX format).
-- GitHub Release with all artifacts attached.
+1. Builds `microtel-X.Y.Z.tar.gz` from the tag with [`ci/scripts/source-archive.sh`](../ci/scripts/source-archive.sh), plus its `.sha512`.
+2. Checks the SHA-512, extracts the archive, and builds and installs it with tests off.
+3. Builds `tests/consumer` against the installed archive ([`ci/scripts/consumer-smoke.sh`](../ci/scripts/consumer-smoke.sh)).
+4. Attaches both files to the GitHub Release for the tag, creating the release if it does not exist.
 
-Release builds run all CI gates first as a prerequisite.
+There are no binary packages and no wheels, and the workflow does not run the CI gates itself.
 
 ---
 
@@ -514,9 +516,9 @@ The CI configuration expects these GitHub Actions secrets:
 
 | Secret | Purpose |
 |---|---|
-| `PYPI_API_TOKEN` | publishing Python wheels |
 | `SONAR_TOKEN` | required for the SonarQube Cloud scan |
-| `CODECOV_TOKEN` | optional; only if using Codecov for coverage upload alongside SonarQube |
+
+That is the only one. `release.yml` publishes with the workflow's own `github.token`.
 
 ---
 
@@ -530,16 +532,16 @@ The CI configuration expects these GitHub Actions secrets:
 
 ---
 
-## Local pre-commit equivalents
+## Local equivalents
 
-Developers can run the equivalent of CI gates locally. Recommended setup:
+There are no pre-commit hooks. Developers run the CI gates' scripts directly:
 
 ```bash
-# install pre-commit hooks
-pre-commit install
-
-# run all checks manually
-pre-commit run --all-files
+# formatting and clang-tidy (see CLAUDE.md for the clang-format version CI uses)
+ci/scripts/format-check.sh
+cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DMICROTEL_BUILD_TESTS=ON
+cmake --build build
+ci/scripts/tidy-check.sh build
 
 # test-presence, against whatever your branch will be PR'd into
 ci/scripts/test-presence.sh origin/master
@@ -561,13 +563,13 @@ diff-cover build/coverage/coverage.filtered.info \
     --compare-branch origin/master --src-roots . --fail-under=80
 ```
 
-The `ci/scripts/` directory holds the shared scripts called by both the workflow files and the pre-commit hooks, so local and CI behavior stays in sync.
+The `ci/scripts/` directory holds the scripts the workflow files call, so running one locally reproduces what CI does.
 
 ---
 
 ## What's NOT in CI
 
 - **GUI / GUI-test runs.** No GUI in microtel.
-- **Performance benchmarks.** Live in the separate `microtel-bench` repo; not part of per-PR CI.
+- **Performance benchmarks.** Live in [`bench/`](../bench/) and run from `benchmark.yml` weekly and on manual dispatch; not part of per-PR CI.
 - **macOS / Windows builds.** Out of scope for v1; not in the matrix.
 - **End-to-end integration with downstream backends** (Datadog, New Relic). The `tests/conformance/` job runs against an OTel Collector only.

@@ -56,9 +56,8 @@ Each harness has two committed input directories:
 Fuzzing itself is not a per-PR gate, because it is slow and its
 findings are non-deterministic. [`fuzz.yml`](../../.github/workflows/fuzz.yml)
 runs every harness weekly (default 120 s each, adjustable on a manual
-dispatch) and uploads any crashing input as an artifact. Mutation
-testing follows the same pattern. Findings open issues;
-they don't block PRs.
+dispatch) and uploads any crashing input as an artifact. Findings open
+issues; they don't block PRs.
 
 Replaying `crashes/` is a hard gate on every PR. The gate is
 [`ci/scripts/corpus-check.sh`](../../ci/scripts/corpus-check.sh), run by
@@ -67,7 +66,8 @@ the `corpus-check` job in `ci.yml`. To reproduce it locally:
 ```bash
 cmake -S . -B build-fuzz \
       -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
-      -DMICROTEL_BUILD_FUZZ=ON -DMICROTEL_BUILD_LEAF=ON -DMICROTEL_BUILD_TESTS=OFF
+      -DMICROTEL_BUILD_FUZZ=ON -DMICROTEL_BUILD_LEAF=ON -DMICROTEL_BUILD_TESTS=OFF \
+      -DMICROTEL_WITH_CONCENTRATOR=ON
 cmake --build build-fuzz
 ci/scripts/corpus-check.sh build-fuzz
 ```

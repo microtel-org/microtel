@@ -298,8 +298,9 @@ fetches only toml++. The usual options still apply: set them before
 
 microtel runs on Linux only (the I/O thread uses `epoll`); CI builds it as
 C++20 and C++23 with GCC 13 and Clang 18 on Ubuntu x86_64. You need a C++20
-compiler, CMake 3.20 or newer, `pkg-config`, and the OpenSSL, nghttp2 and zlib
-development packages:
+compiler (GCC 13 or Clang 18 at minimum; older ones are not tested), CMake
+3.20 or newer, `pkg-config`, and the OpenSSL, nghttp2 and zlib development
+packages:
 
 ```bash
 # Debian / Ubuntu

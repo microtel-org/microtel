@@ -95,7 +95,7 @@ Responsibilities:
 - Pin SUT and sink containers to specific cores via `cpuset` (configurable; off by default).
 - Run a configurable warm-up phase, then a measurement window.
 - Record per-SUT measurements via control socket and `/proc/<pid>/status`.
-- Repeat the run **N times** (default 5) with the order randomized across SUTs to wash out drift.
+- Run each SUT in turn, in registry order (the profile's `suts:` list picks which), as one fresh container: warm-up, then `samples` timed samples (the profile sets it, `--reps` overrides it). The order is not randomized; see §7 for how releases control for drift.
 - Compute median, p25/p75, IQR, min/max. **Never reports just a single mean.**
 - Emit `results.json`, `results.md`, optional `flamegraph-<sut>.svg`.
 
@@ -103,47 +103,50 @@ Responsibilities:
 
 ## 4. Workload Profiles
 
-Profiles live in `bench/profiles/*.yaml`. v1 ships these:
+Profiles live in `bench/profiles/*.yaml`. The files that exist are `hot-loop-traces`, `realistic-request`, `large-attributes`, `hot-loop-logs`, `hot-loop-metrics`, `concurrent-emitters`, `backpressure`, `compression`, `throughput-vs-size`, `soak` and `leaf-fanin`. §4.3, §4.4 and §4.6 describe profiles that have no file and do not run.
 
 ### 4.1 `hot-loop-traces`
 Tight loop emitting spans as fast as the lib will accept them. Measures **library overhead per span and steady-state max throughput.**
 
 ```yaml
 profile: hot-loop-traces
-duration_seconds: 60
-warmup_seconds: 10
-threads: 1                 # also runs configured at 4, 16
-spans_per_iteration: 1
-attributes_per_span: 5
-attribute_value_mean_bytes: 24
-events_per_span: 0
-links_per_span: 0
-target_rate_hz: max        # also runs at 1k, 10k, 100k
+workload:
+  mode: hot_loop           # EmitSpan() called in a tight loop, no sleep
+  spans_per_sample: 10000  # spans per run command
+  samples: 10              # run commands issued per SUT
+  warmup_spans: 1000       # spans emitted before the first timed sample
+sink:
+  mode: blackhole
+suts: [microtel, microtel-grpc, otelcpp-grpc, otelcpp-http]
 ```
+
+Thread counts are swept with `--sweep-threads` (the `concurrent-emitters` profile), not by this profile.
 
 ### 4.2 `realistic-request`
 Simulated request handler: per "request," emit one span with two child spans, one log record, one histogram observation, one counter increment. Fixed RPS, sustained.
 
 ```yaml
 profile: realistic-request
-duration_seconds: 120
-warmup_seconds: 20
-threads: 4
-target_rate_hz: 5000
-attributes_per_span: 8
-log_message_mean_bytes: 80
+workload:
+  mode: realistic_request   # parent + 2 child spans per request
+  threads: 4
+  target_rate_hz: 5000      # total requests/s across all threads
+  spans_per_sample: 5000    # requests per run command
+  samples: 10
+  warmup_spans: 500
+suts: [microtel, otelcpp-grpc]
 ```
 
-### 4.3 `cold-start`
+### 4.3 `cold-start` (no profile file)
 Process starts → first byte received at sink. Measures **library init cost + first-export latency.** Run 50 times; report median + p95.
 
-### 4.4 `bursty`
+### 4.4 `bursty` (no profile file)
 Idle baseline punctuated by 1-second bursts at 50k spans/sec every 10s for 5 minutes. Measures **queue overflow behavior, drop rate, and recovery.**
 
 ### 4.5 `large-attributes`
 Spans with 20 attributes, mean 256 bytes each, including some 4 KB string attributes. Measures **encoding cost on big payloads.** This profile intentionally exercises the `attribute_value_length_limit` truncation path ([`memory-model.md`](memory-model.md) §7); truncation behavior and its effect on encoding cost are part of what is measured.
 
-### 4.6 `binary-size` (static, no execution)
+### 4.6 `binary-size` (static, no execution; no profile file)
 Build all three SUTs, measure stripped shared library size, statically-linked dep closure size, and `.text` / `.rodata` section sizes via `size` and `bloaty`. Pure static measurement; no runs.
 
 ### 4.7 `hot-loop-logs`
@@ -232,14 +235,15 @@ Every cell with a square-bracket range is `[p25–p75]`. Cells without ranges ar
 
 - **Pinned versions.** Every external dep (compiler image, OS base, otel-cpp release tag, microtel commit, collector release) is pinned in `bench/versions.lock`. Updates are a deliberate PR.
 - **Deterministic workload.** Workload generation uses a seeded PRNG; the same seed + profile yields the same sequence of spans/metrics/logs.
-- **Order randomization.** SUT-run order is shuffled per repetition to wash out time-ordered drift.
+- **SUT order.** The driver runs SUTs in registry order and does not shuffle them. Releases control for time-ordered drift by interleaving instead: the v1.2.4 snapshot merged five runs of the full profile, each run of the new images preceded by a run of the outgoing snapshot's images on the same host (old, new, old, new…), so drift falls on both alike. The interleaving is done by hand, not by the driver.
 - **Cold cache, warm process.** Each repetition starts a fresh SUT process, runs `warmup_seconds` of traffic that is discarded, then measures.
-- **Environment guards.** Driver refuses to run (with a warning override flag) if it detects:
+- **Environment guards.** The driver warns, and still runs, if it detects (`bench/driver/env_fingerprint.py`):
   - CPU governor is not `performance`
   - System load average > 0.5 at start
   - SMT/hyperthreading is enabled and `--allow-smt` not passed
-  - Available memory below a threshold
-- **Known-noise floor.** A `null-vs-null` calibration run (same SUT vs itself across two containers) is included in the harness; it reports the noise floor of the measurement environment so users can tell the difference between "real win" and "in the noise."
+
+  The warnings are kept in the report alongside the environment fingerprint.
+- **No calibration run.** The harness has no `null-vs-null` noise-floor run; the spread across samples (§3.3) and the interleaved old-vs-new runs above are what separate a real change from noise.
 
 ---
 
@@ -291,10 +295,9 @@ microtel/
     ├── profiles/
     │   ├── hot-loop-traces.yaml
     │   ├── realistic-request.yaml
-    │   ├── cold-start.yaml
-    │   ├── bursty.yaml
     │   ├── large-attributes.yaml
-    │   └── binary-size.yaml
+    │   ├── hot-loop-logs.yaml
+    │   └── …                           (eleven profiles; see §4)
     ├── versions.lock
     ├── docs/
     │   ├── methodology.md
@@ -425,13 +428,13 @@ status and the footprint trajectory across releases.
 | Span creation p50/p95/p99 (§14.1) | §5 "StartSpan overhead". The §4 profiles do not set a sampler, so the sampled / unsampled and parent-sampled splits have no row |
 | Attributes before vs after sampling, allocations and bytes per span (§14.1) | no §5 row |
 | Caller-thread CPU per span (§14.1, §14.5) | §5 "Caller-thread CPU time on emit" (CPU time, not cycles) |
-| Queue push contention, 1 / 4 / 16 threads (§14.1) | `hot-loop-traces` (§4.1) runs at 1, 4 and 16 threads; contention itself has no row |
+| Queue push contention, 1 / 4 / 16 threads (§14.1) | `concurrent-emitters` with `--sweep-threads 1,4,16`; contention itself has no row |
 | Spans/sec (§14.2) | §5 "Throughput (sink-observed)" |
 | Batches/sec, transport CPU, queue depth under outage, reconnect behaviour (§14.2) | no §5 row |
 | Encoder CPU (§14.2) | §5 "Encoding cost per batch" |
-| Spans dropped under outage (§14.2) | §5 drop counters; `bursty` (§4.4) overflows the queue but is not an outage |
-| Stripped size, dependency closure (§14.3, §14.5) | §5 "Binary size (stripped)" and "Dep closure size"; `binary-size` (§4.6) |
+| Spans dropped under outage (§14.2) | §5 drop counters; `backpressure` drives the queue toward saturation but is not an outage |
+| Stripped size, dependency closure (§14.3, §14.5) | §5 "Binary size (stripped)" and "Dep closure size"; `binary-size` (§4.6) has no profile file |
 | Package install size, RSS after init (§14.3) | no §5 row |
 | RSS under steady export (§14.3, §14.5) | §5 "Steady-state RSS (median)" |
 | Wire bytes per span (§14.5) | §5 "Wire bytes per signal", gzip on/off |
-| Cold start (§14.4, §14.5) | §5 "Cold-start to first export"; `cold-start` (§4.3) measures process start to first byte at the sink, which is looser than the §14.4 definition |
+| Cold start (§14.4, §14.5) | §5 "Cold-start to first export"; `cold-start` (§4.3) has no profile file, so nothing records it |

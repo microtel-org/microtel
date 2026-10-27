@@ -11,7 +11,8 @@
 # Usage:
 #   cmake -S . -B build-fuzz \
 #         -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
-#         -DMICROTEL_BUILD_FUZZ=ON -DMICROTEL_BUILD_LEAF=ON -DMICROTEL_BUILD_TESTS=OFF
+#         -DMICROTEL_BUILD_FUZZ=ON -DMICROTEL_BUILD_LEAF=ON -DMICROTEL_BUILD_TESTS=OFF \
+#         -DMICROTEL_WITH_CONCENTRATOR=ON
 #   cmake --build build-fuzz
 #   ./build-fuzz/tests/fuzz/toml_fuzz corpus/toml_fuzz/ -max_total_time=60
 

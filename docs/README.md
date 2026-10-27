@@ -107,4 +107,4 @@ lives now.
 | §14 Engineering practices | [`CONTRIBUTING.md`](../.github/CONTRIBUTING.md), [coding-standards.md](coding-standards.md), [ci-architecture.md](ci-architecture.md) |
 | §15 Compatibility & interop | [compatibility-matrix.md](compatibility-matrix.md), [interop-matrix.md](interop-matrix.md) |
 | §19 Versioning, ABI, cadence | [`releasing.md`](releasing.md) §7 |
-| §19 DCO, security, CODEOWNERS, CI quality gates | [`CONTRIBUTING.md`](../.github/CONTRIBUTING.md), [`SECURITY.md`](../.github/SECURITY.md), [`CODEOWNERS`](../.github/CODEOWNERS), [ci-architecture.md](ci-architecture.md) |
+| §19 DCO (no longer required), security, CODEOWNERS, CI quality gates | [`CONTRIBUTING.md`](../.github/CONTRIBUTING.md), [`SECURITY.md`](../.github/SECURITY.md), [`CODEOWNERS`](../.github/CODEOWNERS), [ci-architecture.md](ci-architecture.md) |

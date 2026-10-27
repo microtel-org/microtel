@@ -55,6 +55,8 @@ C and E could unblock (`docs/development.md` §2).
   produces zero diff (`regen-check`, `docs/ci-architecture.md`).
 - `Resource`, `BatchHandle`, `SpanRecord` and the metric and log batch types:
   plain C++ values, so no upb leaks across the boundary.
+- `microtel_api` (linked PRIVATE), for `TraceState::ToHeader()`, which
+  writes span and link `trace_state`.
 
 ## Tests
 

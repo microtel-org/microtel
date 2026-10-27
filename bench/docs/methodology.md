@@ -25,10 +25,10 @@ The blackhole sink accepts all incoming OTLP spans and discards them
 immediately, providing minimal processing overhead.  It exposes `/stats`
 (spans received, bytes received) and `/reset` over HTTP on port 19080.
 
-`bytes_received` is available in blackhole mode and is used for the
-wire-bytes correctness check (`bench-spec.md` §6.2 step 2 / ICP 0006 §7):
-after each sample the driver asserts that `sink.bytes_received` equals the
-SUT's reported `bytes_sent`.  This check is a **release gate**.
+`bytes_received` is available in blackhole mode and is recorded with each
+sample; the report derives wire bytes per span and wire throughput from it.
+The driver does not compare it with the SUT's `bytes_sent`, and nothing in
+the driver or CI gates on the two being equal.
 
 ### collector (otel-collector-contrib)
 
@@ -39,12 +39,28 @@ collector's Prometheus endpoint on port 8888 using a **two-scrape bracket**:
 and `otelcol_receiver_refused_spans`; `stats()` scrapes again and subtracts.
 
 `bytes_received` is `null` in collector mode — the collector does not expose
-received-bytes via its Prometheus metrics.  The wire-bytes correctness check
-is therefore **skipped** in collector mode.  Span-count checks are performed
-in both modes.
+received-bytes via its Prometheus metrics, so wire bytes per span is not
+reported in collector mode.  Span counts are read in both modes and reported
+as the delivery rate (received over emitted); nothing fails on them.
 
 Collector mode has higher span-count variance than blackhole mode due to
 Prometheus scrape timing and collector-internal batching.
+
+## Run order and host noise
+
+The driver runs the SUTs one after another in registry order (the profile's
+`suts:` list picks which), each as one fresh container: warm-up, then the
+profile's `samples`. It does not shuffle the order and has no calibration
+run.
+
+At start it captures the environment fingerprint and warns — but still runs —
+if the CPU governor is not `performance`, the 1-minute load average is above
+0.5, or SMT is on without `--allow-smt`. The warnings are kept in the report.
+
+Releases control for host drift by interleaving runs by hand. The v1.2.4
+snapshot merged five runs of the full profile, each run of the new images
+preceded by a run of the outgoing snapshot's images on the same host (old,
+new, old, new…), so drift falls on both alike.
 
 ## Bytes sent
 
