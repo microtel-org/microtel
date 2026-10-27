@@ -1,6 +1,6 @@
 {
   "name": "microtel",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "Lightweight OpenTelemetry-compatible runtime and OTLP exporter for traces, metrics and logs (OTLP/HTTP and OTLP/gRPC) built on nghttp2, without the gRPC or protobuf C++ libraries.",
   "homepage": "https://github.com/microtel-org/microtel",
   "license": "Apache-2.0 AND BSD-3-Clause AND MIT AND CC0-1.0",
