@@ -19,7 +19,7 @@
 #   cmake -S tests/consumer -B /tmp/mt-consumer \
 #         -Dmicrotel_DIR=/tmp/mt-prefix/lib64/cmake/microtel
 #   cmake --build /tmp/mt-consumer
-#   /tmp/mt-consumer/microtel_consumer_smoke
+#   ctest --test-dir /tmp/mt-consumer --output-on-failure
 #
 # (libdir is lib64 on Fedora and lib on Debian/Ubuntu; the script resolves it
 # rather than guessing. CMAKE_PREFIX_PATH=/tmp/mt-prefix works equally well.)
@@ -44,6 +44,10 @@ target_link_libraries(microtel_consumer_smoke PRIVATE microtel::microtel)
 # handed to main.cpp so it can be checked against the installed version.hpp.
 target_compile_definitions(microtel_consumer_smoke
     PRIVATE MICROTEL_CONSUMER_PACKAGE_VERSION="${microtel_VERSION}")
+
+# So that ctest runs the smoke binary instead of finding no tests.
+enable_testing()
+add_test(NAME microtel_consumer_smoke COMMAND microtel_consumer_smoke)
 
 # The installed package describes how it was configured. Printing it makes a CI
 # log say which prefix was consumed rather than leaving it to be inferred.
