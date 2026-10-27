@@ -87,25 +87,28 @@ exists to stop.
 
 ### Settings → General
 
-| Setting | Value | Reason |
-|---|---|---|
-| Issues | ✅ enabled | Issues are how we want feedback |
-| Discussions | ✅ enabled | For broader architecture conversations |
-| Projects | ✅ enabled | For roadmap tracking |
-| Wikis | ❌ disabled | Docs live in `/docs` |
-| Sponsorships | optional | Decide pre-1.0 |
-| Preserve this repository | ✅ | Archive eligibility |
+| Setting | Target | Today | Reason |
+|---|---|---|---|
+| Issues | ✅ enabled | ✅ | Issues are how we want feedback |
+| Discussions | ✅ enabled | ✅ | For broader architecture conversations |
+| Projects | ✅ enabled | ✅ | For roadmap tracking |
+| Wikis | ❌ disabled | ✅ enabled | Docs live in `/docs` |
+| Sponsorships | optional | — | Decide pre-1.0 |
+| Preserve this repository | ✅ | — | Archive eligibility |
 
 ### Settings → Pull Requests
 
-| Setting | Value | Reason |
-|---|---|---|
-| Allow merge commits | ❌ | Linear history |
-| Allow squash merging | ✅ (default) | Squash with PR-title message |
-| Allow rebase merging | ✅ | For trivial PRs |
-| Always suggest updating pull request branches | ✅ | UX for contributors |
-| Allow auto-merge | ✅ | Maintainer convenience |
-| Automatically delete head branches | ✅ | Cleanup |
+| Setting | Target | Today | Reason |
+|---|---|---|---|
+| Allow merge commits | ❌ | ✅ | Linear history |
+| Allow squash merging | ✅ (default) | ✅ (default title: commit or PR title) | Squash with PR-title message |
+| Allow rebase merging | ✅ | ✅ | For trivial PRs |
+| Always suggest updating pull request branches | ✅ | ❌ | UX for contributors |
+| Allow auto-merge | ✅ | ❌ | Maintainer convenience |
+| Automatically delete head branches | ✅ | ✅ | Cleanup |
+
+In both tables, Today is read back from `gh api repos/microtel-org/microtel`; a dash means the
+API does not report the setting.
 
 ### Settings → Moderation → Code review limits
 
@@ -134,11 +137,13 @@ GitHub also offers "Interaction limits" under Settings → Moderation → Intera
 
 Each lasts up to 6 months (renewable). Use **"Limit to repository collaborators"** as the strongest signal. Combined with the code-review-submission limit above, this is belt-and-suspenders.
 
+**Today:** no interaction limit is set (`gh api repos/microtel-org/microtel/interaction-limits` returns `{}`).
+
 ---
 
 ## Layer 4: CODEOWNERS as the routing layer
 
-[CODEOWNERS](../.github/CODEOWNERS) is the file that GitHub uses to auto-request reviews. It routes everything to `@chanderraja`. Even if a PR is somehow opened, you're auto-requested as the reviewer and the merge is gated on your approval per Layer 2.
+[CODEOWNERS](../.github/CODEOWNERS) is the file that GitHub uses to auto-request reviews. It routes everything to `@chanderraja`. Even if a PR is somehow opened, you're auto-requested as the reviewer. The merge is not gated on that approval today: Layer 2 requires no pull request and no approvals, only the required status checks.
 
 When the team grows post-v1.0, replace the default owner with the relevant track owners.
 
