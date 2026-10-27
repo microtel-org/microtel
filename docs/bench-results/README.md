@@ -7,8 +7,10 @@ doesn't produce them. A local `cd bench && ./bench.sh` writes to
 only existed for people who had run the harness themselves.
 
 The snapshot was refreshed on 2026-10-27 for the v1.2.4 tag, from the
-release commit `84ac4c0` (recorded as `source_commit` in `results.json`), on
-the same machine as the previous snapshot (Ryzen 5 5600G, 6 cores / 12
+release commit `5bbc655` (`source_commit` in `results.json`). The images were
+built from `84ac4c0` (`images_built_from`), the same commit before #462 was
+rebased onto master; the rebase changed only docs and packaging metadata. It ran
+on the same machine as the previous snapshot (Ryzen 5 5600G, 6 cores / 12
 threads, `performance` governor, SMT on). The host's software did change: the
 kernel went from 7.1.13-200.fc44 to 7.2.11-200.fc44 and podman from 5.8.4 to
 5.8.9. Diffing the environment block, as [`docs/releasing.md`](../releasing.md)
@@ -124,7 +126,7 @@ figures, from 2026-09-27: `realistic-request` 100% delivery for both SUTs, and
 |---|---|
 | Profile | `hot-loop-traces` — 10 000 spans/sample, 10 samples per run × 5 interleaved runs, 1 000 warmup spans, blackhole sink |
 | SUTs | `microtel`, `microtel-grpc`, `otelcpp-grpc`, `otelcpp-http` |
-| Generated | 2026-10-27 (release commit `84ac4c0`) |
+| Generated | 2026-10-27 (release commit `5bbc655`; images built from `84ac4c0`, its pre-rebase SHA) |
 | Host | AMD Ryzen 5 5600G, 6 physical cores / 12 threads, Fedora, kernel 7.2.11-200.fc44, podman 5.8.9 |
 
 The snapshot carries two warnings, left in `results.md` and `results.json`:

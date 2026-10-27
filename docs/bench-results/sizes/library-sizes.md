@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Build** | The bench SUT images `bench-sut-otelcpp-grpc` and `bench-sut-microtel` built 2026-10-26 23:29–23:31 UTC from the v1.2.4 release commit `84ac4c0`: the same images, and the same `/emit_app` binaries, as the [v1.2.4 benchmark run](../README.md). Measured 2026-10-26. |
+| **Build** | The bench SUT images `bench-sut-otelcpp-grpc` and `bench-sut-microtel` built 2026-10-26 23:29–23:31 UTC from the v1.2.4 release commit, `84ac4c0` before #462 was rebased onto master and `5bbc655` after (the rebase changed only docs and packaging metadata): the same images, and the same `/emit_app` binaries, as the [v1.2.4 benchmark run](../README.md). Measured 2026-10-26. |
 | **Packages** | Ubuntu 24.04 (`ubuntu:24.04`) runtime packages in each image; versions [below](#versions). opentelemetry-cpp v1.19.0, built from source. |
 | **Method** | Each `/emit_app`, stripped (GNU strip 2.42), split by compile unit with [bloaty](https://github.com/google/bloaty) (upstream `f1a83e6`), using the unstripped binary as `--debug-file`. Plus every shared library `ldd` resolves in the image, sized from the file on disk; two that ship unstripped are counted stripped. [Commands](#commands). |
 
