@@ -6,7 +6,7 @@
 microtel_add_integration_test(
     NAME    http2_connect_test
     SOURCES http2_connect_test.cpp
-    LIBS    microtel_transport)
+    LIBS    microtel_transport OpenSSL::SSL PkgConfig::NGHTTP2)
 
 # microtel_grpc_wire is linked for the split-DATA-frame tests: the
 # accumulation they exercise lives in the transport, but the assertion that it
@@ -14,11 +14,11 @@ microtel_add_integration_test(
 microtel_add_integration_test(
     NAME    http2_send_test
     SOURCES http2_send_test.cpp
-    LIBS    microtel_transport microtel_grpc_wire)
+    LIBS    microtel_transport microtel_grpc_wire OpenSSL::SSL PkgConfig::NGHTTP2)
 
 # OpenSSL is linked explicitly: microtel_transport keeps it PRIVATE, and this
 # test builds its own TLS server rather than borrowing the transport's.
 microtel_add_integration_test(
     NAME    http2_tls_connect_test
     SOURCES http2_tls_connect_test.cpp
-    LIBS    microtel_transport OpenSSL::SSL OpenSSL::Crypto)
+    LIBS    microtel_transport OpenSSL::SSL OpenSSL::Crypto PkgConfig::NGHTTP2)
