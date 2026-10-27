@@ -141,3 +141,42 @@ names the code uses.
   in the README. The amended LOCKED markers in `memory-model.md` gain `cites`
   annotations (ICP 0021), for example ``cites `src/common/raii/unique_fd.hpp:Release` ``,
   so `citation-check` keeps them honest.
+
+## Amendment (2026-10-27): `IOtlpEncoder` threading (`interfaces.md` §4.2)
+
+**Status:** Draft.
+
+`interfaces.md` §4.2 Threading says that `Encode` "is called only by the
+exporter worker (LOCKED)" and that the interface "is **not** thread-safe".
+Neither matches the code. The Provider builds one `wire::OtlpEncoder`
+(`src/sdk/sdk_builder.cpp`) and passes it to the trace, metric and log
+exporters. Each exporter calls its own `Encode` overload on its own worker
+thread, so up to three encodes run at once.
+
+That is safe because the encoder holds no state:
+- it has no data members;
+- each call creates and frees its own `UpbArena`;
+- it uses no statics, `thread_local`s or lazy initialisation;
+- the only writable upb globals are written only by setters that microtel
+  never calls.
+
+`tests/unit/sdk/shared_encoder_concurrency_test.cpp` (#482) runs all three
+workers through one Provider under TSan. A temporary probe confirmed that the
+test overlaps encodes, with up to three in flight at once. TSan reported
+nothing.
+
+The Threading section is restated as:
+
+- Each `Encode` overload is called only by its signal's exporter worker:
+  `OtlpExporter`, `OtlpMetricExporter` and `OtlpLogExporter` respectively
+  (LOCKED — cites `src/exporter/otlp_exporter.hpp:m_worker`,
+  `src/exporter/otlp_metric_exporter.hpp:m_worker`,
+  `src/exporter/otlp_log_exporter.hpp:m_worker`).
+- One encoder per `Provider` serves all three workers, so `Encode` calls may
+  run concurrently, one per signal. The implementation must stay safe for
+  that. Today it does so by holding no state across or between calls. Any
+  cache or scratch state added later must keep concurrent calls safe, and the
+  TSan test above guards it.
+
+No code changes. The `interfaces.md` edit follows this amendment in its own
+PR.
