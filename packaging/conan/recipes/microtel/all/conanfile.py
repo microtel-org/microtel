@@ -4,7 +4,7 @@ from conan import ConanFile
 from conan.errors import ConanInvalidConfiguration
 from conan.tools.build import check_min_cppstd
 from conan.tools.cmake import CMake, CMakeDeps, CMakeToolchain, cmake_layout
-from conan.tools.files import copy, get, rmdir
+from conan.tools.files import apply_conandata_patches, copy, export_conandata_patches, get, rmdir
 from conan.tools.gnu import PkgConfigDeps
 from conan.tools.scm import Version
 
@@ -44,6 +44,9 @@ class MicrotelConan(ConanFile):
         # std::format: libstdc++ 13; Clang 18 is the oldest upstream CI builds.
         return {"gcc": "13", "clang": "18"}
 
+    def export_sources(self):
+        export_conandata_patches(self)
+
     def layout(self):
         cmake_layout(self, src_folder="src")
 
@@ -70,6 +73,7 @@ class MicrotelConan(ConanFile):
 
     def source(self):
         get(self, **self.conan_data["sources"][self.version], strip_root=True)
+        apply_conandata_patches(self)
 
     def generate(self):
         tc = CMakeToolchain(self)
