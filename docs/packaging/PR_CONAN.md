@@ -11,7 +11,7 @@ unchanged:
 
 ```
 recipes/microtel/
-├── config.yml                  # version → folder ("1.2.2": all)
+├── config.yml                  # version → folder ("1.2.5": all)
 └── all/
     ├── conandata.yml           # source URL and sha256 per version
     ├── conanfile.py            # the recipe (Conan 2)
@@ -55,7 +55,7 @@ The recipe in brief:
    recipe at all. CCI's `tl-expected` stops at 1.2.0 and microtel vendors
    1.3.1, so the vendored header stays.
 3. **Source URL.** `conandata.yml` uses GitHub's tag archive
-   (`archive/v1.2.2.tar.gz`). Releases tagged after the release workflow
+   (`archive/v1.2.5.tar.gz`). Releases tagged after the release workflow
    landed also carry `microtel-X.Y.Z.tar.gz` as a release asset
    (`docs/releasing.md` §4). Either URL is acceptable to CCI. The asset is
    produced by `git archive` and is reproducible, but its sha256 differs from
@@ -68,21 +68,21 @@ Conan 2:
 
 ```bash
 git clone https://github.com/<you>/conan-center-index.git && cd conan-center-index
-git switch -c microtel-1.2.2
+git switch -c microtel-1.2.5
 
 cp -r /path/to/microtel/packaging/conan/recipes/microtel recipes/
 
 # Build and test from the recipe as it will be merged.
 cd recipes/microtel/all
-conan create . --version=1.2.2 -s compiler.cppstd=20 --build=missing
-conan create . --version=1.2.2 -s compiler.cppstd=20 --build=missing \
+conan create . --version=1.2.5 -s compiler.cppstd=20 --build=missing
+conan create . --version=1.2.5 -s compiler.cppstd=20 --build=missing \
       -o "microtel/*:leaf=True" -o "microtel/*:concentrator=True"
 rm -rf test_package/build test_package/CMakeUserPresets.json
 cd ../../..
 
 git add recipes/microtel
 git commit -m "microtel: add recipe"
-git push -u origin microtel-1.2.2
+git push -u origin microtel-1.2.5
 ```
 
 Then open a PR against `conan-io/conan-center-index:master` titled
@@ -99,7 +99,7 @@ For a new version later, add its `sources` entry (URL plus
 
 ```markdown
 ### Summary
-Changes to recipe:  **microtel/1.2.2**
+Changes to recipe:  **microtel/1.2.5**
 
 #### Motivation
 New recipe. microtel is a lightweight OpenTelemetry trace runtime and OTLP
@@ -139,8 +139,8 @@ Conan 2.33.0, a detected default profile (GCC 14, x86_64, Release),
 `-s compiler.cppstd=20`, dependencies from `conancenter` built with
 `--build=missing`:
 
-- `conan create` with default options: built offline from the `v1.2.2` tag
-  archive, and `test_package` ran (`microtel 1.2.2`).
+- `conan create` with default options: built offline from the `v1.2.5` tag
+  archive, and `test_package` ran (`microtel 1.2.5`).
 - `conan create` with `leaf=True, concentrator=True`: built, and
   `test_package` ran. The leaf and nanopb archives were packaged.
 - `ci/scripts/symbol-scan.sh --prefix <package folder>` was clean for both
