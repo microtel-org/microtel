@@ -278,10 +278,10 @@ int main()
     ok = Check(flush != microtel::Status::AlreadyShutDown, "ForceFlush returned a live status") &&
          ok;
 
+    // As ForceFlush: a batch that could not be exported makes it Failed.
     const microtel::Status shutdown = provider->Shutdown(kShutdownTimeout);
     std::cout << "Shutdown = " << StatusToString(shutdown) << '\n';
-    ok = Check(shutdown == microtel::Status::Completed || shutdown == microtel::Status::TimedOut,
-               "Shutdown completed or timed out") &&
+    ok = Check(shutdown != microtel::Status::AlreadyShutDown, "Shutdown returned a live status") &&
          ok;
 
     std::cout << (ok ? "PASS" : "FAIL") << '\n';
