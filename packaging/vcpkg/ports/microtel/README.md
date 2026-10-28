@@ -84,7 +84,7 @@ host build.
 ## Source pinning
 
 `portfile.cmake` downloads the release tag that matches the port's `version`
-(`REF "v${VERSION}"`), currently `v1.2.4`, and checks it against `SHA512`.
+(`REF "v${VERSION}"`), currently `v1.2.5`, and checks it against `SHA512`.
 `v1.2.1` is the first tag with the three build changes the port needs:
 `MICROTEL_USE_SYSTEM_DEPS`, `MICROTEL_WARNINGS_AS_ERRORS` and the
 `OpenSSL::Crypto` link. `docs/releasing.md` has the step for updating `version`

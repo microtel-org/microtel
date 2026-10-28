@@ -7,7 +7,7 @@ built on nghttp2 and a vendored upb.
 
 | | |
 |---|---|
-| Recipe | `recipes-support/microtel/microtel_1.2.4.bb` (release v1.2.4) |
+| Recipe | `recipes-support/microtel/microtel_1.2.5.bb` (release v1.2.5) |
 | Depends on | `openembedded-core` only (`nghttp2`, `openssl`, `zlib`) |
 | Compatible with | scarthgap (5.0 LTS), styhead, walnascar, whinlatch |
 
