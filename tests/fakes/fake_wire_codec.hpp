@@ -12,6 +12,7 @@
 #include <cstddef>
 #include <deque>
 #include <mutex>
+#include <thread>
 #include <vector>
 
 namespace microtel::testing
@@ -39,10 +40,14 @@ public:
     std::deque<internal::WireResult> scripted_results;
     /// @brief Returned when scripted_results is empty. Default: failure, non-retryable.
     internal::WireResult default_result{};
+    /// @brief How long each `Send` takes before answering. Set before the
+    ///        codec is handed to an exporter.
+    std::chrono::milliseconds send_delay{0};
 
     [[nodiscard]] internal::WireResult Send(internal::EncodedPayload&& payload,
                                             std::chrono::milliseconds /*deadline*/) override
     {
+        std::this_thread::sleep_for(send_delay);
         const auto bytes = payload.Bytes();
         const std::scoped_lock lock{m_mu};
         m_sent.emplace_back(bytes.begin(), bytes.end());

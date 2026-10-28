@@ -171,10 +171,14 @@ public:
     /// @threadsafety Thread-safe.
     [[nodiscard]] virtual Expected<void, Error> Connect() = 0;
 
-    /// @brief Flush queued spans up to `timeout`.
+    /// @brief Export everything recorded before this call, up to `timeout`.
     ///
-    /// Does not stop accepting new records. Returns `Status::Completed` if the
-    /// queue drained and the in-flight batch finished within the timeout.
+    /// Does not stop accepting new records. Every signal's pipeline is flushed,
+    /// even if an earlier one fails or times out, and all of them share the one
+    /// `timeout`. Returns `Status::Completed` only if every record queued before
+    /// the call was exported; `Status::Failed` if any of it failed after its
+    /// final retry; `Status::TimedOut` if the timeout came first. Exports still
+    /// in flight at the timeout carry on.
     ///
     /// @threadsafety Thread-safe.
     /// @noexcept

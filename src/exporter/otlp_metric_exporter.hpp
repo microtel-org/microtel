@@ -10,6 +10,7 @@
 #include "microtel/internal/wire_codec.hpp"
 #include "microtel/provider.hpp"
 
+#include "exporter/flush_tracker.hpp"
 #include "exporter/retry_engine.hpp"
 #include "exporter/retry_policy.hpp"
 
@@ -97,7 +98,10 @@ public:
 private:
     void WorkerLoop() noexcept;
     void DrainQueue(std::unique_lock<std::mutex>& lock) noexcept;
-    void ProcessBatches(std::vector<internal::MetricBatchHandle>& batches);
+    /// @param delivered appended to, one entry per batch in order: whether it
+    ///        was exported. Kept by the caller if this throws part-way.
+    void ProcessBatches(std::vector<internal::MetricBatchHandle>& batches,
+                        std::vector<bool>& delivered);
     /// @brief Add `n` to the counter for `reason`. No-op without a sink.
     ///        Lock-free, so it is safe under `m_mu`.
     void RecordDropped(DropReason reason, std::uint64_t n) noexcept;
@@ -124,8 +128,8 @@ private:
     std::deque<internal::MetricBatchHandle> m_queue;
     std::mutex m_mu;
     std::condition_variable m_cv;
-    std::uint64_t m_flush_seq = 0;
-    std::uint64_t m_flush_done_seq = 0;
+    /// @brief What `ForceFlush` and `Shutdown` wait for. Guarded by `m_mu`.
+    FlushTracker m_flush;
     std::atomic<bool> m_shutdown{false};
     std::thread m_worker;
 };

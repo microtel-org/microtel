@@ -75,7 +75,7 @@ void ExportOneDoomedSpan(const std::shared_ptr<microtel::Provider>& provider)
         auto span = tracer->StartSpan("doomed-export");
         span->End();
     }
-    ASSERT_EQ(provider->ForceFlush(std::chrono::seconds(30)), microtel::Status::Completed);
+    ASSERT_EQ(provider->ForceFlush(std::chrono::seconds(30)), microtel::Status::Failed);
 }
 
 [[nodiscard]] std::uint64_t DropCount(const microtel::HealthSnapshot& health,
@@ -108,7 +108,7 @@ TEST(ExporterHealthIntegrationTest, FailedExportIsVisibleInHealthSnapshot)
         auto span = tracer->StartSpan("doomed-export");
         span->End();
     }
-    ASSERT_EQ(provider->ForceFlush(std::chrono::seconds(30)), microtel::Status::Completed);
+    ASSERT_EQ(provider->ForceFlush(std::chrono::seconds(30)), microtel::Status::Failed);
 
     const microtel::HealthSnapshot health = provider->GetExporterHealth();
     EXPECT_GT(health.batches_failed, 0U)

@@ -65,3 +65,12 @@ target_include_directories(retry_engine_test
 
 target_compile_options(retry_engine_test PRIVATE
     -Wno-missing-field-initializers)
+
+microtel_add_test(
+    NAME    flush_tracker_test
+    SOURCES flush_tracker_test.cpp
+    LIBS    microtel_exporter)
+
+target_include_directories(flush_tracker_test
+    PRIVATE
+        ${PROJECT_SOURCE_DIR}/src)

@@ -181,6 +181,34 @@ TEST(PeriodicExportingMetricReaderTest, CollectReturnsFailedWhenExportFails)
 
 // ── ForceFlush ────────────────────────────────────────────────────────────────
 
+// ICP 0041: the flush covers its own collection, so a collection the exporter
+// refused to queue fails it — the exporter is still flushed.
+TEST(PeriodicExportingMetricReaderTest, ForceFlushReturnsFailedWhenItsCollectionIsDropped)
+{
+    std::vector<mti::MetricBatchHandle> handles;
+    handles.push_back(mti::MetricBatchHandle{
+        {},
+        std::make_shared<const mt::Resource>(),
+        mti::InstrumentationScope{.name = "lib", .version = "1.0"},
+    });
+    FakeMetricProducer producer{std::move(handles)};
+    FakeMetricExporter exporter{mti::ExportResult::Dropped};
+    mts::PeriodicExportingMetricReader reader{producer, exporter, 60'000ms};
+
+    EXPECT_EQ(reader.ForceFlush(100ms), mt::Status::Failed);
+    EXPECT_EQ(exporter.FlushCount(), 1);
+}
+
+TEST(PeriodicExportingMetricReaderTest, ForceFlushReturnsTheExportersStatus)
+{
+    FakeMetricProducer producer;
+    FakeMetricExporter exporter;
+    exporter.SetFlushResult(mt::Status::Failed);
+    mts::PeriodicExportingMetricReader reader{producer, exporter, 60'000ms};
+
+    EXPECT_EQ(reader.ForceFlush(100ms), mt::Status::Failed);
+}
+
 TEST(PeriodicExportingMetricReaderTest, ForceFlushCallsProducerAndExporter)
 {
     FakeMetricProducer producer;

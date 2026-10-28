@@ -70,43 +70,45 @@ internal::ExportResult OtlpMetricExporter::Export(internal::MetricBatchHandle&& 
         RecordDropped(DropReason::QueueFull, metric_count);
         return internal::ExportResult::Dropped;
     }
-    m_cv.notify_one();
+    m_flush.Accept();
+    // notify_all, not notify_one: flushes wait on m_cv too, and one wake that
+    // reached a flush instead of the worker would leave the batch queued.
+    m_cv.notify_all();
     return internal::ExportResult::Success;
 }
 
 microtel::Status OtlpMetricExporter::ForceFlush(std::chrono::milliseconds timeout) noexcept
 {
-    {
-        const std::scoped_lock lock{m_mu};
-        ++m_flush_seq;
-        m_cv.notify_all();
-    }
-    const bool completed = [&]
-    {
-        std::unique_lock lock{m_mu};
-        return m_cv.wait_for(lock, timeout, [this] { return m_flush_done_seq >= m_flush_seq; });
-    }();
-    return completed ? microtel::Status::Completed : microtel::Status::TimedOut;
+    // Waits for the batches accepted before this call, not for an empty
+    // queue: under sustained load the queue never empties (ICP 0041, #484).
+    // The worker is already awake while the queue is non-empty.
+    std::unique_lock lock{m_mu};
+    const FlushTracker::Waiter waiter{m_flush};
+    const bool in_time = m_cv.wait_for(lock, timeout, [&waiter] { return waiter.Reached(); });
+    return waiter.StatusOf(in_time);
 }
 
 microtel::Status OtlpMetricExporter::Shutdown(std::chrono::milliseconds timeout) noexcept
 {
+    bool completed = false;
+    microtel::Status status = microtel::Status::TimedOut;
     {
-        const std::scoped_lock lock{m_mu};
+        std::unique_lock lock{m_mu};
         if (m_shutdown.exchange(true, std::memory_order_relaxed))
         {
             return microtel::Status::AlreadyShutDown;
         }
-        ++m_flush_seq;
+        // Registered before the worker can take another batch, so every batch
+        // queued now counts towards this call's status.
+        const FlushTracker::Waiter waiter{m_flush};
         m_cv.notify_all();
+        lock.unlock();
+        // Outside m_mu: the engine's lock is a leaf (threading-model.md §4).
+        m_retry.Abort();
+        lock.lock();
+        completed = m_cv.wait_for(lock, timeout, [&waiter] { return waiter.Reached(); });
+        status = waiter.StatusOf(completed);
     }
-    // Outside m_mu: the engine's lock is a leaf (threading-model.md §4).
-    m_retry.Abort();
-    const bool completed = [&]
-    {
-        std::unique_lock lock{m_mu};
-        return m_cv.wait_for(lock, timeout, [this] { return m_flush_done_seq >= m_flush_seq; });
-    }();
     if (!completed && m_config.on_shutdown_timeout)
     {
         // Before the join: the worker may be inside a Send only this wakes.
@@ -116,10 +118,11 @@ microtel::Status OtlpMetricExporter::Shutdown(std::chrono::milliseconds timeout)
     {
         m_worker.join();
     }
-    return completed ? microtel::Status::Completed : microtel::Status::TimedOut;
+    return status;
 }
 
-void OtlpMetricExporter::ProcessBatches(std::vector<internal::MetricBatchHandle>& batches)
+void OtlpMetricExporter::ProcessBatches(std::vector<internal::MetricBatchHandle>& batches,
+                                        std::vector<bool>& delivered)
 {
     std::vector<internal::EncodedPayload> payloads;
     payloads.reserve(batches.size());
@@ -135,11 +138,11 @@ void OtlpMetricExporter::ProcessBatches(std::vector<internal::MetricBatchHandle>
     for (std::size_t i = 0; i < results.size(); ++i)
     {
         const auto& batch = batches.at(i);
-        m_retry.Settle(
+        delivered.push_back(m_retry.Settle(
             results.at(i),
             [this, &batch]
             { return m_codec->Send(m_encoder->Encode(batch), m_config.export_deadline); },
-            kFailureStage);
+            kFailureStage));
     }
 }
 
@@ -176,9 +179,10 @@ void OtlpMetricExporter::DrainQueue(std::unique_lock<std::mutex>& lock) noexcept
             m_queue.pop_front();
         }
         lock.unlock();
+        std::vector<bool> delivered;
         try
         {
-            ProcessBatches(batches);
+            ProcessBatches(batches, delivered);
         }
         // The batches are gone either way — the worker is `noexcept` and there
         // is nowhere to put them — but a swallowed failure that nothing counts
@@ -188,6 +192,8 @@ void OtlpMetricExporter::DrainQueue(std::unique_lock<std::mutex>& lock) noexcept
             RecordDrainFailure(e.what());
         }
         lock.lock();
+        m_flush.Complete(batches.size(), delivered);
+        m_cv.notify_all();
     }
 }
 
@@ -198,26 +204,18 @@ void OtlpMetricExporter::WorkerLoop() noexcept
         std::unique_lock lock{m_mu};
         m_cv.wait(lock,
                   [this]
-                  {
-                      return !m_queue.empty() || m_flush_seq > m_flush_done_seq ||
-                             m_shutdown.load(std::memory_order_relaxed);
-                  });
+                  { return !m_queue.empty() || m_shutdown.load(std::memory_order_relaxed); });
 
         DrainQueue(lock);
 
-        if (m_flush_seq > m_flush_done_seq)
-        {
-            m_flush_done_seq = m_flush_seq;
-            m_cv.notify_all();
-        }
         if (m_shutdown.load(std::memory_order_relaxed))
         {
             break;
         }
     }
 
+    // The worker is gone and every batch was drained: wake any waiter.
     const std::scoped_lock lock{m_mu};
-    m_flush_done_seq = m_flush_seq;
     m_cv.notify_all();
 }
 

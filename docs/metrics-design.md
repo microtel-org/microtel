@@ -142,7 +142,11 @@ time. Threading and re-entrancy must be pinned given the strict threading model.
   explicit `Collect()` for tests and synchronous flush.
 - `ForceFlush` / `Shutdown` propagate reader → exporter and reuse the existing
   `Status` taxonomy in `include/microtel/status.hpp`
-  (`Completed`/`TimedOut`/`AlreadyShutDown`/`Failed`).
+  (`Completed`/`TimedOut`/`AlreadyShutDown`/`Failed`). `ForceFlush` collects
+  once, then waits for the batches queued before the exporter's flush, which
+  end with that collection, not for the exporter's queue to empty; a
+  collection the exporter refuses to queue makes it `Failed`
+  ([ICP 0041](icps/0041-flush-and-shutdown-deadlines.md)).
 - **The metrics pipeline is separate from the span `BatchSpanProcessor`** (its
   own collection + serialization path) but **shares the nghttp2 transport
   connection** to the endpoint. Rationale: metrics collection is pull-at-interval

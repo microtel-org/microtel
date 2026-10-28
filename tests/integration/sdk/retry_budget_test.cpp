@@ -107,7 +107,7 @@ TEST(RetryBudgetIntegrationTest, ConfiguredRetryBudgetBoundsTheExporterRetryLoop
     // The flush timeout is deliberately far longer than the ceiling: a timeout
     // here would hide the bug behind a Status::TimedOut instead of exposing it
     // as elapsed time.
-    ASSERT_EQ(provider->ForceFlush(std::chrono::seconds(30)), microtel::Status::Completed);
+    ASSERT_EQ(provider->ForceFlush(std::chrono::seconds(30)), microtel::Status::Failed);
 
     const auto elapsed = std::chrono::steady_clock::now() - started;
     const auto elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed);
@@ -169,7 +169,7 @@ void ExpectSignalRetryBoundedByBudget(
 
     const auto started = std::chrono::steady_clock::now();
     produce_one_record(*provider);
-    ASSERT_EQ(provider->ForceFlush(std::chrono::seconds(30)), microtel::Status::Completed);
+    ASSERT_EQ(provider->ForceFlush(std::chrono::seconds(30)), microtel::Status::Failed);
     const auto elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
         std::chrono::steady_clock::now() - started);
 

@@ -10,6 +10,7 @@
 #include "microtel/internal/otlp_encoder.hpp"
 #include "microtel/internal/wire_codec.hpp"
 
+#include "exporter/flush_tracker.hpp"
 #include "exporter/retry_engine.hpp"
 #include "exporter/retry_policy.hpp"
 
@@ -149,7 +150,10 @@ private:
 
     void WorkerLoop() noexcept;
     void DrainQueue(std::unique_lock<std::mutex>& lock) noexcept;
-    void FanOutAndProcess(const std::vector<internal::BatchHandle>& batches);
+    /// @param delivered appended to, one entry per batch in order: whether it
+    ///        was exported. Kept by the caller if this throws part-way.
+    void FanOutAndProcess(const std::vector<internal::BatchHandle>& batches,
+                          std::vector<bool>& delivered);
     /// @brief Split one drain into requests by span count and, when set,
     ///        encoded size. @p parts are the batches' encodings, index for index.
     [[nodiscard]] std::vector<RequestRange> GroupIntoRequests(
@@ -194,8 +198,8 @@ private:
     std::size_t m_queued_spans = 0;
     std::mutex m_mu;
     std::condition_variable m_cv;
-    std::uint64_t m_flush_seq = 0;
-    std::uint64_t m_flush_done_seq = 0;
+    /// @brief What `ForceFlush` and `Shutdown` wait for. Guarded by `m_mu`.
+    FlushTracker m_flush;
     std::atomic<bool> m_shutdown{false};
     std::thread m_worker;
 };

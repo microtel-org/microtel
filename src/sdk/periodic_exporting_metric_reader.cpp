@@ -5,6 +5,8 @@
 
 #include "microtel/internal/metric_batch.hpp"
 
+#include <algorithm>
+#include <chrono>
 #include <exception>
 #include <vector>
 
@@ -46,8 +48,18 @@ microtel::Status PeriodicExportingMetricReader::ForceFlush(
     {
         return microtel::Status::AlreadyShutDown;
     }
-    (void)DoCollectExport();
-    return m_exporter.ForceFlush(timeout);
+    // One collection, then a flush that covers it: the exporter waits for the
+    // batches queued before its call, which end with this collection's
+    // (ICP 0041). Both share the caller's one deadline.
+    const auto deadline = std::chrono::steady_clock::now() + timeout;
+    const microtel::Status collected = DoCollectExport();
+    const auto left = std::chrono::duration_cast<std::chrono::milliseconds>(
+        deadline - std::chrono::steady_clock::now());
+    const microtel::Status flushed =
+        m_exporter.ForceFlush(std::max(left, std::chrono::milliseconds{0}));
+    // A collection that could not be queued is a flush that did not export
+    // what it was asked to.
+    return collected == microtel::Status::Failed ? microtel::Status::Failed : flushed;
 }
 
 microtel::Status PeriodicExportingMetricReader::Shutdown(std::chrono::milliseconds timeout) noexcept
@@ -143,14 +155,22 @@ microtel::Status PeriodicExportingMetricReader::DoCollectExport() noexcept
     {
         return microtel::Status::Failed;
     }
+    microtel::Status status = microtel::Status::Completed;
     for (auto& handle : handles)
     {
-        if (m_exporter.Export(std::move(handle)) == internal::ExportResult::Failure)
+        const internal::ExportResult result = m_exporter.Export(std::move(handle));
+        if (result == internal::ExportResult::Failure)
         {
             return microtel::Status::Failed;
         }
+        // Refused (queue full, or shut down) and already counted as a drop by
+        // the exporter. The rest of the collection is still offered.
+        if (result != internal::ExportResult::Success)
+        {
+            status = microtel::Status::Failed;
+        }
     }
-    return microtel::Status::Completed;
+    return status;
 }
 
 }  // namespace microtel::sdk
