@@ -10,7 +10,7 @@ which answers §7 question 6 for vcpkg. It builds with `MICROTEL_USE_SYSTEM_DEPS
 (§5 item 2, which compiles toml++ header-only and so settles §5 item 1 without
 a new dependency), `MICROTEL_WARNINGS_AS_ERRORS=OFF` (§5 item 3), and the
 `OpenSSL::Crypto` link (§5 item 4). It offers `leaf` and `concentrator` as
-opt-in features, and builds the `v1.2.4` release tarball. The curated-registry
+opt-in features, and builds the `v1.2.5` release tarball. The curated-registry
 blockers in §3.3 still apply. The port in curated-registry form is
 [`ports/microtel/`](../ports/microtel/), and a Conan 2 recipe in
 conan-center-index layout is under
