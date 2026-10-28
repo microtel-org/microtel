@@ -54,7 +54,7 @@ extern "C"
  *  @{ */
 #define MICROTEL_LEAF_VERSION_MAJOR 1u
 #define MICROTEL_LEAF_VERSION_MINOR 2u
-#define MICROTEL_LEAF_VERSION_PATCH 4u
+#define MICROTEL_LEAF_VERSION_PATCH 5u
 /** @} */
 
 /** Packs a version as `(major << 16) | (minor << 8) | patch`. */
