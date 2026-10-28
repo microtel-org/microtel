@@ -5,8 +5,12 @@
 
 #include "microtel/status.hpp"
 
+#include <chrono>
+#include <condition_variable>
 #include <cstddef>
 #include <cstdint>
+#include <mutex>
+#include <utility>
 #include <vector>
 
 namespace microtel::exporter
@@ -107,6 +111,15 @@ public:
         bool m_failed;
     };
 
+    /// @brief How a wait ended.
+    struct Outcome
+    {
+        /// @brief What `ForceFlush` or `Shutdown` returns.
+        microtel::Status status = microtel::Status::TimedOut;
+        /// @brief Every batch was processed before the timeout.
+        bool in_time = false;
+    };
+
     FlushTracker() noexcept = default;
     ~FlushTracker() = default;
 
@@ -114,6 +127,41 @@ public:
     FlushTracker& operator=(const FlushTracker&) = delete;
     FlushTracker(FlushTracker&&) = delete;
     FlushTracker& operator=(FlushTracker&&) = delete;
+
+    /// @brief `ForceFlush`: wait up to @p timeout for every batch accepted
+    ///        before the call. The worker is already awake while the queue is
+    ///        non-empty.
+    /// @param lock holds the owning exporter's `m_mu`; released while waiting.
+    /// @param cv the owning exporter's condition variable.
+    Outcome Wait(std::unique_lock<std::mutex>& lock,
+                 std::condition_variable& cv,
+                 std::chrono::milliseconds timeout) noexcept
+    {
+        const Waiter waiter{*this};
+        return WaitFor(waiter, lock, cv, timeout);
+    }
+
+    /// @brief `Shutdown`: as `Wait`, but first wakes the worker and runs
+    ///        @p unlocked with @p lock released.
+    ///
+    /// The flush registers before the lock is released, so every batch
+    /// queued now counts towards its status.
+    /// @param unlocked a `noexcept` step that must not run under `m_mu`, such
+    ///        as aborting the retry engine, whose lock is a leaf
+    ///        (threading-model.md §4).
+    template <typename Unlocked>
+    Outcome WaitAfter(std::unique_lock<std::mutex>& lock,
+                      std::condition_variable& cv,
+                      std::chrono::milliseconds timeout,
+                      Unlocked&& unlocked) noexcept
+    {
+        const Waiter waiter{*this};
+        cv.notify_all();
+        lock.unlock();
+        std::forward<Unlocked>(unlocked)();
+        lock.lock();
+        return WaitFor(waiter, lock, cv, timeout);
+    }
 
     /// @brief Count one batch into the queue. Call in queue order.
     void Accept() noexcept
@@ -157,6 +205,15 @@ public:
     }
 
 private:
+    static Outcome WaitFor(const Waiter& waiter,
+                           std::unique_lock<std::mutex>& lock,
+                           std::condition_variable& cv,
+                           std::chrono::milliseconds timeout) noexcept
+    {
+        const bool in_time = cv.wait_for(lock, timeout, [&waiter] { return waiter.Reached(); });
+        return Outcome{.status = waiter.StatusOf(in_time), .in_time = in_time};
+    }
+
     void MarkFailed(std::uint64_t seq) noexcept
     {
         m_last_failed = seq;

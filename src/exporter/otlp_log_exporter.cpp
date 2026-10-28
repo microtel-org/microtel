@@ -82,35 +82,22 @@ microtel::Status OtlpLogExporter::ForceFlush(std::chrono::milliseconds timeout) 
 {
     // Waits for the batches accepted before this call, not for an empty
     // queue: under sustained load the queue never empties (ICP 0041, #484).
-    // The worker is already awake while the queue is non-empty.
     std::unique_lock lock{m_mu};
-    const FlushTracker::Waiter waiter{m_flush};
-    const bool in_time = m_cv.wait_for(lock, timeout, [&waiter] { return waiter.Reached(); });
-    return waiter.StatusOf(in_time);
+    return m_flush.Wait(lock, m_cv, timeout).status;
 }
 
 microtel::Status OtlpLogExporter::Shutdown(std::chrono::milliseconds timeout) noexcept
 {
-    bool completed = false;
-    microtel::Status status = microtel::Status::TimedOut;
+    FlushTracker::Outcome outcome;
     {
         std::unique_lock lock{m_mu};
         if (m_shutdown.exchange(true, std::memory_order_relaxed))
         {
             return microtel::Status::AlreadyShutDown;
         }
-        // Registered before the worker can take another batch, so every batch
-        // queued now counts towards this call's status.
-        const FlushTracker::Waiter waiter{m_flush};
-        m_cv.notify_all();
-        lock.unlock();
-        // Outside m_mu: the engine's lock is a leaf (threading-model.md §4).
-        m_retry.Abort();
-        lock.lock();
-        completed = m_cv.wait_for(lock, timeout, [&waiter] { return waiter.Reached(); });
-        status = waiter.StatusOf(completed);
+        outcome = m_flush.WaitAfter(lock, m_cv, timeout, [this]() noexcept { m_retry.Abort(); });
     }
-    if (!completed && m_config.on_shutdown_timeout)
+    if (!outcome.in_time && m_config.on_shutdown_timeout)
     {
         // Before the join: the worker may be inside a Send only this wakes.
         m_config.on_shutdown_timeout();
@@ -119,7 +106,7 @@ microtel::Status OtlpLogExporter::Shutdown(std::chrono::milliseconds timeout) no
     {
         m_worker.join();
     }
-    return status;
+    return outcome.status;
 }
 
 void OtlpLogExporter::ProcessBatches(std::vector<internal::LogBatchHandle>& batches,
