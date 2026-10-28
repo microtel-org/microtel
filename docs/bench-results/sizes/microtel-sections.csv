@@ -1,15 +1,15 @@
 sections,vmsize,filesize
-.text,734128,734128
-.eh_frame,80480,80480
+.text,740688,740688
+.eh_frame,80712,80712
 .rela.dyn,46896,46896
-.rodata,37864,37864
-.gcc_except_table,32816,32816
+.rodata,37976,37976
+.gcc_except_table,32968,32968
 .data.rel.ro,15175,17736
-.eh_frame_hdr,15336,15336
+.eh_frame_hdr,15376,15376
 .dynstr,7964,7964
-[Unmapped],0,6843
 .dynsym,6696,6696
 .rela.plt,5664,5664
+[Unmapped],0,3843
 .plt,3792,3792
 .tbss,2585,0
 [ELF Section Headers],0,2048

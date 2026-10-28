@@ -2,13 +2,14 @@
 
 | | |
 |---|---|
-| **Build** | The bench SUT images `bench-sut-otelcpp-grpc` and `bench-sut-microtel` built 2026-10-26 23:29–23:31 UTC from the v1.2.4 release commit, `84ac4c0` before #462 was rebased onto master and `5bbc655` after (the rebase changed only docs and packaging metadata): the same images, and the same `/emit_app` binaries, as the [v1.2.4 benchmark run](../README.md). Measured 2026-10-26. |
+| **Build** | `bench-sut-microtel` built 2026-10-28 from the v1.2.5 tag, `16b39fb`; the same image, and the same `/emit_app`, as the [v1.2.5 benchmark run](../README.md). Measured 2026-10-28. `bench-sut-otelcpp-grpc` is the image built 2026-10-26 23:30 UTC for v1.2.4 (its code did not change), so its rows are the v1.2.4 measurement. The microtel image's base packages moved (liblzma5, libsystemd0, libudev1), but none is in `/emit_app`'s library closure, and every library it loads is byte for byte the v1.2.4 one. |
 | **Packages** | Ubuntu 24.04 (`ubuntu:24.04`) runtime packages in each image; versions [below](#versions). opentelemetry-cpp v1.19.0, built from source. |
 | **Method** | Each `/emit_app`, stripped (GNU strip 2.42), split by compile unit with [bloaty](https://github.com/google/bloaty) (upstream `f1a83e6`), using the unstripped binary as `--debug-file`. Plus every shared library `ldd` resolves in the image, sized from the file on disk; two that ship unstripped are counted stripped. [Commands](#commands). |
 
-**Not re-measured for v1.2.5.** The v1.2.5 changes are in the exporters' and
-the Provider's flush and shutdown (#484, #486); see the
-[benchmark README](../README.md).
+**v1.2.5 against v1.2.4:** the stripped microtel `/emit_app` grew by 4,096 B
+(1,004,712 → 1,008,808), one page. The microtel compile units grew by 6,832 B,
+the flush tracking of #484, and unattributed padding shrank by 2,736 B. The
+telemetry stack is 1,179,160 B, still 1.2 MB.
 
 These figures replace the "benchmark binary size" comparison (withdrawn: 43.1 MB
 against 17.5 MB) that the benchmark README used to report. That compared the
@@ -57,15 +58,15 @@ sections, so both footprints are now debug-free and comparable.
 |---|---|---:|---:|---:|
 | OpenSSL (libssl + libcrypto) | shared library | 6,005,912 | 6.0 | 45.7% |
 | C/C++ runtime (libstdc++, libgcc_s, libc, libm) | shared library | 5,857,288 | 5.9 | 44.5% |
-| microtel (static) | in binary | 704,006 | 0.7 | 5.4% |
+| microtel (static) | in binary | 710,838 | 0.7 | 5.4% |
 | nghttp2 | shared library | 170,352 | 0.2 | 1.3% |
 | zlib | shared library | 113,000 | 0.1 | 0.9% |
 | toml++ (header-only) | in binary | 55,949 | 0.1 | 0.4% |
 | upb (vendored, incl. utf8_range) | in binary | 32,678 | 0.0 | 0.2% |
 | emit-app | in binary | 31,252 | 0.0 | 0.2% |
-| unattributed (bloaty [section]/[Unmapped]/ELF rows, see below) | in binary | 180,827 | 0.2 | 1.4% |
-| **Total, incl. C/C++ runtime** | | **13,151,264** | **13.2** | 100.0% |
-| **Total, excl. C/C++ runtime** | | **7,293,976** | **7.3** | |
+| unattributed (bloaty [section]/[Unmapped]/ELF rows, see below) | in binary | 178,091 | 0.2 | 1.4% |
+| **Total, incl. C/C++ runtime** | | **13,155,360** | **13.2** | 100.0% |
+| **Total, excl. C/C++ runtime** | | **7,298,072** | **7.3** | |
 
 ## Subtotals
 
@@ -75,10 +76,10 @@ files in both images, byte for byte (one zlib package revision differs; see [Ver
 | Subtotal | otelcpp-grpc bytes | MB | microtel bytes | MB |
 |---|---:|---:|---:|---:|
 | Shared base (OpenSSL + zlib + C/C++ runtime) | 11,976,200 | 12.0 | 11,976,200 | 12.0 |
-| Telemetry stack (everything else) | 13,411,216 | 13.4 | 1,175,064 | 1.2 |
-| **Total** | 25,387,416 | 25.4 | 13,151,264 | 13.2 |
+| Telemetry stack (everything else) | 13,411,216 | 13.4 | 1,179,160 | 1.2 |
+| **Total** | 25,387,416 | 25.4 | 13,155,360 | 13.2 |
 
-Telemetry-stack ratio, otelcpp-grpc / microtel: 13,411,216 / 1,175,064 = **11.4×** (unrounded 11.4132).
+Telemetry-stack ratio, otelcpp-grpc / microtel: 13,411,216 / 1,179,160 = **11.4×** (unrounded 11.3735).
 
 ## Inside the stripped /emit_app
 
@@ -132,16 +133,16 @@ bloaty `[section]` / `[Unmapped]` / ELF rows (bytes no compile unit claims), all
 | `[LOAD #2 [R]]` | 1 |
 | **Sum (= unattributed)** | **162,410** |
 
-### microtel (1,004,712 B stripped)
+### microtel (1,008,808 B stripped)
 
 | Bucket | Bytes | % of stripped binary | of which inlined libstdc++ template code |
 |---|---:|---:|---:|
-| microtel (static) | 704,006 | 70.1% | 499,962 |
-| toml++ (header-only) | 55,949 | 5.6% | 0 |
-| upb (vendored, incl. utf8_range) | 32,678 | 3.3% | 0 |
+| microtel (static) | 710,838 | 70.5% | 504,845 |
+| toml++ (header-only) | 55,949 | 5.5% | 0 |
+| upb (vendored, incl. utf8_range) | 32,678 | 3.2% | 0 |
 | emit-app | 31,252 | 3.1% | 21,719 |
-| unattributed | 180,827 | 18.0% | 0 |
-| **Total = stripped /emit_app** | **1,004,712** | 100.0% | |
+| unattributed | 178,091 | 17.7% | 0 |
+| **Total = stripped /emit_app** | **1,008,808** | 100.0% | |
 
 bloaty `[section]` / `[Unmapped]` / ELF rows, all in "unattributed". These are net of the
 20,374 B of upb/utf8_range symbols recovered from them (see "upb" below):
@@ -149,12 +150,12 @@ bloaty `[section]` / `[Unmapped]` / ELF rows, all in "unattributed". These are n
 | bloaty row | Bytes |
 |---|---:|
 | `[section .rela.dyn]` | 46,680 |
-| `[section .rodata]` | 37,782 |
-| `[section .gcc_except_table]` | 32,816 |
+| `[section .rodata]` | 37,894 |
+| `[section .gcc_except_table]` | 32,968 |
 | `[section .data.rel.ro]` | 17,392 |
 | `[section .dynstr]` | 7,417 |
 | `[section .text]` | 7,255 |
-| `[Unmapped]` | 6,844 |
+| `[Unmapped]` | 3,844 |
 | `[section .dynsym]` | 6,041 |
 | `[section .rela.plt]` | 5,664 |
 | `[section .plt]` | 3,792 |
@@ -184,11 +185,11 @@ bloaty `[section]` / `[Unmapped]` / ELF rows, all in "unattributed". These are n
 | `[LOAD #5 [RW]]` | 8 |
 | `[section .fini_array]` | 8 |
 | `[LOAD #4 [R]]` | 4 |
-| **Sum (= unattributed)** | **180,827** |
+| **Sum (= unattributed)** | **178,091** |
 
 ## Reconciliation
 
-- Bucket sums equal the stripped file size exactly for both SUTs (1,004,712 and 1,068,408 B);
+- Bucket sums equal the stripped file size exactly for both SUTs (1,008,808 and 1,068,408 B);
   bloaty's own `compileunits` total equals the file size too. Gap: 0 B.
 - These totals do **not** reconcile with the withdrawn 43.1 / 17.5 MB, and are not meant to:
   those were unstripped `/emit_app` file sizes with no shared libraries. Of the withdrawn

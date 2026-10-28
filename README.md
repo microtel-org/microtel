@@ -597,13 +597,13 @@ default and effect.
 In the project's benchmark against opentelemetry-cpp on the same host:
 
 - **Span emit time:** one timed call that creates and ends a span takes
-  226 ns at the median against 820 ns, about **3.6× less** (486 ns against
-  3 364 ns, about 6.9×, at p95).
+  223 ns at the median against 812 ns, about **3.6× less** (485 ns against
+  3 394 ns, about 7.0×, at p95).
   The timed call is the benchmark's whole `EmitSpan()`: `StartSpan`, `End()`
   and the harness's own overhead (a virtual call, a counter increment and two
   clock reads). The profile sets no attributes.
 - **Throughput:** microtel sustains about **1.9× the span throughput**
-  (1,386,999 spans/s over OTLP/HTTP against 739,338; 1.4× over OTLP/gRPC).
+  (1,424,706 spans/s over OTLP/HTTP against 738,912; 1.4× over OTLP/gRPC).
 - **Size:** stripped, with Ubuntu 24.04 packages, the telemetry stack the
   benchmark loads is **1.2 MB** with microtel against **13.4 MB** with
   opentelemetry-cpp's OTLP/gRPC exporter (gRPC, protobuf, Abseil, c-ares, re2
