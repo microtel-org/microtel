@@ -278,10 +278,21 @@ int main()
     ok = Check(flush != microtel::Status::AlreadyShutDown, "ForceFlush returned a live status") &&
          ok;
 
-    // As ForceFlush: a batch that could not be exported makes it Failed.
+    // A flush that finishes clears the failures it reported (ICP 0041), so a
+    // second span gives Shutdown a batch of its own. Nothing reaches the closed
+    // port, so Shutdown cannot be Completed: the span is either still pending
+    // at the deadline or failed its last attempt.
+    tracer
+        ->StartSpan("consumer.smoke.shutdown",
+                    {.kind = microtel::SpanKind::Internal,
+                     .parent = {},
+                     .start_time = {},
+                     .attributes = {}})
+        ->End();
     const microtel::Status shutdown = provider->Shutdown(kShutdownTimeout);
     std::cout << "Shutdown = " << StatusToString(shutdown) << '\n';
-    ok = Check(shutdown != microtel::Status::AlreadyShutDown, "Shutdown returned a live status") &&
+    ok = Check(shutdown == microtel::Status::Failed || shutdown == microtel::Status::TimedOut,
+               "Shutdown failed or timed out") &&
          ok;
 
     std::cout << (ok ? "PASS" : "FAIL") << '\n';
