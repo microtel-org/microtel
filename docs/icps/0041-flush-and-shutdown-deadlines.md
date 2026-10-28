@@ -289,3 +289,17 @@ Failures processed while a flush waits are marked on it as before.
 **Tests:**
 - A deterministic `FlushTracker` unit test.
 - An exporter test with two overlapping `ForceFlush` calls and a failure before both. Both return `Failed`. A third flush, after both complete, returns `Completed`.
+
+**Scope for v1.2.5: the HTTP/2 shutdown cancel is cut.** v1.2.5 ships Decision 1 (as amended above) and the shared deadline of Decision 2. These move to v1.3 (#492):
+- the HTTP/2 and gRPC `Close(0ms)` cancel;
+- the Provider-owned `CancelAtShutdownDeadline()` from "Shared transport";
+- the `Http2Transport::Send` re-check under `m_pending_mu`, and its TSan test;
+- the second §5.3 bullet text in Decision 3.
+
+The ICP 0036 hooks stay as they are: each `ExportTransport` exporter cancels the channel when its own wait expires. Under the shared deadline that is never before the overall deadline.
+
+**The v1.2.5 shutdown bound.** `Shutdown(timeout)` returns within `timeout`, plus the rest of any send already in flight, up to the per-export limit (`TimeoutOptions::per_export`, 10 s by default):
+- **Over HTTP/2 and gRPC** this applies whenever a send is in flight at the deadline.
+- **Over `ExportTransport`** it applies only when the application's `Send` ignores `Cancel()`. A `Send` that honours `Cancel()` keeps the bound at `timeout` plus its cancellation latency.
+
+The v1.2.5 release notes list this under Known limitations.
