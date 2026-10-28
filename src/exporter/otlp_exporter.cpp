@@ -168,6 +168,12 @@ microtel::Status OtlpExporter::Shutdown(std::chrono::milliseconds timeout) noexc
     return status;
 }
 
+OtlpExporter::FlushProgress OtlpExporter::FlushProgressForTesting() noexcept
+{
+    const std::scoped_lock lock{m_mu};
+    return FlushProgress{.processed = m_flush.Processed(), .waiting = m_flush.Waiting()};
+}
+
 void OtlpExporter::RecordDropped(DropReason reason, std::uint64_t n) noexcept
 {
     if (m_diag != nullptr)

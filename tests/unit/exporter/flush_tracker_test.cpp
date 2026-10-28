@@ -126,3 +126,18 @@ TEST(FlushTrackerTest, AFailureAfterTheRange_IsNotReported)
     tracker.Complete(2, sent_then_failed);
     EXPECT_EQ(waiter.StatusOf(true), mt::Status::Completed);
 }
+
+TEST(FlushTrackerTest, ProcessedAndWaiting_ReportTheAccounting)
+{
+    mte::FlushTracker tracker;
+    tracker.Accept();
+    EXPECT_EQ(tracker.Waiting(), 0U);
+    {
+        const mte::FlushTracker::Waiter first{tracker};
+        const mte::FlushTracker::Waiter second{tracker};
+        EXPECT_EQ(tracker.Waiting(), 2U);
+        tracker.Complete(1, OneSent());
+        EXPECT_EQ(tracker.Processed(), 1U);
+    }
+    EXPECT_EQ(tracker.Waiting(), 0U);
+}

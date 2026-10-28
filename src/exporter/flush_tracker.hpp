@@ -138,6 +138,24 @@ public:
         m_processed += count;
     }
 
+    /// @brief How many batches have been processed. For tests, which poll it
+    ///        through the owning exporter rather than sleep.
+    [[nodiscard]] std::uint64_t Processed() const noexcept
+    {
+        return m_processed;
+    }
+
+    /// @brief How many flushes are waiting now. For tests, as `Processed`.
+    [[nodiscard]] std::size_t Waiting() const noexcept
+    {
+        std::size_t n = 0;
+        for (const Waiter* w = m_waiters; w != nullptr; w = w->m_next)
+        {
+            ++n;
+        }
+        return n;
+    }
+
 private:
     void MarkFailed(std::uint64_t seq) noexcept
     {

@@ -1462,10 +1462,24 @@ TEST(OtlpExporterTest, Shutdown_ABatchThatFailed_ReturnsFailed)
 namespace
 {
 
-/// Time for the worker to finish the failed round after its Send returned.
-constexpr auto kRoundSettles = std::chrono::milliseconds{50};
-/// Time for both flush threads to start waiting.
-constexpr auto kFlushesRegister = std::chrono::milliseconds{200};
+constexpr auto kProgressPoll = std::chrono::milliseconds{1};
+
+/// Poll the exporter's flush accounting until @p done holds, or the deadline:
+/// a wait on the real condition, not a sleep that hopes it has happened.
+template <typename Pred>
+[[nodiscard]] bool AwaitFlushProgress(mte::OtlpExporter& exporter, Pred done)
+{
+    const auto deadline = std::chrono::steady_clock::now() + kSustainedFlushTimeout;
+    while (!done(exporter.FlushProgressForTesting()))
+    {
+        if (std::chrono::steady_clock::now() >= deadline)
+        {
+            return false;
+        }
+        std::this_thread::sleep_for(kProgressPoll);
+    }
+    return true;
+}
 
 /// Answers the first Send at once from its script; holds the second until
 /// `Release`, so that flushes can be made to overlap.
@@ -1525,8 +1539,7 @@ TEST(OtlpExporterTest, ForceFlush_OverlappingFlushesAfterAFailure_BothFail_ThenT
     // The first batch fails in a round of its own, finished before either
     // flush is called: no flush has covered it yet, so both must report it.
     (void)exporter.Export(MakeBatch());
-    ASSERT_TRUE(codec.WaitForSends(1));
-    std::this_thread::sleep_for(kRoundSettles);
+    ASSERT_TRUE(AwaitFlushProgress(exporter, [](const auto& p) { return p.processed == 1; }));
     (void)exporter.Export(MakeBatch());
     if (!codec.WaitForSends(2))  // the second is held
     {
@@ -1540,13 +1553,14 @@ TEST(OtlpExporterTest, ForceFlush_OverlappingFlushesAfterAFailure_BothFail_ThenT
     std::thread b{[&] { second = exporter.ForceFlush(kSustainedFlushTimeout); }};
     // Both flushes must be waiting before the held send ends, or the first
     // completes before the second starts and they never overlap. Neither can
-    // return while the send is held. FlushTrackerTest covers the rule itself
-    // without threads.
-    std::this_thread::sleep_for(kFlushesRegister);
+    // return while the send is held.
+    const bool both_waiting =
+        AwaitFlushProgress(exporter, [](const auto& p) { return p.waiting == 2; });
     codec.Release();
     a.join();
     b.join();
 
+    ASSERT_TRUE(both_waiting) << "the two flushes never overlapped";
     EXPECT_EQ(first, mt::Status::Failed);
     EXPECT_EQ(second, mt::Status::Failed);
     EXPECT_EQ(exporter.ForceFlush(kFlushTimeout), mt::Status::Completed);

@@ -139,6 +139,17 @@ public:
 
     [[nodiscard]] microtel::Status Shutdown(std::chrono::milliseconds timeout) noexcept override;
 
+    /// @brief A snapshot of the flush accounting, for tests that must wait on
+    ///        it rather than sleep. Production code never reads it.
+    struct FlushProgress
+    {
+        std::uint64_t processed = 0;  ///< batches processed so far
+        std::size_t waiting = 0;      ///< flushes waiting now
+    };
+
+    /// @threadsafety Thread-safe; takes `m_mu`.
+    [[nodiscard]] FlushProgress FlushProgressForTesting() noexcept;
+
 private:
     /// @brief The batches `[first, first + count)` of one drain, sent as one
     ///        request.
