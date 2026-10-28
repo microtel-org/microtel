@@ -254,3 +254,38 @@ changes are visible:
     would touch the span enqueue path, which v1.2.5 leaves alone.
   - **Skipping a metric collection while an export is pending** (#487,
     v1.3).
+
+## Amendment (2026-10-27): consecutive flush ranges
+
+**Status:** Draft — 2026-10-27.
+
+**Why.** Decision 1 bounds an exporter flush's range from below at "the batches already processed before it". That can't support the Provider-level promise, "Completed only if every record queued before the call was exported". `Provider::ForceFlush` runs its stages in turn, so this can happen:
+1. The span processor's flush hands a batch to the trace exporter.
+2. The exporter's worker sends the batch and the send fails.
+3. Only then does the Provider call the exporter's `ForceFlush`.
+
+The failed batch was processed before that call, so it is outside the range, and the Provider returns `Completed` for a span that was never exported. The #484 implementation's tests hit this intermittently under load.
+
+**Change to Decision 1.** A flush's range starts where the last *completed* flush's range ended, not at the batches processed before the call. It ends, as before, at the last batch accepted before the call.
+- **When a flush counts as completed.** A flush completes when every batch in its range has been processed within its timeout. That holds whether it returned `Completed` or `Failed`. A flush that timed out has not completed, and does not move the start of the next range.
+- **Who sees a failure.** A batch that failed after its final attempt is reported to every flush called after it, until a flush covering it completes. That includes a batch that failed before the exporter's own `ForceFlush` was called, which closes the window above.
+- **Overlapping flushes may report the same failure, and that is intended.** Two `ForceFlush` calls that overlap, with a failure before both, both return `Failed`. A flush returns a status, not a count; lost batches are counted once each in diagnostics, as `batches_failed` and the drop counters.
+- **The first flush** covers every batch since the exporter started.
+
+**Visible effect.** A periodic export that failed since the last completed flush makes the next `ForceFlush` return `Failed`. A metric export on the reader's interval is one example; a trace or log batch exported on its schedule is another. That is what "every batch queued before the call was exported" means. It is new behaviour, and the v1.2.5 release notes say so.
+
+**Unchanged:**
+- a batch in retry backoff is still pending;
+- the statuses: `Completed`, `Failed`, `TimedOut`;
+- the `Shutdown` rule, which applies the same range;
+- there is no interface change.
+
+**Implementation note.** `FlushTracker` keeps two marks:
+- **The end of the last completed range.** A flush's `Waiter` reads it when it registers, and advances it, if it is larger, when it finishes having reached its range.
+- **The highest sequence number that has failed.** A failure processed before a flush registered counts against that flush if its number is above the start of the range. Every number processed by then is at or below the range's end, so this check is enough.
+
+Failures processed while a flush waits are marked on it as before.
+
+**Tests:**
+- A deterministic `FlushTracker` unit test.
+- An exporter test with two overlapping `ForceFlush` calls and a failure before both. Both return `Failed`. A third flush, after both complete, returns `Completed`.
