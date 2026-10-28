@@ -4,7 +4,7 @@
 
 | Version | Status | Security updates |
 |---|---|---|
-| 1.2.x | current release (1.2.4) | ✅ supported — fixes land in the latest 1.2 patch |
+| 1.2.x | current release (1.2.5) | ✅ supported — fixes land in the latest 1.2 patch |
 | 1.1.x | superseded minor | ❌ unsupported — upgrade to 1.2.x |
 | < 1.1 | development snapshots | ❌ unsupported — use 1.2.x |
 

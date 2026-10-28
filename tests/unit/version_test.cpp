@@ -5,8 +5,8 @@
 // as kVersionMajor/Minor/Patch. version-drift-check.sh compares both against
 // PROJECT_VERSION, but nothing compiled checked the two against each other, so
 // a hand edit could leave the public API reporting two different versions.
-// It also holds the README, CONTRIBUTING.md, SECURITY.md and the FetchContent/CPM consumer
-// projects to the same version.
+// It also holds the README, CONTRIBUTING.md, SECURITY.md, the benchmark snapshot
+// docs and the FetchContent/CPM consumer projects to the same version.
 
 #include "microtel/version.hpp"
 
@@ -73,6 +73,22 @@ TEST(VersionTest, SecurityPolicyNamesTheCurrentRelease)
     EXPECT_NE(security.find("current release (" + std::string{microtel::kVersionString} + ")"),
               std::string::npos)
         << "SECURITY.md does not mark " << microtel::kVersionString << " as the current release";
+}
+
+// docs/releasing.md §5: each published benchmark snapshot is either refreshed
+// for the release or says which release it was not re-measured for. Either way
+// it names the release, so a snapshot nobody looked at fails here.
+TEST(VersionTest, BenchSnapshotAccountsForTheCurrentRelease)
+{
+    const std::string version = "v" + std::string{microtel::kVersionString};
+    for (const char* const doc : {"/README.md", "/leaf-footprint.md", "/sizes/library-sizes.md"})
+    {
+        const std::string path = std::string{MICROTEL_BENCH_RESULTS_DIR} + doc;
+        const std::string text = ReadSourceFile(path.c_str());
+        ASSERT_FALSE(text.empty()) << "cannot read " << path;
+        EXPECT_NE(text.find(version), std::string::npos)
+            << path << " neither describes a " << version << " run nor says it was not re-measured";
+    }
 }
 
 // docs/releasing.md §1: tests/consumer_fetchcontent and tests/consumer_cpm pin the

@@ -18,6 +18,13 @@ kernel went from 7.1.13-200.fc44 to 7.2.11-200.fc44 and podman from 5.8.4 to
 like-for-like baseline. [Changes since the previous snapshot](#changes-since-the-previous-snapshot)
 compares old and new code on today's host instead.
 
+**Not re-measured for v1.2.5.** Since v1.2.4 the span hot path is unchanged:
+`StartSpan`, `End`, the processors and the encoder. v1.2.5 changed the
+exporters' and the Provider's `ForceFlush` and `Shutdown` (#484, #486). On the
+export path, the exporter worker now counts each batch for flush tracking, off
+the application thread. `git diff --stat v1.2.4 v1.2.5 -- src include` lists
+the changed files.
+
 **The snapshot merges five interleaved runs.** Each run is the full
 `hot-loop-traces` profile (four SUTs, 10 samples each). Each run of the v1.2.4
 images was preceded by a run of the previous snapshot's 2026-09-27 images,

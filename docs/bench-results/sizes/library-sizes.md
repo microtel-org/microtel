@@ -6,6 +6,10 @@
 | **Packages** | Ubuntu 24.04 (`ubuntu:24.04`) runtime packages in each image; versions [below](#versions). opentelemetry-cpp v1.19.0, built from source. |
 | **Method** | Each `/emit_app`, stripped (GNU strip 2.42), split by compile unit with [bloaty](https://github.com/google/bloaty) (upstream `f1a83e6`), using the unstripped binary as `--debug-file`. Plus every shared library `ldd` resolves in the image, sized from the file on disk; two that ship unstripped are counted stripped. [Commands](#commands). |
 
+**Not re-measured for v1.2.5.** The v1.2.5 changes are in the exporters' and
+the Provider's flush and shutdown (#484, #486); see the
+[benchmark README](../README.md).
+
 These figures replace the "benchmark binary size" comparison (withdrawn: 43.1 MB
 against 17.5 MB) that the benchmark README used to report. That compared the
 executables' file sizes with debug info (over 92% of each) and without the
