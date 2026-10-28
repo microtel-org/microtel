@@ -281,9 +281,11 @@ private:
     /// @return borrowed, or nullptr when no logger has been created.
     [[nodiscard]] BatchLogRecordProcessor* SeedAndBorrowLogProcessor(
         const BatchOptions& opts) noexcept;
-    /// @brief Drive every pipeline component's `ForceFlush`, worst outcome
-    ///        first-wins. Split out of `ForceFlush` so the timeout counter is
-    ///        recorded once for the whole call rather than once per arm.
+    /// @brief Drive every pipeline component's `ForceFlush` against one
+    ///        shared deadline, each whatever the earlier ones returned, and
+    ///        fold the worst status (ICP 0041). Split out of `ForceFlush` so
+    ///        the timeout counter is recorded once for the whole call rather
+    ///        than once per arm.
     [[nodiscard]] Status FlushPipeline(std::chrono::milliseconds timeout) noexcept;
     /// @brief Make the live leaf receiver refuse every later payload. A single
     ///        atomic store, so the fork child handler may call it too.

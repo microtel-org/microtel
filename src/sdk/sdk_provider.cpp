@@ -220,84 +220,11 @@ Expected<void, Error> SdkProvider::Connect()
     return result;
 }
 
-Status SdkProvider::ForceFlush(std::chrono::milliseconds timeout) noexcept
-{
-    const Status status = FlushPipeline(timeout);
-    if (status == Status::TimedOut)
-    {
-        // Recorded here and nowhere else: the processor and exporter arms
-        // below can each time out, but the user made one ForceFlush call and
-        // must see one drop.
-        m_trace->diagnostics->RecordDrop(DropReason::ForceFlushTimeout);
-    }
-    return status;
-}
-
-Status SdkProvider::FlushPipeline(std::chrono::milliseconds timeout) noexcept
-{
-    // Two-stage flush: drain the BSP queue into the exporter queue first,
-    // then drain the exporter queue (actual HTTP sends). Both are async
-    // workers; flushing only the processor leaves batches undelivered.
-    const Status s = m_trace->processor->ForceFlush(timeout);
-    if (s != Status::Completed)
-    {
-        return s;
-    }
-    const Status s2 = m_exporter->ForceFlush(timeout);
-    if (s2 != Status::Completed)
-    {
-        return s2;
-    }
-    // Metric reader ForceFlush: collect a snapshot then flush the exporter.
-    // Read through the accessor: GetMeter publishes this pointer from another
-    // thread under m_meter_mu, and Provider is documented thread-safe.
-    if (auto* const reader = MetricReaderPtr(); reader != nullptr)
-    {
-        const Status ms = reader->ForceFlush(timeout);
-        if (ms != Status::Completed)
-        {
-            return ms;
-        }
-    }
-    // Log pipeline: drain the processor queue into the exporter, then flush it.
-    if (auto* const processor = LogProcessorPtr(); processor != nullptr)
-    {
-        const Status ls = processor->ForceFlush(timeout);
-        if (ls != Status::Completed)
-        {
-            return ls;
-        }
-    }
-    if (m_log_exporter != nullptr)
-    {
-        return m_log_exporter->ForceFlush(timeout);
-    }
-    return Status::Completed;
-}
-
-PeriodicExportingMetricReader* SdkProvider::MetricReaderPtr() noexcept
-{
-    const std::scoped_lock lk{m_meter_mu};
-    return m_metric_reader.get();
-}
-
-internal::ILogRecordProcessor* SdkProvider::LogProcessorPtr() noexcept
-{
-    const std::scoped_lock lk{m_logger_mu};
-    return m_log_pipeline != nullptr ? m_log_pipeline->processor.get() : nullptr;
-}
-
-BatchLogRecordProcessor* SdkProvider::SeedAndBorrowLogProcessor(const BatchOptions& opts) noexcept
-{
-    const std::scoped_lock lk{m_logger_mu};
-    m_log_batch_opts = opts;
-    return m_log_batch_processor;
-}
-
 namespace
 {
 
-/// @brief Combine two shutdown statuses, worst-outcome-wins.
+/// @brief Combine two lifecycle statuses, worst-outcome-wins: `Shutdown`
+///        and, since ICP 0041, `ForceFlush`.
 ///
 /// `Provider::Shutdown` promises a structured status (CLAUDE.md rule 17), but
 /// it drove six components and reported only the span processor's, discarding
@@ -323,13 +250,97 @@ namespace
     return a;
 }
 
+/// @brief The time left until @p deadline, never negative.
+///
+/// `ForceFlush` and `Shutdown` hand each stage this rather than the caller's
+/// whole timeout, so the call as a whole is bounded by that one timeout
+/// (ICP 0041). A stage reached after the deadline gets 0 ms: it is still
+/// signalled, just not waited for.
+[[nodiscard]] std::chrono::milliseconds Remaining(
+    std::chrono::steady_clock::time_point deadline) noexcept
+{
+    const auto left = std::chrono::duration_cast<std::chrono::milliseconds>(
+        deadline - std::chrono::steady_clock::now());
+    return std::max(left, std::chrono::milliseconds{0});
+}
+
 }  // namespace
+
+Status SdkProvider::ForceFlush(std::chrono::milliseconds timeout) noexcept
+{
+    // Every stage runs now, so without this a flush after Shutdown would reach
+    // exporters whose workers are joined and wait out the whole timeout.
+    if (m_shut_down.load(std::memory_order_acquire))
+    {
+        return Status::AlreadyShutDown;
+    }
+    const Status status = FlushPipeline(timeout);
+    if (status == Status::TimedOut)
+    {
+        // Recorded here and nowhere else: the processor and exporter arms
+        // below can each time out, but the user made one ForceFlush call and
+        // must see one drop.
+        m_trace->diagnostics->RecordDrop(DropReason::ForceFlushTimeout);
+    }
+    return status;
+}
+
+Status SdkProvider::FlushPipeline(std::chrono::milliseconds timeout) noexcept
+{
+    // Two-stage flush per signal: drain the processor queue into the exporter
+    // queue first, then drain the exporter queue (the actual sends). Every
+    // stage runs whatever the ones before it returned, against one shared
+    // deadline, and the statuses fold worst-first (ICP 0041, #486): a slow
+    // trace stage must not stop the logs being flushed.
+    const auto deadline = std::chrono::steady_clock::now() + timeout;
+    Status status = m_trace->processor->ForceFlush(Remaining(deadline));
+    status = WorseOf(status, m_exporter->ForceFlush(Remaining(deadline)));
+    // Metric reader ForceFlush: collect a snapshot then flush the exporter.
+    // Read through the accessor: GetMeter publishes this pointer from another
+    // thread under m_meter_mu, and Provider is documented thread-safe.
+    if (auto* const reader = MetricReaderPtr(); reader != nullptr)
+    {
+        status = WorseOf(status, reader->ForceFlush(Remaining(deadline)));
+    }
+    // Log pipeline: drain the processor queue into the exporter, then flush it.
+    if (auto* const processor = LogProcessorPtr(); processor != nullptr)
+    {
+        status = WorseOf(status, processor->ForceFlush(Remaining(deadline)));
+    }
+    if (m_log_exporter != nullptr)
+    {
+        status = WorseOf(status, m_log_exporter->ForceFlush(Remaining(deadline)));
+    }
+    return status;
+}
+
+PeriodicExportingMetricReader* SdkProvider::MetricReaderPtr() noexcept
+{
+    const std::scoped_lock lk{m_meter_mu};
+    return m_metric_reader.get();
+}
+
+internal::ILogRecordProcessor* SdkProvider::LogProcessorPtr() noexcept
+{
+    const std::scoped_lock lk{m_logger_mu};
+    return m_log_pipeline != nullptr ? m_log_pipeline->processor.get() : nullptr;
+}
+
+BatchLogRecordProcessor* SdkProvider::SeedAndBorrowLogProcessor(const BatchOptions& opts) noexcept
+{
+    const std::scoped_lock lk{m_logger_mu};
+    m_log_batch_opts = opts;
+    return m_log_batch_processor;
+}
 
 Status SdkProvider::Shutdown(std::chrono::milliseconds timeout) noexcept
 {
     // Set before tearing anything down so a concurrent GetMeter/GetLogger
     // stops building pipeline components (and spawning their threads).
     m_shut_down.store(true, std::memory_order_release);
+    // One deadline for the whole sequence: each component is handed the time
+    // remaining, not the caller's whole timeout (ICP 0041).
+    const auto deadline = std::chrono::steady_clock::now() + timeout;
     if (m_export_channel != nullptr)
     {
         // Every Send from here on gets a deadline no later than this one
@@ -340,33 +351,33 @@ Status SdkProvider::Shutdown(std::chrono::milliseconds timeout) noexcept
     // ShutDown, not half-enqueued into a processor that is draining.
     StopLeafReceiver();
 
-    Status status = m_trace->processor->Shutdown(timeout);
+    Status status = m_trace->processor->Shutdown(Remaining(deadline));
     // Every component below still runs even if an earlier one timed out: a
     // partial teardown would leak threads and sockets. Their statuses are
     // folded in rather than discarded.
     // Metric reader shutdown (also shuts down the metric exporter internally).
     if (auto* const reader = MetricReaderPtr(); reader != nullptr)
     {
-        status = WorseOf(status, reader->Shutdown(timeout));
+        status = WorseOf(status, reader->Shutdown(Remaining(deadline)));
     }
     else if (m_metric_exporter != nullptr)
     {
-        status = WorseOf(status, m_metric_exporter->Shutdown(timeout));
+        status = WorseOf(status, m_metric_exporter->Shutdown(Remaining(deadline)));
     }
     // Log pipeline: stop the processor (halts emits to the exporter), then the
     // exporter, before the shared transport is closed.
     if (auto* const processor = LogProcessorPtr(); processor != nullptr)
     {
-        status = WorseOf(status, processor->Shutdown(timeout));
+        status = WorseOf(status, processor->Shutdown(Remaining(deadline)));
     }
     if (m_log_exporter != nullptr)
     {
-        status = WorseOf(status, m_log_exporter->Shutdown(timeout));
+        status = WorseOf(status, m_log_exporter->Shutdown(Remaining(deadline)));
     }
-    status = WorseOf(status, m_exporter->Shutdown(timeout));
+    status = WorseOf(status, m_exporter->Shutdown(Remaining(deadline)));
     if (m_transport != nullptr)
     {
-        status = WorseOf(status, m_transport->Close(timeout));
+        status = WorseOf(status, m_transport->Close(Remaining(deadline)));
     }
     if (m_export_channel != nullptr)
     {
