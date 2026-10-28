@@ -168,7 +168,7 @@ compileunits,symbols,vmsize,filesize
 /src/src/common/config/toml_loader.cpp,toml::v3::table::is_value(),56,56
 /src/src/common/config/toml_loader.cpp,toml::v3::table::type(),56,56
 /src/src/sdk/sdk_meter.cpp,std::make_unique<>(),14192,14192
-/src/src/sdk/sdk_meter.cpp,microtel::sdk::MetricStreamObservableSum<>::Collect(),4440,4440
+/src/src/sdk/sdk_meter.cpp,microtel::sdk::MetricStreamObservableSum<>::Collect(),5560,5560
 /src/src/sdk/sdk_meter.cpp,microtel::sdk::MetricStreamObservableGauge<>::Collect(),3944,3944
 /src/src/sdk/sdk_meter.cpp,microtel::sdk::SdkMeter::RegisterObservable<>(),2848,2848
 /src/src/sdk/sdk_meter.cpp,std::__detail::_Hashtable_alloc<>::_M_deallocate_nodes(),2280,2280
@@ -211,11 +211,12 @@ compileunits,symbols,vmsize,filesize
 /src/src/sdk/sdk_meter.cpp,std::__insertion_sort<>(),852,852
 /src/src/sdk/sdk_meter.cpp,std::vector<>::operator=(),812,812
 /src/src/sdk/sdk_meter.cpp,microtel::sdk::(anonymous namespace)::SdkObservableResultAdapter<>::~SdkObservableResultAdapter(),800,800
+/src/src/sdk/sdk_meter.cpp,std::__detail::_ReuseOrAllocNode<>::operator()<>(),780,780
 /src/src/sdk/sdk_meter.cpp,microtel::sdk::(anonymous namespace)::InstrumentSlots<>::~InstrumentSlots(),776,776
-/src/src/sdk/sdk_meter.cpp,std::__detail::_ReuseOrAllocNode<>::operator()<>(),776,776
 /src/src/sdk/sdk_meter.cpp,std::__detail::_Map_base<>::operator[](),760,760
 /src/src/sdk/sdk_meter.cpp,std::__push_heap<>(),744,744
 /src/src/sdk/sdk_meter.cpp,microtel::sdk::MetricStreamObservableSum<>::DeltaFor(),728,728
+/src/src/sdk/sdk_meter.cpp,std::_Hashtable<>::_M_emplace<>(),700,700
 /src/src/sdk/sdk_meter.cpp,microtel::sdk::MetricStreamObservableGauge<>::~MetricStreamObservableGauge(),680,680
 /src/src/sdk/sdk_meter.cpp,microtel::sdk::(anonymous namespace)::SdkExponentialHistogram<>::Record(),664,664
 /src/src/sdk/sdk_meter.cpp,microtel::sdk::(anonymous namespace)::SdkGauge<>::Record(),664,664
@@ -236,7 +237,6 @@ compileunits,symbols,vmsize,filesize
 /src/src/sdk/sdk_meter.cpp,std::_Function_handler<>::_M_invoke(),528,528
 /src/src/sdk/sdk_meter.cpp,microtel::sdk::(anonymous namespace)::SdkSumInstrument<>::~SdkSumInstrument(),512,512
 /src/src/sdk/sdk_meter.cpp,std::__pop_heap<>(),508,508
-/src/src/sdk/sdk_meter.cpp,std::__detail::_Insert_base<>::try_emplace<>(),428,428
 /src/src/sdk/sdk_meter.cpp,std::__make_heap<>(),424,424
 /src/src/sdk/sdk_meter.cpp,microtel::sdk::(anonymous namespace)::BridgeCallback<>()::{lambda()#1}::~BridgeCallback(),400,400
 /src/src/sdk/sdk_meter.cpp,std::ranges::__binary_search_fn::operator()<>(),388,388
@@ -253,6 +253,7 @@ compileunits,symbols,vmsize,filesize
 /src/src/sdk/sdk_meter.cpp,microtel::sdk::(anonymous namespace)::StreamSpec::~StreamSpec(),180,180
 /src/src/sdk/sdk_meter.cpp,std::_Optional_base<>::~_Optional_base(),164,164
 /src/src/sdk/sdk_meter.cpp,std::__detail::_ReuseOrAllocNode<>::~_ReuseOrAllocNode(),160,160
+/src/src/sdk/sdk_meter.cpp,std::unordered_map<>::~unordered_map(),156,156
 /src/src/sdk/sdk_meter.cpp,microtel::internal::GaugeData::~GaugeData(),120,120
 /src/src/sdk/sdk_meter.cpp,microtel::internal::SumData::~SumData(),120,120
 /src/src/sdk/sdk_meter.cpp,microtel::sdk::SdkMeter::DoCreateObservableCounterDouble(),72,72
@@ -742,7 +743,7 @@ compileunits,symbols,vmsize,filesize
 /src/src/transport/http2_transport.cpp,std::__future_base::_Result<>::_M_destroy(),56,56
 /src/src/transport/http2_transport.cpp,std::__future_base::_State_baseV2::_M_complete_async(),56,56
 /src/src/transport/http2_transport.cpp,std::__future_base::_State_baseV2::_M_is_deferred_future(),56,56
-[section .rodata],[section .rodata],23099,23099
+[section .rodata],[section .rodata],23163,23163
 [section .rodata],std::_Sp_counted_ptr_inplace<>,3806,3806
 [section .rodata],std::thread::_State_impl<>,1575,1575
 [section .rodata],microtel::sdk::(anonymous namespace)::BridgeCallback<>()::{lambda()#1},462,462
@@ -757,14 +758,14 @@ compileunits,symbols,vmsize,filesize
 [section .rodata],opentelemetry_proto_metrics_v1_ExponentialHistogramDataPoint__fields,176,176
 [section .rodata],opentelemetry_proto_logs_v1_LogRecord__fields,144,144
 [section .rodata],opentelemetry_proto_metrics_v1_HistogramDataPoint__fields,144,144
+[section .rodata],microtel::exporter::OtlpMetricExporter::ProcessBatches()::$_0,126,126
 [section .rodata],microtel::sdk::(anonymous namespace)::SdkObservableResultAdapter<>,122,122
+[section .rodata],microtel::exporter::OtlpLogExporter::ProcessBatches()::$_0,120,120
 [section .rodata],microtel::kDefaultHistogramBoundaries,120,120
+[section .rodata],microtel::exporter::OtlpExporter::FanOutAndProcess()::$_0,117,117
 [section .rodata],microtel::sdk::(anonymous namespace)::SdkExponentialHistogram<>,116,116
-[section .rodata],microtel::exporter::OtlpMetricExporter::ProcessBatches()::$_0,114,114
-[section .rodata],microtel::exporter::OtlpLogExporter::ProcessBatches()::$_0,108,108
 [section .rodata],opentelemetry_proto_metrics_v1_Metric__fields,108,108
 [section .rodata],toml::v3::impl::utf8_reader<>,106,106
-[section .rodata],microtel::exporter::OtlpExporter::FanOutAndProcess()::$_0,105,105
 [section .rodata],microtel::sdk::MetricStreamObservableGauge<>,96,96
 [section .rodata],opentelemetry_proto_common_v1_AnyValue__fields,96,96
 [section .rodata],opentelemetry_proto_metrics_v1_NumberDataPoint__fields,96,96
@@ -788,6 +789,7 @@ compileunits,symbols,vmsize,filesize
 [section .rodata],std::__format::_Formatting_scanner<>,57,57
 [section .rodata],std::_Sp_counted_base<>,52,52
 [section .rodata],microtel::Histogram<>,50,50
+[section .rodata],microtel::internal::ILogEncoder,48,48
 [section .rodata],opentelemetry_proto_common_v1_EntityRef__fields,48,48
 [section .rodata],opentelemetry_proto_common_v1_InstrumentationScope__fields,48,48
 [section .rodata],opentelemetry_proto_common_v1_KeyValue__fields,48,48
@@ -830,7 +832,6 @@ compileunits,symbols,vmsize,filesize
 [section .rodata],microtel::internal::ISpanProcessor,37,37
 [section .rodata],microtel::sdk::DiagnosticsCounters,37,37
 [section .rodata],microtel::internal::IAuthProvider,36,36
-[section .rodata],microtel::internal::ILogEncoder,36,36
 [section .rodata],microtel::internal::IMetricReader,36,36
 [section .rodata],microtel::sdk::BatchSpanProcessor,36,36
 [section .rodata],microtel::transport::EpollReactor,36,36
@@ -913,7 +914,7 @@ compileunits,symbols,vmsize,filesize
 [section .rodata],std::piecewise_construct,1,1
 [section .rodata],std::ranges::binary_search,1,1
 [section .rodata],std::ranges::find,1,1
-[section .gcc_except_table],,32816,32816
+[section .gcc_except_table],,32968,32968
 /src/src/sdk/sdk_provider.cpp,microtel::sdk::SdkProvider::GetMeter(),2524,2524
 /src/src/sdk/sdk_provider.cpp,std::_Sp_counted_ptr_inplace<>::_M_get_deleter(),2480,2480
 /src/src/sdk/sdk_provider.cpp,microtel::sdk::SdkProvider::GetLogger(),2476,2476
@@ -923,11 +924,12 @@ compileunits,symbols,vmsize,filesize
 /src/src/sdk/sdk_provider.cpp,microtel::sdk::SdkProvider::SdkProvider(),1308,1308
 /src/src/sdk/sdk_provider.cpp,std::_Sp_counted_ptr_inplace<>::_M_destroy(),1120,1120
 /src/src/sdk/sdk_provider.cpp,std::_Sp_counted_ptr_inplace<>::~_Sp_counted_ptr_inplace(),1120,1120
+/src/src/sdk/sdk_provider.cpp,microtel::sdk::SdkProvider::Shutdown(),1020,1020
 /src/src/sdk/sdk_provider.cpp,std::__detail::_Map_base<>::operator[](),984,984
+/src/src/sdk/sdk_provider.cpp,microtel::sdk::SdkProvider::FlushPipeline(),780,780
 /src/src/sdk/sdk_provider.cpp,std::_Hashtable<>::_M_rehash_aux(),712,712
 /src/src/sdk/sdk_provider.cpp,std::_Hashtable<>::clear(),712,712
 /src/src/sdk/sdk_provider.cpp,std::_Hashtable<>::_M_insert_unique_node(),664,664
-/src/src/sdk/sdk_provider.cpp,microtel::sdk::SdkProvider::Shutdown(),652,652
 /src/src/sdk/sdk_provider.cpp,microtel::sdk::SdkProvider::GetTracer(),636,636
 /src/src/sdk/sdk_provider.cpp,std::__detail::_Hashtable_alloc<>::_M_allocate_node<>(),564,564
 /src/src/sdk/sdk_provider.cpp,std::_Hashtable<>::_Scoped_node::~_Scoped_node(),496,496
@@ -936,7 +938,6 @@ compileunits,symbols,vmsize,filesize
 /src/src/sdk/sdk_provider.cpp,microtel::sdk::SdkProvider::SetBatchOptions(),360,360
 /src/src/sdk/sdk_provider.cpp,microtel::sdk::NoopRecordInstrument<>::Record(),336,336
 /src/src/sdk/sdk_provider.cpp,microtel::sdk::NoopRecordInstrument<>::~NoopRecordInstrument(),336,336
-/src/src/sdk/sdk_provider.cpp,microtel::sdk::SdkProvider::FlushPipeline(),336,336
 /src/src/sdk/sdk_provider.cpp,microtel::sdk::NoopAddInstrument<>::Add(),224,224
 /src/src/sdk/sdk_provider.cpp,microtel::sdk::NoopAddInstrument<>::~NoopAddInstrument(),224,224
 /src/src/sdk/sdk_provider.cpp,microtel::sdk::SdkProvider::SetMetricInterval(),216,216
@@ -963,7 +964,7 @@ compileunits,symbols,vmsize,filesize
 /src/src/sdk/sdk_provider.cpp,microtel::Histogram<>::~Histogram(),112,112
 /src/src/sdk/sdk_provider.cpp,microtel::UpDownCounter<>::~UpDownCounter(),112,112
 /src/src/sdk/sdk_provider.cpp,microtel::internal::InstrumentationScope::~InstrumentationScope(),112,112
-/src/src/sdk/sdk_provider.cpp,microtel::sdk::SdkProvider::ForceFlush(),104,104
+/src/src/sdk/sdk_provider.cpp,microtel::sdk::SdkProvider::ForceFlush(),108,108
 /src/src/sdk/sdk_provider.cpp,microtel::sdk::SdkProvider::GetLeafReceiver(),104,104
 /src/src/sdk/sdk_provider.cpp,microtel::sdk::SdkProvider::SetLogLevel(),104,104
 /src/src/sdk/sdk_provider.cpp,microtel::sdk::SdkProvider::WarnSignalOff(),80,80
@@ -1207,6 +1208,36 @@ compileunits,symbols,vmsize,filesize
 /src/src/sdk/metric_producer.cpp,microtel::sdk::MetricProducer::ScopeEntry::~ScopeEntry(),216,216
 /src/src/sdk/metric_producer.cpp,microtel::internal::MetricRecord::~MetricRecord(),164,164
 /src/src/sdk/metric_producer.cpp,microtel::sdk::MetricProducer::ScopeSnapshot::~ScopeSnapshot(),128,128
+/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::FanOutAndProcess(),2924,2924
+/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::DrainQueue(),1884,1884
+/src/src/exporter/otlp_exporter.cpp,std::vector<>::_M_fill_insert(),1432,1432
+/src/src/exporter/otlp_exporter.cpp,std::deque<>::_M_destroy_data_aux(),1368,1368
+/src/src/exporter/otlp_exporter.cpp,std::vector<>::_M_realloc_insert<>(),1272,1272
+/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::EncodeRequest(),924,924
+/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::GroupIntoRequests(),700,700
+/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::Shutdown(),652,652
+/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::~OtlpExporter(),596,596
+/src/src/exporter/otlp_exporter.cpp,std::deque<>::_M_reallocate_map(),504,504
+/src/src/exporter/otlp_exporter.cpp,std::deque<>::_M_push_back_aux<>(),500,500
+/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::EnqueueLocked(),488,488
+/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::OtlpExporter(),468,468
+/src/src/exporter/otlp_exporter.cpp,std::_Deque_base<>::_M_initialize_map(),428,428
+/src/src/exporter/otlp_exporter.cpp,microtel::exporter::FlushTracker::Wait(),412,412
+/src/src/exporter/otlp_exporter.cpp,std::deque<>::emplace_back<>(),384,384
+/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::ExportGroup(),380,380
+/src/src/exporter/otlp_exporter.cpp,std::vector<>::~vector(),368,368
+/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::WorkerLoop(),332,332
+/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::RecordDrainFailure(),300,300
+/src/src/exporter/otlp_exporter.cpp,std::_Function_handler<>::_M_invoke(),204,204
+/src/src/exporter/otlp_exporter.cpp,std::deque<>::~deque(),200,200
+/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::FlushProgressForTesting(),184,184
+/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::ForceFlush(),180,180
+/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::PublishQueueDepth(),176,176
+/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::Export(),168,168
+/src/src/exporter/otlp_exporter.cpp,std::_Function_handler<>::_M_manager(),156,156
+/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::RecordDropped(),80,80
+/src/src/exporter/otlp_exporter.cpp,std::thread::_State_impl<>::~_State_impl(),72,72
+/src/src/exporter/otlp_exporter.cpp,std::thread::_State_impl<>::_M_run(),56,56
 [section .data.rel.ro],std::_Sp_counted_ptr_inplace<>,2080,2800
 [section .data.rel.ro],toml::v3::value<>,2296,2296
 [section .data.rel.ro],[section .data.rel.ro],936,936
@@ -1412,23 +1443,24 @@ compileunits,symbols,vmsize,filesize
 [section .data.rel.ro],opentelemetry_proto_trace_v1_Span_Event__submsgs,8,8
 [section .data.rel.ro],opentelemetry_proto_trace_v1_Span_Link__submsgs,8,8
 [section .data.rel.ro],opentelemetry_proto_trace_v1_TracesData__submsgs,8,8
-/src/src/exporter/otlp_metric_exporter.cpp,microtel::exporter::OtlpMetricExporter::DrainQueue(),5580,5580
+/src/src/exporter/otlp_metric_exporter.cpp,microtel::exporter::OtlpMetricExporter::DrainQueue(),5964,5964
 /src/src/exporter/otlp_metric_exporter.cpp,std::deque<>::_M_destroy_data_aux(),2796,2796
-/src/src/exporter/otlp_metric_exporter.cpp,microtel::exporter::OtlpMetricExporter::ProcessBatches(),1404,1404
+/src/src/exporter/otlp_metric_exporter.cpp,microtel::exporter::OtlpMetricExporter::ProcessBatches(),1516,1516
 /src/src/exporter/otlp_metric_exporter.cpp,std::vector<>::_M_realloc_insert<>(),1272,1272
+/src/src/exporter/otlp_metric_exporter.cpp,std::vector<>::_M_insert_aux(),952,952
+/src/src/exporter/otlp_metric_exporter.cpp,microtel::exporter::OtlpMetricExporter::Shutdown(),652,652
 /src/src/exporter/otlp_metric_exporter.cpp,std::deque<>::_M_reallocate_map(),504,504
 /src/src/exporter/otlp_metric_exporter.cpp,std::deque<>::_M_push_back_aux<>(),500,500
-/src/src/exporter/otlp_metric_exporter.cpp,microtel::exporter::OtlpMetricExporter::Shutdown(),476,476
 /src/src/exporter/otlp_metric_exporter.cpp,microtel::exporter::OtlpMetricExporter::OtlpMetricExporter(),436,436
 /src/src/exporter/otlp_metric_exporter.cpp,std::_Deque_base<>::_M_initialize_map(),428,428
-/src/src/exporter/otlp_metric_exporter.cpp,microtel::exporter::OtlpMetricExporter::Export(),392,392
+/src/src/exporter/otlp_metric_exporter.cpp,microtel::exporter::OtlpMetricExporter::Export(),408,408
 /src/src/exporter/otlp_metric_exporter.cpp,std::deque<>::emplace_back<>(),384,384
-/src/src/exporter/otlp_metric_exporter.cpp,microtel::exporter::OtlpMetricExporter::WorkerLoop(),380,380
-/src/src/exporter/otlp_metric_exporter.cpp,microtel::exporter::OtlpMetricExporter::ForceFlush(),364,364
 /src/src/exporter/otlp_metric_exporter.cpp,microtel::exporter::OtlpMetricExporter::~OtlpMetricExporter(),344,344
+/src/src/exporter/otlp_metric_exporter.cpp,microtel::exporter::OtlpMetricExporter::WorkerLoop(),332,332
 /src/src/exporter/otlp_metric_exporter.cpp,microtel::exporter::OtlpMetricExporter::RecordDrainFailure(),300,300
 /src/src/exporter/otlp_metric_exporter.cpp,std::deque<>::~deque(),200,200
 /src/src/exporter/otlp_metric_exporter.cpp,std::_Function_handler<>::_M_invoke(),184,184
+/src/src/exporter/otlp_metric_exporter.cpp,microtel::exporter::OtlpMetricExporter::ForceFlush(),180,180
 /src/src/exporter/otlp_metric_exporter.cpp,std::_Function_handler<>::_M_manager(),120,120
 /src/src/exporter/otlp_metric_exporter.cpp,microtel::exporter::OtlpMetricExporter::RecordDropped(),80,80
 /src/src/exporter/otlp_metric_exporter.cpp,std::thread::_State_impl<>::~_State_impl(),72,72
@@ -1441,33 +1473,6 @@ compileunits,symbols,vmsize,filesize
 /src/src/common/config/config_validator.cpp,microtel::config::FieldValueFault(),256,256
 /src/src/common/config/config_validator.cpp,microtel::config::CheckBatchOptions(),208,208
 /src/src/common/config/config_validator.cpp,std::operator+<>(),192,192
-/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::FanOutAndProcess(),2892,2892
-/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::DrainQueue(),1500,1500
-/src/src/exporter/otlp_exporter.cpp,std::deque<>::_M_destroy_data_aux(),1368,1368
-/src/src/exporter/otlp_exporter.cpp,std::vector<>::_M_realloc_insert<>(),1272,1272
-/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::EncodeRequest(),924,924
-/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::GroupIntoRequests(),700,700
-/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::~OtlpExporter(),596,596
-/src/src/exporter/otlp_exporter.cpp,std::deque<>::_M_reallocate_map(),504,504
-/src/src/exporter/otlp_exporter.cpp,std::deque<>::_M_push_back_aux<>(),500,500
-/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::Shutdown(),476,476
-/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::EnqueueLocked(),472,472
-/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::OtlpExporter(),468,468
-/src/src/exporter/otlp_exporter.cpp,std::_Deque_base<>::_M_initialize_map(),428,428
-/src/src/exporter/otlp_exporter.cpp,std::deque<>::emplace_back<>(),384,384
-/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::ExportGroup(),380,380
-/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::WorkerLoop(),380,380
-/src/src/exporter/otlp_exporter.cpp,std::vector<>::~vector(),368,368
-/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::ForceFlush(),364,364
-/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::RecordDrainFailure(),300,300
-/src/src/exporter/otlp_exporter.cpp,std::_Function_handler<>::_M_invoke(),200,200
-/src/src/exporter/otlp_exporter.cpp,std::deque<>::~deque(),200,200
-/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::PublishQueueDepth(),176,176
-/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::Export(),168,168
-/src/src/exporter/otlp_exporter.cpp,std::_Function_handler<>::_M_manager(),156,156
-/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::RecordDropped(),80,80
-/src/src/exporter/otlp_exporter.cpp,std::thread::_State_impl<>::~_State_impl(),72,72
-/src/src/exporter/otlp_exporter.cpp,std::thread::_State_impl<>::_M_run(),56,56
 /src/src/sdk/metric_sum_storage.cpp,microtel::sdk::SumStorage<>::Collect(),4168,4168
 /src/src/sdk/metric_sum_storage.cpp,microtel::sdk::SumStorage<>::Add(),3744,3744
 /src/src/sdk/metric_sum_storage.cpp,std::__detail::_Insert_base<>::try_emplace<>(),1156,1156
@@ -1560,6 +1565,27 @@ compileunits,symbols,vmsize,filesize
 /src/src/sdk/metric_histogram_storage.cpp,microtel::sdk::HistogramStorage<>::RecordNonFinite(),192,192
 /src/src/sdk/metric_histogram_storage.cpp,std::_Hashtable<>::_Scoped_node::~_Scoped_node(),160,160
 /src/src/sdk/metric_histogram_storage.cpp,microtel::internal::HistogramData::~HistogramData(),152,152
+/src/src/exporter/otlp_log_exporter.cpp,microtel::exporter::OtlpLogExporter::DrainQueue(),3036,3036
+/src/src/exporter/otlp_log_exporter.cpp,microtel::exporter::OtlpLogExporter::ProcessBatches(),1516,1516
+/src/src/exporter/otlp_log_exporter.cpp,std::vector<>::_M_realloc_insert<>(),1272,1272
+/src/src/exporter/otlp_log_exporter.cpp,std::deque<>::_M_destroy_data_aux(),1208,1208
+/src/src/exporter/otlp_log_exporter.cpp,microtel::exporter::OtlpLogExporter::Shutdown(),652,652
+/src/src/exporter/otlp_log_exporter.cpp,std::deque<>::_M_reallocate_map(),504,504
+/src/src/exporter/otlp_log_exporter.cpp,std::deque<>::_M_push_back_aux<>(),500,500
+/src/src/exporter/otlp_log_exporter.cpp,microtel::exporter::OtlpLogExporter::OtlpLogExporter(),436,436
+/src/src/exporter/otlp_log_exporter.cpp,std::_Deque_base<>::_M_initialize_map(),428,428
+/src/src/exporter/otlp_log_exporter.cpp,microtel::exporter::OtlpLogExporter::Export(),408,408
+/src/src/exporter/otlp_log_exporter.cpp,std::deque<>::emplace_back<>(),384,384
+/src/src/exporter/otlp_log_exporter.cpp,microtel::exporter::OtlpLogExporter::~OtlpLogExporter(),344,344
+/src/src/exporter/otlp_log_exporter.cpp,microtel::exporter::OtlpLogExporter::WorkerLoop(),332,332
+/src/src/exporter/otlp_log_exporter.cpp,microtel::exporter::OtlpLogExporter::RecordDrainFailure(),300,300
+/src/src/exporter/otlp_log_exporter.cpp,std::deque<>::~deque(),200,200
+/src/src/exporter/otlp_log_exporter.cpp,std::_Function_handler<>::_M_invoke(),188,188
+/src/src/exporter/otlp_log_exporter.cpp,microtel::exporter::OtlpLogExporter::ForceFlush(),180,180
+/src/src/exporter/otlp_log_exporter.cpp,std::_Function_handler<>::_M_manager(),120,120
+/src/src/exporter/otlp_log_exporter.cpp,microtel::exporter::OtlpLogExporter::RecordDropped(),80,80
+/src/src/exporter/otlp_log_exporter.cpp,std::thread::_State_impl<>::~_State_impl(),72,72
+/src/src/exporter/otlp_log_exporter.cpp,std::thread::_State_impl<>::_M_run(),56,56
 /src/bench/emit-app/src/control_socket.cpp,bench::RunControlLoop(),5212,5212
 /src/bench/emit-app/src/control_socket.cpp,bench::SerializeRunResult[abi:cxx11](),1068,1068
 /src/bench/emit-app/src/control_socket.cpp,bench::(anonymous namespace)::ExtractUint64Field(),972,972
@@ -1579,34 +1605,13 @@ compileunits,symbols,vmsize,filesize
 /src/bench/emit-app/src/control_socket.cpp,std::thread::_State_impl<>::_M_run(),88,88
 /src/bench/emit-app/src/control_socket.cpp,std::thread::_State_impl<>::~_State_impl(),72,72
 /src/bench/emit-app/src/control_socket.cpp,std::thread::_M_thread_deps_never_run(),56,56
-/src/src/exporter/otlp_log_exporter.cpp,microtel::exporter::OtlpLogExporter::DrainQueue(),2588,2588
-/src/src/exporter/otlp_log_exporter.cpp,microtel::exporter::OtlpLogExporter::ProcessBatches(),1404,1404
-/src/src/exporter/otlp_log_exporter.cpp,std::vector<>::_M_realloc_insert<>(),1272,1272
-/src/src/exporter/otlp_log_exporter.cpp,std::deque<>::_M_destroy_data_aux(),1208,1208
-/src/src/exporter/otlp_log_exporter.cpp,std::deque<>::_M_reallocate_map(),504,504
-/src/src/exporter/otlp_log_exporter.cpp,std::deque<>::_M_push_back_aux<>(),500,500
-/src/src/exporter/otlp_log_exporter.cpp,microtel::exporter::OtlpLogExporter::Shutdown(),476,476
-/src/src/exporter/otlp_log_exporter.cpp,microtel::exporter::OtlpLogExporter::OtlpLogExporter(),436,436
-/src/src/exporter/otlp_log_exporter.cpp,std::_Deque_base<>::_M_initialize_map(),428,428
-/src/src/exporter/otlp_log_exporter.cpp,microtel::exporter::OtlpLogExporter::Export(),392,392
-/src/src/exporter/otlp_log_exporter.cpp,std::deque<>::emplace_back<>(),384,384
-/src/src/exporter/otlp_log_exporter.cpp,microtel::exporter::OtlpLogExporter::WorkerLoop(),380,380
-/src/src/exporter/otlp_log_exporter.cpp,microtel::exporter::OtlpLogExporter::ForceFlush(),364,364
-/src/src/exporter/otlp_log_exporter.cpp,microtel::exporter::OtlpLogExporter::~OtlpLogExporter(),344,344
-/src/src/exporter/otlp_log_exporter.cpp,microtel::exporter::OtlpLogExporter::RecordDrainFailure(),300,300
-/src/src/exporter/otlp_log_exporter.cpp,std::deque<>::~deque(),200,200
-/src/src/exporter/otlp_log_exporter.cpp,std::_Function_handler<>::_M_invoke(),188,188
-/src/src/exporter/otlp_log_exporter.cpp,std::_Function_handler<>::_M_manager(),120,120
-/src/src/exporter/otlp_log_exporter.cpp,microtel::exporter::OtlpLogExporter::RecordDropped(),80,80
-/src/src/exporter/otlp_log_exporter.cpp,std::thread::_State_impl<>::~_State_impl(),72,72
-/src/src/exporter/otlp_log_exporter.cpp,std::thread::_State_impl<>::_M_run(),56,56
 /src/src/sdk/metric_attribute_set.cpp,std::__adjust_heap<>(),1132,1132
 /src/src/sdk/metric_attribute_set.cpp,std::__pop_heap<>(),1084,1084
 /src/src/sdk/metric_attribute_set.cpp,std::__make_heap<>(),968,968
 /src/src/sdk/metric_attribute_set.cpp,std::__insertion_sort<>(),876,876
 /src/src/sdk/metric_attribute_set.cpp,std::__push_heap<>(),780,780
 /src/src/sdk/metric_attribute_set.cpp,std::__unguarded_linear_insert<>(),780,780
-/src/src/sdk/metric_attribute_set.cpp,microtel::sdk::(anonymous namespace)::HashPairs(),763,763
+/src/src/sdk/metric_attribute_set.cpp,microtel::sdk::(anonymous namespace)::HashPairs(),764,764
 /src/src/sdk/metric_attribute_set.cpp,std::__do_visit<>(),696,696
 /src/src/sdk/metric_attribute_set.cpp,std::__introsort_loop<>(),676,676
 /src/src/sdk/metric_attribute_set.cpp,std::swap<>(),668,668
@@ -1656,7 +1661,6 @@ compileunits,symbols,vmsize,filesize
 /src/src/sdk/metric_gauge_storage.cpp,microtel::sdk::GaugeStorage<>::GaugeStorage(),336,336
 /src/src/sdk/metric_gauge_storage.cpp,microtel::sdk::GaugeStorage<>::RecordNonFinite(),192,192
 [section .dynstr],,7417,7417
-[Unmapped],,0,6844
 /src/src/sdk/sdk_tracer.cpp,microtel::sdk::SdkTracer::StartSpanInternal(),3212,3212
 /src/src/sdk/sdk_tracer.cpp,microtel::sdk::SdkTracer::StartAsCurrentSpan(),776,776
 /src/src/sdk/sdk_tracer.cpp,std::mersenne_twister_engine<>::operator()(),520,520
@@ -1748,7 +1752,7 @@ compileunits,symbols,vmsize,filesize
 /src/src/exporter/retry_engine.cpp,microtel::exporter::RetryEngine::RunRetryLoop(),348,348
 /src/src/exporter/retry_engine.cpp,microtel::exporter::RetryEngine::SleepUnlessAborted(),304,304
 /src/src/exporter/retry_engine.cpp,microtel::exporter::RetryEngine::RetryEngine(),268,268
-/src/src/exporter/retry_engine.cpp,microtel::exporter::RetryEngine::Settle(),196,196
+/src/src/exporter/retry_engine.cpp,microtel::exporter::RetryEngine::Settle(),212,212
 /src/src/exporter/retry_engine.cpp,microtel::exporter::RetryEngine::Abort(),132,132
 /src/src/exporter/retry_engine.cpp,std::_Optional_base<>::~_Optional_base(),128,128
 /src/src/exporter/retry_engine.cpp,microtel::exporter::RetryEngine::ClockNow(),80,80
@@ -1858,6 +1862,7 @@ compileunits,symbols,vmsize,filesize
 [section .eh_frame],microtel_upb_strtable_next,20,20
 [section .eh_frame],microtel_upb_strtable_next2,20,20
 [section .eh_frame],microtel_upb_strtable_removeiter,20,20
+[Unmapped],,0,3844
 [section .plt],,3792,3792
 /src/src/common/config/concentrator_config.cpp,std::vector<>::_M_realloc_insert<>(),716,716
 /src/src/common/config/concentrator_config.cpp,microtel::config::MergeLeafReceiverOptions(),700,700
@@ -1948,13 +1953,13 @@ compileunits,symbols,vmsize,filesize
 /src/src/wire/grpc/grpc_status.cpp,microtel::wire::FormatGrpcError[abi:cxx11](),1404,1404
 /src/src/wire/grpc/grpc_status.cpp,microtel::wire::PercentDecode[abi:cxx11](),700,700
 /src/src/wire/grpc/grpc_status.cpp,microtel::wire::LookupGrpcStatus(),112,112
-/src/src/sdk/periodic_exporting_metric_reader.cpp,microtel::sdk::PeriodicExportingMetricReader::DoCollectExport(),476,476
+/src/src/sdk/periodic_exporting_metric_reader.cpp,microtel::sdk::PeriodicExportingMetricReader::DoCollectExport(),508,508
 /src/src/sdk/periodic_exporting_metric_reader.cpp,microtel::sdk::PeriodicExportingMetricReader::PeriodicExportingMetricReader(),340,340
-/src/src/sdk/periodic_exporting_metric_reader.cpp,microtel::sdk::PeriodicExportingMetricReader::RunLoop(),336,336
+/src/src/sdk/periodic_exporting_metric_reader.cpp,microtel::sdk::PeriodicExportingMetricReader::RunLoop(),332,332
 /src/src/sdk/periodic_exporting_metric_reader.cpp,microtel::sdk::PeriodicExportingMetricReader::~PeriodicExportingMetricReader(),252,252
 /src/src/sdk/periodic_exporting_metric_reader.cpp,microtel::sdk::PeriodicExportingMetricReader::Shutdown(),208,208
+/src/src/sdk/periodic_exporting_metric_reader.cpp,microtel::sdk::PeriodicExportingMetricReader::ForceFlush(),196,196
 /src/src/sdk/periodic_exporting_metric_reader.cpp,microtel::sdk::PeriodicExportingMetricReader::SetInterval(),132,132
-/src/src/sdk/periodic_exporting_metric_reader.cpp,microtel::sdk::PeriodicExportingMetricReader::ForceFlush(),112,112
 /src/src/sdk/periodic_exporting_metric_reader.cpp,microtel::sdk::PeriodicExportingMetricReader::Collect(),80,80
 /src/src/sdk/periodic_exporting_metric_reader.cpp,std::thread::_State_impl<>::~_State_impl(),72,72
 /src/src/sdk/periodic_exporting_metric_reader.cpp,std::thread::_State_impl<>::_M_run(),56,56
@@ -1965,7 +1970,7 @@ compileunits,symbols,vmsize,filesize
 /src/src/api/context.cpp,microtel::Context::operator=(),356,356
 /src/src/api/context.cpp,microtel::Context::~Context(),320,320
 /src/src/api/context.cpp,microtel::CurrentContext(),144,144
-/src/src/sdk/sdk_logger.cpp,microtel::sdk::SdkLogger::~SdkLogger(),481,481
+/src/src/sdk/sdk_logger.cpp,microtel::sdk::SdkLogger::~SdkLogger(),488,488
 /src/src/sdk/sdk_logger.cpp,microtel::sdk::SdkLogger::SdkLogger(),340,340
 /src/src/sdk/sdk_logger.cpp,microtel::sdk::SdkLogger::FillTraceContext(),333,333
 /src/src/sdk/sdk_logger.cpp,microtel::sdk::SdkLogger::Emit(),323,323
@@ -1999,7 +2004,6 @@ compileunits,symbols,vmsize,filesize
 /src/src/wire/otlp_response.cpp,microtel::wire::(anonymous namespace)::ReadVarint(),576,576
 /src/src/wire/otlp_response.cpp,microtel::sdk::SdkLogger::Emit(),9,9
 /src/src/wire/otlp_response.cpp,microtel::sdk::SdkLogger::FillTraceContext(),7,7
-/src/src/wire/otlp_response.cpp,microtel::sdk::SdkLogger::~SdkLogger(),7,7
 /src/src/sdk/view_registry.cpp,microtel::sdk::ViewRegistry::Match(),732,732
 /src/src/sdk/view_registry.cpp,microtel::sdk::ViewRegistry::MatchesName(),172,172
 /src/src/sdk/view_registry.cpp,microtel::sdk::ViewRegistry::Add(),112,112
@@ -2175,7 +2179,6 @@ compileunits,symbols,vmsize,filesize
 [section .dynamic],,592,592
 [section .gnu.version],,558,558
 /src/src/wire/encoder/trace_request_concat.cpp,microtel::wire::ConcatenateTraceRequests(),504,504
-/src/src/wire/encoder/trace_request_concat.cpp,microtel::sdk::(anonymous namespace)::HashPairs(),1,1
 [ELF Program Headers],(anonymous namespace)::tl_rng,432,432
 /src/bench/emit-app/src/workload.cpp,bench::ParseWorkloadMode(),248,248
 /src/bench/emit-app/src/workload.cpp,bench::EmitOnce(),80,80
