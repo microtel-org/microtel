@@ -257,7 +257,7 @@ changes are visible:
 
 ## Amendment (2026-10-27): consecutive flush ranges
 
-**Status:** Draft — 2026-10-27.
+**Status:** Accepted — 2026-10-27.
 
 **Why.** Decision 1 bounds an exporter flush's range from below at "the batches already processed before it". That can't support the Provider-level promise, "Completed only if every record queued before the call was exported". `Provider::ForceFlush` runs its stages in turn, so this can happen:
 1. The span processor's flush hands a batch to the trace exporter.
