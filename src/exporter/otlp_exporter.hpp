@@ -10,6 +10,7 @@
 #include "microtel/internal/otlp_encoder.hpp"
 #include "microtel/internal/wire_codec.hpp"
 
+#include "exporter/flush_tracker.hpp"
 #include "exporter/retry_engine.hpp"
 #include "exporter/retry_policy.hpp"
 
@@ -138,6 +139,17 @@ public:
 
     [[nodiscard]] microtel::Status Shutdown(std::chrono::milliseconds timeout) noexcept override;
 
+    /// @brief A snapshot of the flush accounting, for tests that must wait on
+    ///        it rather than sleep. Production code never reads it.
+    struct FlushProgress
+    {
+        std::uint64_t processed = 0;  ///< batches processed so far
+        std::size_t waiting = 0;      ///< flushes waiting now
+    };
+
+    /// @threadsafety Thread-safe; takes `m_mu`.
+    [[nodiscard]] FlushProgress FlushProgressForTesting() noexcept;
+
 private:
     /// @brief The batches `[first, first + count)` of one drain, sent as one
     ///        request.
@@ -149,7 +161,10 @@ private:
 
     void WorkerLoop() noexcept;
     void DrainQueue(std::unique_lock<std::mutex>& lock) noexcept;
-    void FanOutAndProcess(const std::vector<internal::BatchHandle>& batches);
+    /// @param delivered appended to, one entry per batch in order: whether it
+    ///        was exported. Kept by the caller if this throws part-way.
+    void FanOutAndProcess(const std::vector<internal::BatchHandle>& batches,
+                          std::vector<bool>& delivered);
     /// @brief Split one drain into requests by span count and, when set,
     ///        encoded size. @p parts are the batches' encodings, index for index.
     [[nodiscard]] std::vector<RequestRange> GroupIntoRequests(
@@ -194,8 +209,8 @@ private:
     std::size_t m_queued_spans = 0;
     std::mutex m_mu;
     std::condition_variable m_cv;
-    std::uint64_t m_flush_seq = 0;
-    std::uint64_t m_flush_done_seq = 0;
+    /// @brief What `ForceFlush` and `Shutdown` wait for. Guarded by `m_mu`.
+    FlushTracker m_flush;
     std::atomic<bool> m_shutdown{false};
     std::thread m_worker;
 };

@@ -2,23 +2,23 @@
  "microtel": {
   "binary": {
    "buckets": {
-    "microtel": 704006,
+    "microtel": 710838,
     "toml++": 55949,
     "upb": 32678,
     "emit-app": 31252,
-    "unattributed": 180827
+    "unattributed": 178091
    },
    "sections": {
     "[section .rela.dyn]": 46680,
-    "[section .rodata]": 37782,
-    "[section .gcc_except_table]": 32816,
+    "[section .rodata]": 37894,
+    "[section .gcc_except_table]": 32968,
     "[section .text]": 7255,
     "[section .data.rel.ro]": 17392,
     "[section .dynstr]": 7417,
-    "[Unmapped]": 6844,
     "[section .dynsym]": 6041,
     "[section .rela.plt]": 5664,
     "[section .eh_frame]": 956,
+    "[Unmapped]": 3844,
     "[section .plt]": 3792,
     "[section .tbss]": 0,
     "[ELF Section Headers]": 2048,
@@ -60,11 +60,11 @@
     "[LOAD #5 [RW]]": 0
    },
    "stdcxx_inlined": {
-    "microtel": 499962,
+    "microtel": 504845,
     "emit-app": 21719
    },
    "unknown_cu": {},
-   "bloaty_total": 1004712
+   "bloaty_total": 1008808
   },
   "shared": {
    "OpenSSL": {

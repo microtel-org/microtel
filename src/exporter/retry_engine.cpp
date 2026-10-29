@@ -27,12 +27,14 @@ RetryEngine::RetryEngine(const RetryPolicyConfig& policy,
 {
 }
 
-void RetryEngine::Settle(const internal::WireResult& first_attempt,
+bool RetryEngine::Settle(const internal::WireResult& first_attempt,
                          const RetryAttempt& retry,
                          std::string_view failure_stage,
                          std::uint64_t batches)
 {
-    RecordOutcome(Resolve(first_attempt, retry, batches), failure_stage, batches);
+    const internal::WireResult outcome = Resolve(first_attempt, retry, batches);
+    RecordOutcome(outcome, failure_stage, batches);
+    return outcome.success;
 }
 
 void RetryEngine::Abort() noexcept

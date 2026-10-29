@@ -129,8 +129,10 @@ bool MicrotelParsesGoodFile(const std::filesystem::path& path)
     span->End();
     std::cout << "microtel: built from " << path.filename().string() << ", trace_id=" << trace_hex
               << '\n';
+    // The endpoint is a closed port, so the span cannot be exported: it is
+    // either still pending at the deadline or failed its last attempt.
     const microtel::Status shutdown = provider->Shutdown(kShutdownTimeout);
-    return shutdown == microtel::Status::Completed || shutdown == microtel::Status::TimedOut;
+    return shutdown == microtel::Status::Failed || shutdown == microtel::Status::TimedOut;
 }
 
 // microtel's header-only toml++ throws parse_error and microtel catches it.

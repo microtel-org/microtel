@@ -6,45 +6,46 @@ doesn't produce them. A local `cd bench && ./bench.sh` writes to
 `bench/results/`, which is gitignored, so the README used to link a path that
 only existed for people who had run the harness themselves.
 
-The snapshot was refreshed on 2026-10-27 for the v1.2.4 tag, from the
-release commit `5bbc655` (`source_commit` in `results.json`). The images were
-built from `84ac4c0` (`images_built_from`), the same commit before #462 was
-rebased onto master; the rebase changed only docs and packaging metadata. It ran
-on the same machine as the previous snapshot (Ryzen 5 5600G, 6 cores / 12
-threads, `performance` governor, SMT on). The host's software did change: the
-kernel went from 7.1.13-200.fc44 to 7.2.11-200.fc44 and podman from 5.8.4 to
-5.8.9. Diffing the environment block, as [`docs/releasing.md`](../releasing.md)
-§5 requires, showed those two fields, so the old snapshot's numbers are not a
-like-for-like baseline. [Changes since the previous snapshot](#changes-since-the-previous-snapshot)
-compares old and new code on today's host instead.
+The snapshot was refreshed on 2026-10-28 for the v1.2.5 tag, `16b39fb`
+(`source_commit` and `images_built_from` in `results.json`). It ran on the
+same machine as the v1.2.4 snapshot (Ryzen 5 5600G, 6 cores / 12 threads,
+`performance` governor, SMT on), and the environment block matches it field
+for field: the same kernel, 7.2.11-200.fc44, and the same podman, 5.8.9, as
+[`docs/releasing.md`](../releasing.md) §5 requires. The two snapshots are a
+like-for-like comparison.
 
 **The snapshot merges five interleaved runs.** Each run is the full
-`hot-loop-traces` profile (four SUTs, 10 samples each). Each run of the v1.2.4
-images was preceded by a run of the previous snapshot's 2026-09-27 images,
-alternating old, new, old, new… five times, so host drift falls on both alike.
-`results.json` holds the 50 samples per SUT from the five v1.2.4 runs, with
-each run's start time, load and sample counts in `interleaved_runs`.
+`hot-loop-traces` profile (four SUTs, 10 samples each). Each run of the v1.2.5
+images was preceded by a run of the v1.2.4 images, alternating old, new, old,
+new… five times, so host drift falls on both alike. Only the microtel images
+were rebuilt; both sets use the v1.2.4 otelcpp images, whose code did not
+change. `results.json` holds the 50 samples per SUT from the five v1.2.5 runs,
+with each run's start time, load and sample counts in `interleaved_runs`.
 `results.md` and `plots.html` are rendered from it by the driver's own
-writers. otelcpp-http has 40 samples, not 50: in run 4 its container didn't
-report ready within the driver's 60 s and was skipped. Run 4 also started at
-host load 0.68, above the driver's 0.5 warning threshold, and the warning is
-kept.
+writers. Every run started below host load 0.5.
+
+Three rounds were run again in full, both halves, because an SUT container
+logged nothing and didn't report ready within the driver's 60 s. That
+happened in five of 16 runs, to a different SUT each time, otelcpp ones
+included, so it's the harness, not microtel
+([#499](https://github.com/microtel-org/microtel/issues/499)). Every kept run
+has all four SUTs.
 
 ## Summary
 
 This is the table the root README's performance claims are read off.
-Hot-loop traces, 10 000 spans per sample, 50 samples per SUT (40 for
-otelcpp-http) from five interleaved runs, each SDK exporting to a local
+Hot-loop traces, 10 000 spans per sample, 50 samples per SUT from five
+interleaved runs, each SDK exporting to a local
 blackhole sink over a container network, one host (Podman; AMD Ryzen 5 5600G,
 `performance` governor, SMT on). Medians:
 
 | Metric | microtel (HTTP) | microtel (gRPC) | otelcpp (gRPC) | otelcpp (HTTP) |
 |---|---|---|---|---|
-| Span emit p50 | **226 ns** | **220 ns** | 820 ns | 807 ns |
-| Span emit p95 | **486 ns** | **471 ns** | 3 364 ns | 2 882 ns |
-| Spans / sec | **1 386 999** | 1 013 479 | 739 338 | 807 350 |
-| Flush p50 | 3.2 ms | 6.1 ms | 2.0 ms | 1.9 ms |
-| Delivery rate | **100%** | **100%** | 94.2% | 96.3% |
+| Span emit p50 | **223 ns** | **220 ns** | 812 ns | 813 ns |
+| Span emit p95 | **485 ns** | **472 ns** | 3 394 ns | 3 222 ns |
+| Spans / sec | **1 424 706** | 1 024 210 | 738 912 | 771 072 |
+| Flush p50 | 3.0 ms | 6.1 ms | 2.0 ms | 2.0 ms |
+| Delivery rate | **100%** | **100%** | 93.7% | 94.8% |
 | Wire bytes / span | 68.2 | 68.2 | 68.1 | 68.1 |
 
 **Span emit** times one whole `EmitSpan()` call of the benchmark app
@@ -79,27 +80,23 @@ The leaf's flash, RAM and stack on Cortex-M0+, Cortex-M4 and aarch64 are in
 
 ## Changes since the previous snapshot
 
-**The span-emit ratio fell from 3.8× to 3.6×, and the change is the host's,
-not the code's.** Span emit p50 is 226 ns for microtel against 820 ns for
-otelcpp-gRPC, 3.63×; the previous snapshot measured 3.83×. Over the same five
-interleaved rounds the previous snapshot's 2026-09-27 images measured 3.59×
-on today's host (p50 227 ns against 816 ns). Old and new code are within 1.5%
-of each other at p50 for every SUT, and within 1% at p95 for all but
-otelcpp-http (−4.4%, an SUT whose code didn't change). The ratio moved with
-the kernel and podman updates above.
+**No change: the span-emit ratio is 3.6×.** Span emit p50 is 223 ns for
+microtel against 812 ns for otelcpp-gRPC, 3.64×; the v1.2.4 snapshot measured
+3.63×. In the same five interleaved rounds the v1.2.4 images measured 3.69×
+(p50 222 ns against 820 ns). Medians of 50 samples, v1.2.4 code against
+v1.2.5:
 
-**Throughput.** On today's host, old images against new, medians of 50
-samples each: microtel 1,512,908 → 1,386,999 spans/sec (−8.3%), microtel-grpc
-1,289,564 → 1,013,479 (−21.4%), otelcpp-grpc −1.0% and otelcpp-http +0.6%. The
-emit loop takes the same time; the difference is all in the flush, which
-spans/sec includes. microtel's spans now carry the OTLP `flags` field (#452),
-as opentelemetry-cpp's already did, so wire bytes per span went from 62.2 to
-68.2, and a 512-span batch from 31.8 KB to 34.9 KB per request. That crosses
-32 KiB, and the bench sink's handling time steps up by ~80 µs for requests
-above 32 KiB; cause under investigation
-([#460](https://github.com/microtel-org/microtel/issues/460)). A pre-#452
-build shows the same step once its batches pass 32 KiB. Over OTLP/HTTP there
-is no step, and the flush grows with the extra bytes.
+| SUT | p50 | p95 | Spans / sec | Flush p50 |
+|---|---|---|---|---|
+| microtel (HTTP) | 222 → 223 ns (+0.5%) | 482 → 485 ns (+0.5%) | +1.8% | −6.7% |
+| microtel (gRPC) | 220 → 220 ns (0%) | 467 → 472 ns (+1.1%) | +2.6% | −4.4% |
+| otelcpp (gRPC) | 820 → 812 ns (−1.0%) | 3 361 → 3 394 ns (+1.0%) | −2.1% | −1.1% |
+| otelcpp (HTTP) | 792 → 813 ns (+2.6%) | 2 561 → 3 222 ns (+25.8%) | −9.2% | +5.3% |
+
+The otelcpp rows are the noise floor: both sides ran the same image. Every
+microtel change is well inside it. v1.2.5's exporter worker counts each batch
+for flush tracking (#484), off the application thread; it doesn't show up in
+emit time or in flush time.
 
 **The benchmark binary size row is withdrawn.** It compared the benchmark
 executables' file sizes, which were over 92% debug info and left out the
@@ -107,7 +104,7 @@ shared libraries each executable loads. [`sizes/library-sizes.md`](sizes/library
 and #445 tracks the driver fix. The leaf's footprint is in
 [`leaf-footprint.md`](leaf-footprint.md).
 
-`realistic-request` and `compression` were not rerun for v1.2.4. Their last
+`realistic-request` and `compression` were not rerun for v1.2.4 or v1.2.5. Their last
 figures, from 2026-09-27: `realistic-request` 100% delivery for both SUTs, and
 `compression` 342.2 B/span uncompressed against 39.1 gzip'd (8.7×).
 
@@ -126,11 +123,11 @@ figures, from 2026-09-27: `realistic-request` 100% delivery for both SUTs, and
 |---|---|
 | Profile | `hot-loop-traces` — 10 000 spans/sample, 10 samples per run × 5 interleaved runs, 1 000 warmup spans, blackhole sink |
 | SUTs | `microtel`, `microtel-grpc`, `otelcpp-grpc`, `otelcpp-http` |
-| Generated | 2026-10-27 (release commit `5bbc655`; images built from `84ac4c0`, its pre-rebase SHA) |
+| Generated | 2026-10-28 (v1.2.5 tag, `16b39fb`; microtel images built from it, otelcpp images from v1.2.4) |
 | Host | AMD Ryzen 5 5600G, 6 physical cores / 12 threads, Fedora, kernel 7.2.11-200.fc44, podman 5.8.9 |
 
-The snapshot carries two warnings, left in `results.md` and `results.json`:
-SMT was enabled, which widens the spread, and run 4 started at load 0.68.
+The snapshot carries one warning, left in `results.md` and `results.json`:
+SMT was enabled, which widens the spread.
 `results.md`'s profile table shows the profile's 10 samples per run; the
 summary rows are over all five runs.
 
@@ -144,7 +141,7 @@ cp bench/results/{plots.html,results.json,results.md} docs/bench-results/
 Then update the [Summary](#summary) table above, and the ratio claims in the
 root `README.md`, so they agree with the new run.
 
-For v1.2.4 the five runs were made with `./bench.sh --no-build --out <dir>`,
+For v1.2.4 and v1.2.5 the five runs were made with `./bench.sh --no-build --out <dir>`,
 retagging the `bench-sut-*` images between the old and new sets, and merged
 by concatenating each SUT's samples in run order and rendering with
 `driver.report.build_results`, `write_json`, `write_markdown` and

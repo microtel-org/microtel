@@ -21,6 +21,7 @@
 
 #include <gtest/gtest.h>
 
+#include <atomic>
 #include <chrono>
 #include <condition_variable>
 #include <cstddef>
@@ -173,7 +174,7 @@ TEST(OtlpLogExporterTest, DiagnosticsFailedExportRecordsBatchFailedAndMessage)
     mte::OtlpLogExporter exporter{&encoder, &codec, {}, &sink};
 
     (void)exporter.Export(MakeBatch());
-    ASSERT_EQ(exporter.ForceFlush(kFlushTimeout), mt::Status::Completed);
+    ASSERT_EQ(exporter.ForceFlush(kFlushTimeout), mt::Status::Failed);
 
     EXPECT_EQ(sink.batches_failed, 1U);
     EXPECT_EQ(sink.last_error_message, "HTTP 401");
@@ -243,7 +244,7 @@ TEST(OtlpLogExporterTest, DiagnosticsDrainThrowsRecordsBatchFailed)
     mte::OtlpLogExporter exporter{&encoder, &codec, {}, &sink};
 
     EXPECT_EQ(exporter.Export(MakeBatchOf(2)), mti::ExportResult::Success);
-    ASSERT_EQ(exporter.ForceFlush(kFlushTimeout), mt::Status::Completed);
+    ASSERT_EQ(exporter.ForceFlush(kFlushTimeout), mt::Status::Failed);
 
     EXPECT_EQ(sink.batches_failed, 1U) << "a swallowed drain failure must still be countable";
     EXPECT_EQ(sink.batches_sent, 0U);
@@ -259,7 +260,7 @@ TEST(OtlpLogExporterTest, DiagnosticsDrainThrowsWithoutSinkStillDrains)
     mte::OtlpLogExporter exporter{&encoder, &codec};  // no sink
 
     (void)exporter.Export(MakeBatch());
-    EXPECT_EQ(exporter.ForceFlush(kFlushTimeout), mt::Status::Completed);
+    EXPECT_EQ(exporter.ForceFlush(kFlushTimeout), mt::Status::Failed);
 }
 
 // ---------------------------------------------------------------------------
@@ -342,7 +343,7 @@ TEST(OtlpLogExporterTest, Retry_RetryableUntilMaxAttempts_RecordsBudgetExhausted
     mte::OtlpLogExporter exporter{&encoder, &codec, cfg, &sink};
 
     (void)exporter.Export(MakeBatch());
-    ASSERT_EQ(exporter.ForceFlush(kFlushTimeout), mt::Status::Completed);
+    ASSERT_EQ(exporter.ForceFlush(kFlushTimeout), mt::Status::Failed);
 
     EXPECT_EQ(codec.send_call_count.load(), 3);
     EXPECT_EQ(encoder.encode_call_count.load(), 3) << "each attempt re-encodes (memory-model §3.1)";
@@ -364,7 +365,7 @@ TEST(OtlpLogExporterTest, Retry_BudgetSpentOnEntry_NoRetryAndRecordsBudgetExhaus
     mte::OtlpLogExporter exporter{&encoder, &codec, cfg, &sink, &clock};
 
     (void)exporter.Export(MakeBatch());
-    ASSERT_EQ(exporter.ForceFlush(kFlushTimeout), mt::Status::Completed);
+    ASSERT_EQ(exporter.ForceFlush(kFlushTimeout), mt::Status::Failed);
 
     EXPECT_EQ(codec.send_call_count.load(), 1);
     EXPECT_EQ(DropCount(sink, mt::DropReason::RetryBudgetExhausted), 1U);
@@ -382,7 +383,7 @@ TEST(OtlpLogExporterTest, Retry_NonRetryable_SingleAttemptAndRecordsNonRetryable
     mte::OtlpLogExporter exporter{&encoder, &codec, cfg, &sink};
 
     (void)exporter.Export(MakeBatch());
-    ASSERT_EQ(exporter.ForceFlush(kFlushTimeout), mt::Status::Completed);
+    ASSERT_EQ(exporter.ForceFlush(kFlushTimeout), mt::Status::Failed);
 
     EXPECT_EQ(codec.send_call_count.load(), 1);
     EXPECT_EQ(DropCount(sink, mt::DropReason::NonRetryableFailure), 1U);
@@ -410,7 +411,7 @@ TEST(OtlpLogExporterTest, Retry_RetryAfterBeyondBudget_StopsRetrying)
     mte::OtlpLogExporter exporter{&encoder, &codec, cfg, &sink, &clock};
 
     (void)exporter.Export(MakeBatch());
-    ASSERT_EQ(exporter.ForceFlush(kFlushTimeout), mt::Status::Completed);
+    ASSERT_EQ(exporter.ForceFlush(kFlushTimeout), mt::Status::Failed);
 
     // Zero-delay backoff alone would have made the third (successful) attempt.
     EXPECT_EQ(codec.send_call_count.load(), 2);
@@ -489,7 +490,7 @@ TEST(OtlpLogExporterTest, Retry_ShutdownDuringBackoff_ReturnsWithinTimeout)
     const auto elapsed = std::chrono::steady_clock::now() - started;
 
     EXPECT_LT(elapsed, kShutdownReturnBound);
-    EXPECT_EQ(status, mt::Status::Completed);
+    EXPECT_EQ(status, mt::Status::Failed);
     EXPECT_EQ(codec.send_call_count.load(), 1) << "no retry after Shutdown";
     EXPECT_EQ(DropCount(sink, mt::DropReason::RetryBudgetExhausted), 1U);
     EXPECT_EQ(sink.batches_failed, 1U);
@@ -601,4 +602,105 @@ TEST(OtlpLogExporterTest, ShutdownCompleted_DoesNotCallTheHook)
     (void)exporter.Export(MakeBatch());
     EXPECT_EQ(exporter.Shutdown(std::chrono::seconds(5)), mt::Status::Completed);
     EXPECT_EQ(hook_calls, 0);
+}
+
+// ---------------------------------------------------------------------------
+// ForceFlush waits for the batches queued before the call, not for an empty
+// queue (ICP 0041, #484)
+// ---------------------------------------------------------------------------
+
+namespace
+{
+
+constexpr auto kSustainedSendDelay = std::chrono::milliseconds{2};
+constexpr auto kSustainedArrivalGap = std::chrono::microseconds{500};
+constexpr auto kSustainedWarmup = std::chrono::milliseconds{50};
+constexpr auto kSustainedFlushTimeout = std::chrono::seconds{5};
+constexpr auto kRetryBackoff = std::chrono::milliseconds{100};
+
+mti::WireResult NonRetryableFailure()
+{
+    return mti::WireResult{.success = false, .retryable = false};
+}
+
+}  // namespace
+
+// Batches arrive four times faster than they are sent, so the queue never
+// empties. A flush that waited for an empty queue timed out every time.
+TEST(OtlpLogExporterTest, ForceFlush_UnderSustainedLoad_CompletesForWhatWasQueuedBeforeIt)
+{
+    mtmk::MockLogEncoder encoder;
+    mtmk::FakeWireCodec codec;
+    codec.default_result = mti::WireResult{.success = true};
+    codec.send_delay = kSustainedSendDelay;
+    mte::OtlpLogExporter exporter{&encoder, &codec};
+
+    std::atomic<bool> stop{false};
+    std::thread producer{[&]
+                         {
+                             while (!stop.load())
+                             {
+                                 (void)exporter.Export(MakeBatch());
+                                 std::this_thread::sleep_for(kSustainedArrivalGap);
+                             }
+                         }};
+    std::this_thread::sleep_for(kSustainedWarmup);
+    const mt::Status status = exporter.ForceFlush(kSustainedFlushTimeout);
+    stop.store(true);
+    producer.join();
+
+    EXPECT_EQ(status, mt::Status::Completed);
+}
+
+TEST(OtlpLogExporterTest, ForceFlush_ABatchThatFailedAfterItsFinalAttempt_ReturnsFailed)
+{
+    mtmk::MockLogEncoder encoder;
+    mtmk::FakeWireCodec codec;
+    codec.default_result = NonRetryableFailure();
+    mte::OtlpLogExporter exporter{&encoder, &codec};
+
+    (void)exporter.Export(MakeBatch());
+    EXPECT_EQ(exporter.ForceFlush(kFlushTimeout), mt::Status::Failed);
+}
+
+TEST(OtlpLogExporterTest, ForceFlush_AFailureBeforeTheCall_DoesNotFailALaterFlush)
+{
+    mtmk::MockLogEncoder encoder;
+    mtmk::FakeWireCodec codec;
+    codec.scripted_results.push_back(NonRetryableFailure());
+    codec.default_result = mti::WireResult{.success = true};
+    mte::OtlpLogExporter exporter{&encoder, &codec};
+
+    (void)exporter.Export(MakeBatch());
+    ASSERT_EQ(exporter.ForceFlush(kFlushTimeout), mt::Status::Failed);
+    (void)exporter.Export(MakeBatch());
+    EXPECT_EQ(exporter.ForceFlush(kFlushTimeout), mt::Status::Completed);
+}
+
+// A batch in retry backoff is still pending: the flush waits for its retry.
+TEST(OtlpLogExporterTest, ForceFlush_ABatchInRetryBackoff_IsStillPending)
+{
+    mtmk::MockLogEncoder encoder;
+    mtmk::FakeWireCodec codec;
+    codec.scripted_results.push_back(mti::WireResult{.success = false, .retryable = true});
+    codec.default_result = mti::WireResult{.success = true};
+    mte::OtlpLogExporterConfig cfg;
+    cfg.retry_policy.initial_backoff = kRetryBackoff;
+    cfg.retry_policy.jitter_fraction = 0.0;
+    mte::OtlpLogExporter exporter{&encoder, &codec, cfg};
+
+    (void)exporter.Export(MakeBatch());
+    EXPECT_EQ(exporter.ForceFlush(kSustainedFlushTimeout), mt::Status::Completed);
+    EXPECT_EQ(codec.send_call_count.load(), 2);
+}
+
+TEST(OtlpLogExporterTest, Shutdown_ABatchThatFailed_ReturnsFailed)
+{
+    mtmk::MockLogEncoder encoder;
+    mtmk::FakeWireCodec codec;
+    codec.default_result = NonRetryableFailure();
+    mte::OtlpLogExporter exporter{&encoder, &codec};
+
+    (void)exporter.Export(MakeBatch());
+    EXPECT_EQ(exporter.Shutdown(kFlushTimeout), mt::Status::Failed);
 }

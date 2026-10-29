@@ -23,7 +23,7 @@ cmake_minimum_required(VERSION 3.20)
 
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     project(microtel_leaf
-            VERSION 1.2.4
+            VERSION 1.2.5
             LANGUAGES C
             DESCRIPTION "microtel-leaf: OTLP span encoder for constrained devices")
     set(MICROTEL_LEAF_STANDALONE ON)

@@ -1,16 +1,4 @@
 sources:
-  "1.2.4":
-    url: "https://github.com/microtel-org/microtel/archive/v1.2.4.tar.gz"
-    sha256: "6d3184d5ab9a7fe9154aca7f81e45908af82e54a8be1b6e7f0834a2546209a7e"
-  "1.2.3":
-    url: "https://github.com/microtel-org/microtel/archive/v1.2.3.tar.gz"
-    sha256: "918aef3b5549107a43f331ac1d1c551e0eca8204402707b7401ed11c06f18b75"
-  "1.2.2":
-    url: "https://github.com/microtel-org/microtel/archive/v1.2.2.tar.gz"
-    sha256: "5160619bf326c0abdc13d35445bd74325dee9973064945f098797b642abac7b2"
-patches:
-  "1.2.4":
-    - patch_file: "patches/1.2.4-0001-link-nghttp2-openssl.patch"
-      patch_description: "link nghttp2 and OpenSSL to microtel_sdk, whose sources include their headers"
-      patch_type: "bugfix"
-      patch_source: "https://github.com/microtel-org/microtel/issues/473"
+  "1.2.5":
+    url: "https://github.com/microtel-org/microtel/archive/v1.2.5.tar.gz"
+    sha256: "69e537457f02c05c96a6c4f3d0944768cc834020d39f830bb8208b00eb4cc86f"

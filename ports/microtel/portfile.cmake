@@ -4,10 +4,8 @@ vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO microtel-org/microtel
     REF "v${VERSION}"
-    SHA512 8a133cf10eef52e09990caef6fc83e877cd38e8d7a944f8748382abd3784fa4650b172239fe4c91ab622fc2635c82c47f375bac0ca501f54018294dd70a5ceaa
+    SHA512 5aeb170c7866ff1df0f8b6077f5f9bb8b83f4bdbe9c847bf98d2ccba7ec98376a1525e7bb41e4ae89acb8c6ccae463fb025176a864fa7423ae8b37cd9c1eab7b
     HEAD_REF master
-    PATCHES
-        link-nghttp2-openssl.patch # #473; drop at the next release
 )
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS

@@ -117,7 +117,7 @@ void ExportThreeBatches(mti::IAuthProvider& auth,
     {
         ASSERT_EQ(exporter.Export(MakeBatch()), mti::ExportResult::Success);
     }
-    ASSERT_EQ(exporter.ForceFlush(kFlushTimeout), mt::Status::Completed);
+    ASSERT_EQ(exporter.ForceFlush(kFlushTimeout), mt::Status::Failed);
     ASSERT_EQ(exporter.Shutdown(kFlushTimeout), mt::Status::Completed);
 }
 

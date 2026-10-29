@@ -57,7 +57,9 @@ internal::ExportResult OtlpExporter::Export(internal::BatchHandle&& batch) noexc
     }();
     if (result == internal::ExportResult::Success)
     {
-        m_cv.notify_one();
+        // notify_all, not notify_one: flushes wait on m_cv too, and one wake
+        // that reached a flush instead of the worker would leave it queued.
+        m_cv.notify_all();
     }
     return result;
 }
@@ -77,7 +79,9 @@ void OtlpExporter::ExportGroup(std::vector<internal::BatchHandle>&& batches) noe
     }
     if (queued)
     {
-        m_cv.notify_one();
+        // notify_all, not notify_one: flushes wait on m_cv too, and one wake
+        // that reached a flush instead of the worker would leave it queued.
+        m_cv.notify_all();
     }
 }
 
@@ -104,6 +108,7 @@ internal::ExportResult OtlpExporter::EnqueueLocked(internal::BatchHandle&& batch
     {
         m_queue.push_back(std::move(batch));
         m_queued_spans += span_count;
+        m_flush.Accept();
         PublishQueueDepth();
     }
     // std::exception, not std::bad_alloc: push_back can also throw
@@ -121,38 +126,24 @@ internal::ExportResult OtlpExporter::EnqueueLocked(internal::BatchHandle&& batch
 
 microtel::Status OtlpExporter::ForceFlush(std::chrono::milliseconds timeout) noexcept
 {
-    {
-        const std::scoped_lock lock{m_mu};
-        ++m_flush_seq;
-        m_cv.notify_all();
-    }
-    const bool completed = [&]
-    {
-        std::unique_lock lock{m_mu};
-        return m_cv.wait_for(lock, timeout, [this] { return m_flush_done_seq >= m_flush_seq; });
-    }();
-    return completed ? microtel::Status::Completed : microtel::Status::TimedOut;
+    // Waits for the batches accepted before this call, not for an empty
+    // queue: under sustained load the queue never empties (ICP 0041, #484).
+    std::unique_lock lock{m_mu};
+    return m_flush.Wait(lock, m_cv, timeout).status;
 }
 
 microtel::Status OtlpExporter::Shutdown(std::chrono::milliseconds timeout) noexcept
 {
+    FlushTracker::Outcome outcome;
     {
-        const std::scoped_lock lock{m_mu};
+        std::unique_lock lock{m_mu};
         if (m_shutdown.exchange(true, std::memory_order_relaxed))
         {
             return microtel::Status::AlreadyShutDown;
         }
-        ++m_flush_seq;
-        m_cv.notify_all();
+        outcome = m_flush.WaitAfter(lock, m_cv, timeout, [this]() noexcept { m_retry.Abort(); });
     }
-    // Outside m_mu: the engine's lock is a leaf (threading-model.md §4).
-    m_retry.Abort();
-    const bool completed = [&]
-    {
-        std::unique_lock lock{m_mu};
-        return m_cv.wait_for(lock, timeout, [this] { return m_flush_done_seq >= m_flush_seq; });
-    }();
-    if (!completed && m_config.on_shutdown_timeout)
+    if (!outcome.in_time && m_config.on_shutdown_timeout)
     {
         // Before the join: the worker may be inside a Send only this wakes.
         m_config.on_shutdown_timeout();
@@ -161,7 +152,13 @@ microtel::Status OtlpExporter::Shutdown(std::chrono::milliseconds timeout) noexc
     {
         m_worker.join();
     }
-    return completed ? microtel::Status::Completed : microtel::Status::TimedOut;
+    return outcome.status;
+}
+
+OtlpExporter::FlushProgress OtlpExporter::FlushProgressForTesting() noexcept
+{
+    const std::scoped_lock lock{m_mu};
+    return FlushProgress{.processed = m_flush.Processed(), .waiting = m_flush.Waiting()};
 }
 
 void OtlpExporter::RecordDropped(DropReason reason, std::uint64_t n) noexcept
@@ -196,12 +193,10 @@ void OtlpExporter::PublishQueueDepth() noexcept
 
 void OtlpExporter::DrainQueue(std::unique_lock<std::mutex>& lock) noexcept
 {
-    // Drain until the queue is genuinely empty. The lock is released while
-    // FanOutAndProcess runs, so Export() can enqueue more batches mid-drain. A
-    // single pass would leave those undrained while WorkerLoop still marked a
-    // pending flush complete — letting ForceFlush return before every queued
-    // batch was processed. Looping until empty under the held lock closes that
-    // window and upholds ForceFlush's "queue drained" contract.
+    // Drain until the queue is empty. The lock is released while
+    // FanOutAndProcess runs, so Export() can enqueue more batches mid-drain.
+    // Each round reports its outcomes to m_flush, which is what a flush waits
+    // on: the batches queued before it, not an empty queue (ICP 0041).
     while (!m_queue.empty())
     {
         std::vector<internal::BatchHandle> batches;
@@ -213,9 +208,10 @@ void OtlpExporter::DrainQueue(std::unique_lock<std::mutex>& lock) noexcept
         // The whole queue was taken, so the whole budget is free again.
         m_queued_spans = 0;
         lock.unlock();
+        std::vector<bool> delivered;
         try
         {
-            FanOutAndProcess(batches);
+            FanOutAndProcess(batches, delivered);
         }
         // The batches are gone either way — the worker is `noexcept` and there
         // is nowhere to put them — but a swallowed failure that nothing counts
@@ -226,6 +222,8 @@ void OtlpExporter::DrainQueue(std::unique_lock<std::mutex>& lock) noexcept
             RecordDrainFailure(e.what());
         }
         lock.lock();
+        m_flush.Complete(batches.size(), delivered);
+        m_cv.notify_all();
         PublishQueueDepth();
     }
 }
@@ -269,7 +267,8 @@ std::vector<OtlpExporter::RequestRange> OtlpExporter::GroupIntoRequests(
     return requests;
 }
 
-void OtlpExporter::FanOutAndProcess(const std::vector<internal::BatchHandle>& batches)
+void OtlpExporter::FanOutAndProcess(const std::vector<internal::BatchHandle>& batches,
+                                    std::vector<bool>& delivered)
 {
     if (batches.empty())
     {
@@ -316,7 +315,7 @@ void OtlpExporter::FanOutAndProcess(const std::vector<internal::BatchHandle>& ba
     for (std::size_t i = 0; i < results.size(); ++i)
     {
         const RequestRange& request = requests.at(i);
-        m_retry.Settle(
+        const bool sent = m_retry.Settle(
             results.at(i),
             [this, &batches, &request]
             {
@@ -325,6 +324,9 @@ void OtlpExporter::FanOutAndProcess(const std::vector<internal::BatchHandle>& ba
             },
             kFailureStage,
             request.count);
+        // Every batch in the request shares its outcome. Requests are
+        // consecutive runs of `batches`, so this stays in batch order.
+        delivered.insert(delivered.end(), request.count, sent);
     }
 }
 
@@ -335,27 +337,18 @@ void OtlpExporter::WorkerLoop() noexcept
         std::unique_lock lock{m_mu};
         m_cv.wait(lock,
                   [this]
-                  {
-                      return !m_queue.empty() || m_flush_seq > m_flush_done_seq ||
-                             m_shutdown.load(std::memory_order_relaxed);
-                  });
+                  { return !m_queue.empty() || m_shutdown.load(std::memory_order_relaxed); });
 
         DrainQueue(lock);
 
-        if (m_flush_seq > m_flush_done_seq)
-        {
-            m_flush_done_seq = m_flush_seq;
-            m_cv.notify_all();
-        }
         if (m_shutdown.load(std::memory_order_relaxed))
         {
             break;
         }
     }
 
-    // Signal any flush/shutdown waiters that did not see the in-loop notify.
+    // The worker is gone and every batch was drained: wake any waiter.
     const std::scoped_lock lock{m_mu};
-    m_flush_done_seq = m_flush_seq;
     m_cv.notify_all();
 }
 

@@ -287,7 +287,10 @@ m_shut_down = true
   does not gate the export path, and it is not a progress indicator: it is `true`
   for the whole of the teardown and afterwards, with no intermediate value.
 - **Every component runs even if an earlier one timed out.** A partial teardown
-  would leak threads and sockets. The statuses fold worst-first — `Failed` >
+  would leak threads and sockets. They share one deadline: `Shutdown` computes
+  `now + timeout` on entry and hands each component the time remaining, 0 ms
+  once it has passed ([ICP 0041](icps/0041-flush-and-shutdown-deadlines.md)).
+  The statuses fold worst-first — `Failed` >
   `TimedOut` > `Completed` > `AlreadyShutDown` — into the single `Status` the
   caller sees (`WorseOf` in `sdk_provider.cpp`), and a `TimedOut` fold records
   exactly one `ShutdownTimeout` drop however many components ran out of time.
@@ -323,9 +326,9 @@ call.
 ### 6.1 `ForceFlush(timeout)`
 
 **Caller.** Any caller thread, including from the application's main thread before `Shutdown`.
-**Effect.** Wakes the worker with a flush request; the worker drains the queue (without exiting its loop) and waits for the in-flight batch to complete or for the timeout to elapse. Returns one of `Completed` / `TimedOut` / `AlreadyShutDown` / `Failed`.
+**Effect.** Waits until every batch queued before the call has been processed, or for the timeout to elapse ([ICP 0041](icps/0041-flush-and-shutdown-deadlines.md)). Processed means exported, or failed after its final retry; a batch in retry backoff or in flight is still pending. Returns one of `Completed` / `TimedOut` / `AlreadyShutDown` / `Failed`.
 
-The worker treats a `ForceFlush` request as a synthesised batch deadline of "now". After the queue is empty and the in-flight request returns, the worker signals the flush-completion future and returns to its normal loop.
+The flush does not wait for the queue to empty: under sustained load it never does (#484). Each exporter numbers the batches it accepts, and the worker reports each drained round's outcomes in order, waking any waiting flush. A flush's range starts where the last completed flush's range ended, so a batch that failed before the call — including between the stages of `Provider::ForceFlush` — is still reported, and overlapping flushes may both report the same failure. The batch processors still complete a flush when their queue is empty (#489).
 
 `ForceFlush` does not stop accepting new records. New `End()` calls during a flush proceed normally; if they enqueue after the flush's drain pass, they will be picked up on the next batch cycle, not the flush.
 

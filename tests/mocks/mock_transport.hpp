@@ -34,6 +34,8 @@ public:
     int send_call_count = 0;
     int cancel_call_count = 0;
     int close_call_count = 0;
+    /// The timeout `Close` was handed; -1 until the first call.
+    std::chrono::milliseconds last_close_timeout{-1};
 
     // --- ITransport ---
 
@@ -64,9 +66,10 @@ public:
         return state;
     }
 
-    [[nodiscard]] microtel::Status Close(std::chrono::milliseconds /*timeout*/) noexcept override
+    [[nodiscard]] microtel::Status Close(std::chrono::milliseconds timeout) noexcept override
     {
         ++close_call_count;
+        last_close_timeout = timeout;
         return close_result;
     }
 };

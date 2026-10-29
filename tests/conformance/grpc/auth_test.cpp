@@ -271,9 +271,9 @@ TEST(GrpcAuthConformance, WrongTokenRejected)
         span->End();
     }
 
-    // Completed, not TimedOut: a rejected batch is a finished batch. ForceFlush
-    // reports whether the queue drained, not whether the peer liked it.
-    ASSERT_EQ(provider->ForceFlush(kFlushTimeout), microtel::Status::Completed);
+    // Failed, not TimedOut: a rejected batch is a finished batch, and a flush
+    // whose batch was not exported reports it (ICP 0041, issue #484).
+    ASSERT_EQ(provider->ForceFlush(kFlushTimeout), microtel::Status::Failed);
 
     const microtel::HealthSnapshot health = provider->GetExporterHealth();
     EXPECT_EQ(health.batches_sent, 0U);
@@ -342,7 +342,7 @@ TEST(GrpcAuthConformance, WrongTokenIncrementsNonRetryableDropCounter)
         auto span = tracer->StartSpan(microtel::testing::UniqueMarker());
         span->End();
     }
-    ASSERT_EQ(provider->ForceFlush(kFlushTimeout), microtel::Status::Completed);
+    ASSERT_EQ(provider->ForceFlush(kFlushTimeout), microtel::Status::Failed);
 
     const microtel::HealthSnapshot health = provider->GetExporterHealth();
     const auto index = static_cast<std::size_t>(microtel::DropReason::NonRetryableFailure);

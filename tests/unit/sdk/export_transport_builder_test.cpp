@@ -214,7 +214,7 @@ TEST(ExportTransportBuilderTest, NonRetryable_IsCountedWithTheTransportsMessage)
     ASSERT_NE(provider, nullptr);
 
     EndOneSpan(*provider);
-    ASSERT_EQ(provider->ForceFlush(5s), mt::Status::Completed);
+    ASSERT_EQ(provider->ForceFlush(5s), mt::Status::Failed);
 
     const auto health = provider->GetExporterHealth();
     EXPECT_EQ(health.batches_failed, 1U);
@@ -249,7 +249,7 @@ TEST(ExportTransportBuilderTest, AThrowingSendCostsOneRequestNotTheProcess)
     ASSERT_NE(provider, nullptr);
 
     EndOneSpan(*provider);
-    ASSERT_EQ(provider->ForceFlush(5s), mt::Status::Completed);
+    ASSERT_EQ(provider->ForceFlush(5s), mt::Status::Failed);
 
     const auto health = provider->GetExporterHealth();
     EXPECT_EQ(health.batches_failed, 1U);
@@ -609,6 +609,64 @@ TEST(ExportTransportBuilderTest, Shutdown_WithNothingInFlight_NeverCallsCancel)
     EndOneSpan(*provider);
     EXPECT_EQ(provider->Shutdown(5s), mt::Status::Completed);
     EXPECT_EQ(mock->cancel_call_count.load(), 0);
+}
+
+// #486: a trace stage that runs out of time no longer stops the log flush.
+TEST(ExportTransportBuilderTest, ForceFlush_ASlowTraceSend_StillFlushesTheLogs)
+{
+    Owned t;
+    t.fake->send_delay.at(static_cast<std::size_t>(mt::ExportSignal::Traces)) = 3s;
+    auto result =
+        mt::SdkBuilder()
+            .WithBatch(mt::BatchOptions{.schedule_delay = 60s})
+            .WithExportTransport(std::move(t.owner),
+                                 mt::ExportTransportOptions{.metrics = false, .logs = true})
+            .Build();
+    ASSERT_TRUE(result.has_value());
+    const auto provider = *result;
+
+    EndOneSpan(*provider);
+    provider->GetLogger("l")->Emit(mt::LogRecord{});
+    const auto start = std::chrono::steady_clock::now();
+    EXPECT_EQ(provider->ForceFlush(500ms), mt::Status::TimedOut);
+    EXPECT_LT(std::chrono::steady_clock::now() - start, 1500ms) << "one deadline for every stage";
+
+    // The 60 s schedule delay means only the flush can have sent the logs.
+    EXPECT_TRUE(t.fake->WaitForSends(mt::ExportSignal::Logs, 1, 2s))
+        << "the log stage was skipped after the trace stage timed out";
+    (void)provider->Shutdown(1s);
+}
+
+// #484: with a metric interval shorter than one metric send, the metric
+// exporter's queue never empties. ForceFlush waited for it to, and timed out
+// every time; it now waits for what was queued before the call.
+TEST(ExportTransportBuilderTest, ForceFlush_MetricIntervalShorterThanTheExport_Completes)
+{
+    constexpr auto kInterval = 20ms;
+    constexpr auto kLetExportsBackUp = 300ms;
+    constexpr auto kMetricSendTime = 50ms;
+    Owned t;
+    t.fake->send_delay.at(static_cast<std::size_t>(mt::ExportSignal::Metrics)) = kMetricSendTime;
+    auto result =
+        mt::SdkBuilder()
+            .WithMetricInterval(kInterval)
+            .WithBatch(mt::BatchOptions{.schedule_delay = 60s})
+            .WithExportTransport(std::move(t.owner),
+                                 mt::ExportTransportOptions{.metrics = true, .logs = true})
+            .Build();
+    ASSERT_TRUE(result.has_value());
+    const auto provider = *result;
+    provider->GetMeter("m")->CreateCounter<std::int64_t>("n")->Add(1, {});
+    std::this_thread::sleep_for(kLetExportsBackUp);
+
+    EndOneSpan(*provider);
+    provider->GetLogger("l")->Emit(mt::LogRecord{});
+    EXPECT_EQ(provider->ForceFlush(10s), mt::Status::Completed);
+
+    const auto sent = t.fake->Sent();
+    EXPECT_EQ(CountOf(sent, mt::ExportSignal::Traces), 1U);
+    EXPECT_EQ(CountOf(sent, mt::ExportSignal::Logs), 1U);
+    (void)provider->Shutdown(1s);
 }
 
 // ---------------------------------------------------------------------------

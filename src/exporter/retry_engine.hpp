@@ -79,7 +79,9 @@ public:
     ///                      coalesced. A partial success's rejected count is
     ///                      the collector's for the whole request and is
     ///                      recorded once.
-    void Settle(const internal::WireResult& first_attempt,
+    /// @return whether the request was delivered (a partial success counts),
+    ///         which is what an exporter's flush accounting needs (ICP 0041).
+    bool Settle(const internal::WireResult& first_attempt,
                 const RetryAttempt& retry,
                 std::string_view failure_stage,
                 std::uint64_t batches = 1);
