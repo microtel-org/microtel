@@ -8,6 +8,8 @@ An OpenTelemetry-compatible runtime and OTLP exporter for C++20, for traces,
 metrics and logs. It speaks OTLP/gRPC and OTLP/HTTP-protobuf without linking
 gRPC, abseil or the protobuf C++ runtime.
 
+Website: <https://microtel-org.github.io/microtel/>
+
 [![CI](https://github.com/microtel-org/microtel/actions/workflows/ci.yml/badge.svg)](https://github.com/microtel-org/microtel/actions)
 [![release](https://img.shields.io/github/v/release/microtel-org/microtel)](https://github.com/microtel-org/microtel/releases/latest)
 [![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=microtel-org_microtel&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=microtel-org_microtel)
