@@ -1,11 +1,12 @@
 # ICP 0042: HTTP/1.1 fallback for OTLP/HTTP
 
-**Status:** Draft — 2026-10-29. Milestone v1.3.
+**Status:** Accepted — 2026-10-29. Milestone v1.3; tracking issue #503.
 **Affected interfaces / docs:**
 - `docs/interfaces.md` §4.1 (`ITransport` Purpose) and §4.3 (`IWireCodec`
   Purpose, whose LOCKED "one interface" claim is unchanged): text below
 - `docs/threading-model.md` §2.3, **Exactly one I/O thread per `Provider`**
-  (LOCKED — cites `src/transport/http2_transport.hpp:m_io_thread`): text below
+  (LOCKED — cites `src/transport/http2_transport.hpp:m_io_thread`): the rule
+  and its text stand, and only the citation changes (§4)
 - `docs/sequences/connection-establishment.md`: the "ALPN preference is `h2`
   only" line and the "Protocol mismatch is the exception" paragraph. This is an
   M0 normative sequence doc, but neither line carries a LOCKED marker.
@@ -19,15 +20,19 @@
 - code: new `src/transport/http1_transport.{hpp,cpp}`,
   `src/transport/http1_response_parser.{hpp,cpp}` and
   `src/transport/fallback_transport.{hpp,cpp}`; changes to
-  `src/transport/http2_transport.{hpp,cpp}` (ALPN list, fallback signal) and
-  `src/sdk/sdk_builder.cpp` (`CreateTransport`, `WarnOnRiskyConfig`)
+  `src/transport/http2_transport.{hpp,cpp}` (ALPN list, fallback signal),
+  `src/sdk/sdk_builder.cpp` (`CreateTransport`, `WarnOnRiskyConfig`); new
+  `src/wire/header_validation.{hpp,cpp}`, called from `BuildHeaders` in
+  `src/wire/http/http_wire_codec.cpp` and `src/wire/grpc/grpc_wire_codec.cpp`
 - tests: new `tests/fuzz/http1_response_fuzz.cpp` and
-  `tests/integration/transport/http1_*_test.cpp`; inverts
+  `tests/integration/transport/http1_*_test.cpp`; header-validation tests in
+  both codecs' unit tests and over each transport (§3); inverts
   `tests/conformance/http/plaintext_gap_test.cpp`
 
 **Affected tracks:** D (Transport), plus the SDK builder's transport
-construction. There is no public API change and no new configuration key. The
-wire codecs, the encoder and the span hot path are not touched.
+construction, and the wire codecs' header assembly. There is no public API
+change and no new configuration key. The encoder and the span hot path are not
+touched.
 
 ## Summary
 
@@ -95,15 +100,34 @@ connect timeout, so callers see a `Connect` that succeeded.
 - **`Http1Transport`** is the second `ITransport` that carries bytes. It is a
   new implementation in `src/transport/`, built on the existing
   `EpollReactor`, `UniqueFd`, `SslCtx`/`SslSession` and `nosignal_io`. It has
-  its own I/O thread, which means the first one has to stop before it starts
-  (§4).
+  its own I/O thread, started by `Http1Transport::Create`.
 - **`FallbackTransport`** is a thin selector that the builder constructs for
-  `Protocol::Http` only. It owns an `Http2Transport` and forwards to it. On the
-  fallback signal it `Close`s that transport, which joins its I/O thread, then
-  creates an `Http1Transport` and forwards to that from then on. For
+  `Protocol::Http` only. It owns an `Http2Transport` and forwards to it. For
   `Protocol::Grpc`, `CreateTransport` builds a bare `Http2Transport` as today,
   so gRPC cannot fall back by construction.
-- **No codec changes.** `Http1Transport` hands up response headers in the
+- **At most one I/O thread exists at any time.** On the fallback signal,
+  `FallbackTransport::SwitchToHttp1` runs three steps, strictly in order:
+  1. `Http2Transport::Close`. It joins the I/O thread whatever its timeout
+     ("joined either way", `Http2Transport::Close`), and fails what was queued
+     or in flight with the existing retryable "transport closed".
+  2. Destroy the `Http2Transport`.
+  3. Only then `Http1Transport::Create`, which starts the new thread.
+
+  From then on, `FallbackTransport` forwards to the `Http1Transport`.
+- **What `Send` does during the switch.** The active transport is swapped under
+  a `FallbackTransport` mutex. A `Send` that arrives between steps 1 and 3 fails
+  retryable, like today's "already connecting", rather than block.
+- **Why the ordering is achievable.** `Connect` runs on a caller thread
+  (`Provider::Connect`, or an exporter worker on first use; `interfaces.md`
+  §4.1), never on the I/O thread, so step 1 never joins the thread it runs on.
+  [ICP 0019](0019-connect-on-the-io-thread.md), which would move `Connect`
+  onto the I/O thread, is Draft. If it is ever accepted, it has to move the
+  switch off that thread.
+- **The rule over the deadline.** A wedged HTTP/2 I/O thread makes step 1 wait
+  past the connect budget, as `Close` already does at shutdown. The rule takes
+  priority.
+- **No codec changes beyond header validation** (§3). `Http1Transport` hands
+  up response headers in the
   shape `HttpWireCodec` already reads: field names lowercased, and the status
   as a synthesised `:status` entry. `HttpWireCodec` and its classification
   (`error-model.md` §7) are unchanged. Content-Encoding, gzip and the
@@ -128,11 +152,25 @@ connect timeout, so callers see a `Connect` that succeeded.
   - The other fields come from the spec, with pseudo-headers dropped. ICP 0038
     already rejects `host`, `connection`, `transfer-encoding`, `upgrade` and
     the rest at `Build()`.
-- **Header injection.** The serialiser rejects any field name or value that
-  contains CR, LF or NUL, which fails the request as non-retryable. ICP 0038
-  and #412 check static headers at `Build()`. The `IAuthProvider` token is
-  produced at send time and is checked nowhere today. In HTTP/1.1 a CR or LF
-  in it is header injection.
+- **Header validation at assembly, for both transports.**
+  - **Why now:** ICP 0038 and #412 check static headers at `Build()`, but the
+    `IAuthProvider` token is produced at send time and is checked nowhere
+    today. In HTTP/1.1 a CR or LF in it is header injection.
+  - **Where:** a new `wire::ValidateRequestHeaders` (`src/wire/header_validation.*`)
+    rejects any field name or value containing CR, LF or NUL. Both codecs'
+    `BuildHeaders` call it last, after the auth header is appended, so it covers
+    every field, on HTTP/2 and on HTTP/1.1, and OTLP/gRPC as well.
+  - **Failure:** the request fails as non-retryable through the existing
+    `BuildHeaders` error path, before `ITransport::Send`. The message names the
+    field and never its value, which may be a secret.
+  - **Tests:**
+    - unit tests in `http_wire_codec_test.cpp` and `grpc_wire_codec_test.cpp`:
+      an auth provider returning a token with CR, LF or NUL gives a
+      non-retryable result, and the mock transport's `Send` is never called;
+    - one integration test per transport (`Http2Transport`, `Http1Transport`)
+      driving `HttpWireCodec` against a fake peer, asserting the peer receives
+      no request.
+  - **The serialiser keeps no check of its own.** It relies on this one.
 
 **Responses: a hand-written parser, `src/transport/http1_response_parser.*`**
 - **What it reads:**
@@ -181,17 +219,17 @@ becomes "the OTLP wire shape over HTTP/2, or HTTP/1.1 for OTLP/HTTP (ICP
 - "over HTTP/2" and "one nghttp2 session" take the same qualification as
   §4.1.
 - The stale `Send is single-threaded — only the exporter worker calls it.
-  (LOCKED.)` line is replaced by the ICP 0009 wording that `interfaces.md` has
+  (LOCKED.)` line is replaced by the ICP 0009 wording that `interfaces.md`
   carries.
 
-**`docs/threading-model.md`, Exactly one I/O thread per `Provider`:**
-- The citation adds `src/transport/http1_transport.hpp:m_io_thread`.
-- The second sentence becomes:
-
-  > One socket, one reactor, and one nghttp2 session or one HTTP/1.1
-  > connection: each transport holds a single `m_io_thread`, and a
-  > `FallbackTransport` closes its `Http2Transport`, joining that thread,
-  > before its `Http1Transport` starts one.
+**`docs/threading-model.md`, Exactly one I/O thread per `Provider`:** the
+rule and its text stand unchanged. §2 is what keeps them true. Only the
+citation changes. It keeps `src/transport/http2_transport.hpp:m_io_thread`
+and `src/sdk/sdk_builder.cpp:Build`, and adds two files that the implementing PR
+creates: `src/transport/http1_transport.hpp:m_io_thread` and
+`src/transport/fallback_transport.cpp:SwitchToHttp1`. The implementing PR
+updates the marker in the same commit that creates them, so `citation-check`
+resolves it.
 
 **`docs/sequences/connection-establishment.md`:**
 - "ALPN preference is `h2` only — microtel does not negotiate HTTP/1.1
@@ -228,6 +266,8 @@ with `Error::Kind::Protocol`.
   ALPN `http/1.1`/`none` mismatch, now delivers. The `Build()` plaintext
   warning disappears. Throughput against those endpoints is one request at a
   time. Endpoints that already worked over h2 or h2c are unaffected.
+- **Contributors:** request headers are validated once, in the codecs'
+  `BuildHeaders`. A new header source goes in before that call, not after it.
 - **Contributors:** a second transport implementation now carries bytes. A
   change to `ITransport` semantics, such as cancellation, deadlines or the
   response caps, lands in both `Http2Transport` and `Http1Transport`.
