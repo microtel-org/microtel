@@ -297,8 +297,8 @@ Created by the `Provider` at `Build()` time. Owned by the `Provider`. Stateless,
 
 #### Threading
 
-- `Encode` is called only by the exporter worker (LOCKED).
-- The interface is **not** thread-safe — concurrent `Encode` calls would race on internal scratch state if any exists. Restricting calls to a single thread keeps the implementation simple.
+- Each `Encode` overload is called only by its signal's exporter worker: `OtlpExporter`, `OtlpMetricExporter` and `OtlpLogExporter` respectively (LOCKED — cites `src/exporter/otlp_exporter.hpp:m_worker`, `src/exporter/otlp_metric_exporter.hpp:m_worker`, `src/exporter/otlp_log_exporter.hpp:m_worker`).
+- One encoder per `Provider` serves all three workers, so `Encode` calls may run concurrently, one per signal, and the implementation must be safe for that ([ICP 0040](icps/0040-contract-docs-match-the-code.md), amendment). `wire::OtlpEncoder` is safe because it holds no state: no data members, one `UpbArena` per call, no statics. Any cache or scratch state added later must keep concurrent calls safe; `tests/unit/sdk/shared_encoder_concurrency_test.cpp` runs the three workers through one Provider under TSan.
 
 #### Error model
 
