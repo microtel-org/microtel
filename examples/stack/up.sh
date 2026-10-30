@@ -86,8 +86,8 @@ cat <<'BANNER'
 
   Examples export to:
     OTLP/gRPC   http://localhost:4317    <- the default; use this
-    OTLP/HTTP   https://localhost:4318   <- TLS only, see the h2c note in
-                                            docs/compatibility-matrix.md §4
+    OTLP/HTTP   http://localhost:4318    <- HTTP/1.1, one request at a time;
+                                            see docs/compatibility-matrix.md §4
 
   Tempo query API:  http://localhost:3200
     curl -s "http://localhost:3200/api/traces/<trace-id>" | head -c 400

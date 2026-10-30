@@ -846,7 +846,7 @@ int main()
       <ul class="endpoints">
         <li><code>grpc://collector:4317</code><span>OTLP/gRPC</span></li>
         <li><code>https://collector:4318</code><span>OTLP/HTTP over TLS</span></li>
-        <li><code>http://collector:4318</code><span>plaintext OTLP/HTTP needs a receiver that accepts HTTP/2 (h2c). The stock Collector doesn't; use gRPC or TLS. HTTP/1.1 support is planned for v1.3.</span></li>
+        <li><code>http://collector:4318</code><span>plaintext OTLP/HTTP. Tries h2c first and falls back to HTTP/1.1, which the stock Collector serves (since v1.2.6). HTTP/1.1 sends one request at a time; for throughput use gRPC or TLS.</span></li>
       </ul>
     </div>
     <p><a href="https://github.com/microtel-org/microtel/blob/master/docs/migration-from-otel-cpp.md">Migrating from opentelemetry-cpp →</a></p>
@@ -864,7 +864,7 @@ int main()
         <tr><th scope="row">Metrics</th><td><span class="st exp">Experimental until v1.3</span></td></tr>
         <tr><th scope="row">OTLP/gRPC</th><td><span class="st ok">Supported</span></td></tr>
         <tr><th scope="row">OTLP/HTTP over TLS</th><td><span class="st ok">Supported</span></td></tr>
-        <tr><th scope="row">Plaintext OTLP/HTTP</th><td><span class="st lim">h2c receivers only; HTTP/1.1 planned for v1.3</span></td></tr>
+        <tr><th scope="row">Plaintext OTLP/HTTP</th><td><span class="st ok">Supported since v1.2.6; HTTP/1.1 receivers are served one request at a time</span></td></tr>
         <tr><th scope="row">C leaf for microcontrollers</th><td><span class="st exp">Experimental, traces only</span></td></tr>
         <tr><th scope="row">opentelemetry-cpp API shim</th><td><span class="st exp">Experimental</span></td></tr>
         <tr><th scope="row">Static libraries</th><td><span class="st ok">Yes</span></td></tr>

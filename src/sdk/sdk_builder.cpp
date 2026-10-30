@@ -359,33 +359,19 @@ void WarnOnUnknownKeys(const config::Config& cfg)
 /// @brief Emit the warnings for configurations that are legal but very likely
 ///        wrong.
 ///
-/// Neither case is rejected here. Plaintext OTLP/HTTP is legitimate in front of
-/// an h2c-capable proxy (and the bench harness's own sink), and a default build
-/// permits `insecure = true` outright (docs/configuration.md §3.5) — the hard ban belongs to
+/// Not rejected here: a default build permits `insecure = true` outright
+/// (docs/configuration.md §3.5) — the hard ban belongs to
 /// `MICROTEL_FORBID_INSECURE_TLS=ON`, which `config::Validate` enforces before
-/// this ever runs. Both are, however, overwhelmingly likely to be a mistake,
-/// and `config::Validate` returns `Expected<void, ConfigError>`: it can reject
-/// a configuration but it cannot warn about one.
+/// this ever runs. It is, however, overwhelmingly likely to be a mistake, and
+/// `config::Validate` returns `Expected<void, ConfigError>`: it can reject a
+/// configuration but it cannot warn about one.
 ///
-/// @param cfg Borrowed; read only. Both fields are post-resolution:
-///            `cfg.endpoint.scheme` has collapsed `grpc://` to `http`, and
-///            `cfg.protocol` has already taken `Grpc` from that same scheme,
-///            so the plaintext warning below sees a gRPC endpoint as gRPC.
+/// Plaintext OTLP/HTTP warned here until ICP 0042: it now falls back to
+/// HTTP/1.1 for a receiver that speaks only that.
+///
+/// @param cfg Borrowed; read only.
 void WarnOnRiskyConfig(const config::Config& cfg) noexcept
 {
-    // h2c with prior knowledge: microtel has no HTTP/1.1 mode, and a stock
-    // OpenTelemetry Collector's plaintext OTLP/HTTP receiver has no h2c. See
-    // issue #166. OTLP/gRPC over the same scheme is unaffected — gRPC is h2c
-    // by definition — so the protocol is part of the condition.
-    if (cfg.protocol == Protocol::Http && cfg.endpoint.scheme == "http")
-    {
-        internal::LogImpl(
-            LogLevel::Warn,
-            "plaintext OTLP/HTTP (http:// with protocol=http) is HTTP/2 with prior knowledge "
-            "and cannot reach an HTTP/1.1-only OTLP receiver such as a stock OpenTelemetry "
-            "Collector - use https:// or OTLP/gRPC; see docs/compatibility-matrix.md");
-    }
-
     if (cfg.tls.insecure)
     {
         internal::LogImpl(LogLevel::Warn,

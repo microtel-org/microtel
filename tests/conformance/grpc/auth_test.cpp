@@ -28,8 +28,8 @@
 // The otlp/auth gRPC port (`:4347`) has no TLS, and that is the original design
 // intent restored: a plaintext port isolates the `Authorization` header from
 // the handshake entirely, so an auth failure cannot possibly be a trust
-// failure. The OTLP/HTTP twin had to give that up — microtel cannot reach a
-// plaintext collector HTTP receiver at all (issue #166), so `:4348` carries
+// failure. The OTLP/HTTP twin had to give that up — until v1.2.6 microtel could
+// not reach a plaintext collector HTTP receiver at all (issue #166), so `:4348` carries
 // server TLS material and the HTTP tests buy the isolation back by pinning the
 // correct CA in every test. gRPC needs neither workaround: gRPC is h2c by
 // definition, so the negative test below differs from the positive ones in
