@@ -79,6 +79,16 @@ public:
     /// reset by the I/O thread, which then fulfils it.
     void Cancel(const internal::RequestHandle& handle) noexcept override;
 
+    /// @brief True when the last `Connect` failed because the peer speaks
+    ///        HTTP/1.1 only (ICP 0042 §1).
+    ///
+    /// Set by a plaintext peer that answered the HTTP/2 preface with an
+    /// HTTP/1.1 response, or, for `Protocol::Http`, by a TLS peer that
+    /// selected ALPN `http/1.1` or nothing. `FallbackTransport` reads it so
+    /// that nothing has to match error text. Reset by every `Connect`.
+    /// Thread-safe.
+    [[nodiscard]] bool PeerSpeaksOnlyHttp1() const noexcept;
+
     /// @brief Returns the current connection state. Thread-safe.
     [[nodiscard]] microtel::ConnectionState GetState() const noexcept override;
 
@@ -298,8 +308,10 @@ private:
     /// claims it. Atomic because `Connect` writes it on the caller thread while
     /// the I/O thread may be in a recv callback.
     std::atomic<bool> m_first_plaintext_recv{false};
-    /// Set when that first read turned out to be an HTTP/1.1 response.
-    /// Reset by every `Http2Handshake`, so a later reconnect cannot inherit it.
+    /// Set when that first read turned out to be an HTTP/1.1 response, or when
+    /// a TLS peer for `Protocol::Http` selected ALPN `http/1.1` or nothing
+    /// (`PeerSpeaksOnlyHttp1`). Reset by every `Connect` and `Http2Handshake`,
+    /// so a later reconnect cannot inherit it.
     std::atomic<bool> m_peer_spoke_http1{false};
     /// Set when a send failed with EPIPE or ECONNRESET — the peer hung up under
     /// our own write. Since issue #177 those arrive as errno values instead of

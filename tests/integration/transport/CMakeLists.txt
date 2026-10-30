@@ -31,3 +31,9 @@ microtel_add_integration_test(
     NAME    http1_transport_test
     SOURCES http1_transport_test.cpp
     LIBS    microtel_transport microtel_http_wire OpenSSL::SSL OpenSSL::Crypto)
+
+# ICP 0042: FallbackTransport against HTTP/1.1-only peers, plaintext and TLS.
+microtel_add_integration_test(
+    NAME    fallback_transport_test
+    SOURCES fallback_transport_test.cpp
+    LIBS    microtel_transport microtel_http_wire OpenSSL::SSL OpenSSL::Crypto PkgConfig::NGHTTP2)

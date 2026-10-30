@@ -44,6 +44,7 @@
 #include "sdk/sdk_provider.hpp"
 #include "sdk/view_registry.hpp"
 #include "transport/epoll_reactor.hpp"
+#include "transport/fallback_transport.hpp"
 #include "transport/http2_transport.hpp"
 #include "wire/custom/export_transport_codec.hpp"
 #include "wire/encoder/otlp_encoder.hpp"
@@ -456,23 +457,47 @@ void WarnOnRiskyConfig(const config::Config& cfg) noexcept
     return out;
 }
 
-[[nodiscard]] Expected<std::unique_ptr<internal::ITransport>, ConfigError> CreateTransport()
+[[nodiscard]] ConfigError TransportInitError(std::string_view what, const Error& error)
+{
+    return ConfigError{.kind = ConfigError::Kind::Unspecified,
+                       .field = {},
+                       .message = std::string{what} + " init failed: " + error.message};
+}
+
+[[nodiscard]] Expected<std::unique_ptr<internal::IReactor>, Error> CreateReactor()
 {
     auto reactor = transport::EpollReactor::Create();
     if (!reactor)
     {
-        return make_unexpected(
-            ConfigError{.kind = ConfigError::Kind::Unspecified,
-                        .field = {},
-                        .message = "reactor init failed: " + reactor.error().message});
+        return make_unexpected(reactor.error());
+    }
+    return std::unique_ptr<internal::IReactor>{std::move(*reactor)};
+}
+
+/// @brief The transport for @p protocol: OTLP/HTTP gets the HTTP/1.1
+///        fallback, gRPC a bare `Http2Transport`, so it cannot fall back by
+///        construction (ICP 0042 §2).
+[[nodiscard]] Expected<std::unique_ptr<internal::ITransport>, ConfigError> CreateTransport(
+    Protocol protocol)
+{
+    if (protocol == Protocol::Http)
+    {
+        auto fallback = transport::FallbackTransport::Create(CreateReactor);
+        if (!fallback)
+        {
+            return make_unexpected(TransportInitError("transport", fallback.error()));
+        }
+        return std::move(*fallback);
+    }
+    auto reactor = CreateReactor();
+    if (!reactor)
+    {
+        return make_unexpected(TransportInitError("reactor", reactor.error()));
     }
     auto http2 = transport::Http2Transport::Create(std::move(*reactor));
     if (!http2)
     {
-        return make_unexpected(
-            ConfigError{.kind = ConfigError::Kind::Unspecified,
-                        .field = {},
-                        .message = "transport init failed: " + http2.error().message});
+        return make_unexpected(TransportInitError("transport", http2.error()));
     }
     return std::move(*http2);
 }
@@ -480,13 +505,13 @@ void WarnOnRiskyConfig(const config::Config& cfg) noexcept
 /// @brief The HTTP/2 transport, or none with an application `ExportTransport`:
 ///        no Http2Transport, no reactor, no I/O thread (ICP 0036 Decision 1).
 [[nodiscard]] Expected<std::unique_ptr<internal::ITransport>, ConfigError> CreateTransportUnless(
-    bool custom_transport)
+    bool custom_transport, Protocol protocol)
 {
     if (custom_transport)
     {
         return std::unique_ptr<internal::ITransport>{};
     }
-    return CreateTransport();
+    return CreateTransport(protocol);
 }
 
 constexpr std::string_view kHttpMetricsPath = "/v1/metrics";
@@ -1167,7 +1192,7 @@ Expected<std::shared_ptr<Provider>, ConfigError> SdkBuilder::Build()
     auto auth = BuildAuthProvider(m_impl->auth_cb, m_impl->auth_cache_ttl);
 
     // --- Steps 5–6: transport -----------------------------------------------
-    auto transport_result = CreateTransportUnless(custom_transport);
+    auto transport_result = CreateTransportUnless(custom_transport, cfg.protocol);
     if (!transport_result)
     {
         return make_unexpected(transport_result.error());

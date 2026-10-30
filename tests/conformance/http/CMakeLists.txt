@@ -28,10 +28,12 @@ microtel_add_conformance_test(
     SOURCES auth_test.cpp
     LIBS    microtel_sdk)
 
+# ICP 0042: plaintext OTLP/HTTP to the HTTP/1.1-only receiver on 4318. Was
+# conformance_http_plaintext_gap_test, which pinned the gap.
 microtel_add_conformance_test(
-    NAME    conformance_http_plaintext_gap_test
-    SOURCES plaintext_gap_test.cpp
-    LIBS    microtel_sdk)
+    NAME    conformance_http_plaintext_http1_test
+    SOURCES plaintext_http1_test.cpp
+    LIBS    microtel_sdk microtel_api)
 
 microtel_add_conformance_test(
     NAME    conformance_http_logs_test
