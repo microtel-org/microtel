@@ -850,7 +850,7 @@ private:
     static constexpr int kSplitHoldOpenMs = 150;
     /// The stall script's stream window: a request body stops after this.
     static constexpr std::uint32_t kStallWindowBytes = 64;
-    static constexpr std::int32_t kOpenWindowBytes = std::int32_t{1} << 20;
+    static constexpr std::int32_t kOpenWindowBytes = 1024 * 1024;
 
     ServerScript m_script = ServerScript::RespondToRequest;
     int m_listen_fd = -1;

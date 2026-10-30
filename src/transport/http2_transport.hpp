@@ -71,7 +71,12 @@ public:
     /// @brief Stub — stream submission in M3-D5.
     [[nodiscard]] internal::RequestHandle Send(internal::RequestSpec spec) noexcept override;
 
-    /// @brief Stub — RST_STREAM in M3-D5.
+    /// @brief Abandon a request; synchronous with respect to its payload.
+    ///
+    /// Once this returns the transport reads no more of the request's
+    /// payload, so the caller may free it (issue #508). A request still queued
+    /// is failed `Cancelled` before this returns; one already on the wire is
+    /// reset by the I/O thread, which then fulfils it.
     void Cancel(const internal::RequestHandle& handle) noexcept override;
 
     /// @brief Returns the current connection state. Thread-safe.
@@ -109,6 +114,21 @@ public:
                           std::string_view value) noexcept;
     void OnResponseData(std::int32_t stream_id, const std::uint8_t* data, std::size_t len) noexcept;
 
+    struct StreamState;
+
+    /// @brief Copy the next request body bytes of @p state into @p buf.
+    ///
+    /// Called by nghttp2's data-provider trampoline. Refuses, so nghttp2
+    /// resets the stream, once the request has been cancelled: the payload is
+    /// borrowed, and its owner may free it as soon as `Cancel` returns
+    /// (issue #508).
+    ///
+    /// @return Bytes copied, or `NGHTTP2_ERR_TEMPORAL_CALLBACK_FAILURE`.
+    std::ptrdiff_t ReadPayload(StreamState& state,
+                               std::uint8_t* buf,
+                               std::size_t length,
+                               std::uint32_t* data_flags) noexcept;
+
     /// @brief Which response memory cap a stream exceeded, if any.
     ///
     /// Recorded on the stream rather than acted on where it is detected: both
@@ -138,6 +158,9 @@ public:
         std::size_t trailer_bytes = 0;
         /// Set once, by whichever cap this stream breached first.
         ResponseOverflow overflow = ResponseOverflow::None;
+        /// Set by `DrainCancelQueue`; `ReadPayload` reads no more of the
+        /// payload once it is.
+        bool cancelled = false;
     };
 
 private:
@@ -312,7 +335,11 @@ private:
     // Send queues — caller-thread writes, I/O thread drains.
     std::mutex m_pending_mu;
     std::vector<PendingRequest> m_pending_queue;
+    /// Also held by `ReadPayload` while it copies, so `Cancel` cannot return
+    /// while a copy from the payload it cancels is under way.
     std::mutex m_cancel_mu;
+    /// Requests cancelled after the I/O thread took them from
+    /// `m_pending_queue`. `ReadPayload` refuses any id listed here.
     std::vector<std::uint64_t> m_cancel_queue;
 
     // I/O-thread-only stream tracking (no mutex needed).
