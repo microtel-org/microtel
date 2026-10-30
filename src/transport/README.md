@@ -9,7 +9,9 @@ in-flight state and reconnect after a drop. Both wire codecs sit on top of it.
 The HTTP/1.1 transport for OTLP/HTTP receivers that do not speak HTTP/2
 ([ICP 0042](../../docs/icps/0042-http1-fallback-for-otlp-http.md)): serial
 requests on one keep-alive connection, plaintext or TLS (ALPN `http/1.1`),
-with the same reactor and connection setup.
+with the same reactor and connection setup. OTLP/HTTP gets a
+`FallbackTransport`, which starts on HTTP/2 and switches to HTTP/1.1 when a
+`Connect` finds the peer HTTP/1.1-only; gRPC gets a bare `Http2Transport`.
 It is also the seam where an HTTP/3 transport could drop in for v1.6+ without
 changing `IWireCodec`.
 
@@ -17,6 +19,7 @@ changing `IWireCodec`.
 |---|---|
 | [`http2_transport.hpp`](http2_transport.hpp) | `Http2Transport`, the `ITransport` implementation |
 | [`http1_transport.hpp`](http1_transport.hpp) | `Http1Transport`, the HTTP/1.1 `ITransport` (ICP 0042): serial requests, background reconnect after keep-alive ends, one stale-connection retry |
+| [`fallback_transport.hpp`](fallback_transport.hpp) | `FallbackTransport`, the OTLP/HTTP `ITransport`: HTTP/2 until the peer proves HTTP/1.1-only (plaintext preface answered in HTTP/1.1, or TLS ALPN `http/1.1` or none), then `Http1Transport`, with at most one I/O thread at a time |
 | [`event_log_limiter.hpp`](event_log_limiter.hpp) | How loudly `Http1Transport` logs its reconnects and retries: Info for the first of each, then at most one Info summary a minute, else Debug |
 | [`epoll_reactor.hpp`](epoll_reactor.hpp) | `EpollReactor`, the `IReactor` implementation |
 | [`nosignal_io.hpp`](nosignal_io.hpp) | `SendNoSignal` and the SIGPIPE-safe TLS `BIO` |
@@ -73,6 +76,11 @@ tracks A, B, C and E could unblock).
     (`Send_ResponseOverMaxResponseBytes_*`,
     `Send_TrailersOverMaxTrailerBytes_*`).
   - `http2_tls_connect_test.cpp`: TLS, ALPN, certificate handling.
+  - `fallback_transport_test.cpp`: `FallbackTransport` against HTTP/1.1-only
+    peers: plaintext and TLS fallback, gRPC never falling back, the decision
+    surviving a reconnect, one I/O thread across the switch, `Send` during
+    it, and `Cancel` routing. Against an h2 peer it stays on HTTP/2
+    (`http2_send_test.cpp`); the ALPN offer is in `http2_tls_connect_test.cpp`.
   - `http1_transport_test.cpp`: `Http1Transport` against the scripted
     HTTP/1.1 peer in [`tests/helpers/fake_http1_peer.hpp`](../../tests/helpers/fake_http1_peer.hpp),
     plaintext and TLS: keep-alive and serial sends, chunked and

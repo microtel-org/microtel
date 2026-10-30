@@ -9,6 +9,7 @@
 // there is no checked-in key material and nothing shells out to `openssl`.
 
 #include "microtel/error.hpp"
+#include "microtel/protocol.hpp"
 
 #include "transport/epoll_reactor.hpp"
 #include "transport/http2_transport.hpp"
@@ -699,6 +700,8 @@ struct ConnectOutcome
     bool connected = false;
     microtel::Error::Kind kind = microtel::Error::Kind::Unspecified;
     std::string message;
+    /// `Http2Transport::PeerSpeaksOnlyHttp1` after the attempt (ICP 0042).
+    bool http1_only = false;
 };
 
 /// Build a transport, run one `Connect`, close it, and report what happened.
@@ -728,6 +731,7 @@ ConnectOutcome ConnectOnce(const mti::ConnectOptions& opts)
         outcome.kind = result.error().kind;
         outcome.message = result.error().message;
     }
+    outcome.http1_only = transport->PeerSpeaksOnlyHttp1();
     (void)transport->Close(std::chrono::milliseconds(1000));
     return outcome;
 }
@@ -934,6 +938,79 @@ TEST(Http2TlsConnectTest, AlpnNotNegotiated_ConnectFailsWithProtocolError)
     EXPECT_FALSE(outcome.connected) << "no ALPN answer means no agreement to speak h2";
     EXPECT_EQ(outcome.kind, microtel::Error::Kind::Protocol);
     EXPECT_NE(outcome.message.find("none"), std::string::npos) << "error was: " << outcome.message;
+}
+
+// ---------------------------------------------------------------------------
+// ALPN for OTLP/HTTP: h2, then http/1.1 (ICP 0042 §1)
+//
+// For `Protocol::Http` the transport also offers http/1.1, so an HTTP/1.1-only
+// receiver can answer honestly, and reports such an answer, or none, through
+// `PeerSpeaksOnlyHttp1` for `FallbackTransport`. gRPC still offers h2 alone.
+// ---------------------------------------------------------------------------
+
+TEST(Http2TlsConnectTest, OtlpHttp_H2Server_StillConnectsOverH2)
+{
+    const Credential server_cred = MakeSelfSignedCert("localhost", "DNS:localhost");
+    ASSERT_TRUE(server_cred.cert);
+    TlsHttp2Server server;
+    const int port = server.Start(server_cred, ServerAlpn::H2);
+    ASSERT_GT(port, 0);
+
+    auto opts = MakeOptions(port);
+    opts.insecure = true;
+    opts.protocol = microtel::Protocol::Http;
+    const auto outcome = ConnectOnce(opts);
+    EXPECT_TRUE(outcome.connected) << outcome.message;
+    EXPECT_FALSE(outcome.http1_only);
+}
+
+TEST(Http2TlsConnectTest, OtlpHttp_Http11Server_IsReportedHttp1Only)
+{
+    const Credential server_cred = MakeSelfSignedCert("localhost", "DNS:localhost");
+    ASSERT_TRUE(server_cred.cert);
+    TlsHttp2Server server;
+    const int port = server.Start(server_cred, ServerAlpn::Http11);
+    ASSERT_GT(port, 0);
+
+    auto opts = MakeOptions(port);
+    opts.insecure = true;
+    opts.protocol = microtel::Protocol::Http;
+    const auto outcome = ConnectOnce(opts);
+    EXPECT_FALSE(outcome.connected);
+    EXPECT_EQ(outcome.kind, microtel::Error::Kind::Protocol) << outcome.message;
+    EXPECT_TRUE(outcome.http1_only);
+}
+
+TEST(Http2TlsConnectTest, OtlpHttp_NoAlpn_IsReportedHttp1Only)
+{
+    const Credential server_cred = MakeSelfSignedCert("localhost", "DNS:localhost");
+    ASSERT_TRUE(server_cred.cert);
+    TlsHttp2Server server;
+    const int port = server.Start(server_cred, ServerAlpn::None);
+    ASSERT_GT(port, 0);
+
+    auto opts = MakeOptions(port);
+    opts.insecure = true;
+    opts.protocol = microtel::Protocol::Http;
+    const auto outcome = ConnectOnce(opts);
+    EXPECT_FALSE(outcome.connected);
+    EXPECT_TRUE(outcome.http1_only);
+}
+
+TEST(Http2TlsConnectTest, Grpc_NoAlpn_IsNotReportedHttp1Only)
+{
+    const Credential server_cred = MakeSelfSignedCert("localhost", "DNS:localhost");
+    ASSERT_TRUE(server_cred.cert);
+    TlsHttp2Server server;
+    const int port = server.Start(server_cred, ServerAlpn::None);
+    ASSERT_GT(port, 0);
+
+    auto opts = MakeOptions(port);
+    opts.insecure = true;
+    opts.protocol = microtel::Protocol::Grpc;
+    const auto outcome = ConnectOnce(opts);
+    EXPECT_FALSE(outcome.connected);
+    EXPECT_FALSE(outcome.http1_only) << "gRPC cannot use HTTP/1.1, so it never asks";
 }
 
 // ---------------------------------------------------------------------------

@@ -133,8 +133,9 @@ public:
     FakeHttp1Peer(FakeHttp1Peer&&) = delete;
     FakeHttp1Peer& operator=(FakeHttp1Peer&&) = delete;
 
-    /// Listen on 127.0.0.1 and start serving. @return The port, or -1.
-    int Start()
+    /// Listen on 127.0.0.1:@p port (0: any) and start serving.
+    /// @return The port, or -1.
+    int Start(int port = 0)
     {
         if (m_tls != PeerTls::None && !SetUpTls())
         {
@@ -146,6 +147,7 @@ public:
         sockaddr_in addr{};
         addr.sin_family = AF_INET;
         addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+        addr.sin_port = htons(static_cast<std::uint16_t>(port));
         // NOLINTBEGIN(cppcoreguidelines-pro-type-reinterpret-cast)
         if (::bind(m_listen_fd, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) != 0 ||
             ::listen(m_listen_fd, kBacklog) != 0)

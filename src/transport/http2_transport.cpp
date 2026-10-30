@@ -5,6 +5,7 @@
 
 #include "microtel/error.hpp"
 #include "microtel/internal/transport.hpp"
+#include "microtel/protocol.hpp"
 
 #include "transport/connection_setup.hpp"
 #include "transport/nosignal_io.hpp"
@@ -24,6 +25,7 @@
 #include <memory>
 #include <mutex>
 #include <optional>
+#include <span>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -63,6 +65,7 @@ constexpr const char* kPeerClosedMessage = "peer closed the connection during th
 
 /// The only ALPN protocol microtel offers, and the only one it can use.
 constexpr std::string_view kAlpnH2{"h2"};
+constexpr std::string_view kAlpnHttp11{"http/1.1"};
 
 microtel::Error AlpnMismatchError(std::string_view selected)
 {
@@ -280,6 +283,11 @@ Http2Transport::~Http2Transport() noexcept
 // ITransport — state
 // ---------------------------------------------------------------------------
 
+bool Http2Transport::PeerSpeaksOnlyHttp1() const noexcept
+{
+    return m_peer_spoke_http1.load(std::memory_order_acquire);
+}
+
 microtel::ConnectionState Http2Transport::GetState() const noexcept
 {
     return m_state.load(std::memory_order_acquire);
@@ -302,6 +310,7 @@ microtel::Expected<void, microtel::Error> Http2Transport::Connect(
             {.kind = microtel::Error::Kind::Network, .message = msg}};
     }
 
+    m_peer_spoke_http1.store(false, std::memory_order_release);  // per attempt (ICP 0042)
     // Restore whichever state we won from, not unconditionally Disconnected:
     // a failed *re*connect leaves the transport still recovering from a drop,
     // and reporting Disconnected would tell an operator the connection never
@@ -890,9 +899,17 @@ void Http2Transport::OnResponseData(std::int32_t stream_id,
 microtel::Expected<std::pair<common::raii::SslCtx, common::raii::SslSession>, microtel::Error>
 Http2Transport::TlsHandshake(const internal::ConnectOptions& opts, const std::string& host)
 {
-    // Advertise HTTP/2 via ALPN.
-    static constexpr std::array<std::uint8_t, 3> kAlpn{2, 'h', '2'};
-    auto tls = TlsConnect(m_socket.Get(), opts, host, kAlpn);
+    // Advertise HTTP/2 via ALPN, and for OTLP/HTTP HTTP/1.1 after it, so an
+    // HTTP/1.1-only receiver can say so (ICP 0042 §1). gRPC needs h2.
+    static constexpr std::array<std::uint8_t, 3> kAlpnGrpc{2, 'h', '2'};
+    static constexpr std::array<std::uint8_t, 12> kAlpnHttp{
+        2, 'h', '2', 8, 'h', 't', 't', 'p', '/', '1', '.', '1'};
+    const bool otlp_http = opts.protocol == Protocol::Http;
+    auto tls = TlsConnect(m_socket.Get(),
+                          opts,
+                          host,
+                          otlp_http ? std::span<const std::uint8_t>{kAlpnHttp}
+                                    : std::span<const std::uint8_t>{kAlpnGrpc});
     if (!tls)
     {
         return microtel::Unexpected<microtel::Error>{tls.error()};
@@ -905,6 +922,12 @@ Http2Transport::TlsHandshake(const internal::ConnectOptions& opts, const std::st
     const std::string_view alpn = SelectedAlpn(tls->second.Get());
     if (alpn != kAlpnH2)
     {
+        // HTTP/2 over TLS requires ALPN h2 (RFC 9113 §3.2), so a peer that
+        // chose http/1.1, or nothing, can only be spoken to in HTTP/1.1.
+        if (otlp_http && (alpn.empty() || alpn == kAlpnHttp11))
+        {
+            m_peer_spoke_http1.store(true, std::memory_order_release);
+        }
         return microtel::Unexpected<microtel::Error>{AlpnMismatchError(alpn)};
     }
 

@@ -15,6 +15,7 @@
 #include "fakes/fake_reactor.hpp"
 #include "helpers/gated_reactor.hpp"
 #include "transport/epoll_reactor.hpp"
+#include "transport/fallback_transport.hpp"
 #include "transport/http2_transport.hpp"
 #include "wire/grpc/grpc_wire_codec.hpp"
 #include "wire/http/http_wire_codec.hpp"
@@ -1921,6 +1922,48 @@ TEST(Http2TransportSendIntegrationTest, Cancel_StreamStalledOnFlowControl_NeverR
     std::this_thread::sleep_for(kSettleTime);
     EXPECT_EQ(server.RequestBodyBytes(), stalled_at)
         << "no byte of a cancelled request's body may be sent after Cancel returns";
+
+    EXPECT_EQ(t->Close(std::chrono::milliseconds(2000)), microtel::Status::Completed);
+    server.Stop();
+}
+
+// ---------------------------------------------------------------------------
+// FallbackTransport against a peer that speaks HTTP/2 (ICP 0042)
+//
+// The fallback is for HTTP/1.1-only receivers; one that speaks h2 must see no
+// difference: the transport stays on HTTP/2 and the export goes through.
+// ---------------------------------------------------------------------------
+
+TEST(Http2TransportSendIntegrationTest, FallbackTransport_H2Peer_StaysOnHttp2)
+{
+    MinimalHttp2RequestServer server;
+    const int port = server.Start(ServerScript::RespondToRequest);
+    ASSERT_GT(port, 0);
+
+    auto transport_result = mtt::FallbackTransport::Create(
+        []() -> microtel::Expected<std::unique_ptr<mti::IReactor>, microtel::Error>
+        {
+            auto reactor = mtt::EpollReactor::Create();
+            if (!reactor)
+            {
+                return microtel::Unexpected<microtel::Error>{reactor.error()};
+            }
+            return std::unique_ptr<mti::IReactor>{std::move(*reactor)};
+        });
+    ASSERT_TRUE(transport_result.has_value());
+    auto& t = *transport_result;
+
+    auto opts = MakeConnectOptions(port);
+    opts.protocol = microtel::Protocol::Http;
+    ASSERT_TRUE(t->Connect(opts).has_value());
+    EXPECT_FALSE(t->IsHttp1());
+
+    const std::vector<std::byte> payload(kSmallPayloadBytes, std::byte{0x5A});
+    auto handle = t->Send(MakeRequestSpec("127.0.0.1:" + std::to_string(port), payload));
+    EXPECT_NE(handle.Id(), 0U);
+    const auto result = handle.Future().get();
+    EXPECT_TRUE(result.success) << ErrorMessage(result);
+    EXPECT_EQ(server.RequestsBegun(), 1);
 
     EXPECT_EQ(t->Close(std::chrono::milliseconds(2000)), microtel::Status::Completed);
     server.Stop();
