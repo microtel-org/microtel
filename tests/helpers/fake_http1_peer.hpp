@@ -26,6 +26,7 @@
 #include <atomic>
 #include <cerrno>
 #include <chrono>
+#include <csignal>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
@@ -41,7 +42,6 @@
 #include <netinet/in.h>
 #include <poll.h>
 #include <pthread.h>
-#include <csignal>
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <unistd.h>
