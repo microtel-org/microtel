@@ -14,6 +14,7 @@ changing `IWireCodec`.
 | [`epoll_reactor.hpp`](epoll_reactor.hpp) | `EpollReactor`, the `IReactor` implementation |
 | [`nosignal_io.hpp`](nosignal_io.hpp) | `SendNoSignal` and the SIGPIPE-safe TLS `BIO` |
 | [`connect_error.hpp`](connect_error.hpp) | The `Error` a failed TCP connect reports, from its errno |
+| [`http1_response_parser.hpp`](http1_response_parser.hpp) | `Http1ResponseParser`, the incremental HTTP/1.1 response parser for the fallback path ([ICP 0042](../../docs/icps/0042-http1-fallback-for-otlp-http.md) §3) |
 
 ## Owner
 
@@ -47,7 +48,9 @@ tracks A, B, C and E could unblock).
 
 - `tests/unit/transport/`: `http2_transport_test.cpp` against `FakeReactor`,
   `epoll_reactor_test.cpp` against a real epoll instance,
-  `nosignal_io_test.cpp` and `connect_error_test.cpp`.
+  `nosignal_io_test.cpp`, `connect_error_test.cpp`, and
+  `http1_response_parser_test.cpp` (every case fed whole and one byte at a
+  time).
 - [`tests/integration/transport/`](../../tests/integration/transport/) runs
   against a small in-process nghttp2 server over loopback:
   - `http2_connect_test.cpp`: connect, refused, drop, reconnect, HTTP/1.1 peer.
@@ -62,7 +65,8 @@ tracks A, B, C and E could unblock).
   - `http2_tls_connect_test.cpp`: TLS, ALPN, certificate handling.
 - `tests/fuzz/`: the response-path harnesses (`grpc_codec_fuzz.cpp`,
   `otlp_response_fuzz.cpp`, `response_decompression_fuzz.cpp`) sit above the
-  transport but feed it the responses it bounds.
+  transport but feed it the responses it bounds. `http1_response_fuzz.cpp`
+  drives `Http1ResponseParser` directly.
 
 ## Style notes
 
