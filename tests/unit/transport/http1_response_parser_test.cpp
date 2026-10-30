@@ -177,7 +177,8 @@ TEST_P(Http1ResponseParserTest, HeaderField_Malformed_Fails)
         EXPECT_EQ(parser.GetFault(), Fault::MalformedHeader) << text;
     }
     Parser parser{kLimits};
-    const std::string nul{"HTTP/1.1 200 OK\r\nX-A: a\0b\r\n\r\n", 30};
+    using std::string_view_literals::operator""sv;
+    const auto nul = "HTTP/1.1 200 OK\r\nX-A: a\0b\r\n\r\n"sv;
     FeedAll(parser, nul, GetParam());
     EXPECT_EQ(parser.GetFault(), Fault::MalformedHeader) << "NUL in a value";
 }
