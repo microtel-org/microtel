@@ -24,6 +24,7 @@
 #include <iterator>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -531,23 +532,10 @@ ssize_t PayloadReadCb(nghttp2_session* /*session*/,
                       size_t length,
                       uint32_t* data_flags,
                       nghttp2_data_source* source,
-                      void* /*user_data*/) noexcept
+                      void* user_data) noexcept
 {
     auto* state = static_cast<Http2Transport::StreamState*>(source->ptr);
-    const auto& payload = state->spec.payload;
-    const std::size_t remaining = payload.size() - state->payload_offset;
-    const std::size_t to_copy = std::min(remaining, length);
-
-    if (to_copy > 0)
-    {
-        std::memcpy(buf, payload.data() + state->payload_offset, to_copy);
-        state->payload_offset += to_copy;
-    }
-    if (state->payload_offset >= payload.size())
-    {
-        *data_flags |= NGHTTP2_DATA_FLAG_EOF;
-    }
-    return static_cast<ssize_t>(to_copy);
+    return static_cast<Http2Transport*>(user_data)->ReadPayload(*state, buf, length, data_flags);
 }
 
 
@@ -844,10 +832,33 @@ internal::RequestHandle Http2Transport::Send(internal::RequestSpec spec) noexcep
     return internal::RequestHandle{id, std::move(future)};
 }
 
+// Synchronous with respect to the payload (issue #508): when this returns,
+// the transport will not read the request's payload again, so the codec may
+// free it. A request still queued is taken out and failed here. One the I/O
+// thread has already taken is listed in m_cancel_queue, which ReadPayload
+// checks under the same lock it copies under; the I/O thread then resets it.
 void Http2Transport::Cancel(const internal::RequestHandle& handle) noexcept
 {
     if (handle.Id() == 0)
     {
+        return;
+    }
+    std::optional<PendingRequest> queued;
+    {
+        const std::scoped_lock lk{m_pending_mu};
+        const auto it = std::ranges::find(m_pending_queue, handle.Id(), &PendingRequest::handle_id);
+        if (it != m_pending_queue.end())
+        {
+            queued.emplace(std::move(*it));
+            m_pending_queue.erase(it);
+        }
+    }
+    if (queued)
+    {
+        internal::TransportResult result;
+        result.error =
+            microtel::Error{.kind = microtel::Error::Kind::Cancelled, .message = "cancelled"};
+        queued->promise.set_value(std::move(result));
         return;
     }
     {
@@ -855,6 +866,31 @@ void Http2Transport::Cancel(const internal::RequestHandle& handle) noexcept
         m_cancel_queue.push_back(handle.Id());
     }
     m_reactor->Wake();
+}
+
+std::ptrdiff_t Http2Transport::ReadPayload(StreamState& state,
+                                           std::uint8_t* buf,
+                                           std::size_t length,
+                                           std::uint32_t* data_flags) noexcept
+{
+    const std::scoped_lock lk{m_cancel_mu};
+    if (state.cancelled ||
+        std::ranges::find(m_cancel_queue, state.handle_id) != m_cancel_queue.end())
+    {
+        return NGHTTP2_ERR_TEMPORAL_CALLBACK_FAILURE;
+    }
+    const auto& payload = state.spec.payload;
+    const std::size_t to_copy = std::min(payload.size() - state.payload_offset, length);
+    if (to_copy > 0)
+    {
+        std::memcpy(buf, payload.data() + state.payload_offset, to_copy);
+        state.payload_offset += to_copy;
+    }
+    if (state.payload_offset >= payload.size())
+    {
+        *data_flags |= NGHTTP2_DATA_FLAG_EOF;
+    }
+    return static_cast<std::ptrdiff_t>(to_copy);
 }
 
 // ---------------------------------------------------------------------------
@@ -889,6 +925,12 @@ void Http2Transport::DrainCancelQueue() noexcept
             continue;
         }
         const std::int32_t stream_id = it->second;
+        // Off the queue now, so ReadPayload needs the flag to keep refusing
+        // until nghttp2 has sent the reset and closed the stream.
+        if (const auto stream = m_streams.find(stream_id); stream != m_streams.end())
+        {
+            stream->second->cancelled = true;
+        }
         ::nghttp2_submit_rst_stream(
             m_nghttp2_session.Get(), NGHTTP2_FLAG_NONE, stream_id, NGHTTP2_CANCEL);
         ::nghttp2_session_send(m_nghttp2_session.Get());

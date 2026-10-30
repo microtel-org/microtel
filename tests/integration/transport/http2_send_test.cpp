@@ -13,6 +13,7 @@
 #include "fakes/fake_auth_provider.hpp"
 #include "fakes/fake_diagnostics_sink.hpp"
 #include "fakes/fake_reactor.hpp"
+#include "helpers/gated_reactor.hpp"
 #include "transport/epoll_reactor.hpp"
 #include "transport/http2_transport.hpp"
 #include "wire/grpc/grpc_wire_codec.hpp"
@@ -94,6 +95,11 @@ enum class ServerScript : std::uint8_t
     /// `max_trailer_bytes`. The body is empty: what is over budget here is the
     /// trailing HEADERS frame, not the DATA that precedes it.
     OversizedTrailer,
+    /// Advertise a tiny stream window and send no WINDOW_UPDATE until the test
+    /// calls `OpenWindow()`, so the request body stalls on flow control with
+    /// most of it unsent (issue #508). Answers 200 if the body completes;
+    /// ends the session if the client resets the stream instead.
+    StallRequestBody,
 };
 
 struct RequestServerCtx
@@ -132,6 +138,15 @@ struct RequestServerCtx
     /// Counts request HEADERS frames begun, so a test can prove a request
     /// never reached the peer. Borrowed like `data_frames`.
     std::atomic<int>* requests_begun = nullptr;
+
+    // --- stalled-request-body state ----------------------------------------
+    /// Request DATA bytes received, across all streams. Borrowed.
+    std::atomic<std::size_t>* body_bytes = nullptr;
+    /// Set by the test to have the stalled body's window opened. Borrowed.
+    std::atomic<bool>* open_window = nullptr;
+    bool window_opened = false;
+    /// The client reset the request stream.
+    bool request_reset = false;
 };
 
 ssize_t SrvSendCb(
@@ -171,6 +186,30 @@ ssize_t SrvRecvCb(
                                                          : NGHTTP2_ERR_CALLBACK_FAILURE;
     }
     return n;
+}
+
+int SrvOnDataChunkRecvCb(nghttp2_session* /*s*/,
+                         uint8_t /*flags*/,
+                         int32_t /*stream_id*/,
+                         const uint8_t* /*data*/,
+                         size_t len,
+                         void* ud) noexcept
+{
+    static_cast<RequestServerCtx*>(ud)->body_bytes->fetch_add(len, std::memory_order_relaxed);
+    return 0;
+}
+
+int SrvOnStreamCloseCb(nghttp2_session* /*s*/,
+                       int32_t /*stream_id*/,
+                       uint32_t error_code,
+                       void* ud) noexcept
+{
+    auto* ctx = static_cast<RequestServerCtx*>(ud);
+    if (ctx->script == ServerScript::StallRequestBody && error_code != NGHTTP2_NO_ERROR)
+    {
+        ctx->request_reset = true;
+    }
+    return 0;
 }
 
 // Record the stream id when a request HEADERS frame begins.
@@ -449,6 +488,7 @@ void SrvHandleCompletedRequest(nghttp2_session* s, RequestServerCtx& ctx, int32_
             SrvSubmitOversizedTrailerResponse(s, ctx, stream_id);
             break;
         case ServerScript::RespondToRequest:
+        case ServerScript::StallRequestBody:
             SrvSubmit200(s, ctx, stream_id);
             break;
         case ServerScript::ResetOnFirstRequest:
@@ -547,6 +587,18 @@ public:
         return m_data_frames.load(std::memory_order_relaxed);
     }
 
+    /// Request DATA bytes the server has received.
+    [[nodiscard]] std::size_t RequestBodyBytes() const noexcept
+    {
+        return m_body_bytes.load(std::memory_order_relaxed);
+    }
+
+    /// Have the `StallRequestBody` script open the stalled body's windows.
+    void OpenWindow() noexcept
+    {
+        m_open_window.store(true, std::memory_order_release);
+    }
+
     /// Request HEADERS frames the server has seen begin.
     [[nodiscard]] int RequestsBegun() const noexcept
     {
@@ -621,6 +673,8 @@ private:
         ctx.hold_open = HoldOpenFor(m_script);
         ctx.data_frames = &m_data_frames;
         ctx.requests_begun = &m_requests_begun;
+        ctx.body_bytes = &m_body_bytes;
+        ctx.open_window = &m_open_window;
 
         nghttp2_session_callbacks* cbs = nullptr;
         ::nghttp2_session_callbacks_new(&cbs);
@@ -628,13 +682,25 @@ private:
         ::nghttp2_session_callbacks_set_recv_callback(cbs, SrvRecvCb);
         ::nghttp2_session_callbacks_set_on_frame_recv_callback(cbs, SrvOnFrameRecvCb);
         ::nghttp2_session_callbacks_set_on_begin_headers_callback(cbs, SrvOnBeginHeadersCb);
+        ::nghttp2_session_callbacks_set_on_data_chunk_recv_callback(cbs, SrvOnDataChunkRecvCb);
+        ::nghttp2_session_callbacks_set_on_stream_close_callback(cbs, SrvOnStreamCloseCb);
+
+        const bool stall = m_script == ServerScript::StallRequestBody;
+        nghttp2_option* option = nullptr;
+        ::nghttp2_option_new(&option);
+        // The stall script hands out window only when the test says so.
+        ::nghttp2_option_set_no_auto_window_update(option, stall ? 1 : 0);
 
         nghttp2_session* session = nullptr;
-        ::nghttp2_session_server_new(&session, cbs, &ctx);
+        ::nghttp2_session_server_new2(&session, cbs, &ctx, option);
+        ::nghttp2_option_del(option);
         ::nghttp2_session_callbacks_del(cbs);
 
-        const nghttp2_settings_entry iv[1] = {{NGHTTP2_SETTINGS_MAX_CONCURRENT_STREAMS, 100U}};
-        ::nghttp2_submit_settings(session, NGHTTP2_FLAG_NONE, iv, 1);
+        const std::array<nghttp2_settings_entry, 2> iv{{
+            {.settings_id = NGHTTP2_SETTINGS_MAX_CONCURRENT_STREAMS, .value = 100U},
+            {.settings_id = NGHTTP2_SETTINGS_INITIAL_WINDOW_SIZE, .value = kStallWindowBytes},
+        }};
+        ::nghttp2_submit_settings(session, NGHTTP2_FLAG_NONE, iv.data(), stall ? 2 : 1);
 
         const bool reset = (m_script == ServerScript::ResetOnFirstRequest)
                                ? RunUntilFirstRequestByte(session, ctx, fd)
@@ -669,9 +735,25 @@ private:
             case ServerScript::RespondToRequest:
             case ServerScript::ResetOnFirstRequest:
             case ServerScript::RstStreamOnFirstRequest:
+            case ServerScript::StallRequestBody:
                 break;
         }
         return std::chrono::milliseconds(0);
+    }
+
+    /// Open the stalled request body's windows, once, when the test asks.
+    static void MaybeOpenWindow(nghttp2_session* session, RequestServerCtx& ctx) noexcept
+    {
+        if (ctx.window_opened || !ctx.open_window->load(std::memory_order_acquire) ||
+            ctx.request_stream_id <= 0)
+        {
+            return;
+        }
+        ctx.window_opened = true;
+        ::nghttp2_submit_window_update(
+            session, NGHTTP2_FLAG_NONE, ctx.request_stream_id, kOpenWindowBytes);
+        ::nghttp2_submit_window_update(session, NGHTTP2_FLAG_NONE, 0, kOpenWindowBytes);
+        ::nghttp2_session_send(session);
     }
 
     /// Un-park a body the read callback deferred, once its pause has elapsed.
@@ -692,7 +774,7 @@ private:
         const auto deadline =
             std::chrono::steady_clock::now() + std::chrono::milliseconds(kTimeoutMs);
 
-        while (!ctx.response_sent.load(std::memory_order_acquire) &&
+        while (!ctx.response_sent.load(std::memory_order_acquire) && !ctx.request_reset &&
                std::chrono::steady_clock::now() < deadline)
         {
             Pump(session, ctx, fd);
@@ -715,6 +797,7 @@ private:
     {
         ::nghttp2_session_send(session);
         MaybeResumeBody(session, ctx);
+        MaybeOpenWindow(session, ctx);
         pollfd pfd{.fd = fd, .events = POLLIN, .revents = 0};
         if (::poll(&pfd, 1, kPollMs) > 0)
         {
@@ -765,6 +848,9 @@ private:
     /// socket closes cannot be mistaken for one that handled the GOAWAY.
     static constexpr int kHoldOpenMs = 1500;
     static constexpr int kSplitHoldOpenMs = 150;
+    /// The stall script's stream window: a request body stops after this.
+    static constexpr std::uint32_t kStallWindowBytes = 64;
+    static constexpr std::int32_t kOpenWindowBytes = 1024 * 1024;
 
     ServerScript m_script = ServerScript::RespondToRequest;
     int m_listen_fd = -1;
@@ -773,6 +859,8 @@ private:
     std::atomic<bool> m_response_done{false};
     std::atomic<int> m_data_frames{0};
     std::atomic<int> m_requests_begun{0};
+    std::atomic<std::size_t> m_body_bytes{0};
+    std::atomic<bool> m_open_window{false};
 };
 
 }  // namespace
@@ -1699,6 +1787,140 @@ TEST(Http2TransportSendIntegrationTest, HttpCodec_AuthTokenWithCrLf_PeerReceives
     const auto accepted = codec.Send(MakeEncodedPayload(), std::chrono::milliseconds(5000));
     EXPECT_TRUE(accepted.success) << (accepted.error ? accepted.error->message : "");
     EXPECT_EQ(server.RequestsBegun(), 1) << "only the clean request reached the peer";
+
+    EXPECT_EQ(t->Close(std::chrono::milliseconds(2000)), microtel::Status::Completed);
+    server.Stop();
+}
+
+// ---------------------------------------------------------------------------
+// Cancel releases the payload (issue #508)
+//
+// `RequestSpec::payload` is borrowed, and the codecs free it as soon as
+// `Cancel` returns on their deadline path. So once `Cancel` returns, the
+// transport must never read those bytes again. Each test frees the payload
+// right after `Cancel`; under ASan a later read is a heap-use-after-free, and
+// without ASan the peer receiving any of it is the failure.
+// ---------------------------------------------------------------------------
+
+namespace
+{
+
+constexpr auto kParkTimeout = std::chrono::milliseconds(2000);
+/// Larger than HTTP/2's default 64 KiB connection window, so the body stalls
+/// even if the request goes out before the peer's SETTINGS arrive.
+constexpr std::size_t kStalledPayloadBytes = std::size_t{256} * 1024;
+constexpr auto kSettleTime = std::chrono::milliseconds(300);
+
+/// A transport over a `GatedReactor`, connected to @p port, or null.
+std::unique_ptr<mtt::Http2Transport> GatedTransport(int port, mtfk::GatedReactor** gate)
+{
+    auto epoll = mtt::EpollReactor::Create();
+    if (!epoll)
+    {
+        return nullptr;
+    }
+    auto reactor = std::make_unique<mtfk::GatedReactor>(std::move(*epoll));
+    *gate = reactor.get();
+    auto transport_result = mtt::Http2Transport::Create(std::move(reactor));
+    if (!transport_result || !(*transport_result)->Connect(MakeConnectOptions(port)))
+    {
+        return nullptr;
+    }
+    return std::move(*transport_result);
+}
+
+/// Wait until the peer's received body bytes stop growing; returns the count.
+std::size_t WaitForStalledBody(const MinimalHttp2RequestServer& server)
+{
+    const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(5);
+    std::size_t last = 0;
+    while (std::chrono::steady_clock::now() < deadline)
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        const std::size_t now = server.RequestBodyBytes();
+        if (now > 0 && now == last)
+        {
+            return now;
+        }
+        last = now;
+    }
+    return last;
+}
+
+}  // namespace
+
+TEST(Http2TransportSendIntegrationTest, Cancel_QueuedRequest_NeverReadsThePayload)
+{
+    MinimalHttp2RequestServer server;
+    const int port = server.Start(ServerScript::RespondToRequest);
+    ASSERT_GT(port, 0);
+
+    mtfk::GatedReactor* gate = nullptr;
+    auto t = GatedTransport(port, &gate);
+    ASSERT_NE(t, nullptr);
+    const std::string authority = "127.0.0.1:" + std::to_string(port);
+
+    // Held, so the request is still in the queue when it is cancelled.
+    ASSERT_TRUE(gate->Hold(kParkTimeout));
+    auto payload = std::make_unique<std::vector<std::byte>>(kSmallPayloadBytes, std::byte{0x5A});
+    auto cancelled = t->Send(MakeRequestSpec(authority, *payload));
+    EXPECT_NE(cancelled.Id(), 0U);
+    t->Cancel(cancelled);
+    payload.reset();  // what the codec's deadline path does
+
+    // Checked before releasing: a queued request is cancelled by Cancel
+    // itself, not by an I/O thread that might have read it first.
+    const bool resolved =
+        cancelled.Future().wait_for(std::chrono::milliseconds(0)) == std::future_status::ready;
+    EXPECT_TRUE(resolved) << "Cancel must take a queued request out before returning";
+    gate->Release();
+    if (resolved)
+    {
+        EXPECT_EQ(ErrorKind(cancelled.Future().get()), microtel::Error::Kind::Cancelled);
+    }
+
+    const std::vector<std::byte> clean(kSmallPayloadBytes, std::byte{0x5A});
+    auto next = t->Send(MakeRequestSpec(authority, clean));
+    const auto result = next.Future().get();
+    EXPECT_TRUE(result.success) << ErrorMessage(result);
+    EXPECT_EQ(server.RequestsBegun(), 1) << "only the request that was not cancelled was sent";
+
+    EXPECT_EQ(t->Close(std::chrono::milliseconds(2000)), microtel::Status::Completed);
+    server.Stop();
+}
+
+TEST(Http2TransportSendIntegrationTest, Cancel_StreamStalledOnFlowControl_NeverReadsThePayload)
+{
+    MinimalHttp2RequestServer server;
+    const int port = server.Start(ServerScript::StallRequestBody);
+    ASSERT_GT(port, 0);
+
+    mtfk::GatedReactor* gate = nullptr;
+    auto t = GatedTransport(port, &gate);
+    ASSERT_NE(t, nullptr);
+    const std::string authority = "127.0.0.1:" + std::to_string(port);
+
+    auto payload = std::make_unique<std::vector<std::byte>>(kStalledPayloadBytes, std::byte{0x5A});
+    auto handle = t->Send(MakeRequestSpec(authority, *payload));
+    const std::size_t stalled_at = WaitForStalledBody(server);
+    ASSERT_GT(stalled_at, 0U);
+    ASSERT_LT(stalled_at, kStalledPayloadBytes) << "the body must be stalled, not complete";
+
+    // Cancel and free while the I/O thread is parked, then have the peer open
+    // the window. The WINDOW_UPDATE is then waiting on the socket, and reading
+    // it is the first thing the I/O thread does when released: before #508 it
+    // went straight on to send more of the freed body.
+    ASSERT_TRUE(gate->Hold(kParkTimeout));
+    t->Cancel(handle);
+    payload.reset();
+    server.OpenWindow();
+    std::this_thread::sleep_for(kSettleTime);
+    gate->Release();
+
+    EXPECT_EQ(handle.Future().wait_for(std::chrono::seconds(5)), std::future_status::ready);
+    std::this_thread::sleep_for(kSettleTime);
+    EXPECT_EQ(server.RequestBodyBytes(), stalled_at)
+        << "no byte of a cancelled request's body may be sent after Cancel returns";
 
     EXPECT_EQ(t->Close(std::chrono::milliseconds(2000)), microtel::Status::Completed);
     server.Stop();
