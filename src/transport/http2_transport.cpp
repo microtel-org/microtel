@@ -69,11 +69,10 @@ constexpr std::string_view kAlpnHttp11{"http/1.1"};
 
 microtel::Error AlpnMismatchError(std::string_view selected)
 {
-    const std::string_view negotiated = selected.empty() ? std::string_view{"none"} : selected;
     return microtel::Error{
         .kind = microtel::Error::Kind::Protocol,
         .message =
-            "TLS peer did not negotiate h2 via ALPN (negotiated: " + std::string{negotiated} +
+            "TLS peer did not negotiate h2 via ALPN (negotiated: " + PrintableAlpn(selected) +
             ") - this endpoint is not an HTTP/2 receiver; use OTLP/gRPC or an h2-capable "
             "OTLP/HTTP endpoint; see docs/compatibility-matrix.md"};
 }
