@@ -23,3 +23,11 @@ microtel_add_integration_test(
     NAME    http2_tls_connect_test
     SOURCES http2_tls_connect_test.cpp
     LIBS    microtel_transport OpenSSL::SSL OpenSSL::Crypto PkgConfig::NGHTTP2)
+
+# ICP 0042: Http1Transport against the scripted HTTP/1.1 peer in
+# tests/helpers/fake_http1_peer.hpp, which builds its own TLS server, hence
+# OpenSSL linked explicitly.
+microtel_add_integration_test(
+    NAME    http1_transport_test
+    SOURCES http1_transport_test.cpp
+    LIBS    microtel_transport microtel_http_wire OpenSSL::SSL OpenSSL::Crypto)

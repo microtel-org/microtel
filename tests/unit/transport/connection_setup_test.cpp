@@ -317,3 +317,27 @@ TEST(TlsConnectTest, PeerThatAnswersInPlaintext_FailsTheHandshake)
     EXPECT_EQ(tls.error().kind, mt::Error::Kind::Network);
     EXPECT_EQ(tls.error().message, "TLS handshake failed");
 }
+
+// ---------------------------------------------------------------------------
+// PrintableAlpn: the peer's ALPN answer goes into error messages, and from
+// there into logs. OpenSSL 3.0 and 3.1 accept a protocol the client never
+// offered, so the bytes are the peer's to choose.
+// ---------------------------------------------------------------------------
+
+TEST(PrintableAlpnTest, OrdinaryProtocolIsUnchanged)
+{
+    EXPECT_EQ(mtt::PrintableAlpn("http/1.1"), "http/1.1");
+    EXPECT_EQ(mtt::PrintableAlpn("h2"), "h2");
+}
+
+TEST(PrintableAlpnTest, ControlAndNonAsciiBytesAreReplaced)
+{
+    using namespace std::string_view_literals;
+    EXPECT_EQ(mtt::PrintableAlpn("x\r\ninjected: 1"sv), "x??injected:?1");
+    EXPECT_EQ(mtt::PrintableAlpn("a\0b\x7f\xff"sv), "a?b??");
+}
+
+TEST(PrintableAlpnTest, EmptyIsNone)
+{
+    EXPECT_EQ(mtt::PrintableAlpn(""), "none");
+}

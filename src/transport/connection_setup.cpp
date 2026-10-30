@@ -9,6 +9,7 @@
 #include <openssl/ssl.h>
 #include <openssl/x509.h>
 
+#include <atomic>
 #include <cerrno>
 #include <chrono>
 #include <memory>
@@ -200,6 +201,27 @@ microtel::Expected<void, microtel::Error> SslConnectLoop(
 
 }  // namespace
 
+bool ClaimConnectSlot(std::atomic<microtel::ConnectionState>& state,
+                      microtel::ConnectionState& prior) noexcept
+{
+    prior = microtel::ConnectionState::Disconnected;
+    if (state.compare_exchange_strong(prior,
+                                      microtel::ConnectionState::Connecting,
+                                      std::memory_order_acq_rel,
+                                      std::memory_order_acquire))
+    {
+        return true;
+    }
+    if (prior != microtel::ConnectionState::Reconnecting)
+    {
+        return false;
+    }
+    return state.compare_exchange_strong(prior,
+                                         microtel::ConnectionState::Connecting,
+                                         std::memory_order_acq_rel,
+                                         std::memory_order_acquire);
+}
+
 std::string_view SelectedAlpn(const SSL* ssl) noexcept
 {
     const unsigned char* proto = nullptr;
@@ -211,6 +233,25 @@ std::string_view SelectedAlpn(const SSL* ssl) noexcept
     }
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     return std::string_view{reinterpret_cast<const char*>(proto), proto_len};
+}
+
+std::string PrintableAlpn(std::string_view alpn)
+{
+    if (alpn.empty())
+    {
+        return "none";
+    }
+    constexpr char kFirstPrintable = '!';
+    constexpr char kLastPrintable = '~';
+    std::string out{alpn};
+    for (char& c : out)
+    {
+        if (c < kFirstPrintable || c > kLastPrintable)
+        {
+            c = '?';
+        }
+    }
+    return out;
 }
 
 microtel::Expected<EndpointInfo, microtel::Error> ParseEndpoint(const std::string& endpoint,

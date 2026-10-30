@@ -289,42 +289,6 @@ microtel::ConnectionState Http2Transport::GetState() const noexcept
 // ITransport — lifecycle
 // ---------------------------------------------------------------------------
 
-namespace
-{
-
-/// @brief Move the transport into `Connecting`, from either state that permits
-///        it, reporting which one we came from.
-///
-/// `Disconnected → Connecting` is a first connect; `Reconnecting → Connecting`
-/// recovers from a mid-connection drop (ICP 0018 §3). Two compare-exchange
-/// attempts rather than one, because compare_exchange takes a single expected
-/// value; the second re-reads, so a state that moved in between simply loses.
-///
-/// @param prior Set to the observed state — the one won from on success, or
-///              the blocking state on failure.
-[[nodiscard]] bool ClaimConnectSlot(std::atomic<microtel::ConnectionState>& state,
-                                    microtel::ConnectionState& prior) noexcept
-{
-    prior = microtel::ConnectionState::Disconnected;
-    if (state.compare_exchange_strong(prior,
-                                      microtel::ConnectionState::Connecting,
-                                      std::memory_order_acq_rel,
-                                      std::memory_order_acquire))
-    {
-        return true;
-    }
-    if (prior != microtel::ConnectionState::Reconnecting)
-    {
-        return false;
-    }
-    return state.compare_exchange_strong(prior,
-                                         microtel::ConnectionState::Connecting,
-                                         std::memory_order_acq_rel,
-                                         std::memory_order_acquire);
-}
-
-}  // namespace
-
 microtel::Expected<void, microtel::Error> Http2Transport::Connect(
     const internal::ConnectOptions& opts)
 {

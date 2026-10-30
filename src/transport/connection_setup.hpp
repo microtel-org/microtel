@@ -13,6 +13,7 @@
 
 #include <openssl/ssl.h>
 
+#include <atomic>
 #include <chrono>
 #include <cstdint>
 #include <span>
@@ -34,6 +35,19 @@ struct EndpointInfo
     std::string port;
     bool use_tls = true;
 };
+
+/// @brief Move the transport into `Connecting`, from either state that permits
+///        it, reporting which one we came from.
+///
+/// `Disconnected → Connecting` is a first connect; `Reconnecting → Connecting`
+/// recovers from a mid-connection drop (ICP 0018 §3). Two compare-exchange
+/// attempts rather than one, because compare_exchange takes a single expected
+/// value; the second re-reads, so a state that moved in between simply loses.
+///
+/// @param prior Set to the observed state — the one won from on success, or
+///              the blocking state on failure.
+[[nodiscard]] bool ClaimConnectSlot(std::atomic<microtel::ConnectionState>& state,
+                                    microtel::ConnectionState& prior) noexcept;
 
 /// @brief Split an endpoint URL into host, port and whether to use TLS.
 ///
@@ -71,5 +85,12 @@ TlsConnect(int fd,
 /// @return The protocol the TLS peer selected, borrowed from the session and
 ///         valid for its lifetime; empty if ALPN produced no agreement.
 [[nodiscard]] std::string_view SelectedAlpn(const SSL* ssl) noexcept;
+
+/// @brief @p alpn as it may appear in an error message or a log line.
+///
+/// The selected protocol is the peer's to choose: OpenSSL 3.0 and 3.1 accept
+/// one the client never offered. Every byte outside printable ASCII (0x21 to
+/// 0x7E) becomes `?`, so a CR or LF cannot forge a log line. Empty is "none".
+[[nodiscard]] std::string PrintableAlpn(std::string_view alpn);
 
 }  // namespace microtel::transport

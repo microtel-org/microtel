@@ -5,16 +5,23 @@
 The HTTP/2 transport: an nghttp2 session over a plaintext or OpenSSL TLS
 socket, driven by an epoll I/O loop on its own thread, with per-stream
 in-flight state and reconnect after a drop. Both wire codecs sit on top of it.
+
+The HTTP/1.1 transport for OTLP/HTTP receivers that do not speak HTTP/2
+([ICP 0042](../../docs/icps/0042-http1-fallback-for-otlp-http.md)): serial
+requests on one keep-alive connection, plaintext or TLS (ALPN `http/1.1`),
+with the same reactor and connection setup.
 It is also the seam where an HTTP/3 transport could drop in for v1.6+ without
 changing `IWireCodec`.
 
 | File | Contents |
 |---|---|
 | [`http2_transport.hpp`](http2_transport.hpp) | `Http2Transport`, the `ITransport` implementation |
+| [`http1_transport.hpp`](http1_transport.hpp) | `Http1Transport`, the HTTP/1.1 `ITransport` (ICP 0042): serial requests, background reconnect after keep-alive ends, one stale-connection retry |
+| [`event_log_limiter.hpp`](event_log_limiter.hpp) | How loudly `Http1Transport` logs its reconnects and retries: Info for the first of each, then at most one Info summary a minute, else Debug |
 | [`epoll_reactor.hpp`](epoll_reactor.hpp) | `EpollReactor`, the `IReactor` implementation |
 | [`nosignal_io.hpp`](nosignal_io.hpp) | `SendNoSignal` and the SIGPIPE-safe TLS `BIO` |
 | [`connect_error.hpp`](connect_error.hpp) | The `Error` a failed TCP connect reports, from its errno |
-| [`connection_setup.hpp`](connection_setup.hpp) | Connection setup shared by the transports: `ParseEndpoint`, `TcpConnect`, `TlsConnect` (the TLS client handshake, ALPN list from the caller) and `SelectedAlpn` |
+| [`connection_setup.hpp`](connection_setup.hpp) | Connection setup shared by the transports: `ClaimConnectSlot`, `ParseEndpoint`, `TcpConnect`, `TlsConnect` (the TLS client handshake, ALPN list from the caller) and `SelectedAlpn` |
 | [`http1_response_parser.hpp`](http1_response_parser.hpp) | `Http1ResponseParser`, the incremental HTTP/1.1 response parser for the fallback path ([ICP 0042](../../docs/icps/0042-http1-fallback-for-otlp-http.md) §3) |
 
 ## Owner
@@ -49,7 +56,9 @@ tracks A, B, C and E could unblock).
 
 - `tests/unit/transport/`: `http2_transport_test.cpp` against `FakeReactor`,
   `epoll_reactor_test.cpp` against a real epoll instance,
-  `nosignal_io_test.cpp`, `connect_error_test.cpp`, and
+  `nosignal_io_test.cpp`, `connect_error_test.cpp`,
+  `connection_setup_test.cpp` (the setup error paths),
+  `event_log_limiter_test.cpp`, and
   `http1_response_parser_test.cpp` (every case fed whole and one byte at a
   time).
 - [`tests/integration/transport/`](../../tests/integration/transport/) runs
@@ -64,6 +73,14 @@ tracks A, B, C and E could unblock).
     (`Send_ResponseOverMaxResponseBytes_*`,
     `Send_TrailersOverMaxTrailerBytes_*`).
   - `http2_tls_connect_test.cpp`: TLS, ALPN, certificate handling.
+  - `http1_transport_test.cpp`: `Http1Transport` against the scripted
+    HTTP/1.1 peer in [`tests/helpers/fake_http1_peer.hpp`](../../tests/helpers/fake_http1_peer.hpp),
+    plaintext and TLS: keep-alive and serial sends, chunked and
+    close-delimited bodies, `Connection: close` and HTTP/1.0, oversized,
+    malformed and truncated responses, a reset mid-response, the
+    stale-connection retry, a failed reconnect, deadlines, cancel, the queue
+    bound, and `HttpWireCodec` over it (status classification, header
+    validation).
 - `tests/fuzz/`: the response-path harnesses (`grpc_codec_fuzz.cpp`,
   `otlp_response_fuzz.cpp`, `response_decompression_fuzz.cpp`) sit above the
   transport but feed it the responses it bounds. `http1_response_fuzz.cpp`
