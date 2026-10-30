@@ -65,6 +65,16 @@ microtel_add_fuzz_target(
     SOURCES otlp_response_fuzz.cpp
     LIBS    microtel_otlp_response)
 
+# ICP 0042 — the HTTP/1.1 response parser, fed whole, bytewise and in random
+# pieces, which must all agree. The parser's source is compiled into the
+# harness rather than linked from microtel_transport, so it carries the
+# harness's -fsanitize=fuzzer,address,undefined instrumentation: a linked
+# archive is built without it, and libFuzzer would get no coverage from it.
+microtel_add_fuzz_target(
+    NAME    http1_response_fuzz
+    SOURCES http1_response_fuzz.cpp
+            ${PROJECT_SOURCE_DIR}/src/transport/http1_response_parser.cpp)
+
 microtel_add_fuzz_target(
     NAME    response_decompression_fuzz
     SOURCES response_decompression_fuzz.cpp

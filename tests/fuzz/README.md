@@ -31,6 +31,12 @@ paths, the TOML parser and the response-size limits.
 | `otlp_trace_decoder_fuzz.cpp` | `IOtlpTraceDecoder` alone, bytes 0-2 choosing random `DecodeLimits`, so decoder bugs are not hidden behind the receiver's validation. |
 | `leaf_backend_diff_fuzz.cpp` | Byte identity of the leaf's upb and nanopb encoder backends ([docs/leaf-concentrator-design.md](../../docs/leaf-concentrator-design.md) §7.2). The input is a program of leaf builder calls (`tests/leaf/diff/`), run on two identical leaves linked through `microtel_leaf_dual`; every call must return the same status on both, and every encode the same status, size and bytes, which must decode with upb. Needs `-DMICROTEL_BUILD_LEAF=ON`. |
 
+## v1.2.6 harnesses
+
+| File | Surface |
+|---|---|
+| `http1_response_fuzz.cpp` | `Http1ResponseParser`, the HTTP/1.1 response parser behind the OTLP/HTTP fallback ([ICP 0042](../../docs/icps/0042-http1-fallback-for-otlp-http.md) §3). Bytes 0-1 pick `max_response_bytes` and the header budget, byte 2 seeds a split; the rest is parsed as back-to-back responses three ways (whole, one byte per `Feed`, pseudo-random pieces), which must agree exactly. It also asserts that `Feed` makes progress, that the body and header fields stay within their bounds, and that a complete response has a final status. The parser's source is compiled into the harness so that it is instrumented (#507). |
+
 ## Invariants
 
 From `docs/grpc-wire-protocol.md` §7.4, applied to every harness:
@@ -48,8 +54,10 @@ Each harness has two committed input directories:
 - `corpus/<harness>/` holds seed inputs. The fuzzing job starts from
   these.
 - `crashes/<harness>/` holds confirmed crashing inputs. Once the bug is
-  fixed, the input stays as a regression check. Every `crashes/`
-  directory is empty today (apart from `.gitkeep`).
+  fixed, the input stays as a regression check. `crashes/http1_response_fuzz/`
+  holds the two inputs that found its close-delimited body bug before the
+  harness landed; every other `crashes/` directory is empty (apart from
+  `.gitkeep`).
 
 ## CI
 
