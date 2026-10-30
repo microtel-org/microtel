@@ -10,7 +10,6 @@
 #include "microtel/version.hpp"
 
 #include "common/internal_log.hpp"
-#include "wire/auth_failure.hpp"
 #include "wire/grpc/grpc_status.hpp"
 #include "wire/gzip.hpp"
 #include "wire/header_validation.hpp"
@@ -957,15 +956,8 @@ GrpcWireCodec::BuildHeaders(bool compressed) const
     {
         headers.push_back(h);
     }
-    if (auto err = AppendAuthHeader(headers))
-    {
-        return microtel::make_unexpected(AuthFailure(*err));
-    }
-    if (auto err = ValidateRequestHeaders(headers))
-    {
-        return microtel::make_unexpected(InvalidHeaderFailure(std::move(*err)));
-    }
-    return headers;
+    const auto auth_error = AppendAuthHeader(headers);
+    return FinishRequestHeaders(std::move(headers), auth_error);
 }
 
 std::optional<microtel::Error> GrpcWireCodec::AppendAuthHeader(
@@ -1057,9 +1049,7 @@ internal::WireResult GrpcWireCodec::Send(internal::EncodedPayload&& payload,
     auto headers = BuildHeaders(did_compress);
     if (!headers)
     {
-        // The auth provider failed, or a field cannot be carried: drop the
-        // batch rather than send it without the header (`docs/interfaces.md`
-        // §4.9, issue #250) or with an injected one (ICP 0042 §3).
+        // Dropped, as in HttpWireCodec::Send: no auth header, or a bad field.
         return std::move(headers.error());
     }
     internal::RequestSpec spec{

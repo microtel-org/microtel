@@ -8,7 +8,6 @@
 #include "microtel/internal/transport.hpp"
 #include "microtel/internal/wire_result.hpp"
 
-#include "wire/auth_failure.hpp"
 #include "wire/gzip.hpp"
 #include "wire/header_validation.hpp"
 #include "wire/otlp_response.hpp"
@@ -330,16 +329,8 @@ HttpWireCodec::BuildHeaders(std::size_t content_length, bool compressed) const
         headers.push_back(h);
     }
 
-    if (auto err = AppendAuthHeader(headers))
-    {
-        return microtel::make_unexpected(AuthFailure(*err));
-    }
-    if (auto err = ValidateRequestHeaders(headers))
-    {
-        return microtel::make_unexpected(InvalidHeaderFailure(std::move(*err)));
-    }
-
-    return headers;
+    const auto auth_error = AppendAuthHeader(headers);
+    return FinishRequestHeaders(std::move(headers), auth_error);
 }
 
 std::optional<Error> HttpWireCodec::AppendAuthHeader(

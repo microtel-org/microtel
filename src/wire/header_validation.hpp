@@ -4,14 +4,18 @@
 #pragma once
 
 #include "microtel/error.hpp"
+#include "microtel/expected.hpp"
 #include "microtel/internal/transport.hpp"
 #include "microtel/internal/wire_result.hpp"
+
+#include "wire/auth_failure.hpp"
 
 #include <optional>
 #include <span>
 #include <string>
 #include <string_view>
 #include <utility>
+#include <vector>
 
 namespace microtel::wire
 {
@@ -67,6 +71,29 @@ namespace microtel::wire
         .error = std::move(err),
         .response_excerpt = {},
     };
+}
+
+/// @brief The last step of both codecs' `BuildHeaders`.
+///
+/// @param headers    the assembled block, `authorization` included when the
+///                   provider gave one.
+/// @param auth_error what appending `authorization` failed with, if it did.
+/// @return @p headers, or the terminal `WireResult` to return instead: the
+///         `AuthFailure` for @p auth_error, or the `InvalidHeaderFailure` for
+///         the first field `ValidateRequestHeaders` rejects.
+[[nodiscard]] inline microtel::Expected<std::vector<internal::HeaderField>, internal::WireResult>
+FinishRequestHeaders(std::vector<internal::HeaderField> headers,
+                     const std::optional<microtel::Error>& auth_error)
+{
+    if (auth_error)
+    {
+        return microtel::make_unexpected(AuthFailure(*auth_error));
+    }
+    if (auto err = ValidateRequestHeaders(headers))
+    {
+        return microtel::make_unexpected(InvalidHeaderFailure(std::move(*err)));
+    }
+    return headers;
 }
 
 }  // namespace microtel::wire
