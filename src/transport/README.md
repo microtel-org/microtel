@@ -14,6 +14,7 @@ changing `IWireCodec`.
 | [`epoll_reactor.hpp`](epoll_reactor.hpp) | `EpollReactor`, the `IReactor` implementation |
 | [`nosignal_io.hpp`](nosignal_io.hpp) | `SendNoSignal` and the SIGPIPE-safe TLS `BIO` |
 | [`connect_error.hpp`](connect_error.hpp) | The `Error` a failed TCP connect reports, from its errno |
+| [`connection_setup.hpp`](connection_setup.hpp) | Connection setup shared by the transports: `ParseEndpoint`, `TcpConnect`, `TlsConnect` (the TLS client handshake, ALPN list from the caller) and `SelectedAlpn` |
 | [`http1_response_parser.hpp`](http1_response_parser.hpp) | `Http1ResponseParser`, the incremental HTTP/1.1 response parser for the fallback path ([ICP 0042](../../docs/icps/0042-http1-fallback-for-otlp-http.md) §3) |
 
 ## Owner

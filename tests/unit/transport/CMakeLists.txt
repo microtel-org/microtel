@@ -44,3 +44,13 @@ microtel_add_test(
 
 target_include_directories(nosignal_io_test
     PRIVATE ${PROJECT_SOURCE_DIR}/src)
+
+# OpenSSL is linked explicitly: microtel_transport keeps it PRIVATE, and this
+# test writes its own certificate for the client-key case.
+microtel_add_test(
+    NAME    connection_setup_test
+    SOURCES connection_setup_test.cpp
+    LIBS    microtel_transport OpenSSL::SSL OpenSSL::Crypto)
+
+target_include_directories(connection_setup_test
+    PRIVATE ${PROJECT_SOURCE_DIR}/src)

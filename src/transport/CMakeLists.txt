@@ -5,6 +5,7 @@
 
 add_library(microtel_transport STATIC
     connect_error.cpp
+    connection_setup.cpp
     epoll_reactor.cpp
     http1_response_parser.cpp
     http2_transport.cpp
