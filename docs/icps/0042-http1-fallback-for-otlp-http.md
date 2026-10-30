@@ -1,6 +1,7 @@
 # ICP 0042: HTTP/1.1 fallback for OTLP/HTTP
 
-**Status:** Accepted — 2026-10-29. Milestone v1.3; tracking issue #503.
+**Status:** Accepted — 2026-10-29. Milestone v1.2.6 (brought forward from
+v1.3 on 2026-10-29); tracking issue #503.
 **Affected interfaces / docs:**
 - `docs/interfaces.md` §4.1 (`ITransport` Purpose) and §4.3 (`IWireCodec`
   Purpose, whose LOCKED "one interface" claim is unchanged): text below

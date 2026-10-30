@@ -10,11 +10,13 @@
 #include "microtel/internal/wire_result.hpp"
 #include "microtel/provider.hpp"
 
+#include "fakes/fake_auth_provider.hpp"
 #include "fakes/fake_diagnostics_sink.hpp"
 #include "fakes/fake_reactor.hpp"
 #include "transport/epoll_reactor.hpp"
 #include "transport/http2_transport.hpp"
 #include "wire/grpc/grpc_wire_codec.hpp"
+#include "wire/http/http_wire_codec.hpp"
 
 #include <gtest/gtest.h>
 #include <nghttp2/nghttp2.h>
@@ -127,6 +129,9 @@ struct RequestServerCtx
     /// really was split rather than coalesced into one frame. Borrowed from
     /// the server object; never null once `RunSession` has run.
     std::atomic<int>* data_frames = nullptr;
+    /// Counts request HEADERS frames begun, so a test can prove a request
+    /// never reached the peer. Borrowed like `data_frames`.
+    std::atomic<int>* requests_begun = nullptr;
 };
 
 ssize_t SrvSendCb(
@@ -175,6 +180,7 @@ int SrvOnBeginHeadersCb(nghttp2_session* /*s*/, const nghttp2_frame* frame, void
     if (frame->hd.type == NGHTTP2_HEADERS && frame->headers.cat == NGHTTP2_HCAT_REQUEST)
     {
         ctx->request_stream_id = frame->hd.stream_id;
+        ctx->requests_begun->fetch_add(1, std::memory_order_relaxed);
     }
     return 0;
 }
@@ -541,6 +547,12 @@ public:
         return m_data_frames.load(std::memory_order_relaxed);
     }
 
+    /// Request HEADERS frames the server has seen begin.
+    [[nodiscard]] int RequestsBegun() const noexcept
+    {
+        return m_requests_begun.load(std::memory_order_relaxed);
+    }
+
     bool WaitForResponse(std::chrono::milliseconds timeout) const
     {
         const auto deadline = std::chrono::steady_clock::now() + timeout;
@@ -608,6 +620,7 @@ private:
         ctx.script = m_script;
         ctx.hold_open = HoldOpenFor(m_script);
         ctx.data_frames = &m_data_frames;
+        ctx.requests_begun = &m_requests_begun;
 
         nghttp2_session_callbacks* cbs = nullptr;
         ::nghttp2_session_callbacks_new(&cbs);
@@ -759,6 +772,7 @@ private:
     std::thread m_thread;
     std::atomic<bool> m_response_done{false};
     std::atomic<int> m_data_frames{0};
+    std::atomic<int> m_requests_begun{0};
 };
 
 }  // namespace
@@ -1639,6 +1653,52 @@ TEST(Http2TransportSendIntegrationTest, Send_PendingQueueAtCapacity_RefusesWithT
     held->ReleaseDispatch();
     EXPECT_TRUE(WaitForQueueToDrain(*t, authority, payload, accepted))
         << "the queue drained; the transport must accept work again";
+
+    EXPECT_EQ(t->Close(std::chrono::milliseconds(2000)), microtel::Status::Completed);
+    server.Stop();
+}
+
+// ---------------------------------------------------------------------------
+// Request header validation over a real HTTP/2 connection (ICP 0042 §3)
+//
+// The auth token is produced at send time, after Build() has checked the
+// static headers. A token carrying CR/LF must stop in the codec: the peer sees
+// no request for it, and the next export, with a clean token, goes through on
+// the same connection.
+// ---------------------------------------------------------------------------
+
+TEST(Http2TransportSendIntegrationTest, HttpCodec_AuthTokenWithCrLf_PeerReceivesNoRequest)
+{
+    MinimalHttp2RequestServer server;
+    const int port = server.Start(ServerScript::RespondToRequest);
+    ASSERT_GT(port, 0);
+
+    auto reactor_result = mtt::EpollReactor::Create();
+    ASSERT_TRUE(reactor_result.has_value());
+    auto transport_result = mtt::Http2Transport::Create(std::move(*reactor_result));
+    ASSERT_TRUE(transport_result.has_value());
+    auto& t = *transport_result;
+
+    mtfk::FakeAuthProvider auth;
+    auth.scripted_responses.emplace_back(std::optional<std::string>{"Bearer a\r\nx-injected: 1"});
+    auth.scripted_responses.emplace_back(std::optional<std::string>{"Bearer a"});
+    const mtw::HttpWireCodecConfig config{
+        .host = "127.0.0.1:" + std::to_string(port),
+        .scheme = "http",
+        .path = "",
+        .signal_path = {},
+        .extra_headers = {},
+    };
+    mtw::HttpWireCodec codec{&*t, config, &auth, nullptr, nullptr, MakeConnectOptions(port)};
+
+    const auto rejected = codec.Send(MakeEncodedPayload(), std::chrono::milliseconds(5000));
+    EXPECT_FALSE(rejected.success);
+    EXPECT_FALSE(rejected.retryable);
+    EXPECT_EQ(server.RequestsBegun(), 0) << "the bad header must not reach the peer";
+
+    const auto accepted = codec.Send(MakeEncodedPayload(), std::chrono::milliseconds(5000));
+    EXPECT_TRUE(accepted.success) << (accepted.error ? accepted.error->message : "");
+    EXPECT_EQ(server.RequestsBegun(), 1) << "only the clean request reached the peer";
 
     EXPECT_EQ(t->Close(std::chrono::milliseconds(2000)), microtel::Status::Completed);
     server.Stop();

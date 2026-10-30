@@ -37,7 +37,9 @@ Track B — OTLP/HTTP wire codec.
   `fake_diagnostics_sink.hpp` and `fake_steady_clock.hpp` in
   [`tests/fakes/`](../../../tests/fakes/)
 - The shared helpers one level up in [`src/wire/`](../): `gzip.hpp`,
-  `otlp_response.hpp` (partial-success parsing) and `auth_failure.hpp`.
+  `otlp_response.hpp` (partial-success parsing), `auth_failure.hpp` and
+  `header_validation.hpp` (CR/LF/NUL in any request field, checked last in
+  `BuildHeaders`; ICP 0042 §3).
 
 ## Tests
 

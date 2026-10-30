@@ -11,10 +11,11 @@ microtel_add_integration_test(
 # microtel_grpc_wire is linked for the split-DATA-frame tests: the
 # accumulation they exercise lives in the transport, but the assertion that it
 # worked is the codec parsing the reassembled message (grpc-wire-protocol.md §2.3).
+# microtel_http_wire is linked for the header-validation test (ICP 0042 §3).
 microtel_add_integration_test(
     NAME    http2_send_test
     SOURCES http2_send_test.cpp
-    LIBS    microtel_transport microtel_grpc_wire OpenSSL::SSL PkgConfig::NGHTTP2)
+    LIBS    microtel_transport microtel_grpc_wire microtel_http_wire OpenSSL::SSL PkgConfig::NGHTTP2)
 
 # OpenSSL is linked explicitly: microtel_transport keeps it PRIVATE, and this
 # test builds its own TLS server rather than borrowing the transport's.
