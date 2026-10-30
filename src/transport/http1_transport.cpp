@@ -261,7 +261,7 @@ microtel::Expected<Http1Transport::Connection, microtel::Error> Http1Transport::
     {
         return microtel::Unexpected<microtel::Error>{
             MakeError(microtel::Error::Kind::Protocol,
-                      "TLS peer selected ALPN " + std::string{alpn} + ", not http/1.1")};
+                      "TLS peer selected ALPN " + PrintableAlpn(alpn) + ", not http/1.1")};
     }
     // HTTP/1.1 servers routinely close without a TLS close_notify. Read that
     // as an ordinary close, so a body delimited by the close can complete.

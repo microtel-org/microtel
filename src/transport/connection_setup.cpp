@@ -235,6 +235,25 @@ std::string_view SelectedAlpn(const SSL* ssl) noexcept
     return std::string_view{reinterpret_cast<const char*>(proto), proto_len};
 }
 
+std::string PrintableAlpn(std::string_view alpn)
+{
+    if (alpn.empty())
+    {
+        return "none";
+    }
+    constexpr char kFirstPrintable = '!';
+    constexpr char kLastPrintable = '~';
+    std::string out{alpn};
+    for (char& c : out)
+    {
+        if (c < kFirstPrintable || c > kLastPrintable)
+        {
+            c = '?';
+        }
+    }
+    return out;
+}
+
 microtel::Expected<EndpointInfo, microtel::Error> ParseEndpoint(const std::string& endpoint,
                                                                 bool insecure)
 {

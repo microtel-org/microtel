@@ -86,4 +86,11 @@ TlsConnect(int fd,
 ///         valid for its lifetime; empty if ALPN produced no agreement.
 [[nodiscard]] std::string_view SelectedAlpn(const SSL* ssl) noexcept;
 
+/// @brief @p alpn as it may appear in an error message or a log line.
+///
+/// The selected protocol is the peer's to choose: OpenSSL 3.0 and 3.1 accept
+/// one the client never offered. Every byte outside printable ASCII (0x21 to
+/// 0x7E) becomes `?`, so a CR or LF cannot forge a log line. Empty is "none".
+[[nodiscard]] std::string PrintableAlpn(std::string_view alpn);
+
 }  // namespace microtel::transport
