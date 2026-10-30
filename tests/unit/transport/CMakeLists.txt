@@ -54,3 +54,11 @@ microtel_add_test(
 
 target_include_directories(connection_setup_test
     PRIVATE ${PROJECT_SOURCE_DIR}/src)
+
+microtel_add_test(
+    NAME    event_log_limiter_test
+    SOURCES event_log_limiter_test.cpp
+    LIBS    microtel_transport)
+
+target_include_directories(event_log_limiter_test
+    PRIVATE ${PROJECT_SOURCE_DIR}/src)

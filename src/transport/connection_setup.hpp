@@ -13,6 +13,7 @@
 
 #include <openssl/ssl.h>
 
+#include <atomic>
 #include <chrono>
 #include <cstdint>
 #include <span>
@@ -34,6 +35,19 @@ struct EndpointInfo
     std::string port;
     bool use_tls = true;
 };
+
+/// @brief Move the transport into `Connecting`, from either state that permits
+///        it, reporting which one we came from.
+///
+/// `Disconnected → Connecting` is a first connect; `Reconnecting → Connecting`
+/// recovers from a mid-connection drop (ICP 0018 §3). Two compare-exchange
+/// attempts rather than one, because compare_exchange takes a single expected
+/// value; the second re-reads, so a state that moved in between simply loses.
+///
+/// @param prior Set to the observed state — the one won from on success, or
+///              the blocking state on failure.
+[[nodiscard]] bool ClaimConnectSlot(std::atomic<microtel::ConnectionState>& state,
+                                    microtel::ConnectionState& prior) noexcept;
 
 /// @brief Split an endpoint URL into host, port and whether to use TLS.
 ///

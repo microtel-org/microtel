@@ -9,6 +9,7 @@
 #include <openssl/ssl.h>
 #include <openssl/x509.h>
 
+#include <atomic>
 #include <cerrno>
 #include <chrono>
 #include <memory>
@@ -199,6 +200,27 @@ microtel::Expected<void, microtel::Error> SslConnectLoop(
 }
 
 }  // namespace
+
+bool ClaimConnectSlot(std::atomic<microtel::ConnectionState>& state,
+                      microtel::ConnectionState& prior) noexcept
+{
+    prior = microtel::ConnectionState::Disconnected;
+    if (state.compare_exchange_strong(prior,
+                                      microtel::ConnectionState::Connecting,
+                                      std::memory_order_acq_rel,
+                                      std::memory_order_acquire))
+    {
+        return true;
+    }
+    if (prior != microtel::ConnectionState::Reconnecting)
+    {
+        return false;
+    }
+    return state.compare_exchange_strong(prior,
+                                         microtel::ConnectionState::Connecting,
+                                         std::memory_order_acq_rel,
+                                         std::memory_order_acquire);
+}
 
 std::string_view SelectedAlpn(const SSL* ssl) noexcept
 {
