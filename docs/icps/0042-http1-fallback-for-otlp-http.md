@@ -1,7 +1,8 @@
 # ICP 0042: HTTP/1.1 fallback for OTLP/HTTP
 
 **Status:** Accepted — 2026-10-29. Milestone v1.2.6 (brought forward from
-v1.3 on 2026-10-29); tracking issue #503.
+v1.3 on 2026-10-29); tracking issue #503. Amended 2026-10-30 (§3): the
+auth-token claim corrected, and the stale-connection retry added.
 **Affected interfaces / docs:**
 - `docs/interfaces.md` §4.1 (`ITransport` Purpose) and §4.3 (`IWireCodec`
   Purpose, whose LOCKED "one interface" claim is unchanged): text below
@@ -154,9 +155,11 @@ connect timeout, so callers see a `Connect` that succeeded.
     already rejects `host`, `connection`, `transfer-encoding`, `upgrade` and
     the rest at `Build()`.
 - **Header validation at assembly, for both transports.**
-  - **Why now:** ICP 0038 and #412 check static headers at `Build()`, but the
-    `IAuthProvider` token is produced at send time and is checked nowhere
-    today. In HTTP/1.1 a CR or LF in it is header injection.
+  - **Why now:** ICP 0038 and #412 check static headers at `Build()`, and
+    `CallbackAuthProvider` already rejects CR, LF and NUL in the token it
+    produces at send time (#412). This check is defence in depth on HTTP/2 and
+    the only guard on HTTP/1.1, where a CR or LF in any field is header
+    injection.
   - **Where:** a new `wire::ValidateRequestHeaders` (`src/wire/header_validation.*`)
     rejects any field name or value containing CR, LF or NUL. Both codecs'
     `BuildHeaders` call it last, after the auth header is appended, so it covers
@@ -187,6 +190,12 @@ connect timeout, so callers see a `Connect` that succeeded.
 - **Connection close:** a body delimited by connection close, `Connection:
   close`, and an HTTP/1.0 status line all end keep-alive. The next request
   reconnects.
+- **Stale-connection retry:** a request written on a reused keep-alive
+  connection that closes before any response byte arrives (the peer's idle
+  timeout racing the write) is retried once on a new connection, and the retry
+  is counted. The peer may have processed the first copy, so the receiver can
+  see the request twice; that is the duplicate OTLP's retry semantics already
+  allow, as when any export is retried after its response was lost.
 - **Size limit:** `max_response_bytes` bounds the body exactly as on HTTP/2,
   with `response_too_large` set.
 - **Parser shape:** an incremental push parser with no allocation beyond the
