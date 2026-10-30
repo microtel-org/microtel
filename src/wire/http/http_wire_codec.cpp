@@ -10,6 +10,7 @@
 
 #include "wire/auth_failure.hpp"
 #include "wire/gzip.hpp"
+#include "wire/header_validation.hpp"
 #include "wire/otlp_response.hpp"
 
 #include <algorithm>
@@ -302,8 +303,8 @@ std::string HttpWireCodec::ResolvePath() const noexcept
     return m_config.path + std::string{kV1TracesPath};
 }
 
-microtel::Expected<std::vector<internal::HeaderField>, Error> HttpWireCodec::BuildHeaders(
-    std::size_t content_length, bool compressed) const
+microtel::Expected<std::vector<internal::HeaderField>, internal::WireResult>
+HttpWireCodec::BuildHeaders(std::size_t content_length, bool compressed) const
 {
     std::vector<internal::HeaderField> headers;
     headers.reserve(kBuiltInHeaderCount + m_config.extra_headers.size());
@@ -331,7 +332,11 @@ microtel::Expected<std::vector<internal::HeaderField>, Error> HttpWireCodec::Bui
 
     if (auto err = AppendAuthHeader(headers))
     {
-        return microtel::make_unexpected(std::move(*err));
+        return microtel::make_unexpected(AuthFailure(*err));
+    }
+    if (auto err = ValidateRequestHeaders(headers))
+    {
+        return microtel::make_unexpected(InvalidHeaderFailure(std::move(*err)));
     }
 
     return headers;
@@ -448,9 +453,10 @@ internal::WireResult HttpWireCodec::Send(internal::EncodedPayload&& payload,
     auto headers = BuildHeaders(body.bytes.size(), body.compressed);
     if (!headers)
     {
-        // The auth provider failed: drop the batch rather than send it without
-        // the header (`docs/interfaces.md` §4.9, issue #250).
-        return AuthFailure(headers.error());
+        // The auth provider failed, or a field cannot be carried: drop the
+        // batch rather than send it without the header (`docs/interfaces.md`
+        // §4.9, issue #250) or with an injected one (ICP 0042 §3).
+        return std::move(headers.error());
     }
 
     internal::RequestSpec spec{
@@ -586,7 +592,7 @@ std::vector<internal::WireResult> HttpWireCodec::SendAll(
         {
             // This batch alone: the rest of the fan-out is unaffected, and
             // `results[i]` already lines up with `payloads[i]`.
-            results[i] = AuthFailure(headers.error());
+            results[i] = std::move(headers.error());
             continue;
         }
         internal::RequestSpec spec{

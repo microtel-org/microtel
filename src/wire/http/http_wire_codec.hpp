@@ -10,6 +10,7 @@
 #include "microtel/internal/diagnostics_sink.hpp"
 #include "microtel/internal/transport.hpp"
 #include "microtel/internal/wire_codec.hpp"
+#include "microtel/internal/wire_result.hpp"
 
 #include "wire/gzip.hpp"
 
@@ -131,12 +132,14 @@ private:
 
     [[nodiscard]] std::string ResolvePath() const noexcept;
     /// @brief Builds the complete request header block, `authorization`
-    ///        included.
-    /// @return the headers, or the auth provider's `Error` — a batch whose
-    ///         header block cannot be completed is dropped rather than sent
-    ///         without the header (`docs/interfaces.md` §4.9, issue #250).
-    [[nodiscard]] microtel::Expected<std::vector<internal::HeaderField>, Error> BuildHeaders(
-        std::size_t content_length, bool compressed) const;
+    ///        included, and validates every field (`ValidateRequestHeaders`).
+    /// @return the headers, or the terminal `WireResult` to return instead: a
+    ///         batch whose header block cannot be completed is dropped rather
+    ///         than sent without the header (`docs/interfaces.md` §4.9, issue
+    ///         #250), and one carrying a CR, LF or NUL is dropped before the
+    ///         transport sees it (ICP 0042 §3).
+    [[nodiscard]] microtel::Expected<std::vector<internal::HeaderField>, internal::WireResult>
+    BuildHeaders(std::size_t content_length, bool compressed) const;
     /// @brief Appends `authorization` from the auth provider, if there is one.
     /// @return `nullopt` when the header was appended, or when there is no
     ///         provider or it has no value to give; otherwise the provider's

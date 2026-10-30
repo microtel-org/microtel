@@ -555,6 +555,99 @@ TEST(HttpWireCodecTest, SendAll_AuthProviderError_DropsOnlyTheAffectedBatch)
 }
 
 // ---------------------------------------------------------------------------
+// Request header validation (ICP 0042 §3): CR, LF and NUL are rejected in
+// every field after assembly, so an auth token produced at send time cannot
+// inject a header on HTTP/1.1 or be refused by nghttp2 on HTTP/2.
+// ---------------------------------------------------------------------------
+
+TEST(HttpWireCodecTest, Send_AuthTokenWithCrLfOrNul_DropsBatchWithoutSending)
+{
+    for (const char bad : {'\r', '\n', '\0'})
+    {
+        mtfk::FakeTransport transport;
+        transport.default_response = OkResponse();
+        mtfk::FakeAuthProvider auth;
+        std::string token = "Bearer secret";
+        token.push_back(bad);
+        token += "x-injected: 1";
+        auth.static_value = std::optional<std::string>{token};
+        mtfk::FakeSteadyClock clock;
+        mtw::HttpWireCodec codec{&transport, MakeConfig(), &auth, nullptr, &clock};
+
+        const auto result = codec.Send(MakePayload(), std::chrono::milliseconds(1000));
+        EXPECT_FALSE(result.success);
+        EXPECT_FALSE(result.retryable) << "a bad header does not get better on retry";
+        const std::string message = result.error ? result.error->message : std::string{};
+        EXPECT_EQ(result.error ? result.error->kind : mt::Error::Kind::Unspecified,
+                  mt::Error::Kind::Malformed);
+        EXPECT_NE(message.find("\"authorization\""), std::string::npos)
+            << "the message names the field: " << message;
+        EXPECT_EQ(message.find("secret"), std::string::npos)
+            << "the message never carries the value: " << message;
+        EXPECT_TRUE(transport.sent_specs.empty()) << "the request must never reach the transport";
+    }
+}
+
+TEST(HttpWireCodecTest, Send_ExtraHeaderValueWithLf_DropsBatchWithoutSending)
+{
+    mtfk::FakeTransport transport;
+    transport.default_response = OkResponse();
+    auto config = MakeConfig();
+    config.extra_headers.push_back({.name = "x-tenant", .value = "a\nb"});
+    mtw::HttpWireCodec codec{&transport, config};
+
+    const auto result = codec.Send(MakePayload(), std::chrono::milliseconds(1000));
+    EXPECT_FALSE(result.success);
+    EXPECT_FALSE(result.retryable);
+    const std::string message = result.error ? result.error->message : std::string{};
+    EXPECT_NE(message.find("\"x-tenant\""), std::string::npos) << message;
+    EXPECT_EQ(message.find("authorization header unavailable"), std::string::npos)
+        << "a bad static header is not an auth failure: " << message;
+    EXPECT_TRUE(transport.sent_specs.empty());
+}
+
+TEST(HttpWireCodecTest, Send_ExtraHeaderNameWithCr_DropsBatchWithoutSending)
+{
+    mtfk::FakeTransport transport;
+    transport.default_response = OkResponse();
+    auto config = MakeConfig();
+    config.extra_headers.push_back({.name = "x-a\rx-b", .value = "1"});
+    mtw::HttpWireCodec codec{&transport, config};
+
+    const auto result = codec.Send(MakePayload(), std::chrono::milliseconds(1000));
+    EXPECT_FALSE(result.success);
+    EXPECT_FALSE(result.retryable);
+    EXPECT_EQ(result.error ? result.error->kind : mt::Error::Kind::Unspecified,
+              mt::Error::Kind::Malformed);
+    EXPECT_TRUE(transport.sent_specs.empty());
+}
+
+TEST(HttpWireCodecTest, SendAll_AuthTokenWithLf_DropsOnlyTheAffectedBatch)
+{
+    mtfk::FakeTransport transport;
+    transport.default_response = OkResponse();
+    mtfk::FakeAuthProvider auth;
+    auth.scripted_responses.emplace_back(std::optional<std::string>{"Bearer tok"});
+    auth.scripted_responses.emplace_back(std::optional<std::string>{"Bearer tok\nx: y"});
+    auth.scripted_responses.emplace_back(std::optional<std::string>{"Bearer tok"});
+    mtfk::FakeSteadyClock clock;
+    mtw::HttpWireCodec codec{&transport, MakeConfig(), &auth, nullptr, &clock};
+
+    std::vector<mti::EncodedPayload> payloads;
+    payloads.push_back(MakePayload());
+    payloads.push_back(MakePayload());
+    payloads.push_back(MakePayload());
+
+    const auto results = codec.SendAll(std::move(payloads), std::chrono::milliseconds(1000));
+    ASSERT_EQ(results.size(), 3U);
+    EXPECT_TRUE(results[0].success);
+    EXPECT_FALSE(results[1].success);
+    EXPECT_FALSE(results[1].retryable);
+    EXPECT_TRUE(results[2].success);
+    EXPECT_EQ(transport.sent_specs.size(), 2U);
+}
+
+// ---------------------------------------------------------------------------
 // M5-B: Partial-success parsing
 // ---------------------------------------------------------------------------
 

@@ -794,6 +794,56 @@ TEST(GrpcWireCodecTest, Send_AuthProviderError_DropsBatchWithoutSending)
 }
 
 // ---------------------------------------------------------------------------
+// Request header validation (ICP 0042 §3): CR, LF and NUL are rejected in
+// every field after assembly, the auth header included.
+// ---------------------------------------------------------------------------
+
+TEST(GrpcWireCodecTest, Send_AuthTokenWithCrLfOrNul_DropsBatchWithoutSending)
+{
+    for (const char bad : {'\r', '\n', '\0'})
+    {
+        mtfk::FakeTransport transport;
+        transport.default_response = GrpcSuccessResponse();
+        mtfk::FakeAuthProvider auth;
+        std::string token = "Bearer secret";
+        token.push_back(bad);
+        token += "x-injected: 1";
+        auth.static_value = std::optional<std::string>{token};
+        mtw::GrpcWireCodec codec{&transport, MakeConfig(), &auth};
+
+        const auto result = codec.Send(MakePayload(), std::chrono::milliseconds(500));
+        EXPECT_FALSE(result.success);
+        EXPECT_FALSE(result.retryable) << "a bad header does not get better on retry";
+        const std::string message = result.error ? result.error->message : std::string{};
+        EXPECT_EQ(result.error ? result.error->kind : mt::Error::Kind::Unspecified,
+                  mt::Error::Kind::Malformed);
+        EXPECT_NE(message.find("\"authorization\""), std::string::npos)
+            << "the message names the field: " << message;
+        EXPECT_EQ(message.find("secret"), std::string::npos)
+            << "the message never carries the value: " << message;
+        EXPECT_TRUE(transport.sent_specs.empty()) << "the request must never reach the transport";
+    }
+}
+
+TEST(GrpcWireCodecTest, Send_ExtraHeaderValueWithLf_DropsBatchWithoutSending)
+{
+    mtfk::FakeTransport transport;
+    transport.default_response = GrpcSuccessResponse();
+    auto config = MakeConfig();
+    config.extra_headers.push_back({.name = "x-tenant", .value = "a\nb"});
+    mtw::GrpcWireCodec codec{&transport, config};
+
+    const auto result = codec.Send(MakePayload(), std::chrono::milliseconds(500));
+    EXPECT_FALSE(result.success);
+    EXPECT_FALSE(result.retryable);
+    const std::string message = result.error ? result.error->message : std::string{};
+    EXPECT_NE(message.find("\"x-tenant\""), std::string::npos) << message;
+    EXPECT_EQ(message.find("authorization header unavailable"), std::string::npos)
+        << "a bad static header is not an auth failure: " << message;
+    EXPECT_TRUE(transport.sent_specs.empty());
+}
+
+// ---------------------------------------------------------------------------
 // gRPC framing — 5-byte length prefix
 // ---------------------------------------------------------------------------
 

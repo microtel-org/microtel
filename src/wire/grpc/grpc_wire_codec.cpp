@@ -13,6 +13,7 @@
 #include "wire/auth_failure.hpp"
 #include "wire/grpc/grpc_status.hpp"
 #include "wire/gzip.hpp"
+#include "wire/header_validation.hpp"
 #include "wire/otlp_response.hpp"
 
 #include <charconv>
@@ -930,8 +931,8 @@ GrpcWireCodec::GrpcWireCodec(internal::ITransport* transport,
 {
 }
 
-microtel::Expected<std::vector<internal::HeaderField>, microtel::Error> GrpcWireCodec::BuildHeaders(
-    bool compressed) const
+microtel::Expected<std::vector<internal::HeaderField>, internal::WireResult>
+GrpcWireCodec::BuildHeaders(bool compressed) const
 {
     std::vector<internal::HeaderField> headers;
     headers.push_back({.name = ":method", .value = "POST"});
@@ -958,7 +959,11 @@ microtel::Expected<std::vector<internal::HeaderField>, microtel::Error> GrpcWire
     }
     if (auto err = AppendAuthHeader(headers))
     {
-        return microtel::make_unexpected(std::move(*err));
+        return microtel::make_unexpected(AuthFailure(*err));
+    }
+    if (auto err = ValidateRequestHeaders(headers))
+    {
+        return microtel::make_unexpected(InvalidHeaderFailure(std::move(*err)));
     }
     return headers;
 }
@@ -1052,9 +1057,10 @@ internal::WireResult GrpcWireCodec::Send(internal::EncodedPayload&& payload,
     auto headers = BuildHeaders(did_compress);
     if (!headers)
     {
-        // The auth provider failed: drop the batch rather than send it without
-        // the header (`docs/interfaces.md` §4.9, issue #250).
-        return AuthFailure(headers.error());
+        // The auth provider failed, or a field cannot be carried: drop the
+        // batch rather than send it without the header (`docs/interfaces.md`
+        // §4.9, issue #250) or with an injected one (ICP 0042 §3).
+        return std::move(headers.error());
     }
     internal::RequestSpec spec{
         .headers = std::move(*headers),
