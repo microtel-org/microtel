@@ -129,6 +129,16 @@ if(NOT MICROTEL_SANITIZER STREQUAL "")
     message(STATUS "microtel: ${MICROTEL_SANITIZER} enabled")
 endif()
 
+# A fuzz build instruments every target, not only the harnesses (#507). A
+# harness's own -fsanitize=fuzzer covers just its own sources: the libraries it
+# links would otherwise give libFuzzer no coverage feedback and ASan / UBSan
+# nothing to check. Declared here, ahead of the first library target.
+option(MICROTEL_BUILD_FUZZ "Build libFuzzer harnesses (requires clang -fsanitize=fuzzer)" OFF)
+if(MICROTEL_BUILD_FUZZ AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    add_compile_options(-fsanitize=fuzzer-no-link,address,undefined -fno-omit-frame-pointer)
+    add_link_options(-fsanitize=address,undefined)
+endif()
+
 # Coverage build helper. The thresholds are 90% line /
 # 85% branch on SDK + encoder code and 80% line on transport + exporter;
 # `ci/scripts/coverage.sh` enforces all three.
@@ -353,10 +363,10 @@ if(NOT MICROTEL_LEAF_ENCODER MATCHES "^(upb|nanopb)$")
         "MICROTEL_LEAF_ENCODER must be upb or nanopb, not '${MICROTEL_LEAF_ENCODER}'")
 endif()
 
-# Declared here, ahead of the blocks that use them further down, because the
+# Declared here, ahead of the blocks that use it further down, because the
 # leaf builds test-only libraries of both backends when either is ON.
 option(MICROTEL_BUILD_TESTS "Build the test tree" ${MICROTEL_IS_TOP_LEVEL})
-option(MICROTEL_BUILD_FUZZ "Build libFuzzer harnesses (requires clang -fsanitize=fuzzer)" OFF)
+# MICROTEL_BUILD_FUZZ is declared with the sanitizer options above.
 
 # nanopb is linked only into a nanopb leaf (ICP 0031 Decision 4). It is also
 # built for a upb leaf when tests or fuzz harnesses are on, because every leaf
@@ -635,7 +645,7 @@ endif()
 # Fuzz harnesses — libFuzzer, clang-only, independent of the gtest tree.
 # cmake -S . -B build-fuzz -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
 #       -DMICROTEL_BUILD_FUZZ=ON -DMICROTEL_BUILD_LEAF=ON -DMICROTEL_BUILD_TESTS=OFF
-# MICROTEL_BUILD_FUZZ is declared with the leaf options above.
+# MICROTEL_BUILD_FUZZ is declared with the sanitizer options near the top.
 if(MICROTEL_BUILD_FUZZ)
     add_subdirectory(tests/fuzz)
 endif()

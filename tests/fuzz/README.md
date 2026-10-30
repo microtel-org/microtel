@@ -35,7 +35,14 @@ paths, the TOML parser and the response-size limits.
 
 | File | Surface |
 |---|---|
-| `http1_response_fuzz.cpp` | `Http1ResponseParser`, the HTTP/1.1 response parser behind the OTLP/HTTP fallback ([ICP 0042](../../docs/icps/0042-http1-fallback-for-otlp-http.md) §3). Bytes 0-1 pick `max_response_bytes` and the header budget, byte 2 seeds a split; the rest is parsed as back-to-back responses three ways (whole, one byte per `Feed`, pseudo-random pieces), which must agree exactly. It also asserts that `Feed` makes progress, that the body and header fields stay within their bounds, and that a complete response has a final status. The parser's source is compiled into the harness so that it is instrumented (#507). |
+| `http1_response_fuzz.cpp` | `Http1ResponseParser`, the HTTP/1.1 response parser behind the OTLP/HTTP fallback ([ICP 0042](../../docs/icps/0042-http1-fallback-for-otlp-http.md) §3). Bytes 0-1 pick `max_response_bytes` and the header budget, byte 2 seeds a split; the rest is parsed as back-to-back responses three ways (whole, one byte per `Feed`, pseudo-random pieces), which must agree exactly. It also asserts that `Feed` makes progress, that the body and header fields stay within their bounds, and that a complete response has a final status. |
+
+## Instrumentation
+
+A fuzz build (`-DMICROTEL_BUILD_FUZZ=ON`) compiles every target with
+`-fsanitize=fuzzer-no-link,address,undefined`, not only the harnesses, so the
+libraries a harness links give libFuzzer coverage feedback and are checked by
+ASan and UBSan (#507). The harnesses themselves add `-fsanitize=fuzzer`.
 
 ## Invariants
 
