@@ -13,11 +13,10 @@
 //                            a client that accepts anything passes every
 //                            positive test in this file.
 //   2. gRPC, ca_bundle       the same endpoint with the CA pinned. Works.
-//   3. HTTP, ca_bundle       OTLP/HTTP over TLS — the one configuration in
-//                            which microtel can use OTLP/HTTP at all, because
-//                            ALPN negotiates `h2`. Plaintext http:// to a
-//                            collector's HTTP receiver cannot work (issue
-//                            #166, docs/compatibility-matrix.md §4).
+//   3. HTTP, ca_bundle       OTLP/HTTP over TLS, where ALPN negotiates `h2`.
+//                            Plaintext http:// to a collector's HTTP
+//                            receiver is HTTP/1.1, one request at a time
+//                            (docs/compatibility-matrix.md §4).
 //   4. gRPC, mTLS            client certificate as well, against a receiver
 //                            configured with a client CA.
 //

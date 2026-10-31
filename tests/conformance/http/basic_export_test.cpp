@@ -16,17 +16,11 @@
 // ----------------------------------------------
 // These tests point at MICROTEL_CONFORMANCE_HTTP_TLS_ENDPOINT (receiver
 // otlp/tls) even though a plaintext OTLP/HTTP receiver is running on 4318.
-// microtel speaks HTTP/2 only — it is an nghttp2 transport by design — and on
-// a plaintext socket that means h2c with prior knowledge. The collector's
-// plaintext HTTP receiver is HTTP/1.1 only: it does not wrap its handler in
-// h2c, so it answers the HTTP/2 connection preface with an HTTP/1.1 error and
-// the SETTINGS exchange never completes. Over TLS the same receiver negotiates
-// `h2` through ALPN and everything works.
-//
-// So this is the OTLP/HTTP path that can reach a stock collector today. The
-// plaintext gap is real and tracked in docs/interop-matrix.md; the
-// MICROTEL_CONFORMANCE_HTTP_ENDPOINT variable stays in the runner's contract
-// for the negative test that will pin the behaviour deliberately.
+// The collector's plaintext HTTP receiver is HTTP/1.1 only: it does not wrap
+// its handler in h2c. microtel reaches it by falling back to HTTP/1.1 (ICP
+// 0042), one request at a time, and plaintext_http1_test.cpp covers that path.
+// Over TLS the same receiver negotiates `h2` through ALPN, so these tests
+// exercise OTLP/HTTP over HTTP/2.
 //
 // The expected JSON fragments are the collector's protojson rendering — hex
 // ids, camelCase keys, attribute values in a typed envelope, int64 as a quoted

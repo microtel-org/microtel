@@ -137,19 +137,14 @@ the CA (phase 2), install the CA in the system trust store, or set
 
 ---
 
-## OTLP/HTTP works here and nowhere else
+## OTLP/HTTP over HTTP/2
 
-Phase 3 is the only configuration in which microtel can use OTLP/HTTP against a
-stock collector. microtel's transport is HTTP/2-only, so a plaintext `http://`
-endpoint means h2c with prior knowledge. The collector's plaintext OTLP/HTTP
-receiver serves HTTP/1.1 only and answers the HTTP/2 preface with an HTTP/1.1
-response. Over TLS, ALPN negotiates `h2` and the same receiver works.
-
-If you do point microtel at a plaintext HTTP receiver, it tells you in three
-places: a `Build()` warning, a `Connect()` error of kind `Protocol`, and
-`last_error_message`. Full detail is in
-[`docs/compatibility-matrix.md`](../../docs/compatibility-matrix.md) §4 and
-issue #166.
+Phase 3 is the configuration in which microtel uses OTLP/HTTP over HTTP/2
+against a stock collector: over TLS, ALPN negotiates `h2`. The collector's
+plaintext OTLP/HTTP receiver serves HTTP/1.1 only. microtel reaches it too,
+since v1.2.6, by falling back to HTTP/1.1, but HTTP/1.1 sends one request at a
+time. Full detail is in
+[`docs/compatibility-matrix.md`](../../docs/compatibility-matrix.md) §4.
 
 ---
 
