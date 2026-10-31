@@ -602,7 +602,7 @@ footer .brand{margin-right:4px}
       </div>
     </div>
     <div class="stats" role="list">
-      <div class="stat" role="listitem"><b>1.2 MB</b><span>telemetry stack, vs <span class="mono c-co">13.4 MB</span> for <span class="mono">opentelemetry-cpp</span> with its OTLP/gRPC exporter</span></div>
+      <div class="stat" role="listitem"><b>1.3 MB</b><span>telemetry stack, about 11× smaller than the <span class="mono c-co">13.4 MB</span> for <span class="mono">opentelemetry-cpp</span> with its OTLP/gRPC exporter</span></div>
       <div class="stat" role="listitem"><b>~3.6×</b><span>less time to create and end a span (<span class="mono">223 ns</span> vs <span class="mono">813 ns</span>, median)</span></div>
       <div class="stat" role="listitem"><b>~9.3 KB</b><span>flash for the experimental C leaf on a Cortex-M4</span></div>
     </div>
@@ -625,7 +625,7 @@ footer .brand{margin-right:4px}
       </ul>
     </div>
 
-    <figure class="trees" style="margin:0" role="img" aria-label="Library breakdown in MB, bars on one scale. opentelemetry-cpp with OTLP/gRPC exporter, telemetry stack 13.4 MB: opentelemetry-cpp 0.9, gRPC 6.7 (Abseil 1.4, re2 0.4, c-ares 0.2), protobuf 3.1, libopentelemetry_proto 0.7, other 0.2. microtel, telemetry stack 1.2 MB: microtel 0.7, nghttp2 0.2, toml++ 0.1, upb 33 KB, other 0.2. Both also load the shared base of OpenSSL, zlib and the C/C++ runtime, 12.0 MB.">
+    <figure class="trees" style="margin:0" role="img" aria-label="Library breakdown in MB, bars on one scale. opentelemetry-cpp with OTLP/gRPC exporter, telemetry stack 13.4 MB: opentelemetry-cpp 0.9, gRPC 6.7 (Abseil 1.4, re2 0.4, c-ares 0.2), protobuf 3.1, libopentelemetry_proto 0.7, other 0.2. microtel, telemetry stack 1.3 MB: microtel 0.8, nghttp2 0.2, toml++ 0.1, upb 33 KB, other 0.2. Both also load the shared base of OpenSSL, zlib and the C/C++ runtime, 12.0 MB.">
       <figcaption class="trees-title">Library breakdown <span class="small">(MB; rounded, rows may not sum to totals)</span></figcaption>
       <div class="tree otel" aria-hidden="true">
         <div class="tree-h"><span class="tag">opentelemetry-cpp + OTLP/gRPC exporter</span><span class="tot"><small>telemetry stack</small>13.4 MB</span></div>
@@ -640,9 +640,9 @@ footer .brand{margin-right:4px}
         <span class="n"><i>└─ </i><span style="color:var(--t2)">other</span> <span class="v">0.2</span></span><span class="b"><span class="grey" style="width:2.99%"></span></span>
       </div>
       <div class="tree mt" aria-hidden="true">
-        <div class="tree-h"><span class="tag">microtel</span><span class="tot"><small>telemetry stack</small>1.2 MB</span></div>
+        <div class="tree-h"><span class="tag">microtel</span><span class="tot"><small>telemetry stack</small>1.3 MB</span></div>
         <span class="n root">your app</span><span class="b"></span>
-        <span class="n"><i>├─ </i>microtel <span class="v">0.7</span></span><span class="b"><span style="width:10.45%"></span></span>
+        <span class="n"><i>├─ </i>microtel <span class="v">0.8</span></span><span class="b"><span style="width:11.94%"></span></span>
         <span class="n"><i>│  ├─ </i>nghttp2 <span class="v">0.2</span></span><span class="b"><span style="width:2.99%"></span></span>
         <span class="n"><i>│  ├─ </i>toml++ <span class="v">0.1</span></span><span class="b"><span style="width:1.49%"></span></span>
         <span class="n"><i>│  └─ </i>upb <span class="v">33 KB</span></span><span class="b"><span style="width:0.49%"></span></span>
@@ -691,7 +691,7 @@ footer .brand{margin-right:4px}
         <div class="big" aria-hidden="true"><b>~3.6×</b><span>less time per span</span></div>
         <p class="small" aria-hidden="true">over OTLP/gRPC: <span class="mono">812</span> vs <span class="mono">220 ns</span>, <span class="mono">3.7×</span></p>
       </figure>
-      <figure class="chart" role="img" aria-label="What you deploy, stripped, Ubuntu 24.04 packages, on one scale. opentelemetry-cpp with OTLP/gRPC exporter: 12.0 MB shared plus 13.4 MB, 25.4 MB total. microtel: 12.0 MB shared plus 1.2 MB, 13.2 MB total. Shared base: OpenSSL, zlib, C/C++ runtime, the same files in both.">
+      <figure class="chart" role="img" aria-label="What you deploy, stripped, Ubuntu 24.04 packages, on one scale. opentelemetry-cpp with OTLP/gRPC exporter: 12.0 MB shared plus 13.4 MB, 25.4 MB total. microtel: 12.0 MB shared plus 1.3 MB, 13.2 MB total. Shared base: OpenSSL, zlib, C/C++ runtime, the same files in both.">
         <h3>What you deploy <small>stripped, Ubuntu 24.04 packages</small></h3>
         <div class="lane" aria-hidden="true">
           <div class="lane-h"><span>opentelemetry-cpp + OTLP/gRPC exporter</span><span class="tot c-co">25.4 MB total</span></div>
@@ -699,13 +699,13 @@ footer .brand{margin-right:4px}
         </div>
         <div class="lane" aria-hidden="true">
           <div class="lane-h"><span>microtel</span><span class="tot c-g">13.2 MB total</span></div>
-          <div class="track"><div class="seg sl" style="width:47.24%">12.0 MB shared</div><div class="seg g" style="width:4.72%;padding:0"></div><span class="after">+1.2 MB</span></div>
+          <div class="track"><div class="seg sl" style="width:47.24%">12.0 MB shared</div><div class="seg g" style="width:5.12%;padding:0"></div><span class="after">+1.3 MB</span></div>
         </div>
         <p class="small" aria-hidden="true">Shared base: OpenSSL, zlib, C/C++ runtime (the same files in both)</p>
       </figure>
     </div>
     <div class="numbers-fine">
-      <p class="fine">Ryzen 5 5600G, one host, each SDK exporting to a local blackhole sink over a container network. v1.2.5. A microbenchmark of span cost is not an end-to-end overhead test; at moderate request rates most tracing cost is in the export path. The method, raw results and size breakdown are in <code>docs/bench-results/</code>.</p>
+      <p class="fine">Ryzen 5 5600G, one host, each SDK exporting to a local blackhole sink over a container network. Measured on v1.2.6; the span timings are from v1.2.5, whose span hot path v1.2.6 leaves unchanged. A microbenchmark of span cost is not an end-to-end overhead test; at moderate request rates most tracing cost is in the export path. The method, raw results and size breakdown are in <code>docs/bench-results/</code>.</p>
       <p><a href="https://github.com/microtel-org/microtel/tree/HEAD/docs/bench-results">Read the benchmark method →</a></p>
     </div>
   </div>
