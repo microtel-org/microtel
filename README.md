@@ -613,7 +613,7 @@ In the project's benchmark against opentelemetry-cpp on the same host:
 - **Throughput:** microtel sustains about **1.9× the span throughput**
   (1,424,706 spans/s over OTLP/HTTP against 738,912; 1.4× over OTLP/gRPC).
 - **Size:** stripped, with Ubuntu 24.04 packages, the telemetry stack the
-  benchmark loads is **1.2 MB** with microtel against **13.4 MB** with
+  benchmark loads is **1.3 MB** with microtel (v1.2.6) against **13.4 MB** with
   opentelemetry-cpp's OTLP/gRPC exporter (gRPC, protobuf, Abseil, c-ares, re2
   and its OTLP proto libraries), on top of the same **12.0 MB** of OpenSSL,
   zlib and the C/C++ runtime that both load.
