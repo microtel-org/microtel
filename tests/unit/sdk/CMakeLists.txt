@@ -309,6 +309,15 @@ target_include_directories(hot_reload_hammer_test
 target_compile_options(hot_reload_hammer_test PRIVATE
     -Wno-missing-field-initializers)
 
+# DO NOT MERGE (#517): 49 more runs of the hammer in Release builds, so CI's
+# system-deps job (clang-18, Release) runs it 50 times on a GitHub runner.
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    foreach(run RANGE 2 50)
+        add_test(NAME hot_reload_hammer_test_run${run} COMMAND hot_reload_hammer_test)
+        set_tests_properties(hot_reload_hammer_test_run${run} PROPERTIES LABELS "unit")
+    endforeach()
+endif()
+
 # Concurrency regression: MetricProducer had no mutex; AddStream raced Collect.
 microtel_add_test(
     NAME    metric_producer_race_test
