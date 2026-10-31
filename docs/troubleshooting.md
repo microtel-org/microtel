@@ -267,14 +267,10 @@ Source: `src/sdk/sdk_builder.cpp` (`Build`, `ResolveProfileName`,
 These are configurations microtel accepts but that are very likely wrong. They
 appear on stderr as `[microtel warn] ...` unless you installed a sink.
 
-- **If you see** `plaintext OTLP/HTTP (http:// with protocol=http) is HTTP/2
-  with prior knowledge and cannot reach an HTTP/1.1-only OTLP receiver such as
-  a stock OpenTelemetry Collector - use https:// or OTLP/gRPC; see
-  docs/compatibility-matrix.md` **→** switch to `https://…:4318` or to OTLP/gRPC
-  on 4317. Keep `http://` with OTLP/HTTP only if the receiver is h2c-capable
-  (an h2c proxy, for instance). See
+- Before v1.2.6, `http://` with OTLP/HTTP warned here that it could not reach
+  an HTTP/1.1-only receiver. It can now, through the HTTP/1.1 fallback, so the
+  warning is gone; see
   [Collector connection problems](#collector-connection-problems).
-  Source: `src/sdk/sdk_builder.cpp`, `WarnOnRiskyConfig`.
 - **If you see** `tls.insecure = true - TLS certificate verification is
   disabled and any certificate will be accepted, including an attacker's. Not
   for production; see docs/compatibility-matrix.md` **→** configure a
@@ -361,15 +357,32 @@ Source for every message below: `src/transport/http2_transport.cpp` and
 
 - **If you see** `peer answered the HTTP/2 preface with an HTTP/1.1 response -
   endpoint appears to be HTTP/1.1-only; use https:// (ALPN h2) or OTLP/gRPC;
-  see docs/compatibility-matrix.md` (`Protocol`, not retried) **→** see
-  [Collector connection problems](#collector-connection-problems).
+  see docs/compatibility-matrix.md` (`Protocol`, not retried) **→** an
+  OTLP/**gRPC** endpoint that points at an HTTP/1.1 receiver: gRPC needs
+  HTTP/2 and never falls back. Point it at the receiver's gRPC port (4317 by
+  convention). OTLP/HTTP does not report this any more; it falls back to
+  HTTP/1.1. See [Collector connection problems](#collector-connection-problems).
 - **If you see** `TLS peer did not negotiate h2 via ALPN (negotiated: <proto>) -
   this endpoint is not an HTTP/2 receiver; use OTLP/gRPC or an h2-capable
   OTLP/HTTP endpoint; see docs/compatibility-matrix.md` (`Protocol`, not
-  retried) **→** the TLS endpoint speaks only HTTP/1.1 (or nothing ALPN at
-  all). Point at the receiver's gRPC port or an h2-capable OTLP/HTTP endpoint.
-  With OpenSSL 3.2 or later the same server may instead fail as a TLS error
+  retried) **→** for OTLP/gRPC, the TLS endpoint speaks only HTTP/1.1 (or
+  nothing ALPN at all): point at the receiver's gRPC port. For OTLP/HTTP, an
+  answer of `http/1.1` or nothing falls back instead, so this message means
+  the receiver chose some other protocol. With OpenSSL 3.2 or later the same
+  server may instead fail as a TLS error
   ([compatibility-matrix.md](compatibility-matrix.md) §4).
+- **If you see** `endpoint speaks HTTP/1.1 only; OTLP/HTTP continues over
+  HTTP/1.1, one request at a time` (`Info`, once per `Provider`) **→** nothing
+  is wrong: the receiver has no HTTP/2, and microtel fell back
+  ([ICP 0042](icps/0042-http1-fallback-for-otlp-http.md)). Exports are now
+  serial. If export throughput matters, use `https://` against a receiver that
+  negotiates `h2`, or OTLP/gRPC.
+- **If you see** `HTTP/1.1 transport: opened a new connection after the last
+  one closed` or `a reused connection closed before responding, so the request
+  was sent again on a new connection` (`Info` the first time, then a summary
+  at most once a minute) **→** normal on HTTP/1.1: the receiver ended
+  keep-alive, or its idle timeout raced a request. A retried request may reach
+  the receiver twice, as any OTLP retry can.
 - **If you see** `peer closed the connection during the HTTP/2 handshake`
   **→** the peer hung up as microtel started HTTP/2. Typically a non-OTLP
   service on that port, or a TLS-only port reached with `http://`.
@@ -521,22 +534,22 @@ and normatively in [error-model.md](error-model.md) §2.3.
 
 ## Collector connection problems
 
-The most common first-run failure, and the one microtel can do least about.
-microtel's transport is HTTP/2-only. A plaintext `http://` endpoint therefore
-means HTTP/2 with prior knowledge (h2c), and the OpenTelemetry Collector's
-plaintext OTLP/HTTP receiver on **:4318 serves HTTP/1.1 only**. It answers the
-HTTP/2 preface with an HTTP/1.1 response and nothing is delivered. This is a
-documented limitation, not a bug being fixed
+The OpenTelemetry Collector's plaintext OTLP/HTTP receiver on **:4318 serves
+HTTP/1.1 only**. Since v1.2.6, `http://collector:4318` with OTLP/HTTP falls
+back to HTTP/1.1 and works; before that, it failed and nothing was delivered
 ([compatibility-matrix.md](compatibility-matrix.md) §4, issue #166).
 
-- **If you see** the `plaintext OTLP/HTTP ...` warning at `Build()`, the
-  `peer answered the HTTP/2 preface with an HTTP/1.1 response ...` error from
-  `Connect()`, or that same text in `last_error_message` **→** pick one of the
-  configurations that work against a stock collector:
+- **If exports to `http://…:4318` work but are slow under load** **→** the
+  receiver speaks HTTP/1.1, and microtel sends one request at a time on it.
+  Use a configuration that keeps HTTP/2:
   - OTLP/gRPC: `http://collector:4317` with `Protocol::Grpc`, or
     `grpc://collector:4317` (the scheme selects gRPC);
   - OTLP/HTTP over TLS: `https://collector:4318` with `Protocol::Http`, where
     ALPN negotiates `h2`.
+- **If you see** `peer answered the HTTP/2 preface with an HTTP/1.1 response ...`
+  from `Connect()`, or that same text in `last_error_message` **→** this is
+  OTLP/gRPC pointed at the HTTP receiver: gRPC never falls back. Use the gRPC
+  port (4317).
 
   The full table, including the h2c-proxy case, is in
   [compatibility-matrix.md](compatibility-matrix.md) §4.

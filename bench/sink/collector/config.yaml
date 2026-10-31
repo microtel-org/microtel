@@ -9,9 +9,9 @@ receivers:
         endpoint: "0.0.0.0:4317"
       http:
         endpoint: "0.0.0.0:4318"
-        # TLS so HTTP/2 is negotiated via ALPN: microtel OTLP/HTTP is
-        # HTTP/2-only and this receiver serves only HTTP/1.1 on plaintext
-        # (docs/interop-matrix.md section 4, issue #166).  The driver generates
+        # TLS so HTTP/2 is negotiated via ALPN: this receiver serves only
+        # HTTP/1.1 on plaintext, where microtel OTLP/HTTP falls back to serial
+        # HTTP/1.1 (docs/interop-matrix.md section 4).  The driver generates
         # this material and bind-mounts it at /certs (bench/driver/tls_material.py).
         tls:
           cert_file: /certs/server.crt

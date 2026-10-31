@@ -18,12 +18,11 @@
 // paste it into Grafana's Explore → Tempo, or
 //   curl -s http://localhost:3200/api/traces/<trace-id>
 //
-// OTLP/gRPC rather than OTLP/HTTP because a plaintext `http://` endpoint means
-// HTTP/2 with prior knowledge, and a stock collector's OTLP/HTTP receiver on
-// :4318 serves HTTP/1.1 only — so the obvious quick-start configuration cannot
-// deliver anything. gRPC is h2c by definition and is unaffected. For OTLP/HTTP,
-// point this at an `https://` endpoint and add `.WithProtocol(Protocol::Http)`.
-// See docs/compatibility-matrix.md and issue #166.
+// OTLP/gRPC rather than OTLP/HTTP because gRPC is h2c by definition. A stock
+// collector's plaintext OTLP/HTTP receiver on :4318 serves HTTP/1.1 only, so
+// microtel reaches it over HTTP/1.1, one request at a time (ICP 0042). For
+// OTLP/HTTP over HTTP/2, point this at an `https://` endpoint and add
+// `.WithProtocol(Protocol::Http)`. See docs/compatibility-matrix.md §4.
 
 #include "microtel/provider.hpp"
 #include "microtel/sdk_builder.hpp"

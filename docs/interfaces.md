@@ -180,7 +180,7 @@ Fourteen interfaces. Tagged by track per `development.md` §2. The last two arri
 
 #### Purpose
 
-A connection to a single OTLP endpoint over HTTP/2. Sends opaque request bytes and surfaces opaque response bytes; knows nothing about OTLP semantics. Implementations: nghttp2-over-OpenSSL in v1; the seam is shaped to allow nghttp3 in v1.5+ without changing this header.
+A connection to a single OTLP endpoint over HTTP/2, or over HTTP/1.1 for OTLP/HTTP when the endpoint cannot speak HTTP/2 (ICP 0042). Sends opaque request bytes and surfaces opaque response bytes; knows nothing about OTLP semantics. Implementations: `Http2Transport` (nghttp2 over OpenSSL); `Http1Transport` (serial HTTP/1.1, ICP 0042); and `FallbackTransport`, which the builder constructs for OTLP/HTTP only and which forwards to one of the other two. The seam is shaped to allow nghttp3 in v1.5+ without changing this header.
 
 #### Contract
 
@@ -326,7 +326,7 @@ Created by the `Provider` at `Build()` time. Owned by the `Provider`. Stateless,
 
 #### Purpose
 
-Serializes / deserializes the OTLP-over-HTTP/2 wire shape — framing, headers, status interpretation, retry classification — for one of the two wire protocols. Two implementations: HTTP-protobuf (`src/wire/http/`) and gRPC-on-nghttp2 (`src/wire/grpc/`). One interface (LOCKED — ICP 0001 / spec ICP discussion).
+Serializes / deserializes the OTLP wire shape over HTTP/2, or HTTP/1.1 for OTLP/HTTP (ICP 0042) — framing, headers, status interpretation, retry classification — for one of the two wire protocols. Two implementations: HTTP-protobuf (`src/wire/http/`) and gRPC-on-nghttp2 (`src/wire/grpc/`). One interface (LOCKED — ICP 0001 / spec ICP discussion).
 
 A third implementation, `ExportTransportCodec` (`src/wire/custom/`, ICP 0036), carries no HTTP/2 at all: it hands the encoded request to an application-supplied `microtel::ExportTransport` through a Provider-wide `ExportTransportChannel`, one codec per enabled signal, and maps the `SendResult` back (`error-model.md` §7.3). It has no `ITransport`; the rest of this contract — single caller, full classification, `Send` not `noexcept` — holds unchanged.
 

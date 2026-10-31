@@ -174,22 +174,18 @@ them there.
 
 ## Why `http://localhost:4317` and not `:4318`
 
-The examples export OTLP/gRPC to the collector's 4317, or OTLP/HTTP over TLS.
-Plaintext OTLP/HTTP doesn't work, and adding a feature wouldn't fix it; the
-cause is in how the two ends speak HTTP.
+The examples export OTLP/gRPC to the collector's 4317, or OTLP/HTTP over TLS:
+both speak HTTP/2.
 
-microtel's transport is HTTP/2-only, so a plaintext `http://` endpoint means
-h2c with prior knowledge. A stock collector's plaintext OTLP/HTTP receiver
-serves HTTP/1.1 only. It answers the HTTP/2 preface with an HTTP/1.1 response,
-and the connection never completes. gRPC is h2c by definition and is
-unaffected. Over TLS, ALPN negotiates `h2` and OTLP/HTTP works against the same
-collector.
-
-microtel reports this in three places instead of failing silently: a `Build()`
-warning, a `Connect()` error of kind `Protocol`, and
-`HealthSnapshot::last_error_message`. The full story is in
-[`docs/compatibility-matrix.md`](../docs/compatibility-matrix.md) §4 and issue
-#166.
+Plaintext OTLP/HTTP to `http://localhost:4318` works too, since v1.2.6, but
+not over HTTP/2. A stock collector's plaintext OTLP/HTTP receiver serves
+HTTP/1.1 only, so it answers microtel's HTTP/2 preface with an HTTP/1.1
+response, and microtel falls back to HTTP/1.1
+([ICP 0042](../docs/icps/0042-http1-fallback-for-otlp-http.md)). HTTP/1.1 sends
+one request at a time, which is why the examples stay on HTTP/2. gRPC is h2c
+by definition, and over TLS, ALPN negotiates `h2` with the same collector.
+[`docs/compatibility-matrix.md`](../docs/compatibility-matrix.md) §4 has the
+full table.
 
 ---
 

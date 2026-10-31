@@ -23,15 +23,12 @@
 // Why the PLAINTEXT endpoint here, where the HTTP suite needs TLS
 // ---------------------------------------------------------------
 // This file points at MICROTEL_CONFORMANCE_GRPC_ENDPOINT — `http://127.0.0.1:4317`,
-// no TLS — and that is deliberate. Issue #166 records that the equivalent
-// OTLP/HTTP configuration cannot reach a stock collector: microtel is
-// HTTP/2-only, and the collector's plaintext OTLP/HTTP receiver is HTTP/1.1-only,
-// so the HTTP suite has to use the TLS receiver where ALPN negotiates `h2`.
-// gRPC has no such gap — gRPC *is* h2c by definition and the collector's gRPC
-// receiver speaks it — so plaintext works, and this test is the counterpoint
-// that pins that difference. There is deliberately no gRPC mirror of
-// tests/conformance/http/plaintext_gap_test.cpp; these two tests passing over
-// `http://` are the gRPC answer to it.
+// no TLS — and that is deliberate. The collector's plaintext OTLP/HTTP receiver
+// is HTTP/1.1-only, so plaintext OTLP/HTTP reaches it over HTTP/1.1 (ICP 0042,
+// tests/conformance/http/plaintext_http1_test.cpp), and the HTTP suite uses the
+// TLS receiver to stay on HTTP/2. gRPC needs no such split — gRPC *is* h2c by
+// definition and the collector's gRPC receiver speaks it — so plaintext gRPC is
+// HTTP/2, and this test pins that.
 //
 // The expected JSON fragments are the collector's protojson rendering — hex
 // ids, camelCase keys, attribute values in a typed envelope, int64 as a quoted
@@ -153,7 +150,8 @@ TEST(GrpcConformance, ConnectPreflightSucceeds)
     // Connect() is the eager-preflight half of ICP 0017: no telemetry, just
     // DNS / TCP / HTTP-2 SETTINGS. Over plaintext gRPC that is h2c with prior
     // knowledge, which the collector's gRPC receiver accepts — the same
-    // exchange the HTTP receiver rejects on its plaintext port (issue #166).
+    // exchange the HTTP/1.1-only HTTP receiver rejects on its plaintext port,
+    // where OTLP/HTTP falls back and gRPC cannot (issue #166, ICP 0042).
     const auto connected = provider->Connect();
     ASSERT_TRUE(connected.has_value()) << connected.error().message;
 

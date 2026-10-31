@@ -107,11 +107,13 @@ The deeper implementation notes for the gRPC codec — state machine, byte-level
 
 **Provides:** `ITransport` — `Connect`, `Send`, `Close`, plus a callback path for `OnResponse`. The interface is the seam where an `nghttp3`-based HTTP/3 transport could drop in for v1.6+; no HTTP/3 work in v1.
 
+**HTTP/1.1 for OTLP/HTTP** ([ICP 0042](icps/0042-http1-fallback-for-otlp-http.md)). For `Protocol::Http` the builder constructs a `FallbackTransport`, which forwards to an `Http2Transport` until a `Connect` finds the peer HTTP/1.1-only (a plaintext HTTP/1.1 answer to the preface, or a TLS ALPN answer of `http/1.1` or none). It then closes and destroys the `Http2Transport` and creates an `Http1Transport`, so there is never more than one I/O thread. `Http1Transport` is serial: one keep-alive connection, one request at a time, reconnecting on its I/O thread when the peer ends keep-alive. OTLP/gRPC gets a bare `Http2Transport` and never falls back.
+
 **Consumes:** `IReactor` (the epoll abstraction, present primarily as a test seam), the RAII wrappers in `src/common/raii/` (`UniqueFd`, `SslCtx`, `SslSession`, `Nghttp2Session`, `BioMethod`).
 
 **Absent with an application `ExportTransport`.** `Build()` constructs no `Http2Transport` and no reactor, so there is no I/O thread, and `Provider::Connect()` succeeds without doing anything. The library still links nghttp2, OpenSSL and zlib; compiling them out belongs to ICP 0030's feature selection ([ICP 0036](icps/0036-custom-export-transport.md) Decision 5).
 
-**Connection policy.** One HTTP/2 connection per `(endpoint, protocol)` tuple by default. Real infrastructure (collectors, gateways, proxies, meshes, load balancers) often routes 4317 and 4318 differently, so microtel never shares one connection between OTLP/HTTP and OTLP/gRPC, even when the endpoint is the same.
+**Connection policy.** One connection (HTTP/2, or HTTP/1.1 after a fallback) per `(endpoint, protocol)` tuple by default. Real infrastructure (collectors, gateways, proxies, meshes, load balancers) often routes 4317 and 4318 differently, so microtel never shares one connection between OTLP/HTTP and OTLP/gRPC, even when the endpoint is the same.
 
 ### 3.7 Common — `src/common/`
 

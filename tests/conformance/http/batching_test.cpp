@@ -24,10 +24,9 @@
 // expected.
 //
 // These tests point at MICROTEL_CONFORMANCE_HTTP_TLS_ENDPOINT for the reason
-// recorded in basic_export_test.cpp and issue #166 — microtel is HTTP/2-only
-// and the collector's plaintext OTLP/HTTP receiver is HTTP/1.1-only, so TLS
-// (where ALPN negotiates h2) is the only OTLP/HTTP path that reaches a stock
-// collector today.
+// recorded in basic_export_test.cpp: TLS is where ALPN negotiates h2, and the
+// multi-DATA-frame case is an HTTP/2 one. The collector's plaintext OTLP/HTTP
+// receiver is HTTP/1.1-only and is covered by plaintext_http1_test.cpp.
 
 #include "microtel/protocol.hpp"
 #include "microtel/provider.hpp"
