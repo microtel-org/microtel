@@ -8,6 +8,10 @@
 #
 # Usage:  bench/parity/build.sh <log-dir> [variant ...]   (default: all)
 #
+# With PARITY_DOUBLE=1, each variant is built a second time with --no-cache as
+# <tag>:check and compared with compare_builds.sh; any section difference stops
+# the run (exit 4), since this host is not memory-tested.
+#
 # Stops at the first build that shows a compiler or linker crash, so a crash on
 # this host is looked at before any result is trusted. A clang-18.1.3 crash in
 # filtered_ordered_attribute_map.cpp is the known upstream bug that made the
@@ -82,5 +86,25 @@ for v in "${VARIANTS[@]}"; do
             exit 3
         fi
         [[ $status == ok ]] || exit 1
+        if [[ ${PARITY_DOUBLE:-0} == 1 && $perf == false ]]; then
+            clog=$LOG_DIR/$v.check.log
+            echo "== $tag:check  (--no-cache rebuild)"
+            start=$(date +%s)
+            if "${cmd[@]/#$tag/$tag:check}" --no-cache "$CTX" > "$clog" 2>&1; then status=ok; else status=FAILED; fi
+            echo "   $status in $(( $(date +%s) - start ))s  -> $clog"
+            if grep -qE "$CRASH_RE" "$clog"; then
+                echo "build.sh: compiler/linker crash signature in $clog:" >&2
+                grep -nE "$CRASH_RE" "$clog" | head -5 >&2
+                exit 3
+            fi
+            [[ $status == ok ]] || exit 1
+            if ! "$REPO_ROOT/bench/parity/compare_builds.sh" "$tag" "$tag:check" \
+                    "$LOG_DIR/compare/$v" > "$LOG_DIR/$v.compare.log" 2>&1; then
+                echo "build.sh: $tag and $tag:check differ:" >&2
+                grep DIFF "$LOG_DIR/$v.compare.log" | head -20 >&2
+                exit 4
+            fi
+            echo "   $(tail -1 "$LOG_DIR/$v.compare.log")"
+        fi
     done
 done
