@@ -92,6 +92,15 @@ elseif(BENCH_BACKEND STREQUAL "OTELCPP_HTTP")
         opentelemetry-cpp::otlp_http_exporter
         opentelemetry-cpp::otlp_http_metric_exporter
         opentelemetry-cpp::otlp_http_log_record_exporter)
+    # Parity study (bench/parity): swap only the span exporter for the SDK's
+    # in-memory one, keeping the OTLP/HTTP metrics and logs setup unchanged.
+    option(BENCH_OTELCPP_INMEMORY_SPANS
+        "Export spans to the SDK's in-memory exporter (SpanData), not OTLP" OFF)
+    if(BENCH_OTELCPP_INMEMORY_SPANS)
+        find_package(opentelemetry-cpp REQUIRED COMPONENTS in_memory_span_exporter)
+        target_compile_definitions(emit_app PRIVATE BENCH_OTELCPP_INMEMORY_SPANS=1)
+        target_link_libraries(emit_app PRIVATE opentelemetry-cpp::in_memory_span_exporter)
+    endif()
 
 else()
     message(FATAL_ERROR "Unknown BENCH_BACKEND: ${BENCH_BACKEND}. "

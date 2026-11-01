@@ -23,6 +23,9 @@ static_assert(false, "BENCH_BACKEND_OTELCPP_GRPC or BENCH_BACKEND_OTELCPP_HTTP r
 #endif
 
 // Trace SDK
+#if defined(BENCH_OTELCPP_INMEMORY_SPANS)
+#include <opentelemetry/exporters/memory/in_memory_span_exporter_factory.h>
+#endif
 #include <opentelemetry/sdk/trace/batch_span_processor_factory.h>
 #include <opentelemetry/sdk/trace/batch_span_processor_options.h>
 #include <opentelemetry/sdk/trace/tracer_provider.h>
@@ -200,6 +203,12 @@ private:
         grpc_opts.endpoint           = opts.endpoint;
         grpc_opts.use_ssl_credentials = false;
         exporter = otlp::OtlpGrpcExporterFactory::Create(grpc_opts);
+#elif defined(BENCH_OTELCPP_INMEMORY_SPANS)
+        // Parity study (bench/parity): the SDK's own SpanData recordable in
+        // place of OtlpRecordable, so no protobuf is built on the calling
+        // thread. Same BatchSpanProcessor, sampler and harness.
+        static_cast<void>(opts.endpoint);
+        exporter = opentelemetry::exporter::memory::InMemorySpanExporterFactory::Create();
 #elif defined(BENCH_BACKEND_OTELCPP_HTTP)
         otlp::OtlpHttpExporterOptions http_opts;
         http_opts.url = opts.endpoint + "/v1/traces";
