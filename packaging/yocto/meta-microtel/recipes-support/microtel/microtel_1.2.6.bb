@@ -24,7 +24,7 @@ SRC_URI = " \
     https://github.com/marzer/tomlplusplus/archive/refs/tags/v${TOMLPP_PV}.tar.gz;downloadfilename=tomlplusplus-${TOMLPP_PV}.tar.gz;name=tomlplusplus;subdir=${BP}/_deps \
 "
 TOMLPP_PV = "3.4.0"
-SRC_URI[microtel.sha256sum] = "69e537457f02c05c96a6c4f3d0944768cc834020d39f830bb8208b00eb4cc86f"
+SRC_URI[microtel.sha256sum] = "caa6e67322f2dbf355000966bfd965f0a7cd5bc6f3052ccca88a6fec74b9a3c8"
 SRC_URI[tomlplusplus.sha256sum] = "8517f65938a4faae9ccf8ebb36631a38c1cadfb5efa85d9a72e15b9e97d25155"
 
 

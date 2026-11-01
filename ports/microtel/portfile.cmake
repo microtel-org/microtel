@@ -4,7 +4,7 @@ vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO microtel-org/microtel
     REF "v${VERSION}"
-    SHA512 5aeb170c7866ff1df0f8b6077f5f9bb8b83f4bdbe9c847bf98d2ccba7ec98376a1525e7bb41e4ae89acb8c6ccae463fb025176a864fa7423ae8b37cd9c1eab7b
+    SHA512 774b6c5ef99c33365f2c4a1d8fb88754804229f8bdbeb7c18c239b0adf77dcc9d89ad106758bbc802924a57647f5ce16099eb7498d15291d705e31c2532291d2
     HEAD_REF master
 )
 

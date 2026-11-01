@@ -1,4 +1,7 @@
 sources:
+  "1.2.6":
+    url: "https://github.com/microtel-org/microtel/archive/v1.2.6.tar.gz"
+    sha256: "caa6e67322f2dbf355000966bfd965f0a7cd5bc6f3052ccca88a6fec74b9a3c8"
   "1.2.5":
     url: "https://github.com/microtel-org/microtel/archive/v1.2.5.tar.gz"
     sha256: "69e537457f02c05c96a6c4f3d0944768cc834020d39f830bb8208b00eb4cc86f"
