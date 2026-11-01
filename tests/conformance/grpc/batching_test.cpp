@@ -31,7 +31,7 @@
 // expected.
 //
 // All three run over the PLAINTEXT gRPC endpoint. Unlike the OTLP/HTTP suite,
-// which needs the TLS receiver because of issue #166, gRPC is h2c by definition
+// which uses the TLS receiver to stay on HTTP/2, gRPC is h2c by definition
 // and the collector's plaintext gRPC receiver speaks it — so nothing here is
 // entangled with a TLS handshake.
 

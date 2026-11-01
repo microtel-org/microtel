@@ -111,10 +111,11 @@ habit. Deployment-time overrides go through `OTEL_SERVICE_NAME`; see
 
 ## Protocol
 
-The example uses `Protocol::Grpc` against a plaintext `http://` endpoint.
-microtel is HTTP/2-only, so plaintext OTLP/HTTP would be h2c with prior
-knowledge, which an HTTP/1.1-only collector receiver can't accept (see
+The example uses `Protocol::Grpc` against a plaintext `http://` endpoint:
+gRPC is h2c by definition. Plaintext OTLP/HTTP to the collector's `:4318`
+works too, but the collector serves HTTP/1.1 there, so microtel falls back to
+HTTP/1.1 and sends one request at a time (see
 [`docs/compatibility-matrix.md`](../../docs/compatibility-matrix.md) §4 and the
-note in [`examples/README.md`](../README.md)). gRPC is h2c by definition and is
-unaffected. For OTLP/HTTP, point the example at an `https://` endpoint and add
+note in [`examples/README.md`](../README.md)). For OTLP/HTTP over HTTP/2, point
+the example at an `https://` endpoint and add
 `.WithProtocol(microtel::Protocol::Http)`.

@@ -73,12 +73,11 @@ receivers:
   # so an auth failure cannot be confused with a handshake failure, and h2c
   # works there because gRPC is h2c by definition.
   #
-  # http cannot have that luxury. microtel speaks HTTP/2 only, and the
-  # collector's plaintext OTLP/HTTP receiver is HTTP/1.1-only (issue #166), so a
-  # plaintext auth port is simply unreachable for the client under test. It
-  # therefore carries the same server TLS material as otlp/tls; the auth tests
-  # pin the correct-CA trust first so a 401 stays distinguishable from a
-  # handshake failure.
+  # http carries the same server TLS material as otlp/tls. Until v1.2.6
+  # microtel spoke HTTP/2 only, and the collector's plaintext OTLP/HTTP
+  # receiver is HTTP/1.1-only (issue #166), so a plaintext auth port was
+  # unreachable for the client under test. The auth tests pin the correct-CA
+  # trust first so a 401 stays distinguishable from a handshake failure.
   otlp/auth:
     protocols:
       grpc:
@@ -94,7 +93,8 @@ receivers:
           key_file: /certs/server.key
 
   # gRPC plaintext, HTTP with the otlp/tls material, for the same reason as
-  # otlp/auth: microtel cannot reach a plaintext HTTP/1.1-only receiver (#166).
+  # otlp/auth: before v1.2.6 microtel could not reach a plaintext
+  # HTTP/1.1-only receiver (#166).
   otlp/leaf:
     protocols:
       grpc:

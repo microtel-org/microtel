@@ -2,12 +2,11 @@
 # SPDX-License-Identifier: Apache-2.0
 """Throwaway TLS material for the interop sinks.
 
-microtel's OTLP/HTTP exporter is HTTP/2-only: a plaintext ``http://`` endpoint
-means h2c with prior knowledge, which the stock OpenTelemetry Collector and
-Jaeger OTLP/HTTP receivers do not speak (they serve HTTP/1.1 on plaintext; see
-docs/interop-matrix.md section 4 and issue #166).  Over TLS the same receivers
-negotiate ``h2`` via ALPN, so the interop HTTP legs run against a TLS receiver
-using a CA generated here.  NOTHING HERE IS A SECRET.
+The stock OpenTelemetry Collector and Jaeger OTLP/HTTP receivers serve HTTP/1.1
+on plaintext, where microtel's OTLP/HTTP exporter falls back to serial HTTP/1.1
+(docs/interop-matrix.md section 4, ICP 0042).  Over TLS the same receivers
+negotiate ``h2`` via ALPN, so the interop HTTP legs run against a TLS receiver,
+using a CA generated here, to measure HTTP/2.  NOTHING HERE IS A SECRET.
 """
 
 from __future__ import annotations

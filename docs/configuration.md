@@ -163,20 +163,20 @@ microtel shorthand that carries a protocol; two say nothing about it.
 | Endpoint scheme | Transport | Effect on `protocol` |
 |---|---|---|
 | `https://` | TLS | none — `protocol` keeps its configured value (default `http`) |
-| `http://` | plaintext h2c | none — `protocol` keeps its configured value (default `http`) |
+| `http://` | plaintext: h2c, or HTTP/1.1 for OTLP/HTTP (below) | none — `protocol` keeps its configured value (default `http`) |
 | `grpcs://` | TLS | selects `grpc` unless `protocol` was set explicitly |
 | `grpc://` | plaintext h2c | selects `grpc` unless `protocol` was set explicitly |
 
-> **Warning: `http://` with OTLP/HTTP is HTTP/2 with prior knowledge (h2c).**
-> microtel has no HTTP/1.1 mode, and most plaintext OTLP/HTTP receivers serve
-> HTTP/1.1 only, including the stock OpenTelemetry Collector `otlp` receiver
-> on `:4318`. Against one of those, `Build()` logs a warning and `Connect()`
-> fails with `Error::Kind::Protocol` ("peer answered the HTTP/2 preface with an
-> HTTP/1.1 response"), and nothing is delivered. What works instead:
-> `grpc://host:4317` (OTLP/gRPC is h2c by definition), or `https://host:4318`,
-> where TLS negotiates `h2` through ALPN. Keep `http://` with OTLP/HTTP only
-> for a receiver that speaks h2c. See
-> [`compatibility-matrix.md` §4](compatibility-matrix.md#4-plaintext-otlphttp-cannot-reach-a-stock-collector).
+> **Note: `http://` with OTLP/HTTP tries h2c first, then HTTP/1.1.** Most
+> plaintext OTLP/HTTP receivers serve HTTP/1.1 only, including the stock
+> OpenTelemetry Collector `otlp` receiver on `:4318`. Against one of those,
+> `Connect()` falls back to HTTP/1.1 and succeeds, and an `Info` line says so
+> once ([ICP 0042](icps/0042-http1-fallback-for-otlp-http.md)). **HTTP/1.1 is
+> serial**: one keep-alive connection, one request at a time. For throughput
+> use `https://host:4318`, where TLS negotiates `h2` through ALPN, or
+> `grpc://host:4317` (OTLP/gRPC is h2c by definition, and never falls back).
+> There is no key to force either HTTP version. See
+> [`compatibility-matrix.md` §4](compatibility-matrix.md#4-plaintext-otlphttp-to-an-http11-receiver).
 
 So `WithEndpoint("grpc://collector:4317")` alone speaks OTLP/gRPC, and picks up
 the gRPC default port 4317 when the URL omits a port. "Set explicitly" means any

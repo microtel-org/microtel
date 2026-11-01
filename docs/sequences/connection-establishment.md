@@ -83,7 +83,7 @@ A timeout in any stage produces `connect_failure` and triggers reconnect with ba
 
 **TLS material** (CA bundle, client cert, client key) is loaded once during `Connect` and held in `SslCtx` for the lifetime of the transport. Reconnect reuses `SslCtx`; only `SslSession` is reconstructed per connection.
 
-**ALPN preference** is `h2` only — microtel does not negotiate HTTP/1.1 fallback in v1.
+**ALPN** offers `h2` only for OTLP/gRPC, and `h2,http/1.1` for OTLP/HTTP, which falls back to HTTP/1.1 on an `http/1.1` or empty answer ([ICP 0042](../icps/0042-http1-fallback-for-otlp-http.md)).
 
 ---
 
@@ -107,13 +107,15 @@ DNS failure, TCP refusal, and TLS handshake failure all map to the same recovery
 
 **Protocol mismatch is the exception, and is not retried.** An ALPN answer that is not `h2`, or an HTTP/1.1 response to the plaintext connection preface, means the endpoint cannot ever carry this session: `Connect` returns `Error::Kind::Protocol` with a message naming the working alternatives, and the wire codecs mark the result non-retryable. See `docs/compatibility-matrix.md` §4 and issue #166.
 
+For OTLP/HTTP, an HTTP/1.1 answer is not a mismatch but the fallback. It remains one for OTLP/gRPC, and so does any ALPN answer other than `h2`, `http/1.1` or none. The fallback happens inside the same `Connect`: `FallbackTransport::SwitchToHttp1` closes the HTTP/2 transport, which joins its I/O thread, destroys it, and only then creates the `Http1Transport`, so there is never more than one I/O thread.
+
 `Build()` and `Provider::Connect` propagate this as `microtel::Expected<void, Error>` (alias — see ICP 0002). The application can react (retry with different config, exit with diagnostic, etc.).
 
 ---
 
 ## Edge cases captured by tests
 
-Covered, in `tests/integration/transport/` (`http2_connect_test.cpp`, `http2_tls_connect_test.cpp`):
+Covered, in `tests/integration/transport/` (`http2_connect_test.cpp`, `http2_tls_connect_test.cpp`, and for the OTLP/HTTP fallback `fallback_transport_test.cpp`):
 
 - Endpoint accepts TCP but the certificate is untrusted, or issued to another name.
 - ALPN produces no agreement, or an answer microtel never offered.

@@ -169,12 +169,16 @@ private:
     std::future<TransportResult> m_future;
 };
 
-/// @brief A connection to one OTLP endpoint over HTTP/2.
+/// @brief A connection to one OTLP endpoint over HTTP/2, or over HTTP/1.1 for
+///        OTLP/HTTP when the endpoint cannot speak HTTP/2 (ICP 0042).
 ///
-/// One transport instance manages exactly one socket and one nghttp2 session.
+/// One transport instance manages exactly one socket and one session: an
+/// nghttp2 session, or an HTTP/1.1 keep-alive connection.
 /// Reconnect is internal — clients do not see it.
 ///
-/// `Send` is single-threaded — only the exporter worker calls it. (LOCKED.)
+/// `Send` is safe for concurrent callers (LOCKED, relaxed by ICP 0009): the
+/// transport serialises submissions onto its single I/O thread. Each caller
+/// still owns its own `IWireCodec`.
 ///
 /// @threadsafety See per-method threading notes.
 /// @see docs/interfaces.md §4.1

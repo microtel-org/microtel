@@ -26,10 +26,11 @@ public:
         Unspecified = 0,
         Network = 1,  ///< socket / TLS / nghttp2 transport error
         /// Wire/protocol mismatch: an OTLP status the peer returned, or a peer
-        /// that cannot speak HTTP/2 at all (an HTTP/1.1 response to the
-        /// connection preface, ALPN that did not select `h2`). From `Connect`
-        /// it is permanent and the exporter does not retry it; from a response
-        /// status, retryability follows the status.
+        /// that cannot speak the protocol at all (for OTLP/gRPC, an HTTP/1.1
+        /// response to the connection preface or ALPN that did not select
+        /// `h2`; OTLP/HTTP falls back to HTTP/1.1 instead, ICP 0042). From
+        /// `Connect` it is permanent and the exporter does not retry it; from a
+        /// response status, retryability follows the status.
         Protocol = 2,
         /// Peer signalled overload (retryable per RetryInfo), or a local
         /// transport queue refused the work at its bound.

@@ -39,8 +39,9 @@ _JAEGER_IMAGE = "jaegertracing/jaeger:2.22.0"
 _JAEGER_CONFIG = _BENCH_DIR / "sink" / "jaeger" / "config.yaml"
 # v2 removed the legacy /api/* query endpoints; the API is /api/v3/*.
 _SERVICES_URL = "http://127.0.0.1:16686/api/v3/services"
-# microtel OTLP/HTTP is HTTP/2-only; Jaeger's plaintext OTLP/HTTP receiver is
-# HTTP/1.1-only, so the HTTP leg goes over TLS (ALPN h2).  See
+# Jaeger's plaintext OTLP/HTTP receiver is HTTP/1.1-only, where microtel
+# OTLP/HTTP falls back to serial HTTP/1.1, so the HTTP leg goes over TLS (ALPN
+# h2) to stay on HTTP/2.  See
 # docs/interop-matrix.md section 4 and bench/driver/tls_material.py.
 _TLS_DIR: "Path | None" = None
 _EMIT_SPANS = 5000

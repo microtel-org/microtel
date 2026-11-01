@@ -30,14 +30,15 @@ int main()
     // or overridden on the developer machine.
     // OTEL_EXPORTER_OTLP_ENDPOINT is the canonical env var set by the bench driver.
     // Fall back to EMIT_ENDPOINT for developer convenience.
-    const char* otel_ep = std::getenv("OTEL_EXPORTER_OTLP_ENDPOINT");  // NOLINT(concurrency-mt-unsafe)
+    const char* otel_ep =
+        std::getenv("OTEL_EXPORTER_OTLP_ENDPOINT");  // NOLINT(concurrency-mt-unsafe)
     const std::string endpoint = (otel_ep != nullptr && otel_ep[0] != '\0')
-        ? std::string(otel_ep)
-        : EnvOr("EMIT_ENDPOINT", "http://sink:4318");
-    const std::string svc_name    = EnvOr("EMIT_SERVICE_NAME", "bench");
-    const std::string svc_version = EnvOr("EMIT_SERVICE_VER",  "0.0.0");
-    const int attrs_per_span      = std::stoi(EnvOr("EMIT_ATTRIBUTES_PER_SPAN",  "0"));
-    const int attr_value_bytes    = std::stoi(EnvOr("EMIT_ATTRIBUTE_VALUE_BYTES", "24"));
+                                     ? std::string(otel_ep)
+                                     : EnvOr("EMIT_ENDPOINT", "http://sink:4318");
+    const std::string svc_name = EnvOr("EMIT_SERVICE_NAME", "bench");
+    const std::string svc_version = EnvOr("EMIT_SERVICE_VER", "0.0.0");
+    const int attrs_per_span = std::stoi(EnvOr("EMIT_ATTRIBUTES_PER_SPAN", "0"));
+    const int attr_value_bytes = std::stoi(EnvOr("EMIT_ATTRIBUTE_VALUE_BYTES", "24"));
     const std::string workload_env = EnvOr("EMIT_WORKLOAD", "hot_loop");
 
     const bench::WorkloadMode mode = bench::ParseWorkloadMode(workload_env);
@@ -45,21 +46,21 @@ int main()
     const bool compression_gzip = EnvOr("EMIT_COMPRESSION_GZIP", "0") == "1";
 
     const bench::BackendOptions opts{
-        .endpoint              = endpoint,
-        .service_name          = svc_name,
-        .service_version       = svc_version,
-        .compression_gzip      = compression_gzip,
-        .attributes_per_span   = attrs_per_span,
+        .endpoint = endpoint,
+        .service_name = svc_name,
+        .service_version = svc_version,
+        .compression_gzip = compression_gzip,
+        .attributes_per_span = attrs_per_span,
         .attribute_value_bytes = attr_value_bytes,
-        .metric_interval_ms    = (mode == bench::WorkloadMode::HotLoopMetrics) ? 100 : 0,
-        .logs_enabled          = (mode == bench::WorkloadMode::HotLoopLogs),
-        .leaf_count            = (mode == bench::WorkloadMode::LeafFanin)
-                                     ? std::stoi(EnvOr("EMIT_LEAVES", "100")) : 0,
+        .metric_interval_ms = (mode == bench::WorkloadMode::HotLoopMetrics) ? 100 : 0,
+        .logs_enabled = (mode == bench::WorkloadMode::HotLoopLogs),
+        .leaf_count =
+            (mode == bench::WorkloadMode::LeafFanin) ? std::stoi(EnvOr("EMIT_LEAVES", "100")) : 0,
         .leaf_spans_per_payload = std::stoi(EnvOr("EMIT_LEAF_SPANS_PER_PAYLOAD", "10")),
-        // CA for an https:// endpoint.  The interop harness needs this: microtel's
-        // OTLP/HTTP is HTTP/2-only, and stock collector/Jaeger OTLP/HTTP receivers
-        // only speak HTTP/2 over TLS (ALPN h2), not plaintext h2c.
-        .tls_ca_bundle          = EnvOr("OTEL_EXPORTER_OTLP_CERTIFICATE", ""),
+        // CA for an https:// endpoint.  The interop harness needs this: stock
+        // collector/Jaeger OTLP/HTTP receivers only speak HTTP/2 over TLS (ALPN
+        // h2); on plaintext they serve HTTP/1.1, which microtel sends serially.
+        .tls_ca_bundle = EnvOr("OTEL_EXPORTER_OTLP_CERTIFICATE", ""),
     };
 
     std::unique_ptr<bench::IBackend> backend{bench::CreateBackend()};

@@ -210,8 +210,9 @@ def _delivery_rate_pct(spans_received: int, spans_expected: int,
 
 
 # Set by _start_sink when the sink's OTLP/HTTP receiver is TLS-only (collector
-# mode).  microtel OTLP/HTTP is HTTP/2-only and a stock collector serves only
-# HTTP/1.1 on plaintext, so the HTTP leg must use https:// (ALPN h2).
+# mode).  A stock collector serves only HTTP/1.1 on plaintext, where microtel
+# OTLP/HTTP falls back to serial HTTP/1.1, so the HTTP leg uses https:// (ALPN
+# h2) to measure HTTP/2.
 _SINK_TLS_DIR: Optional[Path] = None
 
 

@@ -391,9 +391,10 @@ std::optional<internal::WireResult> HttpWireCodec::EnsureConnected()
         {
             m_diag->RecordDrop(DropReason::ConnectFailure);
         }
-        // A `Protocol` connect failure is a permanent mismatch — an
-        // HTTP/1.1-only receiver, or a TLS endpoint that would not negotiate
-        // h2 (issue #166). No backoff outlasts a misconfiguration, so retrying
+        // A `Protocol` connect failure is a permanent mismatch — a TLS endpoint
+        // that chose an ALPN protocol other than h2 or http/1.1 (an
+        // HTTP/1.1-only receiver falls back instead, ICP 0042). No backoff
+        // outlasts a misconfiguration, so retrying
         // one spends the whole budget and buries the message that names the
         // fix. Everything else the transport reports (Network, Cancelled) is
         // worth another attempt.

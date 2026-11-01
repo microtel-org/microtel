@@ -21,9 +21,9 @@ receivers:
       # definition, so microtel reaches it without TLS.
       grpc:
         endpoint: "0.0.0.0:4317"
-      # Published for the TLS example. microtel cannot use this over plaintext
-      # http:// — the collector's HTTP receiver is HTTP/1.1-only and microtel
-      # is HTTP/2-only. See docs/compatibility-matrix.md §4.
+      # Plaintext, and HTTP/1.1 only: microtel reaches it through its HTTP/1.1
+      # fallback, one request at a time. No example uses it; see
+      # docs/compatibility-matrix.md §4.
       http:
         endpoint: "0.0.0.0:4318"
 

@@ -26,10 +26,10 @@
 // Why this receiver now serves TLS
 // --------------------------------
 // The otlp/auth HTTP port used to be plaintext, deliberately, so that an auth
-// failure could not be confused with a handshake failure. microtel cannot
-// reach a plaintext collector HTTP receiver at all (issue #166: we are
-// HTTP/2-only, that receiver is HTTP/1.1-only), so the port now carries the
-// same server certificate as otlp/tls. The isolation the plaintext port was
+// failure could not be confused with a handshake failure. Until v1.2.6
+// microtel could not reach a plaintext collector HTTP receiver at all (issue
+// #166: it was HTTP/2-only, that receiver is HTTP/1.1-only), so the port
+// carries the same server certificate as otlp/tls. The isolation the plaintext port was
 // buying is preserved differently: every test here pins the correct CA, and
 // the negative test differs from the positive ones in exactly one field, the
 // token.

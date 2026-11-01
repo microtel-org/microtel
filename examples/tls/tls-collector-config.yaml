@@ -29,11 +29,10 @@ receivers:
         tls:
           cert_file: /certs/server.crt
           key_file: /certs/server.key
-      # microtel cannot reach a *plaintext* collector HTTP receiver — it speaks
-      # HTTP/2 only and that receiver is HTTP/1.1-only (issue #166,
-      # docs/compatibility-matrix.md §4). Over TLS, ALPN negotiates `h2` and
-      # the same receiver works, which is why this port exists here and not in
-      # the shared stack's config.
+      # Over TLS, ALPN negotiates `h2` with this receiver; its plaintext twin
+      # serves HTTP/1.1 only, which microtel reaches one request at a time
+      # (docs/compatibility-matrix.md §4). This port exists here, not in the
+      # shared stack's config, because it needs certificates.
       http:
         endpoint: "0.0.0.0:5328"
         tls:

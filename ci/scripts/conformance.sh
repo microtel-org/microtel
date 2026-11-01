@@ -252,9 +252,9 @@ export MICROTEL_CONFORMANCE_HTTP_TLS_ENDPOINT="https://localhost:4328"
 export MICROTEL_CONFORMANCE_GRPC_TLS_ENDPOINT="https://localhost:4327"
 export MICROTEL_CONFORMANCE_HTTP_MTLS_ENDPOINT="https://localhost:4338"
 export MICROTEL_CONFORMANCE_GRPC_MTLS_ENDPOINT="https://localhost:4337"
-# https, not http: the auth receiver's HTTP port serves TLS because microtel
-# cannot reach a plaintext collector HTTP receiver at all (issue #166). The gRPC
-# auth port stays plaintext.
+# https, not http: the auth receiver's HTTP port serves TLS because, until
+# v1.2.6, microtel could not reach a plaintext collector HTTP receiver at all
+# (issue #166). The gRPC auth port stays plaintext.
 export MICROTEL_CONFORMANCE_HTTP_AUTH_ENDPOINT="https://localhost:4348"
 export MICROTEL_CONFORMANCE_GRPC_AUTH_ENDPOINT="http://127.0.0.1:4347"
 export MICROTEL_CONFORMANCE_CA="${CERT_DIR_ABS}/ca.crt"

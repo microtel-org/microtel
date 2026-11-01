@@ -613,7 +613,7 @@ protected:
             .WithLeafReceiver(NodeTrustingOptions());
         if (http)
         {
-            // The HTTP leaf port serves TLS: microtel is HTTP/2-only and the
+            // The HTTP leaf port serves TLS, so this stays on HTTP/2: the
             // collector's plaintext OTLP/HTTP receiver is HTTP/1.1-only (#166).
             builder.WithTls(microtel::TlsOptions{
                 .ca_bundle = microtel::testing::GetEnv(kCaEnv).value_or(""),

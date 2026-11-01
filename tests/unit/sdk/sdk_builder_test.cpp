@@ -489,12 +489,10 @@ TEST(SdkBuilderTest, Provider_DestroyedImmediatelyAfterBuild_TearsDownWithinBoun
 // ---------------------------------------------------------------------------
 // Build()-time warnings
 //
-// Neither configuration below is rejected: an h2c-capable proxy and the bench
-// harness's own blackhole sink both make plaintext OTLP/HTTP legitimate, and
-// `insecure = true` is permitted by configuration.md §3.5. Both are, however, very likely
+// `insecure = true` is permitted by configuration.md §3.5 but is very likely
 // to be a mistake, and `config::Validate` returns `Expected<void, ConfigError>`
-// — it can reject but it cannot warn. These are the first production callers
-// of the internal log channel.
+// — it can reject but it cannot warn. Plaintext OTLP/HTTP used to warn too;
+// since ICP 0042 it reaches HTTP/1.1-only receivers, so it no longer does.
 // ---------------------------------------------------------------------------
 
 namespace
@@ -567,7 +565,9 @@ constexpr std::string_view kInsecureNeedle = "insecure";
 
 }  // namespace
 
-TEST(SdkBuilderTest, Build_PlaintextHttpEndpoint_WarnsWithoutRejecting)
+// ICP 0042: plaintext OTLP/HTTP falls back to HTTP/1.1, so the quick-start
+// configuration works and there is nothing left to warn about.
+TEST(SdkBuilderTest, Build_PlaintextHttpEndpoint_DoesNotWarn)
 {
     const LogCapture capture;
     const auto result = microtel::SdkBuilder()
@@ -575,16 +575,13 @@ TEST(SdkBuilderTest, Build_PlaintextHttpEndpoint_WarnsWithoutRejecting)
                             .WithProtocol(microtel::Protocol::Http)
                             .Build();
 
-    ASSERT_TRUE(result.has_value()) << "h2c-capable receivers exist; this must not be rejected";
-    EXPECT_TRUE(capture.WarnedAbout(kPlaintextNeedle));
-    EXPECT_TRUE(capture.WarnedAbout("compatibility-matrix"))
-        << "the warning must point somewhere the reader can act on";
+    ASSERT_TRUE(result.has_value()) << result.error().message;
+    EXPECT_FALSE(capture.WarnedAbout(kPlaintextNeedle));
+    EXPECT_EQ(capture.WarnCount(), 0U);
 }
 
 TEST(SdkBuilderTest, Build_PlaintextGrpcEndpoint_DoesNotWarn)
 {
-    // gRPC is h2c by definition and the collector's gRPC receiver speaks it —
-    // the whole gRPC conformance suite runs over `http://`.
     const LogCapture capture;
     const auto result = microtel::SdkBuilder()
                             .WithEndpoint("http://localhost:4317")
@@ -592,23 +589,10 @@ TEST(SdkBuilderTest, Build_PlaintextGrpcEndpoint_DoesNotWarn)
                             .Build();
 
     ASSERT_TRUE(result.has_value());
-    EXPECT_FALSE(capture.WarnedAbout(kPlaintextNeedle));
+    EXPECT_EQ(capture.WarnCount(), 0U);
 }
 
-// Issue #203, observed through the one public-API window onto the resolved
-// protocol: the plaintext-h2c warning fires only for `protocol = http`. A bare
-// `grpc://` endpoint warned before the fix, which is what "the shorthand does
-// not select gRPC" looked like from outside.
-TEST(SdkBuilderTest, Build_GrpcSchemeEndpoint_SelectsGrpcAndDoesNotWarnAboutPlaintext)
-{
-    const LogCapture capture;
-    const auto result = microtel::SdkBuilder().WithEndpoint("grpc://localhost:4317").Build();
-
-    ASSERT_TRUE(result.has_value());
-    EXPECT_FALSE(capture.WarnedAbout(kPlaintextNeedle));
-}
-
-TEST(SdkBuilderTest, Build_HttpsEndpoint_DoesNotWarnAboutPlaintext)
+TEST(SdkBuilderTest, Build_HttpsEndpoint_DoesNotWarn)
 {
     const LogCapture capture;
     const auto result = microtel::SdkBuilder()
@@ -617,7 +601,7 @@ TEST(SdkBuilderTest, Build_HttpsEndpoint_DoesNotWarnAboutPlaintext)
                             .Build();
 
     ASSERT_TRUE(result.has_value());
-    EXPECT_FALSE(capture.WarnedAbout(kPlaintextNeedle));
+    EXPECT_EQ(capture.WarnCount(), 0U);
 }
 
 // Issue #284: configuration.md §5 — each Build() logs its resolved Resource once, at

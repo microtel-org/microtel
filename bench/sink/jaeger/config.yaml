@@ -1,9 +1,9 @@
 # Jaeger v2 config for the interop job (bench/scripts/jaeger_interop.py).
 #
 # Jaeger v2 is built on the OpenTelemetry Collector and takes a collector-style
-# config.  OTLP/HTTP is served over TLS because microtel's OTLP/HTTP is
-# HTTP/2-only and a plaintext collector-style HTTP receiver speaks only HTTP/1.1
-# (docs/interop-matrix.md section 4).  The script generates the certs
+# config.  OTLP/HTTP is served over TLS so that it is HTTP/2: a plaintext
+# collector-style HTTP receiver speaks only HTTP/1.1, where microtel falls back
+# to serial HTTP/1.1 (docs/interop-matrix.md section 4).  The script generates the certs
 # (bench/driver/tls_material.py) and bind-mounts them at /certs.
 #
 # Endpoints are bound to 0.0.0.0 explicitly: collector components default to

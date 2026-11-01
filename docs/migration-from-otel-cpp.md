@@ -180,13 +180,12 @@ defaults (`configuration.md` §1).
 
 Three things worth knowing:
 
-- **`OTEL_EXPORTER_OTLP_ENDPOINT=http://collector:4318` does not carry over**,
-  even though microtel reads the variable. microtel is HTTP/2-only, so a
-  plaintext endpoint means h2c with prior knowledge, and the receiver on
-  `:4318` that opentelemetry-cpp was talking to over HTTP/1.1 does not speak
-  it. `Build()` warns and the first export fails with a message saying so.
-  Switch that deployment to `http://collector:4317` with
-  `OTEL_EXPORTER_OTLP_PROTOCOL=grpc`, or to `https://collector:4318`. See
+- **`OTEL_EXPORTER_OTLP_ENDPOINT=http://collector:4318` carries over** since
+  v1.2.6. microtel tries HTTP/2 first and falls back to HTTP/1.1, which the
+  receiver on `:4318` that opentelemetry-cpp was talking to serves. On
+  HTTP/1.1 microtel sends one request at a time, so for throughput switch that
+  deployment to `http://collector:4317` with `OTEL_EXPORTER_OTLP_PROTOCOL=grpc`,
+  or to `https://collector:4318`. See
   [`compatibility-matrix.md`](compatibility-matrix.md) §4.
 - Per-signal env vars for signals v1 doesn't yet resolve independently (e.g.
   `OTEL_EXPORTER_OTLP_METRICS_ENDPOINT` as distinct from the unsigned

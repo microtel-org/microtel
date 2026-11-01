@@ -102,7 +102,7 @@ code. The loop starts polling immediately and runs whether or not a
 connection exists; `IoThreadLoop` simply finds `m_nghttp2_session` invalid and
 skips the drain steps. Joined at `Transport::Close`, which is accurate.
 
-**Exactly one I/O thread per `Provider`** (LOCKED — cites `src/transport/http2_transport.hpp:m_io_thread`, `src/sdk/sdk_builder.cpp:Build`). One nghttp2 session, one socket, one reactor: `Http2Transport` holds a single `m_io_thread`, and each `SdkBuilder::Build` constructs one transport, shared by every pipeline of the `Provider` it builds.
+**Exactly one I/O thread per `Provider`** (LOCKED — cites `src/transport/http2_transport.hpp:m_io_thread`, `src/transport/http1_transport.hpp:m_io_thread`, `src/transport/fallback_transport.cpp:SwitchToHttp1`, `src/sdk/sdk_builder.cpp:Build`). One nghttp2 session, one socket, one reactor: `Http2Transport` holds a single `m_io_thread`, and each `SdkBuilder::Build` constructs one transport, shared by every pipeline of the `Provider` it builds.
 
 This said "one I/O thread per process" until [ICP 0027](icps/0027-multi-profile-threading.md). It is the same claim while a process has one `Provider`, which was v1.0's only supported configuration; the rescoping is in effect from v1.1, where a process may hold up to eight named `Provider`s. Each of them builds its own transport and therefore owns its own socket, its own reactor, its own `SslCtx` ([ICP 0003](icps/0003-m0-deferred-decisions.md) §3.1 having already put that ownership on the `Transport`), and its own I/O thread. Nothing is shared across profiles.
 

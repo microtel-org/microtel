@@ -53,7 +53,7 @@ integration tier.
 | `conformance_http_batching_test` | `batching_test.cpp` | multi-batch exactly-once, gzip, multi-DATA-frame body |
 | `conformance_http_tls_test` | `tls_test.cpp` | custom CA, mTLS, SNI override, and two negative cases |
 | `conformance_http_auth_test` | `auth_test.cpp` | static bearer header, auth callback, wrong-token 401 |
-| `conformance_http_plaintext_gap_test` | `plaintext_gap_test.cpp` | pins the plaintext gap as a failure — issue #166 |
+| `conformance_http_plaintext_http1_test` | `plaintext_http1_test.cpp` | plaintext OTLP/HTTP to the HTTP/1.1-only `:4318`: `Connect()`, a span and a log record delivered over the HTTP/1.1 fallback, and gRPC to the same port still refused (ICP 0042; was `plaintext_gap_test.cpp`, issue #166) |
 | `conformance_http_logs_test` | `logs_test.cpp` | logs to `/v1/logs`: see [Logs](#logs) |
 | `conformance_http_metrics_test` | `metrics_test.cpp` | metrics to `/v1/metrics`: see [Metrics](#metrics) |
 
@@ -68,9 +68,9 @@ integration tier.
 | `conformance_grpc_logs_test` | `logs_test.cpp` | logs to `LogsService/Export`: see [Logs](#logs) |
 | `conformance_grpc_metrics_test` | `metrics_test.cpp` | metrics to `MetricsService/Export`: see [Metrics](#metrics) |
 
-There is no gRPC mirror of `plaintext_gap_test.cpp`: the gRPC suite
-runs over `http://` except for `tls_test.cpp`, and that is the answer
-to it.
+There is no gRPC mirror of `plaintext_http1_test.cpp`: the gRPC suite
+runs over `http://` except for `tls_test.cpp`, and gRPC never falls back,
+which `plaintext_http1_test.cpp` itself asserts against `:4318`.
 
 One binary per theme rather than one per directory. A conformance
 binary is bounded by a ctest `TIMEOUT` covering a flush plus a poll of
@@ -180,18 +180,19 @@ diagnostic when the gate fails).
 **The auth receiver is asymmetric on purpose.** Its gRPC port (4347) is
 plaintext, which is the original intent: no TLS means an auth failure
 cannot possibly be a trust failure. Its HTTP port (4348) carries the
-same server certificate as `otlp/tls`, because microtel cannot reach a
-plaintext collector HTTP receiver at all: microtel is HTTP/2-only and
-that receiver is HTTP/1.1-only (issue #166,
+same server certificate as `otlp/tls`, because until v1.2.6 microtel
+could not reach a plaintext collector HTTP receiver at all: that
+receiver is HTTP/1.1-only, and microtel had no HTTP/1.1 (issue #166,
 [`docs/interop-matrix.md`](../../docs/interop-matrix.md) §4). The HTTP
 auth tests buy the isolation back by pinning the correct CA in every
 test, so the negative test differs from the positive ones in exactly
 one field: the token.
 
-The same gap is why every OTLP/HTTP test here except
-`plaintext_gap_test.cpp` points at a TLS endpoint. Those endpoints were
-not chosen to test TLS; TLS is where ALPN negotiates `h2`, which is the
-only OTLP/HTTP path that reaches a stock collector today.
+The same history is why every OTLP/HTTP test here except
+`plaintext_http1_test.cpp` points at a TLS endpoint. Those endpoints
+were not chosen to test TLS; TLS is where ALPN negotiates `h2`. Plaintext
+now reaches the stock collector over HTTP/1.1, serially, and
+`plaintext_http1_test.cpp` covers that path.
 
 ## Running it locally
 
@@ -339,12 +340,12 @@ when the defect is fixed; the other four are fixed, and the test that
 guarded each one was turned into a regression test instead of being
 deleted.
 
-When the pinned test for #166 starts failing, don't delete it. Invert
-it.
+The pinned test for #166 was inverted, not deleted, when ICP 0042 made
+it fail.
 
 | Issue | What guards it |
 |---|---|
-| #166 (closed by decision in #178: documented as unsupported; the HTTP/1.1 fallback is [`docs/roadmap.md`](../../docs/roadmap.md) §12 question 6): plaintext OTLP/HTTP unreachable (h2c vs an HTTP/1.1-only receiver) | `http/plaintext_gap_test.cpp` → `PlaintextHttpUnreachable` asserts `Connect()` to `:4318` **fails**. Invert it into a positive delivery test against `MICROTEL_CONFORMANCE_HTTP_ENDPOINT` when either side gains the missing half. |
+| #166 (fixed in v1.2.6 by the HTTP/1.1 fallback, [ICP 0042](../../docs/icps/0042-http1-fallback-for-otlp-http.md)): plaintext OTLP/HTTP unreachable (h2c vs an HTTP/1.1-only receiver) | `http/plaintext_http1_test.cpp`, inverted from `plaintext_gap_test.cpp`: `Connect()` to `:4318` succeeds and a span and a log record arrive over HTTP/1.1; `GrpcToTheHttp1OnlyReceiverStillFails` keeps the gRPC half. |
 | #167 (fixed): `InstrumentationScope` carried the service name instead of the `GetTracer(name, version)` scope | `{http,grpc}/basic_export_test.cpp` assert the scope name and version on the wire (`kScopeJson`). Until the fix (ICP 0023), this tier deliberately asserted nothing about `ScopeSpans.scope`, so as not to enshrine the bug. |
 | #168 (fixed): `TraceId::ToHex()` / `SpanId::ToHex()` declared in a public header but defined nowhere | `src/api/` (`microtel_api`) now defines both, and `{http,grpc}/basic_export_test.cpp` call the public formatter directly. This tier builds against public headers only, so it is what hit the link error, and it is now what proves the encoding matches the collector's. |
 | #169 (fixed): 22 of 24 `drop_counters` never written | `WrongTokenIncrementsNonRetryableDropCounter` in both `http/auth_test.cpp` and `grpc/auth_test.cpp`. It ran as a `DISABLED_` test until the counters were wired, and was kept separate from `WrongTokenRejected` so an accounting regression is distinguishable from a classification one. |

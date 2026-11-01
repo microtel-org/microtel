@@ -875,9 +875,11 @@ TEST(Http2TlsConnectTest, HostnameMismatch_ConnectFails)
 // ---------------------------------------------------------------------------
 // ALPN (issue #166)
 //
-// `Http2Transport` advertises only `h2` and has no HTTP/1.1 mode, so a TLS
-// endpoint that answers with anything else — or ignores ALPN entirely, which
-// is what an HTTP/1.1-only TLS receiver does — cannot carry a session. Nothing
+// For OTLP/gRPC, `Http2Transport` advertises only `h2`, so a TLS endpoint that
+// answers with anything else — or ignores ALPN entirely, which is what an
+// HTTP/1.1-only TLS receiver does — cannot carry a session. (For OTLP/HTTP it
+// offers `h2,http/1.1`, and those answers are the fallback signal; see the
+// ICP 0042 tests below.) Nothing
 // checked the negotiated protocol before these tests: the connection went on
 // to the HTTP/2 preface and died there as a generic nghttp2 recv failure,
 // which named neither ALPN nor the endpoint's actual protocol.

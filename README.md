@@ -23,7 +23,8 @@ processor and resources. For metrics (experimental until v1.3): all seven
 instrument kinds, a periodic reader, both temporalities and views. For logs: a
 `Logger`, trace correlation and bridges for spdlog, glog and log4cxx. One OTLP
 exporter carries all three signals. Both OTLP protocols run over a
-single nghttp2 HTTP/2 transport. The gRPC side is a small unary-RPC layer on
+single nghttp2 HTTP/2 transport, with a serial HTTP/1.1 fallback for OTLP/HTTP
+receivers that speak nothing else. The gRPC side is a small unary-RPC layer on
 that transport, so picking gRPC over HTTP costs nothing extra in binary size.
 In the project's benchmark against opentelemetry-cpp, a timed call that creates
 and ends a span takes about **a quarter of the time** at the median, and microtel
@@ -184,9 +185,7 @@ The current release is **v1.2.5**, and the project follows SemVer.
 | Custom export transport | Experimental. `SdkBuilder::WithExportTransport` sends a full C++ Provider's OTLP requests through your own link (UART, CAN, UDP, MQTT…) instead of HTTP/2, for example to a concentrator. See [ICP 0036](docs/icps/0036-custom-export-transport.md). |
 | opentelemetry-cpp API shim | Experimental, source-only and off by default. Routes existing `opentelemetry-cpp` API call sites to microtel for a documented subset of the API; **not yet a drop-in replacement** (see [How you use it](#how-you-use-it) and [migration-from-otel-cpp.md](docs/migration-from-otel-cpp.md)). |
 
-Not supported: plaintext OTLP/HTTP to an HTTP/1.1-only receiver (see
-[Protocols and endpoints](#protocols-and-endpoints)), HTTP proxies, TLS below
-1.2, and Windows. The [compatibility matrix](docs/compatibility-matrix.md) has
+Not supported: HTTP proxies, TLS below 1.2, and Windows. The [compatibility matrix](docs/compatibility-matrix.md) has
 the full list, and [docs/roadmap.md](docs/roadmap.md) has what's next.
 
 ## Known limitations
@@ -234,8 +233,8 @@ dependencies leave your link.
 >   attributes become hex strings; `schema_url` on `GetTracer` and `GetLogger`,
 >   logger attributes and numeric log event ids are dropped.
 > - **Behaves differently:** closing a tracer shuts down the whole provider,
->   and a plaintext `http://…:4318` endpoint won't work because microtel
->   speaks only HTTP/2.
+>   and a plaintext `http://…:4318` endpoint is served over HTTP/1.1, one
+>   request at a time.
 > - **Build:** every target that includes an `opentelemetry/` header must link
 >   `microtel_otelcpp_shim` so it is compiled with the same opentelemetry-cpp
 >   ABI settings; a mismatch shows up as link errors, not a clear message.
@@ -554,14 +553,21 @@ auth, logs and the experimental leaf examples.
 
 ## Protocols and endpoints
 
-The transport only speaks HTTP/2. Against a stock OpenTelemetry Collector, use
-OTLP/gRPC on `:4317` (`grpc://`, `grpcs://`, or `http://` / `https://` with
-`Protocol::Grpc`) or OTLP/HTTP over TLS on `https://host:4318`. Plaintext
-`http://host:4318` does not work there: the collector's plaintext `:4318`
-receiver is HTTP/1.1 only. microtel reports the mismatch as a `Build()`
-warning, a `Connect()` error, and in `HealthSnapshot::last_error_message`.
-Section 4 of the [compatibility matrix](docs/compatibility-matrix.md) has
-the full table of endpoints and what works instead, and
+Both protocols work against a stock OpenTelemetry Collector: OTLP/gRPC on
+`:4317` (`grpc://`, `grpcs://`, or `http://` / `https://` with
+`Protocol::Grpc`), and OTLP/HTTP on `:4318`, over TLS or plaintext.
+
+OTLP/HTTP prefers HTTP/2. Over TLS it offers ALPN `h2,http/1.1`; over
+plaintext it tries h2c first. Since v1.2.6 it falls back to HTTP/1.1 when the
+receiver speaks only that, as the collector's plaintext `:4318` receiver does,
+so `http://host:4318` works out of the box
+([ICP 0042](docs/icps/0042-http1-fallback-for-otlp-http.md)). **HTTP/1.1 is
+serial**: one keep-alive connection, one request at a time. For throughput,
+use h2 (`https://host:4318` against a receiver that negotiates it) or OTLP/gRPC.
+OTLP/gRPC needs HTTP/2 and never falls back.
+
+Section 4 of the [compatibility matrix](docs/compatibility-matrix.md) has the
+full table of endpoints and what each one speaks, and
 [configuration.md](docs/configuration.md) §3.3 how each endpoint scheme
 selects the protocol.
 

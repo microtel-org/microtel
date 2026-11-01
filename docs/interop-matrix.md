@@ -75,7 +75,7 @@ accept what microtel emits, and is what it decodes what microtel meant?
 | gzip request compression | ✅ | ✅ (per-message, `grpc-encoding`) |
 | TLS, mTLS, CA pinning, SNI override | ✅ | ✅ |
 | Bearer-token auth (static header, callback, wrong-credential rejection) | ✅ (401) | ✅ (`grpc-status: 16`) |
-| Plaintext transport | ✗ — pinned as a negative test, issue #166 | ✅ — h2c, the counterpoint |
+| Plaintext transport | ✅ — HTTP/1.1 fallback to the HTTP/1.1-only `:4318` (traces, logs; ICP 0042) | ✅ — h2c; and refused, as it must be, by the HTTP/1.1-only `:4318` |
 | Logs round-trip (every severity, scalar and array bodies, attributes, resource, scope, both timestamps) | ✅ (`/v1/logs`, TLS) | ✅ (`LogsService/Export`) |
 | Logs trace correlation (in-span record carries the span's ids; out-of-span record carries none) | ✅ | ✅ |
 | Logs with gzip request compression | ✅ | ✅ |
@@ -121,8 +121,9 @@ The logs rows are one set of scenarios run over both protocols
 ([`tests/conformance/support/log_conformance.hpp`](../tests/conformance/support/log_conformance.hpp)),
 read back from a separate `logs.jsonl` the collector's second `file`
 exporter writes, and they share one set of fragments on the same
-protocol-independence argument. Logs over OTLP/HTTP inherit the traces'
-plaintext gap (issue #166): the HTTP logs tests use the TLS receiver.
+protocol-independence argument. The HTTP logs tests use the TLS receiver,
+which speaks HTTP/2; `plaintext_http1_test.cpp` adds one logs round trip over
+plaintext HTTP/1.1.
 
 The metrics rows work the same way: one set of scenarios
 ([`tests/conformance/support/metric_conformance.hpp`](../tests/conformance/support/metric_conformance.hpp))
@@ -137,50 +138,37 @@ throughput. Slow, and not a merge gate.
 
 ## 4. Known gaps
 
-**OTLP/HTTP over plaintext does not reach a stock collector.** microtel is
-HTTP/2-only, so a plaintext endpoint means h2c with prior knowledge. The
-collector's plaintext OTLP/HTTP receiver serves HTTP/1.1 only — it does not
-wrap its handler in `h2c` — so the HTTP/2 connection preface is answered with
-an HTTP/1.1 error and the SETTINGS exchange never completes. `curl
---http2-prior-knowledge` against `:4318` fails identically, which is how the
-finding was confirmed against the pinned image.
+**Plaintext OTLP/HTTP to the stock collector is HTTP/1.1, and serial.** It was
+a gap until v1.2.6. The collector's plaintext OTLP/HTTP receiver serves
+HTTP/1.1 only: it does not wrap its handler in `h2c`, so it answers the HTTP/2
+connection preface with an HTTP/1.1 error (`curl --http2-prior-knowledge`
+against `:4318` fails identically, which is how this was confirmed against the
+pinned image). microtel now takes that answer as the signal to fall back to
+HTTP/1.1 ([ICP 0042](icps/0042-http1-fallback-for-otlp-http.md)), and
+`tests/conformance/http/plaintext_http1_test.cpp` delivers a span and a log
+record that way. It replaced `plaintext_gap_test.cpp`, which pinned the
+failure.
 
-Consequences:
+Consequences that remain:
 
-- The HTTP conformance tests use the **TLS** receiver, where the same collector
-  negotiates `h2` through ALPN.
-- The gap is pinned deliberately by
-  `tests/conformance/http/plaintext_gap_test.cpp`, which asserts that
-  `Connect()` to the plaintext receiver **fails**. When microtel gains an
-  HTTP/1.1 fallback, or the collector gains h2c, that test fails and is to be
-  inverted into a positive delivery test rather than deleted.
+- HTTP/1.1 is one request at a time, so the rest of the HTTP conformance
+  suite, and the interop workflow's OTLP/HTTP legs
+  (`.github/workflows/interop.yml`, with `bench/driver/tls_material.py`'s
+  throwaway CA), use the **TLS** receiver, where the same collector
+  negotiates `h2` through ALPN. That is the configuration for throughput.
 - The collector's bearer-auth **http** receiver (`:4348`) carries server TLS
-  material for the same reason, even though the point of that receiver is to
-  isolate the `Authorization` header. Its **grpc** twin (`:4347`) stays
-  plaintext.
-- OTLP/**gRPC** over plaintext is unaffected: gRPC is h2c by definition and the
-  collector's gRPC receiver speaks it. This is no longer an argument — the
-  whole gRPC conformance suite except `tls_test.cpp` runs over `http://` against
-  the same collector, so the two directories side by side are the measurement of
-  how far the gap reaches.
-- `bench/sink/blackhole` already wraps its handler in `h2c.NewHandler` for this
-  reason, so the bench harness does not see the gap.
-- The interop workflow (`.github/workflows/interop.yml`) runs its OTLP/HTTP
-  legs against the stock collector and Jaeger over **TLS** for the same reason:
-  `bench/driver/tls_material.py` generates a throwaway CA, the receivers serve
-  it, and the emit-app trusts it via `OTEL_EXPORTER_OTLP_CERTIFICATE`.
+  material, which it needed while plaintext HTTP could not reach the
+  collector. Its **grpc** twin (`:4347`) stays plaintext.
+- OTLP/**gRPC** needs HTTP/2 and never falls back. Plaintext gRPC is h2c by
+  definition and the collector's gRPC receiver speaks it; gRPC pointed at the
+  HTTP/1.1-only `:4318` is still refused with `Error::Kind::Protocol`, which
+  `plaintext_http1_test.cpp` also asserts.
+- `bench/sink/blackhole` wraps its handler in `h2c.NewHandler`, so the bench
+  harness measures HTTP/2 over plaintext.
 
-Since this was found, the gap names itself rather than arriving as a generic
-nghttp2 failure: `Build()` warns, `Connect()` returns an `Error::Kind::Protocol`
-naming the two configurations that do work, and the codecs do not retry it.
 [`compatibility-matrix.md`](compatibility-matrix.md) §4 is the operational
-version — what to use instead, and what each surface says.
-
-Whether microtel should gain an HTTP/1.1 fallback — the OTLP specification
-permits HTTP/1.1 for OTLP/HTTP — is not something this file decides. It is
-parked as open roadmap question 6 in
-[`roadmap.md`](roadmap.md) §12, and would need an ICP.
-Issue #166 tracks it.
+version: what each endpoint speaks, and what each surface says. Issue #166 is
+where the gap was tracked.
 
 ---
 

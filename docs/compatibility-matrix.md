@@ -21,10 +21,10 @@ Nothing reads either mechanically.
 
 | Area | v1 status | Evidence |
 |---|---|---|
-| OTLP/HTTP traces | Supported over TLS; **unsupported over plaintext against HTTP/1.1-only receivers** — see §4 | `tests/conformance/http/` |
+| OTLP/HTTP traces | Supported over TLS and plaintext; plaintext to an HTTP/1.1-only receiver falls back to HTTP/1.1, serial — see §4 | `tests/conformance/http/` |
 | OTLP/gRPC traces | Supported, plaintext and TLS | `tests/conformance/grpc/` |
-| OTLP metrics, both protocols | Supported, conformance-tested (OTLP/HTTP over TLS, OTLP/gRPC over plaintext, as for logs). OTLP/HTTP metrics share the plaintext gap in §4 | `tests/conformance/{http,grpc}/metrics_test.cpp` |
-| OTLP logs, both protocols | Supported, conformance-tested in v1.2 (OTLP/HTTP over TLS, OTLP/gRPC over plaintext; TLS and auth are the transport the trace rows already cover). OTLP/HTTP logs share the plaintext gap in §4 | `tests/conformance/{http,grpc}/logs_test.cpp`; `Provider::GetLogger` per [ICP 0012](icps/0012-provider-get-logger.md) |
+| OTLP metrics, both protocols | Supported, conformance-tested (OTLP/HTTP over TLS, OTLP/gRPC over plaintext, as for logs). Plaintext OTLP/HTTP falls back to HTTP/1.1 as for traces (§4) | `tests/conformance/{http,grpc}/metrics_test.cpp` |
+| OTLP logs, both protocols | Supported, conformance-tested in v1.2 (OTLP/HTTP over TLS, OTLP/gRPC over plaintext; TLS and auth are the transport the trace rows already cover). Plaintext OTLP/HTTP logs to the stock collector are conformance-tested over the HTTP/1.1 fallback (§4) | `tests/conformance/{http,grpc}/logs_test.cpp`; `Provider::GetLogger` per [ICP 0012](icps/0012-provider-get-logger.md) |
 | W3C Baggage propagation | Supported in v1.1 — `W3CBaggagePropagator`, full grammar, percent-encoding, opaque property tail, and the 180 / 4096 / 8192 limits | `tests/unit/api/baggage_test.cpp`, `tests/unit/api/baggage_propagator_test.cpp`, `tests/fuzz/baggage_fuzz.cpp`; [ICP 0025](icps/0025-propagation-core.md) §2 |
 | OTel SDK env vars (subset) | Partial | `tests/unit/common/config/`, [`configuration.md`](configuration.md) §3 |
 | Log bridges: spdlog, glog, log4cxx | Experimental, header-only, add nothing to microtel's link closure. spdlog is built by default; glog (0.6–0.7) and log4cxx (1.1+) are opt-in (`MICROTEL_BUILD_GLOG_BRIDGE`, `MICROTEL_BUILD_LOG4CXX_BRIDGE`). The glog bridge sees `VLOG` as `INFO`; the log4cxx bridge is programmatic-only (not nameable in a log4cxx config file) | `tests/unit/adapters/{spdlog_sink,glog_sink,log4cxx_appender}_test.cpp`; [`logs-design.md`](logs-design.md) §10 |
@@ -59,7 +59,7 @@ unsupported here**; v1.0 was gated on exactly that. This is that ledger.
 | **AWS SigV4 in-process** | **UNSUPPORTED** | `AuthCallback` sets one header, takes no arguments, and runs before the payload is attached; SigV4 needs a per-request `x-amz-date`, a per-request payload hash, and the request body. Sign at a sidecar — [`auth-callback-recipes.md`](auth-callback-recipes.md) §5. |
 | `insecure = true` | Supported, and **warns** at `Build()` | `SdkBuilderTest.Build_InsecureTls_Warns`. A hard ban is `MICROTEL_FORBID_INSECURE_TLS=ON`, which turns it into `ConfigError::InsecureDisallowed`. |
 | **HTTP proxy (`https_proxy` / `http_proxy` / `no_proxy`, `CONNECT`)** | **UNSUPPORTED in v1** | Not implemented — zero occurrences in `src/`. The variable names are reserved; setting them changes nothing. Deferred, see [`roadmap.md`](roadmap.md). |
-| **Plaintext OTLP/HTTP against an HTTP/1.1-only receiver** | **UNSUPPORTED** | §4 below; [`interop-matrix.md`](interop-matrix.md) §4; issue #166 |
+| Plaintext OTLP/HTTP against an HTTP/1.1-only receiver | Supported since v1.2.6: falls back to HTTP/1.1, **one request at a time**; use h2 or gRPC for throughput | §4 below; `tests/conformance/http/plaintext_http1_test.cpp`; [ICP 0042](icps/0042-http1-fallback-for-otlp-http.md); issue #166 |
 | A peer that hangs up under an in-flight write | Survivable: the export fails, the host process does not | `SIGPIPE` is suppressed per write — `MSG_NOSIGNAL` on plaintext sends, and a custom `BIO` carrying the same flag for TLS, covering `SSL_write` and the handshake writes inside `SSL_connect`. The host needs no `signal(SIGPIPE, SIG_IGN)` of its own, and microtel installs no handler and changes no process-wide disposition (`threading-model.md` §7.1). Evidence: `NoSignalIoTest` / `NoSignalBioTest` in `tests/unit/transport/nosignal_io_test.cpp`, plus the peer-reset tests in `tests/integration/transport/`. Issue #177. |
 | gzip request compression | Supported | conformance suites, both protocols |
 | Response decompression (`grpc-encoding` / `content-encoding: gzip`) | Supported, bounded by `max_decompressed_bytes` | `tests/unit/wire/grpc/`, `tests/unit/wire/http/`, `tests/fuzz/response_decompression_fuzz.cpp` |
@@ -68,60 +68,75 @@ unsupported here**; v1.0 was gated on exactly that. This is that ledger.
 
 ---
 
-## 4. Plaintext OTLP/HTTP cannot reach a stock collector
+## 4. Plaintext OTLP/HTTP to an HTTP/1.1 receiver
 
-microtel's transport is HTTP/2-only (nghttp2), so a plaintext `http://`
-endpoint means **h2c with prior knowledge**. The OpenTelemetry Collector's
-plaintext OTLP/HTTP receiver serves HTTP/1.1 only — it does not wrap its
-handler in `h2c` — so it answers the HTTP/2 connection preface with an
-HTTP/1.1 response and the SETTINGS exchange never completes.
+**Supported since v1.2.6, and serial** ([ICP 0042](icps/0042-http1-fallback-for-otlp-http.md)).
+A plaintext `http://` endpoint with `Protocol::Http` is tried as h2c with prior
+knowledge first. The OpenTelemetry Collector's plaintext OTLP/HTTP receiver
+serves HTTP/1.1 only, so it answers the HTTP/2 connection preface with an
+HTTP/1.1 response. microtel takes that answer as the signal to fall back: inside
+the same `Connect`, it closes the HTTP/2 transport and connects again over
+HTTP/1.1, so the caller sees a `Connect` that succeeded. Over TLS, OTLP/HTTP
+offers ALPN `h2,http/1.1`, and a receiver that selects `http/1.1`, or nothing,
+gets the same fallback.
 
-**This is a documented limitation, not a bug being fixed.** microtel has no
-HTTP/1.1 mode and none is planned for v1; whether to add one is a roadmap item
-(see [`roadmap.md`](roadmap.md) §12) and issue #166.
+**HTTP/1.1 is serial.** One keep-alive connection, one request at a time: no
+connection pool and no pipelining. `SendAll` fan-out becomes sequential, and
+every export waits for the one before it. That is enough for a modest export
+rate. **For throughput use h2:** `https://` against a receiver that negotiates
+`h2`, or OTLP/gRPC.
 
-**What works instead**, in order of preference:
+**What to expect**, by configuration:
 
-| Configuration | Works? |
+| Configuration | What it speaks |
 |---|---|
-| `https://collector:4318` + `Protocol::Http` | Yes — the same collector negotiates `h2` through ALPN |
-| `http://collector:4317` + `Protocol::Grpc` | Yes — gRPC is h2c by definition |
-| `https://collector:4317` + `Protocol::Grpc` | Yes |
-| `http://collector:4318` + `Protocol::Http` | **No** — unless the receiver speaks h2c |
-| `http://proxy:8080` + `Protocol::Http`, where the proxy is h2c-capable | Yes — this is why the configuration is not rejected outright |
+| `https://collector:4318` + `Protocol::Http` | HTTP/2 — the collector negotiates `h2` through ALPN |
+| `http://collector:4317` + `Protocol::Grpc` | HTTP/2 — gRPC is h2c by definition |
+| `https://collector:4317` + `Protocol::Grpc` | HTTP/2 |
+| `http://collector:4318` + `Protocol::Http` | HTTP/1.1, serial — the stock collector's plaintext receiver has no h2c |
+| `http://proxy:8080` + `Protocol::Http`, where the proxy is h2c-capable | HTTP/2 — h2c is tried first |
 
-**How it reports itself.** Since the transport learned to name this case, all
-three of these surfaces say so:
+**The decision lasts for the transport's lifetime.** Once a `Provider`'s
+transport has fallen back, its reconnects go straight to HTTP/1.1. A receiver
+that later gains h2 is used over HTTP/2 after the next `Build()`. There is no
+configuration key to force either version.
 
-- `Build()` logs a warning through the internal log channel
-  (`microtel::SetLogSink` to capture it):
+**How it reports itself.** One `Info` line, once per transport, through the
+internal log channel (`microtel::SetLogSink` to capture it):
 
-  > plaintext OTLP/HTTP (http:// with protocol=http) is HTTP/2 with prior
-  > knowledge and cannot reach an HTTP/1.1-only OTLP receiver such as a stock
-  > OpenTelemetry Collector - use https:// or OTLP/gRPC; see
-  > docs/compatibility-matrix.md
+> endpoint speaks HTTP/1.1 only; OTLP/HTTP continues over HTTP/1.1, one
+> request at a time. For throughput use https:// (ALPN h2) or OTLP/gRPC.
 
-- `Connect()` fails with `Error::Kind::Protocol`:
+`Build()` no longer warns about plaintext OTLP/HTTP; the `tls.insecure`
+warning stays. Reconnects after a receiver ends keep-alive, and the one retry
+of a request whose reused connection closed before any response byte (which
+the receiver may see twice, as OTLP retries allow), are logged at `Info` the
+first time and summarised at most once a minute after that. There is no public
+counter for them yet (#515).
 
-  > peer answered the HTTP/2 preface with an HTTP/1.1 response - endpoint
-  > appears to be HTTP/1.1-only; use https:// (ALPN h2) or OTLP/gRPC; see
-  > docs/compatibility-matrix.md
+**OTLP/gRPC never falls back.** gRPC needs HTTP/2, so for it an HTTP/1.1 answer
+is still a protocol mismatch: `Connect()` fails with `Error::Kind::Protocol`
 
-- The same message reaches `HealthSnapshot::last_error_message`, and the
-  failure is **not retried**: a protocol mismatch is permanent, and a retry
-  budget spent on it only buries the message.
+> peer answered the HTTP/2 preface with an HTTP/1.1 response - endpoint
+> appears to be HTTP/1.1-only; use https:// (ALPN h2) or OTLP/gRPC; see
+> docs/compatibility-matrix.md
 
-The neighbouring case — a TLS endpoint that never agrees to `h2` — is caught
-by an ALPN check right after the handshake and reports `Error::Kind::Protocol`
-naming what was negotiated.
+and the failure is **not retried**: a protocol mismatch is permanent. The same
+holds, for either protocol, for a TLS endpoint that answers ALPN with anything
+other than `h2`, `http/1.1` (OTLP/HTTP) or nothing (OTLP/HTTP).
 
 One boundary is worth knowing, because it moves with the linked OpenSSL. If
-such a server answers ALPN with a protocol microtel never offered (microtel
-offers only `h2`), OpenSSL **3.2 and later** enforce RFC 7301 themselves and
-fail the handshake, so the refusal arrives as a TLS error rather than the ALPN
-message; **3.0 and 3.1** let it through and microtel's check is what refuses
-it. Either way the connection is refused — which is what
-`Http2TlsConnectTest.AlpnAnswersHttp11_ConnectFails` asserts.
+such a server answers ALPN with a protocol microtel never offered, OpenSSL
+**3.2 and later** enforce RFC 7301 themselves and fail the handshake, so the
+refusal arrives as a TLS error rather than the ALPN message; **3.0 and 3.1**
+let it through and microtel's check is what refuses it. Either way the
+connection is refused — which is what
+`Http2TlsConnectTest.AlpnAnswersHttp11_ConnectFails` asserts for gRPC.
+
+Evidence: `tests/conformance/http/plaintext_http1_test.cpp` (traces and logs
+over `http://` to the stock collector's `:4318`, and gRPC to the same port
+still refused); `tests/integration/transport/fallback_transport_test.cpp` and
+`http1_transport_test.cpp`; `tests/fuzz/http1_response_fuzz.cpp`.
 
 ---
 
@@ -179,9 +194,10 @@ A row changes in the same PR as the behaviour it describes. When a row moves
 from unsupported to supported, the test that proves it moves with it — a
 status without evidence in the third column is not a status.
 
-§4 in particular is load-bearing: `tests/conformance/http/plaintext_gap_test.cpp`
-asserts the limitation *and* its error message, and the sibling HTTP
-conformance tests point at TLS endpoints because of it. If that test starts
+§4 in particular is load-bearing: `tests/conformance/http/plaintext_http1_test.cpp`
+asserts plaintext delivery to the stock collector over HTTP/1.1, and that
+OTLP/gRPC to the same port is still refused. It replaced
+`plaintext_gap_test.cpp`, which pinned the opposite until v1.2.6. If it starts
 failing, this section and [`interop-matrix.md`](interop-matrix.md) §4 are part
 of the change.
 
@@ -202,5 +218,5 @@ This section defines the tiers. Which signals each release
 claims at which tier is in [`roadmap.md`](roadmap.md) §3,
 and the gates a release must pass to promote a tier are in its §10. The rows
 in §2–§5 are the per-feature evidence. For traces, Tier 1 holds over OTLP/gRPC
-and over OTLP/HTTP with TLS; plaintext OTLP/HTTP does not reach an
-HTTP/1.1-only receiver (§4).
+and over OTLP/HTTP, with TLS and, through the HTTP/1.1 fallback, without it
+(§4).

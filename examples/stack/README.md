@@ -40,7 +40,7 @@ new tag.
 | Host port | Service | Used by |
 |---|---|---|
 | `4317` | collector, OTLP/gRPC | every example; this is the default endpoint |
-| `4318` | collector, OTLP/HTTP | nothing here today. It is plaintext, so microtel cannot reach it; see [the h2c note](#why-grpc-and-not-http) |
+| `4318` | collector, OTLP/HTTP | nothing here today. It is plaintext HTTP/1.1, which microtel reaches through its HTTP/1.1 fallback, one request at a time; see [the note](#why-grpc-and-not-http) |
 | `4319` | collector, OTLP/gRPC with no batching | [`examples/leaf`](../leaf/README.md#one-request-many-devices)'s fan-in check: each request is logged as it arrived, then forwarded to Tempo |
 | `13133` | collector `health_check` | `up.sh` readiness polling |
 | `3200` | Tempo HTTP API | Grafana's datasource, and the verification `curl` below |
@@ -154,17 +154,15 @@ transport-security ledger in
 
 ## Why gRPC and not HTTP
 
-microtel's transport is HTTP/2-only, so a plaintext `http://` endpoint means
-h2c with prior knowledge. The collector's plaintext OTLP/HTTP receiver on 4318
-serves HTTP/1.1 only. It answers the HTTP/2 preface with an HTTP/1.1 response,
-and nothing is ever delivered.
-
-This is a known, documented limitation; see
-[`docs/compatibility-matrix.md`](../../docs/compatibility-matrix.md) §4 and
-issue #166. The examples therefore use OTLP/gRPC on 4317, which is h2c by
-definition and unaffected, or OTLP/HTTP over TLS, where ALPN negotiates `h2`
-and the same collector works fine. Port 4318 stays published so you can point
-another OTLP client at it, but no example uses it. Serving TLS from this
+The collector's plaintext OTLP/HTTP receiver on 4318 serves HTTP/1.1 only. It
+answers microtel's HTTP/2 preface with an HTTP/1.1 response, and microtel falls
+back to HTTP/1.1 (since v1.2.6; see
+[`docs/compatibility-matrix.md`](../../docs/compatibility-matrix.md) §4). That
+works, but HTTP/1.1 is one request at a time. The examples therefore use
+OTLP/gRPC on 4317, which is h2c by definition, or OTLP/HTTP over TLS, where
+ALPN negotiates `h2` with the same collector. Port 4318 stays published, and
+`http://localhost:4318` with `Protocol::Http` reaches it, but no example uses
+it. Serving TLS from this
 collector would mean mounting certificates into it, so
 [`examples/tls/`](../tls/) runs its own collector on its own ports and leaves
 this one alone.

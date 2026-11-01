@@ -5,9 +5,9 @@
 //
 // The scenarios live in conformance/support/metric_conformance.hpp and are
 // shared with the gRPC suite; this file only decides how the Provider reaches
-// the collector. Like every OTLP/HTTP test here except plaintext_gap_test.cpp,
-// it uses the TLS receiver: that is where ALPN negotiates `h2`, the only
-// OTLP/HTTP path that reaches a stock collector today (issue #166).
+// the collector. Like every OTLP/HTTP test here except plaintext_http1_test.cpp,
+// it uses the TLS receiver: that is where ALPN negotiates `h2`. The plaintext
+// receiver is HTTP/1.1-only (plaintext_http1_test.cpp).
 //
 // Assertions read the collector's metrics.jsonl, which is downstream of its
 // protobuf decode.
