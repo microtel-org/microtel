@@ -2,24 +2,25 @@ compileunits,vmsize,filesize
 /src/src/common/config/toml_loader.cpp,138224,138224
 /src/src/sdk/sdk_meter.cpp,100456,100456
 /src/src/sdk/resource_builder.cpp,66470,66470
-/src/src/sdk/sdk_builder.cpp,56064,56064
-[section .rela.dyn],46896,46896
-/src/src/transport/http2_transport.cpp,39992,39992
-[section .rodata],37976,37976
-[section .gcc_except_table],32968,32968
+/src/src/sdk/sdk_builder.cpp,58216,58216
+/src/src/transport/http1_transport.cpp,48576,48576
+[section .rela.dyn],47808,47808
+[section .rodata],40136,40136
+[section .gcc_except_table],35744,35744
+/src/src/transport/http2_transport.cpp,30856,30856
 /src/src/sdk/sdk_provider.cpp,29912,29912
-/src/src/wire/http/http_wire_codec.cpp,22888,22888
+/src/src/wire/http/http_wire_codec.cpp,24920,24920
 /src/src/common/config/env_resolver.cpp,22824,22824
 [section .text],22727,22727
-/src/src/wire/grpc/grpc_wire_codec.cpp,20704,20704
+/src/src/wire/grpc/grpc_wire_codec.cpp,20896,20896
 /src/src/sdk/batch_span_processor.cpp,19728,19728
 /src/src/wire/encoder/otlp_encoder.cpp,19480,19480
 /src/src/sdk/metric_producer.cpp,19456,19456
+[section .data.rel.ro],15495,18056
 /src/src/exporter/otlp_exporter.cpp,17792,17792
-[section .data.rel.ro],15175,17736
 /src/src/exporter/otlp_metric_exporter.cpp,17680,17680
 /src/src/common/config/config_validator.cpp,16176,16176
-/src/src/sdk/metric_sum_storage.cpp,15240,15240
+/src/src/sdk/metric_sum_storage.cpp,15238,15238
 /src/bench/emit-app/src/backend_microtel.cpp,14279,14279
 /src/src/sdk/batch_log_record_processor.cpp,14072,14072
 /src/src/sdk/metric_exp_histogram_storage.cpp,13136,13136
@@ -27,20 +28,23 @@ compileunits,vmsize,filesize
 /src/src/exporter/otlp_log_exporter.cpp,12216,12216
 /src/bench/emit-app/src/control_socket.cpp,11934,11934
 /src/src/sdk/metric_attribute_set.cpp,10824,10824
+/src/src/transport/fallback_transport.cpp,10448,10448
 /src/src/sdk/sdk_span.cpp,9320,9320
 /src/src/api/trace_state.cpp,9048,9048
+/src/src/transport/connection_setup.cpp,8960,8960
+/src/src/transport/http1_response_parser.cpp,8936,8936
 /src/src/sdk/metric_gauge_storage.cpp,8848,8848
-[section .dynstr],7417,7417
+[section .dynstr],7552,7552
+[Unmapped],0,7052
 /src/src/sdk/sdk_tracer.cpp,6709,6709
 /src/src/sdk/sampler_factories.cpp,6480,6480
-[section .dynsym],6041,6041
+[section .dynsym],6161,6161
 /src/src/wire/custom/export_transport_codec.cpp,5760,5760
-[section .rela.plt],5664,5664
+[section .rela.plt],5736,5736
 /src/src/transport/epoll_reactor.cpp,5200,5200
 /src/src/exporter/retry_engine.cpp,5120,5120
 [section .eh_frame],4476,4476
-[Unmapped],0,3844
-[section .plt],3792,3792
+[section .plt],3840,3840
 /src/src/common/config/concentrator_config.cpp,3600,3600
 /src/src/common/config/auth_providers.cpp,3552,3552
 /src/src/sdk/span_limits.cpp,3320,3320
@@ -53,21 +57,21 @@ compileunits,vmsize,filesize
 /src/src/wire/grpc/grpc_status.cpp,2216,2216
 /src/src/sdk/periodic_exporting_metric_reader.cpp,2176,2176
 [ELF Section Headers],0,2048
-[section .got.plt],1912,1912
+[section .got.plt],1936,1936
 /src/src/api/context.cpp,1792,1792
-/src/src/sdk/sdk_logger.cpp,1752,1752
+/src/src/sdk/sdk_logger.cpp,1768,1768
 /src/src/transport/nosignal_io.cpp,1488,1488
 /src/bench/emit-app/src/histogram.cpp,1371,1371
 /src/src/sdk/diagnostics_counters.cpp,1360,1360
-/src/src/wire/otlp_response.cpp,1352,1352
+/src/src/wire/otlp_response.cpp,1338,1338
 /src/src/sdk/view_registry.cpp,1016,1016
-[section .data],964,964
+[section .data],980,980
 [section .eh_frame_hdr],844,844
 /src/src/sdk/noop_span.cpp,728,728
 /src/src/transport/connect_error.cpp,688,688
 [section .gnu.version_r],672,672
 [section .dynamic],592,592
-[section .gnu.version],558,558
+[section .gnu.version],568,568
 /src/src/wire/encoder/trace_request_concat.cpp,504,504
 [ELF Program Headers],432,432
 /src/bench/emit-app/src/workload.cpp,404,404
@@ -83,10 +87,10 @@ compileunits,vmsize,filesize
 [section .interp],28,28
 [section .init],27,27
 [section .plt.got],24,24
+[LOAD #5 [RW]],20,16
 [section .init_array],0,16
-[LOAD #2 [R]],14,14
+[LOAD #2 [R]],13,13
 [LOAD #3 [RX]],13,13
 [section .fini],13,13
-[LOAD #5 [RW]],12,8
 [section .fini_array],0,8
 [LOAD #4 [R]],4,4

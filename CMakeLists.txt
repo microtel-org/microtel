@@ -11,7 +11,7 @@
 cmake_minimum_required(VERSION 3.20)
 
 project(microtel
-        VERSION 1.2.5
+        VERSION 1.2.6
         LANGUAGES C CXX
         DESCRIPTION "Lightweight OpenTelemetry-compatible runtime for traces, metrics and logs, built on nghttp2")
 

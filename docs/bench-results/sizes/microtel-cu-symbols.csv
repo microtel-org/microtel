@@ -320,7 +320,7 @@ compileunits,symbols,vmsize,filesize
 /src/src/sdk/resource_builder.cpp,std::__format::__unmatched_left_brace_in_format_string(),52,52
 /src/src/sdk/resource_builder.cpp,std::__format::__unmatched_right_brace_in_format_string(),52,52
 /src/src/sdk/sdk_builder.cpp,microtel::SdkBuilder::Impl::Assemble(),8428,8428
-/src/src/sdk/sdk_builder.cpp,microtel::SdkBuilder::Build(),6316,6316
+/src/src/sdk/sdk_builder.cpp,microtel::SdkBuilder::Build(),6796,6796
 /src/src/sdk/sdk_builder.cpp,microtel::SdkBuilder::Impl::LoadConfig(),3564,3564
 /src/src/sdk/sdk_builder.cpp,microtel::(anonymous namespace)::BuildWireCodec(),2540,2540
 /src/src/sdk/sdk_builder.cpp,std::vector<>::_M_realloc_insert<>(),2120,2120
@@ -329,11 +329,12 @@ compileunits,symbols,vmsize,filesize
 /src/src/sdk/sdk_builder.cpp,microtel::(anonymous namespace)::BuildConnectOptions(),1612,1612
 /src/src/sdk/sdk_builder.cpp,std::make_unique<>(),1504,1504
 /src/src/sdk/sdk_builder.cpp,microtel::SdkBuilder::Impl::CheckExportTransport(),1500,1500
+/src/src/sdk/sdk_builder.cpp,tl::detail::expected_storage_base<>::~expected_storage_base(),1312,1312
 /src/src/sdk/sdk_builder.cpp,std::vector<>::vector(),1124,1124
 /src/src/sdk/sdk_builder.cpp,std::optional<>::operator=<>(),1056,1056
-/src/src/sdk/sdk_builder.cpp,tl::detail::expected_storage_base<>::~expected_storage_base(),1052,1052
 /src/src/sdk/sdk_builder.cpp,microtel::sdk::SdkProviderArgs::SdkProviderArgs(),1040,1040
 /src/src/sdk/sdk_builder.cpp,microtel::SdkBuilder::Impl::~Impl(),840,840
+/src/src/sdk/sdk_builder.cpp,microtel::(anonymous namespace)::TransportInitError(),828,828
 /src/src/sdk/sdk_builder.cpp,microtel::(anonymous namespace)::DuplicateProfileNameError(),812,812
 /src/src/sdk/sdk_builder.cpp,microtel::(anonymous namespace)::ToHeaderFields(),780,780
 /src/src/sdk/sdk_builder.cpp,microtel::LeafReceiverOptions::operator=(),732,732
@@ -352,6 +353,7 @@ compileunits,symbols,vmsize,filesize
 /src/src/sdk/sdk_builder.cpp,microtel::ViewConfig::ViewConfig(),432,432
 /src/src/sdk/sdk_builder.cpp,std::operator+<>(),424,424
 /src/src/sdk/sdk_builder.cpp,(anonymous namespace)::tl_rng,416,416
+/src/src/sdk/sdk_builder.cpp,microtel::(anonymous namespace)::CreateReactor(),412,412
 /src/src/sdk/sdk_builder.cpp,std::__shared_ptr<>::~__shared_ptr(),368,368
 /src/src/sdk/sdk_builder.cpp,microtel::ConfigError::ConfigError(),364,364
 /src/src/sdk/sdk_builder.cpp,std::__do_uninit_copy<>(),364,364
@@ -365,12 +367,13 @@ compileunits,symbols,vmsize,filesize
 /src/src/sdk/sdk_builder.cpp,std::pair<>::pair(),268,268
 /src/src/sdk/sdk_builder.cpp,microtel::transport::EpollReactor::~EpollReactor(),264,264
 /src/src/sdk/sdk_builder.cpp,microtel::wire::HttpWireCodecConfig::~HttpWireCodecConfig(),264,264
-/src/src/sdk/sdk_builder.cpp,std::_Sp_counted_ptr_inplace<>::_M_dispose(),260,260
+/src/src/sdk/sdk_builder.cpp,std::_Sp_counted_ptr_inplace<>::_M_dispose(),256,256
 /src/src/sdk/sdk_builder.cpp,std::filesystem::__cxx11::path::path(),252,252
 /src/src/sdk/sdk_builder.cpp,std::_Sp_counted_ptr_inplace<>::_M_get_deleter(),248,248
 /src/src/sdk/sdk_builder.cpp,tl::expected<>::expected<>(),240,240
 /src/src/sdk/sdk_builder.cpp,microtel::SdkBuilder::FromFile(),232,232
 /src/src/sdk/sdk_builder.cpp,microtel::wire::GrpcWireCodecConfig::~GrpcWireCodecConfig(),232,232
+/src/src/sdk/sdk_builder.cpp,std::_Function_handler<>::_M_manager(),224,224
 /src/src/sdk/sdk_builder.cpp,microtel::(anonymous namespace)::ExporterPack::~ExporterPack(),204,204
 /src/src/sdk/sdk_builder.cpp,microtel::SdkBuilder::SdkBuilder(),196,196
 /src/src/sdk/sdk_builder.cpp,std::_Destroy<>(),152,152
@@ -378,9 +381,9 @@ compileunits,symbols,vmsize,filesize
 /src/src/sdk/sdk_builder.cpp,microtel::SdkBuilder::WithExportTransport(),140,140
 /src/src/sdk/sdk_builder.cpp,microtel::SdkBuilder::WithResourceDetector(),140,140
 /src/src/sdk/sdk_builder.cpp,microtel::SdkBuilder::WithBatch(),128,128
+/src/src/sdk/sdk_builder.cpp,std::_Function_handler<>::_M_invoke(),128,128
 /src/src/sdk/sdk_builder.cpp,microtel::SdkBuilder::WithView(),124,124
 /src/src/sdk/sdk_builder.cpp,std::_Bvector_base<>::~_Bvector_base(),120,120
-/src/src/sdk/sdk_builder.cpp,std::_Function_handler<>::_M_manager(),120,120
 /src/src/sdk/sdk_builder.cpp,microtel::SdkBuilder::WithMemoryLimits(),112,112
 /src/src/sdk/sdk_builder.cpp,microtel::SdkBuilder::WithSpanLimits(),112,112
 /src/src/sdk/sdk_builder.cpp,microtel::SdkBuilder::WithTimeouts(),112,112
@@ -404,12 +407,81 @@ compileunits,symbols,vmsize,filesize
 /src/src/sdk/sdk_builder.cpp,microtel::SdkBuilder::WithServiceName(),72,72
 /src/src/sdk/sdk_builder.cpp,microtel::SdkBuilder::WithServiceVersion(),72,72
 /src/src/sdk/sdk_builder.cpp,microtel::SdkBuilder::WithTls(),72,72
-/src/src/sdk/sdk_builder.cpp,std::_Function_handler<>::_M_invoke(),56,56
 /src/src/sdk/sdk_builder.cpp,std::_Sp_counted_base<>::~_Sp_counted_base(),56,56
+/src/src/transport/http1_transport.cpp,microtel::transport::Http1Transport::StartNext(),4812,4812
+/src/src/transport/http1_transport.cpp,std::deque<>::_M_erase(),2708,2708
+/src/src/transport/http1_transport.cpp,std::__copy_move_backward_dit<>(),2620,2620
+/src/src/transport/http1_transport.cpp,std::__copy_move_dit<>(),2556,2556
+/src/src/transport/http1_transport.cpp,microtel::transport::Http1Transport::ExpireQueued(),2396,2396
+/src/src/transport/http1_transport.cpp,std::__stable_partition_adaptive<>(),2020,2020
+/src/src/transport/http1_transport.cpp,microtel::transport::Http1Transport::OpenConnection(),1932,1932
+/src/src/transport/http1_transport.cpp,microtel::transport::Http1Transport::Connect(),1724,1724
+/src/src/transport/http1_transport.cpp,std::_V2::__rotate<>(),1560,1560
+/src/src/transport/http1_transport.cpp,std::deque<>::_M_destroy_data_aux(),1516,1516
+/src/src/transport/http1_transport.cpp,microtel::transport::Http1Transport::Send(),1484,1484
+/src/src/transport/http1_transport.cpp,microtel::transport::Http1Transport::FailMalformedResponse(),1420,1420
+/src/src/transport/http1_transport.cpp,microtel::transport::Http1Transport::Http1Transport(),1192,1192
+/src/src/transport/http1_transport.cpp,microtel::transport::Http1Transport::FailAll(),892,892
+/src/src/transport/http1_transport.cpp,microtel::transport::Http1Transport::OpenAndRegister(),828,828
+/src/src/transport/http1_transport.cpp,microtel::transport::Http1Transport::Cancel(),812,812
+/src/src/transport/http1_transport.cpp,microtel::transport::(anonymous namespace)::RefuseRequest(),732,732
+/src/src/transport/http1_transport.cpp,microtel::transport::Http1Transport::Finish(),696,696
+/src/src/transport/http1_transport.cpp,std::swap<>(),696,696
+/src/src/transport/http1_transport.cpp,std::optional<>::operator=<>(),668,668
+/src/src/transport/http1_transport.cpp,tl::detail::expected_storage_base<>::~expected_storage_base(),640,640
+/src/src/transport/http1_transport.cpp,microtel::transport::Http1Transport::Create(),632,632
+/src/src/transport/http1_transport.cpp,microtel::transport::Http1Transport::~Http1Transport(),560,560
+/src/src/transport/http1_transport.cpp,microtel::transport::Http1Transport::FailInFlight(),532,532
+/src/src/transport/http1_transport.cpp,std::__uninitialized_construct_buf_dispatch<>::__ucr<>(),520,520
+/src/src/transport/http1_transport.cpp,std::deque<>::_M_reallocate_map(),504,504
+/src/src/transport/http1_transport.cpp,microtel::transport::(anonymous namespace)::Log(),492,492
+/src/src/transport/http1_transport.cpp,microtel::transport::Http1Transport::CountEvent(),492,492
+/src/src/transport/http1_transport.cpp,microtel::transport::Http1ResponseParser::operator=(),488,488
+/src/src/transport/http1_transport.cpp,microtel::transport::Http1Transport::OnConnectionLost(),468,468
+/src/src/transport/http1_transport.cpp,microtel::transport::EndpointInfo::operator=(),464,464
+/src/src/transport/http1_transport.cpp,microtel::transport::Http1Transport::Close(),460,460
+/src/src/transport/http1_transport.cpp,std::_Deque_base<>::_M_initialize_map(),444,444
+/src/src/transport/http1_transport.cpp,std::vector<>::_M_realloc_insert<>(),424,424
+/src/src/transport/http1_transport.cpp,std::__copy_move<>::__copy_m<>(),404,404
+/src/src/transport/http1_transport.cpp,std::__copy_move_backward<>::__copy_move_b<>(),404,404
+/src/src/transport/http1_transport.cpp,microtel::transport::Http1Transport::CompleteResponse(),400,400
+/src/src/transport/http1_transport.cpp,microtel::transport::Http1Transport::OnIoEvent(),392,392
+/src/src/transport/http1_transport.cpp,std::deque<>::_M_push_back_aux<>(),388,388
+/src/src/transport/http1_transport.cpp,microtel::transport::Http1Transport::CheckInFlight(),376,376
+/src/src/transport/http1_transport.cpp,microtel::transport::Http1Transport::OnResponseEnd(),356,356
+/src/src/transport/http1_transport.cpp,std::vector<>::_S_relocate(),356,356
+/src/src/transport/http1_transport.cpp,microtel::transport::Http1Transport::TryWrite(),340,340
+/src/src/transport/http1_transport.cpp,microtel::transport::Http1Transport::ReadSome(),312,312
+/src/src/transport/http1_transport.cpp,microtel::transport::Http1Transport::Reconnect(),308,308
+/src/src/transport/http1_transport.cpp,std::optional<>::emplace<>(),308,308
+/src/src/transport/http1_transport.cpp,microtel::transport::Http1Transport::RegisterConnection(),276,276
+/src/src/transport/http1_transport.cpp,std::deque<>::_M_pop_back_aux(),264,264
+/src/src/transport/http1_transport.cpp,std::_Temporary_buffer<>::~_Temporary_buffer(),244,244
+/src/src/transport/http1_transport.cpp,microtel::transport::Http1Transport::WriteSome(),232,232
+/src/src/transport/http1_transport.cpp,microtel::transport::Http1Transport::CloseConnection(),228,228
+/src/src/transport/http1_transport.cpp,std::deque<>::_M_pop_front_aux(),228,228
+/src/src/transport/http1_transport.cpp,microtel::transport::Http1Transport::OnReadable(),224,224
+/src/src/transport/http1_transport.cpp,microtel::transport::Http1Transport::OnResponseBytes(),220,220
+/src/src/transport/http1_transport.cpp,microtel::transport::Http1Transport::IoThreadLoop(),212,212
+/src/src/transport/http1_transport.cpp,std::deque<>::~deque(),200,200
+/src/src/transport/http1_transport.cpp,microtel::internal::RequestSpec::~RequestSpec(),184,184
+/src/src/transport/http1_transport.cpp,microtel::transport::Http1Transport::Connection::~Connection(),164,164
+/src/src/transport/http1_transport.cpp,microtel::transport::Http1Transport::RetryOnNewConnection(),164,164
+/src/src/transport/http1_transport.cpp,microtel::transport::Http1Transport::GiveUpConnection(),124,124
+/src/src/transport/http1_transport.cpp,std::_Function_handler<>::_M_manager(),120,120
+/src/src/transport/http1_transport.cpp,microtel::transport::Http1Transport::Service(),112,112
+/src/src/transport/http1_transport.cpp,microtel::transport::Http1Transport::OnParserState(),104,104
+/src/src/transport/http1_transport.cpp,microtel::transport::Http1Transport::WatchWrites(),96,96
+/src/src/transport/http1_transport.cpp,std::unique_ptr<>::~unique_ptr(),92,92
+/src/src/transport/http1_transport.cpp,std::thread::_State_impl<>::_M_run(),88,88
+/src/src/transport/http1_transport.cpp,microtel::transport::Http1Transport::GetStats(),72,72
+/src/src/transport/http1_transport.cpp,std::_Function_handler<>::_M_invoke(),72,72
+/src/src/transport/http1_transport.cpp,std::thread::_State_impl<>::~_State_impl(),72,72
+/src/src/transport/http1_transport.cpp,microtel::transport::Http1Transport::GetState(),56,56
 [section .rela.dyn],std::_Sp_counted_ptr_inplace<>,7560,7560
 [section .rela.dyn],toml::v3::value<>,6720,6720
-[section .rela.dyn],[section .rela.dyn],2400,2400
-[section .rela.dyn],std::thread::_State_impl<>,1344,1344
+[section .rela.dyn],[section .rela.dyn],2448,2448
+[section .rela.dyn],std::thread::_State_impl<>,1512,1512
 [section .rela.dyn],messages_layout,1032,1032
 [section .rela.dyn],microtel::sdk::NoopRecordInstrument<>,1008,1008
 [section .rela.dyn],toml::v3::array,960,960
@@ -441,6 +513,8 @@ compileunits,symbols,vmsize,filesize
 [section .rela.dyn],microtel::sdk::SdkSpan,336,336
 [section .rela.dyn],microtel::sdk::DiagnosticsCounters,288,288
 [section .rela.dyn],microtel::transport::EpollReactor,264,264
+[section .rela.dyn],microtel::transport::FallbackTransport,264,264
+[section .rela.dyn],microtel::transport::Http1Transport,264,264
 [section .rela.dyn],microtel::transport::Http2Transport,264,264
 [section .rela.dyn],microtel::sdk::BatchSpanProcessor,240,240
 [section .rela.dyn],toml::v3::impl::node_type_friendly_names,240,240
@@ -471,6 +545,7 @@ compileunits,symbols,vmsize,filesize
 [section .rela.dyn],toml::v3::ex::parse_error,168,168
 [section .rela.dyn],opentelemetry_proto_metrics_v1_Metric__submsgs,144,144
 [section .rela.dyn],std::__format::_Formatting_scanner<>,144,144
+[section .rela.dyn],(),120,120
 [section .rela.dyn],std::__format::_Iter_sink<>,120,120
 [section .rela.dyn],std::__format::_Seq_sink<>,120,120
 [section .rela.dyn],microtel::Counter<>,96,96
@@ -518,6 +593,7 @@ compileunits,symbols,vmsize,filesize
 [section .rela.dyn],microtel::internal::ITransport,48,48
 [section .rela.dyn],microtel::internal::IWireCodec,48,48
 [section .rela.dyn],microtel::sdk::IMetricStream,48,48
+[section .rela.dyn],microtel::transport::Http1Transport::RegisterConnection()::$_0,48,48
 [section .rela.dyn],microtel::transport::Http2Transport::Connect()::$_0,48,48
 [section .rela.dyn],opentelemetry__proto__collector__logs__v1__ExportLogsServiceRequest_msg_init,48,48
 [section .rela.dyn],opentelemetry__proto__collector__logs__v1__ExportLogsServiceResponse_msg_init,48,48
@@ -658,94 +734,9 @@ compileunits,symbols,vmsize,filesize
 [section .rela.dyn],opentelemetry_proto_trace_v1_Span_Link__submsgs,24,24
 [section .rela.dyn],opentelemetry_proto_trace_v1_TracesData__submsgs,24,24
 [section .rela.dyn],opentelemetry_proto_trace_v1_trace_proto_upb_file_layout,24,24
-/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::Connect(),5500,5500
-/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::TlsHandshake(),3916,3916
-/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::SubmitStream(),1980,1980
-/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::Send(),1340,1340
-/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::FulfillStream(),1324,1324
-/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::Http2Transport(),1180,1180
-/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::Close(),1164,1164
-/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::Http2Handshake(),1036,1036
-/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::RefuseStreamsAbove(),924,924
-/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::AbandonInFlight(),908,908
-/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::OnResponseHeader(),884,884
-/src/src/transport/http2_transport.cpp,std::vector<>::_M_range_insert<>(),800,800
-/src/src/transport/http2_transport.cpp,microtel::transport::(anonymous namespace)::AlpnMismatchError(),780,780
-/src/src/transport/http2_transport.cpp,microtel::transport::(anonymous namespace)::RefuseRequest(),732,732
-/src/src/transport/http2_transport.cpp,std::_Hashtable<>::_M_rehash_aux(),712,712
-/src/src/transport/http2_transport.cpp,std::_Hashtable<>::_M_insert_unique_node(),664,664
-/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::Create(),632,632
-/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::DrainPendingRequests(),604,604
-/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::~Http2Transport(),592,592
-/src/src/transport/http2_transport.cpp,std::_Hashtable<>::_M_erase(),580,580
-/src/src/transport/http2_transport.cpp,tl::detail::expected_storage_base<>::~expected_storage_base(),572,572
-/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::DrainCancelQueue(),548,548
-/src/src/transport/http2_transport.cpp,std::__shrink_to_fit_aux<>::_S_do_it(),500,500
-/src/src/transport/http2_transport.cpp,std::vector<>::vector<>(),476,476
-/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::Cancel(),468,468
-/src/src/transport/http2_transport.cpp,std::make_unique<>(),456,456
-/src/src/transport/http2_transport.cpp,std::_Function_handler<>::_M_invoke(),444,444
-/src/src/transport/http2_transport.cpp,microtel::transport::(anonymous namespace)::MakeHeaderField(),428,428
-/src/src/transport/http2_transport.cpp,std::vector<>::_M_realloc_insert<>(),424,424
-/src/src/transport/http2_transport.cpp,std::optional<>::operator=<>(),404,404
-/src/src/transport/http2_transport.cpp,std::future_error::future_error(),396,396
-/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::OnResponseData(),380,380
-/src/src/transport/http2_transport.cpp,std::vector<>::_S_relocate(),356,356
-/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::Http2HandshakeFailure(),332,332
-/src/src/transport/http2_transport.cpp,microtel::internal::TransportResult::~TransportResult(),328,328
-/src/src/transport/http2_transport.cpp,std::__future_base::_State_baseV2::_M_set_result(),328,328
-/src/src/transport/http2_transport.cpp,std::promise<>::~promise(),316,316
-/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::NgHttp2DoRecv(),312,312
-/src/src/transport/http2_transport.cpp,std::__future_base::_State_baseV2::_M_break_promise(),308,308
-/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::FailOversizedStream(),300,300
-/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::IoThreadLoop(),260,260
-/src/src/transport/http2_transport.cpp,std::vector<>::~vector(),252,252
-/src/src/transport/http2_transport.cpp,std::_Function_handler<>::_M_manager(),240,240
-/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::OnIoEvent(),236,236
-/src/src/transport/http2_transport.cpp,std::__uniq_ptr_impl<>::reset(),232,232
-/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::Connect()::$_1::operator()(),228,228
-/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::NgHttp2DoSend(),228,228
-/src/src/transport/http2_transport.cpp,microtel::transport::(anonymous namespace)::NgHttp2OnFrameRecvCb(),224,224
-/src/src/transport/http2_transport.cpp,std::__future_base::_State_baseV2::~_State_baseV2(),224,224
-/src/src/transport/http2_transport.cpp,std::__detail::_Hashtable_alloc<>::_M_deallocate_node(),212,212
-/src/src/transport/http2_transport.cpp,std::__future_base::_Result<>::~_Result(),212,212
-/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::OnGoaway(),188,188
-/src/src/transport/http2_transport.cpp,microtel::internal::RequestSpec::~RequestSpec(),184,184
-/src/src/transport/http2_transport.cpp,std::__shared_ptr<>::~__shared_ptr(),184,184
-/src/src/transport/http2_transport.cpp,std::__future_base::_State_baseV2::_M_do_set(),148,148
-/src/src/transport/http2_transport.cpp,microtel::transport::(anonymous namespace)::PayloadReadCb(),144,144
-/src/src/transport/http2_transport.cpp,std::pair<>::~pair(),128,128
-/src/src/transport/http2_transport.cpp,std::_Sp_counted_ptr_inplace<>::_M_get_deleter(),124,124
-/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::SniffHttp1Response(),112,112
-/src/src/transport/http2_transport.cpp,microtel::transport::(anonymous namespace)::NgHttp2OnHeaderCb(),104,104
-/src/src/transport/http2_transport.cpp,std::once_flag::_Prepare_execution::_Prepare_execution<>()::{lambda()#1}::__invoke(),104,104
-/src/src/transport/http2_transport.cpp,microtel::common::raii::Nghttp2Session::~Nghttp2Session(),96,96
-/src/src/transport/http2_transport.cpp,microtel::common::raii::SslCtx::~SslCtx(),96,96
-/src/src/transport/http2_transport.cpp,microtel::common::raii::SslSession::~SslSession(),96,96
-/src/src/transport/http2_transport.cpp,microtel::common::raii::UniqueFd::~UniqueFd(),96,96
-/src/src/transport/http2_transport.cpp,std::unique_ptr<>::~unique_ptr(),92,92
-/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::AdoptBudgets(),88,88
-/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::FinishGoawayDrainIfIdle(),88,88
-/src/src/transport/http2_transport.cpp,std::thread::_State_impl<>::_M_run(),88,88
-/src/src/transport/http2_transport.cpp,std::_Hashtable<>::_Scoped_node::~_Scoped_node(),84,84
-/src/src/transport/http2_transport.cpp,microtel::transport::(anonymous namespace)::NgHttp2OnDataChunkRecvCb(),72,72
-/src/src/transport/http2_transport.cpp,std::thread::_State_impl<>::~_State_impl(),72,72
-/src/src/transport/http2_transport.cpp,microtel::transport::(anonymous namespace)::NgHttp2OnStreamCloseCb(),56,56
-/src/src/transport/http2_transport.cpp,microtel::transport::(anonymous namespace)::NgHttp2RecvCb(),56,56
-/src/src/transport/http2_transport.cpp,microtel::transport::(anonymous namespace)::NgHttp2SendCb(),56,56
-/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::GetState(),56,56
-/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::OnSettingsAck(),56,56
-/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::OnStreamClose(),56,56
-/src/src/transport/http2_transport.cpp,std::_Sp_counted_ptr_inplace<>::_M_destroy(),56,56
-/src/src/transport/http2_transport.cpp,std::_Sp_counted_ptr_inplace<>::_M_dispose(),56,56
-/src/src/transport/http2_transport.cpp,std::_Sp_counted_ptr_inplace<>::~_Sp_counted_ptr_inplace(),56,56
-/src/src/transport/http2_transport.cpp,std::__exception_ptr::__dest_thunk<>(),56,56
-/src/src/transport/http2_transport.cpp,std::__future_base::_Result<>::_M_destroy(),56,56
-/src/src/transport/http2_transport.cpp,std::__future_base::_State_baseV2::_M_complete_async(),56,56
-/src/src/transport/http2_transport.cpp,std::__future_base::_State_baseV2::_M_is_deferred_future(),56,56
-[section .rodata],[section .rodata],23163,23163
+[section .rodata],[section .rodata],24873,24873
 [section .rodata],std::_Sp_counted_ptr_inplace<>,3806,3806
-[section .rodata],std::thread::_State_impl<>,1575,1575
+[section .rodata],std::thread::_State_impl<>,1679,1679
 [section .rodata],microtel::sdk::(anonymous namespace)::BridgeCallback<>()::{lambda()#1},462,462
 [section .rodata],toml::v3::impl::utf8_decoder::state_table,364,364
 [section .rodata],microtel::sdk::NoopRecordInstrument<>,346,346
@@ -753,6 +744,7 @@ compileunits,symbols,vmsize,filesize
 [section .rodata],std::__detail::__from_chars_alnum_to_val_table<>::value,256,256
 [section .rodata],toml::v3::value<>,230,230
 [section .rodata],microtel::sdk::NoopAddInstrument<>,214,214
+[section .rodata],(),199,199
 [section .rodata],opentelemetry_proto_trace_v1_Span__fields,192,192
 [section .rodata],microtel::(anonymous namespace)::BuildCustomExporters()::$_0,189,189
 [section .rodata],opentelemetry_proto_metrics_v1_ExponentialHistogramDataPoint__fields,176,176
@@ -785,11 +777,11 @@ compileunits,symbols,vmsize,filesize
 [section .rodata],microtel::sdk::MetricStreamSum<>,72,72
 [section .rodata],std::__future_base::_Result<>,67,67
 [section .rodata],microtel::ObservableResult<>,66,66
+[section .rodata],microtel::transport::Http1Transport::RegisterConnection()::$_0,65,65
 [section .rodata],microtel::UpDownCounter<>,60,60
 [section .rodata],std::__format::_Formatting_scanner<>,57,57
 [section .rodata],std::_Sp_counted_base<>,52,52
 [section .rodata],microtel::Histogram<>,50,50
-[section .rodata],microtel::internal::ILogEncoder,48,48
 [section .rodata],opentelemetry_proto_common_v1_EntityRef__fields,48,48
 [section .rodata],opentelemetry_proto_common_v1_InstrumentationScope__fields,48,48
 [section .rodata],opentelemetry_proto_common_v1_KeyValue__fields,48,48
@@ -819,8 +811,9 @@ compileunits,symbols,vmsize,filesize
 [section .rodata],microtel::exporter::OtlpMetricExporter,41,41
 [section .rodata],microtel::internal::ICurrentSpanSource,41,41
 [section .rodata],microtel::sdk::BatchLogRecordProcessor,41,41
-[section .rodata],microtel::transport::Http2Transport,41,41
+[section .rodata],microtel::transport::FallbackTransport,41,41
 [section .rodata],bench::(anonymous namespace)::MicrotelBackend,40,40
+[section .rodata],microtel::internal::ILogEncoder,40,40
 [section .rodata],microtel_kWyhashSalt,40,40
 [section .rodata],microtel::internal::IDiagnosticsSink,39,39
 [section .rodata],microtel::wire::ExportTransportCodec,39,39
@@ -828,6 +821,8 @@ compileunits,symbols,vmsize,filesize
 [section .rodata],microtel::exporter::OtlpLogExporter,38,38
 [section .rodata],microtel::internal::IMetricExporter,38,38
 [section .rodata],microtel::internal::IMetricProducer,38,38
+[section .rodata],microtel::transport::Http1Transport,38,38
+[section .rodata],microtel::transport::Http2Transport,38,38
 [section .rodata],microtel::internal::IMetricEncoder,37,37
 [section .rodata],microtel::internal::ISpanProcessor,37,37
 [section .rodata],microtel::sdk::DiagnosticsCounters,37,37
@@ -854,7 +849,6 @@ compileunits,symbols,vmsize,filesize
 [section .rodata],opentelemetry_proto_trace_v1_Status__fields,32,32
 [section .rodata],microtel::internal::IExporter,31,31
 [section .rodata],microtel::sdk::IMetricStream,31,31
-[section .rodata],std::_Sp_make_shared_tag,31,31
 [section .rodata],microtel::internal::IReactor,30,30
 [section .rodata],microtel::internal::ISampler,30,30
 [section .rodata],microtel::wire::OtlpEncoder,30,30
@@ -875,6 +869,7 @@ compileunits,symbols,vmsize,filesize
 [section .rodata],opentelemetry_proto_collector_logs_v1_ExportLogsPartialSuccess__fields,24,24
 [section .rodata],opentelemetry_proto_metrics_v1_ExponentialHistogram__fields,24,24
 [section .rodata],opentelemetry_proto_metrics_v1_Summary__fields,24,24
+[section .rodata],std::_Sp_make_shared_tag,24,24
 [section .rodata],toml::v3::table,24,24
 [section .rodata],std::__format::_Sink<>,23,23
 [section .rodata],std::bad_variant_access,23,23
@@ -898,10 +893,12 @@ compileunits,symbols,vmsize,filesize
 [section .rodata],opentelemetry_proto_trace_v1_TracesData__fields,16,16
 [section .rodata],std::_Sp_make_shared_tag::_S_ti()::__tag,16,16
 [section .rodata],toml::v3::node,16,16
+[section .rodata],microtel::transport::Http2Transport::TlsHandshake()::kAlpnHttp,12,12
 [section .rodata],opentelemetry_proto_collector_logs_v1_ExportLogsServiceRequest__fields,12,12
 [section .rodata],opentelemetry_proto_collector_metrics_v1_ExportMetricsServiceRequest__fields,12,12
 [section .rodata],opentelemetry_proto_collector_trace_v1_ExportTraceServiceRequest__fields,12,12
 [section .rodata],opentelemetry_proto_common_v1_ArrayValue__fields,12,12
+[section .rodata],microtel::transport::(anonymous namespace)::kAlpnHttp11,9,9
 [section .rodata],microtel_kUpb_FltInfinity,8,8
 [section .rodata],microtel_kUpb_Infinity,8,8
 [section .rodata],microtel_kUpb_NaN,8,8
@@ -910,11 +907,75 @@ compileunits,symbols,vmsize,filesize
 [section .rodata],toml::v3::impl::impl_ex::parser::parse_value()::max_numeric_value_length,8,8
 [section .rodata],_IO_stdin_used,4,4
 [section .rodata],microtel::transport::(anonymous namespace)::SetTcpNoDelay()::kEnable,4,4
-[section .rodata],microtel::transport::Http2Transport::TlsHandshake()::kAlpn,3,3
+[section .rodata],microtel::transport::Http2Transport::TlsHandshake()::kAlpnGrpc,3,3
 [section .rodata],std::piecewise_construct,1,1
 [section .rodata],std::ranges::binary_search,1,1
 [section .rodata],std::ranges::find,1,1
-[section .gcc_except_table],,32968,32968
+[section .gcc_except_table],,35744,35744
+/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::Connect(),2572,2572
+/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::SubmitStream(),1980,1980
+/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::TlsHandshake(),1548,1548
+/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::Send(),1340,1340
+/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::FulfillStream(),1324,1324
+/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::Http2Transport(),1180,1180
+/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::Close(),1164,1164
+/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::Cancel(),1036,1036
+/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::Http2Handshake(),1036,1036
+/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::RefuseStreamsAbove(),924,924
+/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::AbandonInFlight(),908,908
+/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::OnResponseHeader(),884,884
+/src/src/transport/http2_transport.cpp,std::vector<>::_M_range_insert<>(),800,800
+/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::DrainCancelQueue(),788,788
+/src/src/transport/http2_transport.cpp,microtel::transport::(anonymous namespace)::RefuseRequest(),732,732
+/src/src/transport/http2_transport.cpp,std::_Hashtable<>::_M_rehash_aux(),712,712
+/src/src/transport/http2_transport.cpp,std::_Hashtable<>::_M_insert_unique_node(),664,664
+/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::Create(),632,632
+/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::DrainPendingRequests(),604,604
+/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::~Http2Transport(),592,592
+/src/src/transport/http2_transport.cpp,std::_Hashtable<>::_M_erase(),580,580
+/src/src/transport/http2_transport.cpp,std::__shrink_to_fit_aux<>::_S_do_it(),500,500
+/src/src/transport/http2_transport.cpp,std::vector<>::vector<>(),476,476
+/src/src/transport/http2_transport.cpp,std::make_unique<>(),456,456
+/src/src/transport/http2_transport.cpp,microtel::transport::(anonymous namespace)::MakeHeaderField(),428,428
+/src/src/transport/http2_transport.cpp,std::vector<>::_M_realloc_insert<>(),424,424
+/src/src/transport/http2_transport.cpp,std::__copy_move<>::__copy_m<>(),388,388
+/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::OnResponseData(),380,380
+/src/src/transport/http2_transport.cpp,std::vector<>::_S_relocate(),356,356
+/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::Http2HandshakeFailure(),332,332
+/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::ReadPayload(),316,316
+/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::NgHttp2DoRecv(),312,312
+/src/src/transport/http2_transport.cpp,std::optional<>::emplace<>(),308,308
+/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::FailOversizedStream(),300,300
+/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::IoThreadLoop(),260,260
+/src/src/transport/http2_transport.cpp,std::vector<>::~vector(),252,252
+/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::OnIoEvent(),236,236
+/src/src/transport/http2_transport.cpp,std::__uniq_ptr_impl<>::reset(),232,232
+/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::Connect()::$_1::operator()(),228,228
+/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::NgHttp2DoSend(),228,228
+/src/src/transport/http2_transport.cpp,std::vector<>::erase(),228,228
+/src/src/transport/http2_transport.cpp,microtel::transport::(anonymous namespace)::NgHttp2OnFrameRecvCb(),224,224
+/src/src/transport/http2_transport.cpp,std::__detail::_Hashtable_alloc<>::_M_deallocate_node(),212,212
+/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::OnGoaway(),188,188
+/src/src/transport/http2_transport.cpp,tl::detail::expected_storage_base<>::~expected_storage_base(),136,136
+/src/src/transport/http2_transport.cpp,std::_Function_handler<>::_M_manager(),120,120
+/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::SniffHttp1Response(),112,112
+/src/src/transport/http2_transport.cpp,microtel::transport::(anonymous namespace)::NgHttp2OnHeaderCb(),104,104
+/src/src/transport/http2_transport.cpp,microtel::common::raii::Nghttp2Session::~Nghttp2Session(),96,96
+/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::AdoptBudgets(),88,88
+/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::FinishGoawayDrainIfIdle(),88,88
+/src/src/transport/http2_transport.cpp,std::thread::_State_impl<>::_M_run(),88,88
+/src/src/transport/http2_transport.cpp,std::_Hashtable<>::_Scoped_node::~_Scoped_node(),80,80
+/src/src/transport/http2_transport.cpp,microtel::transport::(anonymous namespace)::NgHttp2OnDataChunkRecvCb(),72,72
+/src/src/transport/http2_transport.cpp,microtel::transport::(anonymous namespace)::PayloadReadCb(),72,72
+/src/src/transport/http2_transport.cpp,std::_Function_handler<>::_M_invoke(),72,72
+/src/src/transport/http2_transport.cpp,std::thread::_State_impl<>::~_State_impl(),72,72
+/src/src/transport/http2_transport.cpp,microtel::transport::(anonymous namespace)::NgHttp2OnStreamCloseCb(),56,56
+/src/src/transport/http2_transport.cpp,microtel::transport::(anonymous namespace)::NgHttp2RecvCb(),56,56
+/src/src/transport/http2_transport.cpp,microtel::transport::(anonymous namespace)::NgHttp2SendCb(),56,56
+/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::GetState(),56,56
+/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::OnSettingsAck(),56,56
+/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::OnStreamClose(),56,56
+/src/src/transport/http2_transport.cpp,microtel::transport::Http2Transport::PeerSpeaksOnlyHttp1(),56,56
 /src/src/sdk/sdk_provider.cpp,microtel::sdk::SdkProvider::GetMeter(),2524,2524
 /src/src/sdk/sdk_provider.cpp,std::_Sp_counted_ptr_inplace<>::_M_get_deleter(),2480,2480
 /src/src/sdk/sdk_provider.cpp,microtel::sdk::SdkProvider::GetLogger(),2476,2476
@@ -988,13 +1049,15 @@ compileunits,symbols,vmsize,filesize
 /src/src/sdk/sdk_provider.cpp,microtel::sdk::SdkProvider::DiagnosticsSink(),56,56
 /src/src/sdk/sdk_provider.cpp,microtel::sdk::SdkProvider::MarkForkedChild(),56,56
 /src/src/sdk/sdk_provider.cpp,microtel::sdk::SdkProvider::StopLeafReceiver(),56,56
-/src/src/wire/http/http_wire_codec.cpp,microtel::wire::HttpWireCodec::SendAll(),3820,3820
-/src/src/wire/http/http_wire_codec.cpp,microtel::wire::HttpWireCodec::BuildHeaders(),3516,3516
+/src/src/wire/http/http_wire_codec.cpp,microtel::wire::HttpWireCodec::SendAll(),3564,3564
+/src/src/wire/http/http_wire_codec.cpp,microtel::wire::HttpWireCodec::BuildHeaders(),3500,3500
 /src/src/wire/http/http_wire_codec.cpp,microtel::wire::HttpWireCodec::ClassifyResponse(),3356,3356
-/src/src/wire/http/http_wire_codec.cpp,microtel::wire::HttpWireCodec::Send(),1836,1836
+/src/src/wire/http/http_wire_codec.cpp,microtel::wire::HttpWireCodec::Send(),1932,1932
 /src/src/wire/http/http_wire_codec.cpp,std::vector<>::_M_realloc_insert<>(),1572,1572
+/src/src/wire/http/http_wire_codec.cpp,microtel::wire::FinishRequestHeaders(),1524,1524
 /src/src/wire/http/http_wire_codec.cpp,microtel::wire::HttpWireCodec::AppendAuthHeader(),908,908
 /src/src/wire/http/http_wire_codec.cpp,microtel::wire::HttpWireCodec::EnsureConnected(),668,668
+/src/src/wire/http/http_wire_codec.cpp,microtel::wire::ValidateRequestHeaders(),664,664
 /src/src/wire/http/http_wire_codec.cpp,microtel::wire::HttpWireCodec::HttpWireCodec(),548,548
 /src/src/wire/http/http_wire_codec.cpp,std::future<>::get(),476,476
 /src/src/wire/http/http_wire_codec.cpp,microtel::wire::HttpWireCodec::ResolvePath[abi:cxx11](),460,460
@@ -1003,13 +1066,13 @@ compileunits,symbols,vmsize,filesize
 /src/src/wire/http/http_wire_codec.cpp,microtel::internal::HeaderField::HeaderField(),364,364
 /src/src/wire/http/http_wire_codec.cpp,std::vector<>::~vector(),364,364
 /src/src/wire/http/http_wire_codec.cpp,microtel::wire::(anonymous namespace)::TransportFailure(),360,360
+/src/src/wire/http/http_wire_codec.cpp,tl::detail::expected_storage_base<>::~expected_storage_base(),344,344
 /src/src/wire/http/http_wire_codec.cpp,microtel::wire::HttpWireCodec::BuildExcerpt[abi:cxx11](),340,340
 /src/src/wire/http/http_wire_codec.cpp,std::__basic_future<>::wait_for<>(),340,340
-/src/src/wire/http/http_wire_codec.cpp,tl::detail::expected_storage_base<>::~expected_storage_base(),328,328
 /src/src/wire/http/http_wire_codec.cpp,std::vector<>::vector(),316,316
 /src/src/wire/http/http_wire_codec.cpp,microtel::wire::HttpWireCodec::PrepareBody(),292,292
 /src/src/wire/http/http_wire_codec.cpp,tl::expected<>::value<>(),292,292
-/src/src/wire/http/http_wire_codec.cpp,std::__basic_future<>::_M_get_result(),244,244
+/src/src/wire/http/http_wire_codec.cpp,std::__basic_future<>::_M_get_result(),248,248
 /src/src/wire/http/http_wire_codec.cpp,microtel::Error::Error(),232,232
 /src/src/wire/http/http_wire_codec.cpp,microtel::wire::HttpWireCodec::InFlight::~InFlight(),224,224
 /src/src/wire/http/http_wire_codec.cpp,tl::bad_expected_access<>::~bad_expected_access(),212,212
@@ -1135,7 +1198,7 @@ compileunits,symbols,vmsize,filesize
 [section .text],pthread_atfork,16,16
 [section .text],std::__cxx11::basic_string<>::basic_string<>(),4,4
 [section .text],__cxx_global_var_init,3,3
-/src/src/wire/grpc/grpc_wire_codec.cpp,microtel::wire::GrpcWireCodec::Send(),10556,10556
+/src/src/wire/grpc/grpc_wire_codec.cpp,microtel::wire::GrpcWireCodec::Send(),10748,10748
 /src/src/wire/grpc/grpc_wire_codec.cpp,microtel::wire::GrpcWireCodec::BuildHeaders(),3644,3644
 /src/src/wire/grpc/grpc_wire_codec.cpp,std::vector<>::_M_realloc_insert<>(),1384,1384
 /src/src/wire/grpc/grpc_wire_codec.cpp,microtel::wire::GrpcWireCodec::AppendAuthHeader(),908,908
@@ -1208,40 +1271,10 @@ compileunits,symbols,vmsize,filesize
 /src/src/sdk/metric_producer.cpp,microtel::sdk::MetricProducer::ScopeEntry::~ScopeEntry(),216,216
 /src/src/sdk/metric_producer.cpp,microtel::internal::MetricRecord::~MetricRecord(),164,164
 /src/src/sdk/metric_producer.cpp,microtel::sdk::MetricProducer::ScopeSnapshot::~ScopeSnapshot(),128,128
-/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::FanOutAndProcess(),2924,2924
-/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::DrainQueue(),1884,1884
-/src/src/exporter/otlp_exporter.cpp,std::vector<>::_M_fill_insert(),1432,1432
-/src/src/exporter/otlp_exporter.cpp,std::deque<>::_M_destroy_data_aux(),1368,1368
-/src/src/exporter/otlp_exporter.cpp,std::vector<>::_M_realloc_insert<>(),1272,1272
-/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::EncodeRequest(),924,924
-/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::GroupIntoRequests(),700,700
-/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::Shutdown(),652,652
-/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::~OtlpExporter(),596,596
-/src/src/exporter/otlp_exporter.cpp,std::deque<>::_M_reallocate_map(),504,504
-/src/src/exporter/otlp_exporter.cpp,std::deque<>::_M_push_back_aux<>(),500,500
-/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::EnqueueLocked(),488,488
-/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::OtlpExporter(),468,468
-/src/src/exporter/otlp_exporter.cpp,std::_Deque_base<>::_M_initialize_map(),428,428
-/src/src/exporter/otlp_exporter.cpp,microtel::exporter::FlushTracker::Wait(),412,412
-/src/src/exporter/otlp_exporter.cpp,std::deque<>::emplace_back<>(),384,384
-/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::ExportGroup(),380,380
-/src/src/exporter/otlp_exporter.cpp,std::vector<>::~vector(),368,368
-/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::WorkerLoop(),332,332
-/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::RecordDrainFailure(),300,300
-/src/src/exporter/otlp_exporter.cpp,std::_Function_handler<>::_M_invoke(),204,204
-/src/src/exporter/otlp_exporter.cpp,std::deque<>::~deque(),200,200
-/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::FlushProgressForTesting(),184,184
-/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::ForceFlush(),180,180
-/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::PublishQueueDepth(),176,176
-/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::Export(),168,168
-/src/src/exporter/otlp_exporter.cpp,std::_Function_handler<>::_M_manager(),156,156
-/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::RecordDropped(),80,80
-/src/src/exporter/otlp_exporter.cpp,std::thread::_State_impl<>::~_State_impl(),72,72
-/src/src/exporter/otlp_exporter.cpp,std::thread::_State_impl<>::_M_run(),56,56
-[section .data.rel.ro],std::_Sp_counted_ptr_inplace<>,2080,2800
+[section .data.rel.ro],std::_Sp_counted_ptr_inplace<>,2119,2800
 [section .data.rel.ro],toml::v3::value<>,2296,2296
 [section .data.rel.ro],[section .data.rel.ro],936,936
-[section .data.rel.ro],std::thread::_State_impl<>,384,512
+[section .data.rel.ro],std::thread::_State_impl<>,448,576
 [section .data.rel.ro],toml::v3::impl::control_char_escapes,512,512
 [section .data.rel.ro],microtel::wire::(anonymous namespace)::kStatusTable,408,408
 [section .data.rel.ro],microtel::sdk::NoopRecordInstrument<>,384,384
@@ -1249,7 +1282,7 @@ compileunits,symbols,vmsize,filesize
 [section .data.rel.ro],toml::v3::array,328,328
 [section .data.rel.ro],toml::v3::node,320,320
 [section .data.rel.ro],microtel::sdk::(anonymous namespace)::SdkSumInstrument<>,256,256
-[section .data.rel.ro],microtel::sdk::NoopAddInstrument<>,247,256
+[section .data.rel.ro],microtel::sdk::NoopAddInstrument<>,256,256
 [section .data.rel.ro],microtel::wire::OtlpEncoder,208,208
 [section .data.rel.ro],microtel::sdk::NoopMeter,0,184
 [section .data.rel.ro],microtel::sdk::SdkMeter,184,184
@@ -1273,6 +1306,8 @@ compileunits,symbols,vmsize,filesize
 [section .data.rel.ro],microtel::sdk::SdkSpan,120,120
 [section .data.rel.ro],microtel::sdk::DiagnosticsCounters,0,104
 [section .data.rel.ro],microtel::transport::EpollReactor,96,96
+[section .data.rel.ro],microtel::transport::FallbackTransport,96,96
+[section .data.rel.ro],microtel::transport::Http1Transport,96,96
 [section .data.rel.ro],microtel::transport::Http2Transport,96,96
 [section .data.rel.ro],microtel::sdk::BatchSpanProcessor,0,88
 [section .data.rel.ro],microtel::(anonymous namespace)::AlwaysOffSampler,0,80
@@ -1304,6 +1339,7 @@ compileunits,symbols,vmsize,filesize
 [section .data.rel.ro],tl::bad_expected_access<>,64,64
 [section .data.rel.ro],toml::v3::impl::parse_integer_traits<>::full_prefix,64,64
 [section .data.rel.ro],std::__format::_Formatting_scanner<>,0,56
+[section .data.rel.ro],(),0,48
 [section .data.rel.ro],opentelemetry_proto_collector_metrics_v1_metrics_service_proto_upb_file_layout,48,48
 [section .data.rel.ro],opentelemetry_proto_collector_trace_v1_trace_service_proto_upb_file_layout,48,48
 [section .data.rel.ro],opentelemetry_proto_common_v1_common_proto_upb_file_layout,48,48
@@ -1402,6 +1438,7 @@ compileunits,symbols,vmsize,filesize
 [section .data.rel.ro],microtel::internal::ITransport,16,16
 [section .data.rel.ro],microtel::internal::IWireCodec,16,16
 [section .data.rel.ro],microtel::sdk::IMetricStream,16,16
+[section .data.rel.ro],microtel::transport::Http1Transport::RegisterConnection()::$_0,16,16
 [section .data.rel.ro],microtel::transport::Http2Transport::Connect()::$_0,16,16
 [section .data.rel.ro],microtel::wire::(anonymous namespace)::kThrewPrefix,16,16
 [section .data.rel.ro],microtel::wire::(anonymous namespace)::kUnrecognizedName,16,16
@@ -1443,6 +1480,36 @@ compileunits,symbols,vmsize,filesize
 [section .data.rel.ro],opentelemetry_proto_trace_v1_Span_Event__submsgs,8,8
 [section .data.rel.ro],opentelemetry_proto_trace_v1_Span_Link__submsgs,8,8
 [section .data.rel.ro],opentelemetry_proto_trace_v1_TracesData__submsgs,8,8
+/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::FanOutAndProcess(),2924,2924
+/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::DrainQueue(),1884,1884
+/src/src/exporter/otlp_exporter.cpp,std::vector<>::_M_fill_insert(),1432,1432
+/src/src/exporter/otlp_exporter.cpp,std::deque<>::_M_destroy_data_aux(),1368,1368
+/src/src/exporter/otlp_exporter.cpp,std::vector<>::_M_realloc_insert<>(),1272,1272
+/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::EncodeRequest(),924,924
+/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::GroupIntoRequests(),700,700
+/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::Shutdown(),652,652
+/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::~OtlpExporter(),596,596
+/src/src/exporter/otlp_exporter.cpp,std::deque<>::_M_reallocate_map(),504,504
+/src/src/exporter/otlp_exporter.cpp,std::deque<>::_M_push_back_aux<>(),500,500
+/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::EnqueueLocked(),488,488
+/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::OtlpExporter(),468,468
+/src/src/exporter/otlp_exporter.cpp,std::_Deque_base<>::_M_initialize_map(),428,428
+/src/src/exporter/otlp_exporter.cpp,microtel::exporter::FlushTracker::Wait(),412,412
+/src/src/exporter/otlp_exporter.cpp,std::deque<>::emplace_back<>(),384,384
+/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::ExportGroup(),380,380
+/src/src/exporter/otlp_exporter.cpp,std::vector<>::~vector(),368,368
+/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::WorkerLoop(),332,332
+/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::RecordDrainFailure(),300,300
+/src/src/exporter/otlp_exporter.cpp,std::_Function_handler<>::_M_invoke(),204,204
+/src/src/exporter/otlp_exporter.cpp,std::deque<>::~deque(),200,200
+/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::FlushProgressForTesting(),184,184
+/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::ForceFlush(),180,180
+/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::PublishQueueDepth(),176,176
+/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::Export(),168,168
+/src/src/exporter/otlp_exporter.cpp,std::_Function_handler<>::_M_manager(),156,156
+/src/src/exporter/otlp_exporter.cpp,microtel::exporter::OtlpExporter::RecordDropped(),80,80
+/src/src/exporter/otlp_exporter.cpp,std::thread::_State_impl<>::~_State_impl(),72,72
+/src/src/exporter/otlp_exporter.cpp,std::thread::_State_impl<>::_M_run(),56,56
 /src/src/exporter/otlp_metric_exporter.cpp,microtel::exporter::OtlpMetricExporter::DrainQueue(),5964,5964
 /src/src/exporter/otlp_metric_exporter.cpp,std::deque<>::_M_destroy_data_aux(),2796,2796
 /src/src/exporter/otlp_metric_exporter.cpp,microtel::exporter::OtlpMetricExporter::ProcessBatches(),1516,1516
@@ -1486,7 +1553,7 @@ compileunits,symbols,vmsize,filesize
 /src/src/sdk/metric_sum_storage.cpp,std::vector<>::reserve(),376,376
 /src/src/sdk/metric_sum_storage.cpp,std::__detail::_Hashtable_alloc<>::_M_allocate_node<>(),296,296
 /src/src/sdk/metric_sum_storage.cpp,std::vector<>::_M_allocate_and_copy<>(),296,296
-/src/src/sdk/metric_sum_storage.cpp,microtel::sdk::SumStorage<>::RecordNonFinite(),192,192
+/src/src/sdk/metric_sum_storage.cpp,microtel::sdk::SumStorage<>::RecordNonFinite(),190,190
 /src/src/sdk/metric_sum_storage.cpp,microtel::SpanContext::~SpanContext(),184,184
 /src/bench/emit-app/src/backend_microtel.cpp,bench::(anonymous namespace)::MicrotelBackend::Init(),5228,5228
 /src/bench/emit-app/src/backend_microtel.cpp,microtel::Meter::CreateHistogram<>(),1272,1272
@@ -1622,6 +1689,41 @@ compileunits,symbols,vmsize,filesize
 /src/src/sdk/metric_attribute_set.cpp,microtel::sdk::OverflowAttributeSet(),308,308
 /src/src/sdk/metric_attribute_set.cpp,microtel::sdk::AttributeSet::operator==(),244,244
 /src/src/sdk/metric_attribute_set.cpp,microtel::sdk::AttributeSet::HashOf(),56,56
+/src/src/transport/fallback_transport.cpp,microtel::transport::FallbackTransport::ConnectHttp1(),1324,1324
+/src/src/transport/fallback_transport.cpp,microtel::transport::FallbackTransport::Create(),1308,1308
+/src/src/transport/fallback_transport.cpp,microtel::transport::(anonymous namespace)::Refuse(),876,876
+/src/src/transport/fallback_transport.cpp,microtel::transport::FallbackTransport::Connect(),668,668
+/src/src/transport/fallback_transport.cpp,microtel::transport::FallbackTransport::Send(),664,664
+/src/src/transport/fallback_transport.cpp,microtel::transport::FallbackTransport::SwitchToHttp1(),444,444
+/src/src/transport/fallback_transport.cpp,std::future_error::future_error(),396,396
+/src/src/transport/fallback_transport.cpp,std::_Function_handler<>::_M_invoke(),372,372
+/src/src/transport/fallback_transport.cpp,microtel::transport::FallbackTransport::~FallbackTransport(),368,368
+/src/src/transport/fallback_transport.cpp,microtel::internal::TransportResult::~TransportResult(),328,328
+/src/src/transport/fallback_transport.cpp,microtel::transport::FallbackTransport::Cancel(),328,328
+/src/src/transport/fallback_transport.cpp,std::__future_base::_State_baseV2::_M_set_result(),328,328
+/src/src/transport/fallback_transport.cpp,std::promise<>::~promise(),316,316
+/src/src/transport/fallback_transport.cpp,std::__future_base::_State_baseV2::_M_break_promise(),308,308
+/src/src/transport/fallback_transport.cpp,std::__future_base::_State_baseV2::~_State_baseV2(),224,224
+/src/src/transport/fallback_transport.cpp,std::__future_base::_Result<>::~_Result(),212,212
+/src/src/transport/fallback_transport.cpp,microtel::transport::FallbackTransport::Close(),208,208
+/src/src/transport/fallback_transport.cpp,microtel::transport::FallbackTransport::GetState(),184,184
+/src/src/transport/fallback_transport.cpp,std::__shared_ptr<>::~__shared_ptr(),184,184
+/src/src/transport/fallback_transport.cpp,microtel::transport::FallbackTransport::FallbackTransport(),168,168
+/src/src/transport/fallback_transport.cpp,std::__future_base::_State_baseV2::_M_do_set(),148,148
+/src/src/transport/fallback_transport.cpp,tl::detail::expected_storage_base<>::~expected_storage_base(),132,132
+/src/src/transport/fallback_transport.cpp,std::_Sp_counted_ptr_inplace<>::_M_get_deleter(),124,124
+/src/src/transport/fallback_transport.cpp,std::_Function_handler<>::_M_manager(),120,120
+/src/src/transport/fallback_transport.cpp,std::once_flag::_Prepare_execution::_Prepare_execution<>()::{lambda()#1}::__invoke(),104,104
+/src/src/transport/fallback_transport.cpp,std::unique_ptr<>::~unique_ptr(),92,92
+/src/src/transport/fallback_transport.cpp,microtel::transport::FallbackTransport::ActiveLocked(),72,72
+/src/src/transport/fallback_transport.cpp,microtel::transport::FallbackTransport::IsHttp1(),56,56
+/src/src/transport/fallback_transport.cpp,std::_Sp_counted_ptr_inplace<>::_M_destroy(),56,56
+/src/src/transport/fallback_transport.cpp,std::_Sp_counted_ptr_inplace<>::_M_dispose(),56,56
+/src/src/transport/fallback_transport.cpp,std::_Sp_counted_ptr_inplace<>::~_Sp_counted_ptr_inplace(),56,56
+/src/src/transport/fallback_transport.cpp,std::__exception_ptr::__dest_thunk<>(),56,56
+/src/src/transport/fallback_transport.cpp,std::__future_base::_Result<>::_M_destroy(),56,56
+/src/src/transport/fallback_transport.cpp,std::__future_base::_State_baseV2::_M_complete_async(),56,56
+/src/src/transport/fallback_transport.cpp,std::__future_base::_State_baseV2::_M_is_deferred_future(),56,56
 /src/src/sdk/sdk_span.cpp,microtel::sdk::SdkSpan::AddEvent(),1812,1812
 /src/src/sdk/sdk_span.cpp,microtel::sdk::SdkSpan::AddLink(),1732,1732
 /src/src/sdk/sdk_span.cpp,std::vector<>::_M_realloc_insert<>(),1408,1408
@@ -1655,12 +1757,49 @@ compileunits,symbols,vmsize,filesize
 /src/src/api/trace_state.cpp,microtel::TraceState::Size(),72,72
 /src/src/api/trace_state.cpp,std::_Sp_counted_ptr_inplace<>::_M_destroy(),56,56
 /src/src/api/trace_state.cpp,std::_Sp_counted_ptr_inplace<>::~_Sp_counted_ptr_inplace(),56,56
+/src/src/transport/connection_setup.cpp,microtel::transport::TlsConnect(),3532,3532
+/src/src/transport/connection_setup.cpp,microtel::transport::ParseEndpoint(),2076,2076
+/src/src/transport/connection_setup.cpp,microtel::transport::PrintableAlpn[abi:cxx11](),1828,1828
+/src/src/transport/connection_setup.cpp,microtel::transport::TcpConnect(),1020,1020
+/src/src/transport/connection_setup.cpp,microtel::transport::SelectedAlpn(),128,128
+/src/src/transport/connection_setup.cpp,microtel::common::raii::SslCtx::~SslCtx(),96,96
+/src/src/transport/connection_setup.cpp,microtel::common::raii::SslSession::~SslSession(),96,96
+/src/src/transport/connection_setup.cpp,microtel::common::raii::UniqueFd::~UniqueFd(),96,96
+/src/src/transport/connection_setup.cpp,microtel::transport::ClaimConnectSlot(),88,88
+/src/src/transport/http1_response_parser.cpp,microtel::transport::Http1ResponseParser::OnHeaderField(),1708,1708
+/src/src/transport/http1_response_parser.cpp,std::vector<>::_M_range_insert<>(),800,800
+/src/src/transport/http1_response_parser.cpp,microtel::transport::Http1ResponseParser::OnHeaderLine(),700,700
+/src/src/transport/http1_response_parser.cpp,microtel::transport::Http1ResponseParser::OnStatusLine(),668,668
+/src/src/transport/http1_response_parser.cpp,microtel::transport::Http1ResponseParser::OnChunkSizeLine(),572,572
+/src/src/transport/http1_response_parser.cpp,microtel::transport::Http1ResponseParser::OnConnectionField(),520,520
+/src/src/transport/http1_response_parser.cpp,microtel::transport::Http1ResponseParser::FeedLine(),508,508
+/src/src/transport/http1_response_parser.cpp,microtel::transport::Http1ResponseParser::Feed(),404,404
+/src/src/transport/http1_response_parser.cpp,microtel::transport::Http1ResponseParser::OnEndOfHead(),392,392
+/src/src/transport/http1_response_parser.cpp,microtel::transport::Http1ResponseParser::OnLine(),316,316
+/src/src/transport/http1_response_parser.cpp,microtel::transport::Http1ResponseParser::OnTransferEncodingField(),272,272
+/src/src/transport/http1_response_parser.cpp,microtel::transport::Http1ResponseParser::FeedBody(),224,224
+/src/src/transport/http1_response_parser.cpp,microtel::transport::Http1ResponseParser::Reset(),224,224
+/src/src/transport/http1_response_parser.cpp,std::vector<>::reserve(),200,200
+/src/src/transport/http1_response_parser.cpp,microtel::transport::Http1ResponseParser::StartResponse(),192,192
+/src/src/transport/http1_response_parser.cpp,microtel::transport::Http1ResponseParser::OnContentLengthField(),176,176
+/src/src/transport/http1_response_parser.cpp,microtel::transport::Http1ResponseParser::StartBody(),172,172
+/src/src/transport/http1_response_parser.cpp,microtel::transport::Http1ResponseParser::Http1ResponseParser(),136,136
+/src/src/transport/http1_response_parser.cpp,microtel::transport::Http1ResponseParser::Describe(),112,112
+/src/src/transport/http1_response_parser.cpp,microtel::transport::Http1ResponseParser::ChargeLineByte(),104,104
+/src/src/transport/http1_response_parser.cpp,microtel::transport::Http1ResponseParser::FeedEof(),104,104
+/src/src/transport/http1_response_parser.cpp,microtel::transport::Http1ResponseParser::OnChunkDataEnd(),96,96
+/src/src/transport/http1_response_parser.cpp,microtel::transport::Http1ResponseParser::OnTrailerLine(),80,80
+/src/src/transport/http1_response_parser.cpp,microtel::transport::Http1ResponseParser::Fail(),72,72
+/src/src/transport/http1_response_parser.cpp,microtel::transport::Http1ResponseParser::IsTooLarge(),72,72
+/src/src/transport/http1_response_parser.cpp,microtel::transport::Http1ResponseParser::Finish(),56,56
+/src/src/transport/http1_response_parser.cpp,microtel::transport::Http1ResponseParser::LineBudget(),56,56
 /src/src/sdk/metric_gauge_storage.cpp,microtel::sdk::GaugeStorage<>::Collect(),3896,3896
 /src/src/sdk/metric_gauge_storage.cpp,microtel::sdk::GaugeStorage<>::Record(),3664,3664
 /src/src/sdk/metric_gauge_storage.cpp,std::__detail::_Insert_base<>::try_emplace<>(),760,760
 /src/src/sdk/metric_gauge_storage.cpp,microtel::sdk::GaugeStorage<>::GaugeStorage(),336,336
 /src/src/sdk/metric_gauge_storage.cpp,microtel::sdk::GaugeStorage<>::RecordNonFinite(),192,192
-[section .dynstr],,7417,7417
+[section .dynstr],,7552,7552
+[Unmapped],,0,7052
 /src/src/sdk/sdk_tracer.cpp,microtel::sdk::SdkTracer::StartSpanInternal(),3212,3212
 /src/src/sdk/sdk_tracer.cpp,microtel::sdk::SdkTracer::StartAsCurrentSpan(),776,776
 /src/src/sdk/sdk_tracer.cpp,std::mersenne_twister_engine<>::operator()(),520,520
@@ -1704,7 +1843,7 @@ compileunits,symbols,vmsize,filesize
 /src/src/sdk/sampler_factories.cpp,microtel::SamplerHandle::Get(),56,56
 /src/src/sdk/sampler_factories.cpp,microtel::internal::ISampler::TrySetRatio(),56,56
 /src/src/sdk/sampler_factories.cpp,microtel::internal::ISampler::~ISampler(),56,56
-[section .dynsym],[section .dynsym],4907,4907
+[section .dynsym],[section .dynsym],5027,5027
 [section .dynsym],(anonymous namespace)::tl_rng,1087,1087
 [section .dynsym],microtel::(anonymous namespace)::tl_current,39,39
 [section .dynsym],__tls_guard,8,8
@@ -1726,7 +1865,7 @@ compileunits,symbols,vmsize,filesize
 /src/src/wire/custom/export_transport_codec.cpp,microtel::wire::ExportTransportChannel::MarkClosed(),56,56
 /src/src/wire/custom/export_transport_codec.cpp,microtel::wire::ExportTransportChannel::State(),56,56
 /src/src/wire/custom/export_transport_codec.cpp,microtel::wire::ExportTransportCodec::~ExportTransportCodec(),56,56
-[section .rela.plt],,5664,5664
+[section .rela.plt],,5736,5736
 /src/src/transport/epoll_reactor.cpp,microtel::transport::EpollReactor::Create(),1084,1084
 /src/src/transport/epoll_reactor.cpp,microtel::transport::EpollReactor::DispatchOneEvent(),648,648
 /src/src/transport/epoll_reactor.cpp,std::_Hashtable<>::_M_erase(),636,636
@@ -1862,8 +2001,7 @@ compileunits,symbols,vmsize,filesize
 [section .eh_frame],microtel_upb_strtable_next,20,20
 [section .eh_frame],microtel_upb_strtable_next2,20,20
 [section .eh_frame],microtel_upb_strtable_removeiter,20,20
-[Unmapped],,0,3844
-[section .plt],,3792,3792
+[section .plt],,3840,3840
 /src/src/common/config/concentrator_config.cpp,std::vector<>::_M_realloc_insert<>(),716,716
 /src/src/common/config/concentrator_config.cpp,microtel::config::MergeLeafReceiverOptions(),700,700
 /src/src/common/config/concentrator_config.cpp,microtel::config::ParseByteSize(),420,420
@@ -1900,7 +2038,7 @@ compileunits,symbols,vmsize,filesize
 /src/src/common/config/table_merge.cpp,microtel::config::MergeHeaders(),1420,1420
 /src/src/common/config/table_merge.cpp,microtel::config::MergeResourceAttrs(),776,776
 /src/src/common/config/table_merge.cpp,std::__copy_move<>::__copy_m<>(),428,428
-[section .tbss],std::_Sp_counted_ptr_inplace<>,720,0
+[section .tbss],std::_Sp_counted_ptr_inplace<>,681,0
 [section .tbss],microtel::sdk::NoopMeter,184,0
 [section .tbss],microtel::sdk::SdkProvider,152,0
 [section .tbss],bench::(anonymous namespace)::MicrotelBackend,128,0
@@ -1916,6 +2054,7 @@ compileunits,symbols,vmsize,filesize
 [section .tbss],microtel::sdk::NoopLogger,64,0
 [section .tbss],std::format_error,64,0
 [section .tbss],std::__format::_Formatting_scanner<>,56,0
+[section .tbss],(),48,0
 [section .tbss],std::__format::_Iter_sink<>,48,0
 [section .tbss],std::__format::_Seq_sink<>,48,0
 [section .tbss],[section .tbss],24,0
@@ -1934,7 +2073,6 @@ compileunits,symbols,vmsize,filesize
 [section .tbss],std::_Mutex_base<>,16,0
 [section .tbss],std::__format::_Scanner<>,16,0
 [section .tbss],std::__format::_Sink<>,16,0
-[section .tbss],microtel::sdk::NoopAddInstrument<>,9,0
 /src/src/common/log_sink.cpp,microtel::internal::LogImpl(),1676,1676
 /src/src/common/log_sink.cpp,microtel::SetLogSink(),372,372
 /src/src/common/log_sink.cpp,microtel::ResetLogSink(),272,272
@@ -1964,16 +2102,16 @@ compileunits,symbols,vmsize,filesize
 /src/src/sdk/periodic_exporting_metric_reader.cpp,std::thread::_State_impl<>::~_State_impl(),72,72
 /src/src/sdk/periodic_exporting_metric_reader.cpp,std::thread::_State_impl<>::_M_run(),56,56
 [ELF Section Headers],,0,2048
-[section .got.plt],,1912,1912
+[section .got.plt],,1936,1936
 /src/src/api/context.cpp,microtel::ScopedContext::ScopedContext(),536,536
 /src/src/api/context.cpp,microtel::ScopedContext::~ScopedContext(),436,436
 /src/src/api/context.cpp,microtel::Context::operator=(),356,356
 /src/src/api/context.cpp,microtel::Context::~Context(),320,320
 /src/src/api/context.cpp,microtel::CurrentContext(),144,144
 /src/src/sdk/sdk_logger.cpp,microtel::sdk::SdkLogger::~SdkLogger(),488,488
+/src/src/sdk/sdk_logger.cpp,microtel::sdk::SdkLogger::FillTraceContext(),340,340
 /src/src/sdk/sdk_logger.cpp,microtel::sdk::SdkLogger::SdkLogger(),340,340
-/src/src/sdk/sdk_logger.cpp,microtel::sdk::SdkLogger::FillTraceContext(),333,333
-/src/src/sdk/sdk_logger.cpp,microtel::sdk::SdkLogger::Emit(),323,323
+/src/src/sdk/sdk_logger.cpp,microtel::sdk::SdkLogger::Emit(),332,332
 /src/src/sdk/sdk_logger.cpp,microtel::sdk::SdkLogger::EnforceAttributeLimit(),268,268
 /src/src/transport/nosignal_io.cpp,microtel::transport::(anonymous namespace)::NoSignalBioWrite(),268,268
 /src/src/transport/nosignal_io.cpp,microtel::transport::(anonymous namespace)::NoSignalBioRead(),236,236
@@ -2002,13 +2140,12 @@ compileunits,symbols,vmsize,filesize
 /src/src/sdk/diagnostics_counters.cpp,microtel::sdk::DiagnosticsCounters::SetQueueDepth(),56,56
 /src/src/wire/otlp_response.cpp,microtel::wire::ParseRejectedSpans(),760,760
 /src/src/wire/otlp_response.cpp,microtel::wire::(anonymous namespace)::ReadVarint(),576,576
-/src/src/wire/otlp_response.cpp,microtel::sdk::SdkLogger::Emit(),9,9
-/src/src/wire/otlp_response.cpp,microtel::sdk::SdkLogger::FillTraceContext(),7,7
+/src/src/wire/otlp_response.cpp,microtel::sdk::SumStorage<>::RecordNonFinite(),2,2
 /src/src/sdk/view_registry.cpp,microtel::sdk::ViewRegistry::Match(),732,732
 /src/src/sdk/view_registry.cpp,microtel::sdk::ViewRegistry::MatchesName(),172,172
 /src/src/sdk/view_registry.cpp,microtel::sdk::ViewRegistry::Add(),112,112
 [section .data],messages_layout,368,368
-[section .data],[section .data],160,160
+[section .data],[section .data],176,176
 [section .data],microtel::(anonymous namespace)::MinLevel()::s_min_level,16,16
 [section .data],opentelemetry__proto__collector__logs__v1__ExportLogsPartialSuccess_msg_init_ptr,16,16
 [section .data],opentelemetry__proto__collector__metrics__v1__ExportMetricsPartialSuccess_msg_init_ptr,16,16
@@ -2177,7 +2314,7 @@ compileunits,symbols,vmsize,filesize
 /src/src/transport/connect_error.cpp,microtel::transport::MergeConnectErrno(),72,72
 [section .gnu.version_r],,672,672
 [section .dynamic],,592,592
-[section .gnu.version],,558,558
+[section .gnu.version],,568,568
 /src/src/wire/encoder/trace_request_concat.cpp,microtel::wire::ConcatenateTraceRequests(),504,504
 [ELF Program Headers],(anonymous namespace)::tl_rng,432,432
 /src/bench/emit-app/src/workload.cpp,bench::ParseWorkloadMode(),248,248
@@ -2203,12 +2340,12 @@ compileunits,symbols,vmsize,filesize
 [section .interp],(anonymous namespace)::tl_rng,28,28
 [section .init],,27,27
 [section .plt.got],,24,24
+[LOAD #5 [RW]],[LOAD #5 [RW]],16,16
+[LOAD #5 [RW]],microtel__upb_Map_CTypeSizeTable,4,0
 [section .init_array],,0,16
 [LOAD #2 [R]],(anonymous namespace)::tl_rng,8,8
-[LOAD #2 [R]],[LOAD #2 [R]],6,6
+[LOAD #2 [R]],[LOAD #2 [R]],5,5
 [LOAD #3 [RX]],,13,13
 [section .fini],pthread_atfork,13,13
-[LOAD #5 [RW]],[LOAD #5 [RW]],8,8
-[LOAD #5 [RW]],microtel__upb_Map_CTypeSizeTable,4,0
 [section .fini_array],,0,8
 [LOAD #4 [R]],pthread_atfork,4,4

@@ -14,6 +14,11 @@ for field: the same kernel, 7.2.11-200.fc44, and the same podman, 5.8.9, as
 [`docs/releasing.md`](../releasing.md) §5 requires. The two snapshots are a
 like-for-like comparison.
 
+**Not re-run for v1.2.6.** v1.2.6 leaves the span hot path unchanged (no
+change in `src/api`, `src/wire/encoder` or the SDK's span, processor and
+exporter code), so these timings stand for it. Only the sizes were
+re-measured, in [`sizes/library-sizes.md`](sizes/library-sizes.md).
+
 **The snapshot merges five interleaved runs.** Each run is the full
 `hot-loop-traces` profile (four SUTs, 10 samples each). Each run of the v1.2.5
 images was preceded by a run of the v1.2.4 images, alternating old, new, old,
@@ -60,8 +65,8 @@ the row "StartSpan".
 the stripped benchmark executable plus every shared library it loads, Ubuntu
 24.04 packages, split per library with bloaty. The telemetry stack is
 **13.4 MB** for opentelemetry-cpp with its OTLP/gRPC exporter (gRPC, protobuf,
-Abseil, c-ares, re2 and the OTLP proto libraries) against **1.2 MB** for
-microtel (with nghttp2, upb and toml++), on top of the same **12.0 MB** shared
+Abseil, c-ares, re2 and the OTLP proto libraries) against **1.3 MB** for
+microtel (measured on v1.2.6) (with nghttp2, upb and toml++), on top of the same **12.0 MB** shared
 base of OpenSSL, zlib and the C/C++ runtime that both load.
 
 The methodology is in [docs/bench-spec.md](../bench-spec.md), and

@@ -2,32 +2,32 @@
  "microtel": {
   "binary": {
    "buckets": {
-    "microtel": 710838,
+    "microtel": 782998,
     "toml++": 55949,
     "upb": 32678,
     "emit-app": 31252,
-    "unattributed": 178091
+    "unattributed": 187899
    },
    "sections": {
-    "[section .rela.dyn]": 46680,
-    "[section .rodata]": 37894,
-    "[section .gcc_except_table]": 32968,
+    "[section .rela.dyn]": 47592,
+    "[section .rodata]": 40054,
+    "[section .gcc_except_table]": 35744,
     "[section .text]": 7255,
-    "[section .data.rel.ro]": 17392,
-    "[section .dynstr]": 7417,
-    "[section .dynsym]": 6041,
-    "[section .rela.plt]": 5664,
+    "[section .data.rel.ro]": 17712,
+    "[section .dynstr]": 7552,
+    "[Unmapped]": 7052,
+    "[section .dynsym]": 6161,
+    "[section .rela.plt]": 5736,
     "[section .eh_frame]": 956,
-    "[Unmapped]": 3844,
-    "[section .plt]": 3792,
+    "[section .plt]": 3840,
     "[section .tbss]": 0,
     "[ELF Section Headers]": 2048,
-    "[section .got.plt]": 1912,
-    "[section .data]": 944,
+    "[section .got.plt]": 1936,
+    "[section .data]": 960,
     "[section .eh_frame_hdr]": 124,
     "[section .gnu.version_r]": 672,
     "[section .dynamic]": 592,
-    "[section .gnu.version]": 558,
+    "[section .gnu.version]": 568,
     "[ELF Program Headers]": 432,
     "[section .bss]": 0,
     "[section .shstrtab]": 303,
@@ -40,11 +40,11 @@
     "[section .interp]": 28,
     "[section .init]": 27,
     "[section .plt.got]": 24,
+    "[LOAD #5 [RW]]": 16,
     "[section .init_array]": 16,
-    "[LOAD #2 [R]]": 14,
+    "[LOAD #2 [R]]": 13,
     "[LOAD #3 [RX]]": 13,
     "[section .fini]": 13,
-    "[LOAD #5 [RW]]": 8,
     "[section .fini_array]": 8,
     "[LOAD #4 [R]]": 4
    },
@@ -60,13 +60,19 @@
     "[LOAD #5 [RW]]": 0
    },
    "stdcxx_inlined": {
-    "microtel": 504845,
+    "microtel": 551129,
     "emit-app": 21719
    },
    "unknown_cu": {},
-   "bloaty_total": 1008808
+   "bloaty_total": 1090776
   },
   "shared": {
+   "zlib": {
+    "bytes": 113000,
+    "files": [
+     "libz.so.1.3 113000"
+    ]
+   },
    "OpenSSL": {
     "bytes": 6005912,
     "files": [
@@ -78,12 +84,6 @@
     "bytes": 170352,
     "files": [
      "libnghttp2.so.14.26.0 170352"
-    ]
-   },
-   "zlib": {
-    "bytes": 113000,
-    "files": [
-     "libz.so.1.3 113000"
     ]
    },
    "C/C++ runtime": {

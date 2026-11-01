@@ -172,7 +172,7 @@ requires an [ICP](docs/icps/).
 
 ## Status
 
-The current release is **v1.2.5**, and the project follows SemVer.
+The current release is **v1.2.6**, and the project follows SemVer.
 [SECURITY.md](.github/SECURITY.md) lists which versions get fixes.
 
 | Area | Status |
@@ -276,7 +276,7 @@ include(FetchContent)
 FetchContent_Declare(
     microtel
     GIT_REPOSITORY https://github.com/microtel-org/microtel.git
-    GIT_TAG        v1.2.5
+    GIT_TAG        v1.2.6
     GIT_SHALLOW    TRUE)
 FetchContent_MakeAvailable(microtel)
 target_link_libraries(my_app PRIVATE microtel::microtel)
@@ -285,7 +285,7 @@ target_link_libraries(my_app PRIVATE microtel::microtel)
 **CPM.cmake.**
 
 ```cmake
-CPMAddPackage("gh:microtel-org/microtel@1.2.5")
+CPMAddPackage("gh:microtel-org/microtel@1.2.6")
 target_link_libraries(my_app PRIVATE microtel::microtel)
 ```
 
@@ -314,7 +314,7 @@ Get the latest release, then build and install it under your home directory,
 which needs no `sudo`:
 
 ```bash
-git clone --branch v1.2.5 https://github.com/microtel-org/microtel.git
+git clone --branch v1.2.6 https://github.com/microtel-org/microtel.git
 cd microtel
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DMICROTEL_BUILD_TESTS=OFF
 cmake --build build -j"$(nproc)"
@@ -613,7 +613,7 @@ In the project's benchmark against opentelemetry-cpp on the same host:
 - **Throughput:** microtel sustains about **1.9× the span throughput**
   (1,424,706 spans/s over OTLP/HTTP against 738,912; 1.4× over OTLP/gRPC).
 - **Size:** stripped, with Ubuntu 24.04 packages, the telemetry stack the
-  benchmark loads is **1.2 MB** with microtel against **13.4 MB** with
+  benchmark loads is **1.3 MB** with microtel (v1.2.6) against **13.4 MB** with
   opentelemetry-cpp's OTLP/gRPC exporter (gRPC, protobuf, Abseil, c-ares, re2
   and its OTLP proto libraries), on top of the same **12.0 MB** of OpenSSL,
   zlib and the C/C++ runtime that both load.
