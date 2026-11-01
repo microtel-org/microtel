@@ -55,6 +55,7 @@ jobs:
         leaf_backend_diff_fuzz
         leaf_ingest_fuzz
         otlp_trace_decoder_fuzz
+        http1_response_fuzz
 
     steps:
       - uses: actions/checkout@v4
