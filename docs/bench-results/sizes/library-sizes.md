@@ -1,5 +1,7 @@
 # Library sizes: otelcpp-grpc vs microtel (stripped emit_app + loaded shared libraries)
 
+> Note (2026-11-01): these size figures were measured on a build host later found to have faulty RAM. They will be re-confirmed on a fixed host, and this note updated.
+
 | | |
 |---|---|
 | **Build** | `bench-sut-microtel` built 2026-10-30 from the v1.2.6 release branch (`d495c51`; its `src/`, `include/`, `bench/` and CMake files are those of the v1.2.6 tag). Measured 2026-10-30. Only sizes were re-measured: the span hot path is unchanged since v1.2.5, so the [v1.2.5 benchmark run](../README.md) stands. `bench-sut-otelcpp-grpc` is the image built 2026-10-26 23:30 UTC for v1.2.4 (its code did not change), so its rows are the v1.2.4 measurement. The microtel image's packages are those of the v1.2.5 measurement, and every library `/emit_app` loads is byte for byte the v1.2.5 one. |
