@@ -117,3 +117,137 @@ suts:
     env:
       OTEL_EXPORTER_OTLP_ENDPOINT: ""  # driver sets to http://sink:4318
     b0: false
+
+  # Parity study (bench/parity/README.md): build with bench/parity/build.sh,
+  # run with --sut <name> --no-build. Not B0: never part of a default run.
+  - name: parity-otelcpp-http-clang
+    description: "parity: opentelemetry-cpp v1.19.0, Clang 18, BENCH flags, C++17"
+    dockerfile: bench/sut/parity/otelcpp.Dockerfile
+    image_name: bench-sut-parity-otelcpp-http-clang
+    protocol: http
+    ports:
+      control: 19090
+    env:
+      OTEL_EXPORTER_OTLP_ENDPOINT: ""
+    b0: false
+
+  - name: parity-otelcpp-grpc-clang
+    description: "parity: opentelemetry-cpp v1.19.0, Clang 18, BENCH flags, C++17"
+    dockerfile: bench/sut/parity/otelcpp.Dockerfile
+    image_name: bench-sut-parity-otelcpp-grpc-clang
+    protocol: grpc
+    ports:
+      control: 19090
+    env:
+      OTEL_EXPORTER_OTLP_ENDPOINT: ""
+    b0: false
+
+  - name: parity-otelcpp-http-gcc-nohard
+    description: "parity: opentelemetry-cpp v1.19.0, GCC 13, BENCH flags, Ubuntu hardening off"
+    dockerfile: bench/sut/parity/otelcpp.Dockerfile
+    image_name: bench-sut-parity-otelcpp-http-gcc-nohard
+    protocol: http
+    ports:
+      control: 19090
+    env:
+      OTEL_EXPORTER_OTLP_ENDPOINT: ""
+    b0: false
+
+  - name: parity-otelcpp-grpc-gcc-nohard
+    description: "parity: opentelemetry-cpp v1.19.0, GCC 13, BENCH flags, Ubuntu hardening off"
+    dockerfile: bench/sut/parity/otelcpp.Dockerfile
+    image_name: bench-sut-parity-otelcpp-grpc-gcc-nohard
+    protocol: grpc
+    ports:
+      control: 19090
+    env:
+      OTEL_EXPORTER_OTLP_ENDPOINT: ""
+    b0: false
+
+  - name: parity-otelcpp-http-clang-pbsrc
+    description: "parity: opentelemetry-cpp v1.19.0, Clang 18, protobuf 3.21.12 built from source"
+    dockerfile: bench/sut/parity/otelcpp.Dockerfile
+    image_name: bench-sut-parity-otelcpp-http-clang-pbsrc
+    protocol: http
+    ports:
+      control: 19090
+    env:
+      OTEL_EXPORTER_OTLP_ENDPOINT: ""
+    b0: false
+
+  - name: parity-otelcpp-http-clang-inmem
+    description: "parity: opentelemetry-cpp v1.19.0, Clang 18, in-memory span exporter (SpanData)"
+    dockerfile: bench/sut/parity/otelcpp.Dockerfile
+    image_name: bench-sut-parity-otelcpp-http-clang-inmem
+    protocol: http
+    ports:
+      control: 19090
+    env:
+      OTEL_EXPORTER_OTLP_ENDPOINT: ""
+    b0: false
+
+  - name: parity-otelcpp130-http-clang
+    description: "parity: opentelemetry-cpp v1.30.0, Clang 18, BENCH flags"
+    dockerfile: bench/sut/parity/otelcpp.Dockerfile
+    image_name: bench-sut-parity-otelcpp130-http-clang
+    protocol: http
+    ports:
+      control: 19090
+    env:
+      OTEL_EXPORTER_OTLP_ENDPOINT: ""
+    b0: false
+
+  - name: parity-otelcpp130-grpc-clang
+    description: "parity: opentelemetry-cpp v1.30.0, Clang 18, BENCH flags"
+    dockerfile: bench/sut/parity/otelcpp.Dockerfile
+    image_name: bench-sut-parity-otelcpp130-grpc-clang
+    protocol: grpc
+    ports:
+      control: 19090
+    env:
+      OTEL_EXPORTER_OTLP_ENDPOINT: ""
+    b0: false
+
+  - name: parity-microtel-http-clang
+    description: "parity: microtel master, Clang 18"
+    dockerfile: bench/sut/parity/microtel.Dockerfile
+    image_name: bench-sut-parity-microtel-http-clang
+    protocol: http
+    ports:
+      control: 19090
+    env:
+      OTEL_EXPORTER_OTLP_ENDPOINT: ""
+    b0: false
+
+  - name: parity-microtel-grpc-clang
+    description: "parity: microtel master, Clang 18"
+    dockerfile: bench/sut/parity/microtel.Dockerfile
+    image_name: bench-sut-parity-microtel-grpc-clang
+    protocol: grpc
+    ports:
+      control: 19090
+    env:
+      OTEL_EXPORTER_OTLP_ENDPOINT: ""
+    b0: false
+
+  - name: parity-microtel-http-gcc
+    description: "parity: microtel master, GCC 13 (Ubuntu default hardening)"
+    dockerfile: bench/sut/parity/microtel.Dockerfile
+    image_name: bench-sut-parity-microtel-http-gcc
+    protocol: http
+    ports:
+      control: 19090
+    env:
+      OTEL_EXPORTER_OTLP_ENDPOINT: ""
+    b0: false
+
+  - name: parity-microtel-grpc-gcc
+    description: "parity: microtel master, GCC 13 (Ubuntu default hardening)"
+    dockerfile: bench/sut/parity/microtel.Dockerfile
+    image_name: bench-sut-parity-microtel-grpc-gcc
+    protocol: grpc
+    ports:
+      control: 19090
+    env:
+      OTEL_EXPORTER_OTLP_ENDPOINT: ""
+    b0: false
