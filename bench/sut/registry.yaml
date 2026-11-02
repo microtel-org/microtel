@@ -186,6 +186,33 @@ suts:
       OTEL_EXPORTER_OTLP_ENDPOINT: ""
     b0: false
 
+  # Same images as the two entries above, with the BatchSpanProcessor queue
+  # raised from opentelemetry-cpp's default 2048 so a 10,000-span sample
+  # cannot overflow it (bench/parity/RESULTS.md).
+  - name: parity-otelcpp-http-clang-q16k
+    description: "parity: opentelemetry-cpp v1.19.0, Clang 18, BSP max_queue_size 16384"
+    dockerfile: bench/sut/parity/otelcpp.Dockerfile
+    image_name: bench-sut-parity-otelcpp-http-clang
+    protocol: http
+    ports:
+      control: 19090
+    env:
+      OTEL_EXPORTER_OTLP_ENDPOINT: ""
+      EMIT_OTELCPP_BSP_MAX_QUEUE_SIZE: "16384"
+    b0: false
+
+  - name: parity-otelcpp-http-clang-inmem-q16k
+    description: "parity: opentelemetry-cpp v1.19.0, Clang 18, in-memory exporter, BSP max_queue_size 16384"
+    dockerfile: bench/sut/parity/otelcpp.Dockerfile
+    image_name: bench-sut-parity-otelcpp-http-clang-inmem
+    protocol: http
+    ports:
+      control: 19090
+    env:
+      OTEL_EXPORTER_OTLP_ENDPOINT: ""
+      EMIT_OTELCPP_BSP_MAX_QUEUE_SIZE: "16384"
+    b0: false
+
   - name: parity-otelcpp130-http-clang
     description: "parity: opentelemetry-cpp v1.30.0, Clang 18, BENCH flags"
     dockerfile: bench/sut/parity/otelcpp.Dockerfile

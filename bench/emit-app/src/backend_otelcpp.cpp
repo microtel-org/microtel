@@ -26,6 +26,7 @@ static_assert(false, "BENCH_BACKEND_OTELCPP_GRPC or BENCH_BACKEND_OTELCPP_HTTP r
 #if defined(BENCH_OTELCPP_INMEMORY_SPANS)
 #include <opentelemetry/exporters/memory/in_memory_span_exporter_factory.h>
 #endif
+#include <opentelemetry/sdk/common/global_log_handler.h>
 #include <opentelemetry/sdk/trace/batch_span_processor_factory.h>
 #include <opentelemetry/sdk/trace/batch_span_processor_options.h>
 #include <opentelemetry/sdk/trace/tracer_provider.h>
@@ -52,6 +53,8 @@ static_assert(false, "BENCH_BACKEND_OTELCPP_GRPC or BENCH_BACKEND_OTELCPP_HTTP r
 #include <atomic>
 #include <chrono>
 #include <cstdint>
+#include <cstdlib>
+#include <cstring>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -72,6 +75,41 @@ namespace logs_api  = opentelemetry::logs;
 constexpr const char* kLogBody = "bench log record";
 namespace trace_api = opentelemetry::trace;
 namespace metrics_api = opentelemetry::metrics;
+namespace sdklog_internal = opentelemetry::sdk::common::internal_log;
+
+// opentelemetry-cpp exposes no drop counter: a full BatchSpanProcessor queue
+// only logs "BatchSpanProcessor queue is full - dropping span." per span
+// (batch_span_processor.cc). This handler counts those messages and forwards
+// every message to the handler it replaced, so logging is unchanged.
+std::atomic<uint64_t> g_queue_full_drops{0};
+
+class DropCountingLogHandler final : public sdklog_internal::LogHandler
+{
+public:
+    explicit DropCountingLogHandler(opentelemetry::nostd::shared_ptr<sdklog_internal::LogHandler> next)
+        : m_next(std::move(next))
+    {
+    }
+
+    void Handle(sdklog_internal::LogLevel level,
+                const char* file,
+                int line,
+                const char* msg,
+                const opentelemetry::sdk::common::AttributeMap& attributes) noexcept override
+    {
+        if (msg != nullptr && std::strstr(msg, "dropping span") != nullptr)
+        {
+            g_queue_full_drops.fetch_add(1, std::memory_order_relaxed);
+        }
+        if (m_next)
+        {
+            m_next->Handle(level, file, line, msg, attributes);
+        }
+    }
+
+private:
+    opentelemetry::nostd::shared_ptr<sdklog_internal::LogHandler> m_next;
+};
 
 class OtelCppBackend final : public IBackend
 {
@@ -184,11 +222,13 @@ public:
 
     [[nodiscard]] BackendStats Stats() const override
     {
-        // opentelemetry-cpp does not expose drop counters via a stable public API.
-        // All DroppedCounts fields are 0.  See bench/docs/methodology.md.
+        // opentelemetry-cpp does not expose drop counters via a stable public API;
+        // queue-full drops are counted from its log (DropCountingLogHandler).
+        // The other DroppedCounts fields stay 0.  See bench/docs/methodology.md.
+        const uint64_t queue_full = g_queue_full_drops.load(std::memory_order_relaxed);
         return BackendStats{
             .spans_exported_total = m_emit_count.load(std::memory_order_relaxed),
-            .spans_dropped        = {},
+            .spans_dropped        = {.queue_full = queue_full, .total = queue_full},
             .bytes_sent_total     = 0,
         };
     }
@@ -223,7 +263,18 @@ private:
             throw std::runtime_error("opentelemetry-cpp trace exporter creation failed");
         }
 
+        sdklog_internal::GlobalLogHandler::SetLogHandler(
+            opentelemetry::nostd::shared_ptr<sdklog_internal::LogHandler>(
+                new DropCountingLogHandler(sdklog_internal::GlobalLogHandler::GetLogHandler())));
+
         sdktrace::BatchSpanProcessorOptions proc_opts;
+        // Parity study (bench/parity): opt-in larger queue, so a burst of
+        // spans_per_sample does not overflow the SDK's default 2048.
+        // NOLINTNEXTLINE(concurrency-mt-unsafe)
+        if (const char* q = std::getenv("EMIT_OTELCPP_BSP_MAX_QUEUE_SIZE"); q != nullptr && *q != '\0')
+        {
+            proc_opts.max_queue_size = static_cast<std::size_t>(std::strtoull(q, nullptr, 10));
+        }
         auto processor = sdktrace::BatchSpanProcessorFactory::Create(std::move(exporter),
                                                                      proc_opts);
         m_trace_provider = std::make_shared<sdktrace::TracerProvider>(std::move(processor));
