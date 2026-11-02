@@ -52,7 +52,9 @@ def main():
     for name, samples in pooled.items():
         p50 = quartiles([s["latency_p50_ns"] for s in samples])
         p95 = quartiles([s["latency_p95_ns"] for s in samples])
-        sps = statistics.median(s["spans_per_sec"] for s in samples)
+        # None when nothing reaches the sink (the in-memory exporter variant).
+        rates = [s["spans_per_sec"] for s in samples if s["spans_per_sec"] is not None]
+        sps = statistics.median(rates) if rates else None
         drops = sum(s["spans_dropped"]["total"] for s in samples)
         rows[name] = {"n": len(samples), "rounds": len(rounds[name]), "p50": p50, "p95": p95,
                       "spans_per_sec": sps, "dropped": drops, **meta[name]}
@@ -64,7 +66,8 @@ def main():
         r = rows[name]
         lo, med, hi = r["p50"]
         cell = f"| {name} | {r['n']} ({r['rounds']} rounds) | **{med:.0f}** ({lo:.0f}–{hi:.0f}) | " \
-               f"{r['p95'][1]:.0f} | {r['spans_per_sec']:,.0f} |"
+               f"{r['p95'][1]:.0f} | " \
+               + (f"{r['spans_per_sec']:,.0f}" if r["spans_per_sec"] is not None else "–") + " |"
         if refp50:
             cell += f" {med / refp50:.2f}× |"
         print(cell)
