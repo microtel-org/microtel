@@ -120,15 +120,16 @@ constexpr std::size_t kCountBufferBytes = 48;
     return wire;
 }
 
-/// Log @p prefix followed by @p detail. Building the line allocates; if it
-/// cannot be built, the prefix is logged alone rather than terminate a
-/// `noexcept` frame.
+/// Log @p prefix followed by @p detail, with control characters in @p detail
+/// escaped: it can carry connection-derived text (cpp:S5145). Building the
+/// line allocates; if it cannot be built, the prefix is logged alone rather
+/// than terminate a `noexcept` frame.
 void Log(microtel::LogLevel level, std::string_view prefix, std::string_view detail = {}) noexcept
 {
     try
     {
         std::string line{prefix};
-        line.append(detail);
+        internal::AppendEscaped(line, detail);
         internal::LogImpl(level, line);
     }
     catch (const std::exception&)

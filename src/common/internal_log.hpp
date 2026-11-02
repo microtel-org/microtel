@@ -5,6 +5,7 @@
 
 #include "microtel/log_sink.hpp"
 
+#include <string>
 #include <string_view>
 
 namespace microtel::internal
@@ -50,5 +51,16 @@ void LogImpl(microtel::LogLevel level, std::string_view message) noexcept;
 ///
 /// @threadsafety Thread-safe.
 [[nodiscard]] microtel::LogLevel MinLogLevel() noexcept;
+
+/// @brief Append @p text to @p out with control characters escaped, so a
+///        value from the network cannot forge a log record
+///        (SonarCloud cpp:S5145, logging injection).
+///
+/// LF becomes `\n`, CR `\r`, and every other control character except tab
+/// (below 0x20, and 0x7F) `\xNN`. Bytes >= 0x80 (UTF-8) pass through. The
+/// same escaping the stderr fallback applies to every record.
+///
+/// @throws std::bad_alloc if @p out cannot grow.
+void AppendEscaped(std::string& out, std::string_view text);
 
 }  // namespace microtel::internal

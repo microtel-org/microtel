@@ -258,4 +258,21 @@ TEST_F(LogSinkTest, FallbackWritesALongRecordWhole)
     EXPECT_EQ(FallbackLineFor(message), "[microtel warn] " + message + "\n");
 }
 
+// ---- AppendEscaped: the same escaping, for lines built before LogImpl ------
+
+TEST(AppendEscapedTest, EscapesControlCharactersAfterWhatIsAlreadyThere)
+{
+    using namespace std::string_view_literals;
+    std::string line{"prefix: "};
+    mt::internal::AppendEscaped(line, "a\r\n[microtel error] x\0\x1b\x7f\t\xc3\xa9"sv);
+    EXPECT_EQ(line, "prefix: a\\r\\n[microtel error] x\\x00\\x1b\\x7f\t\xc3\xa9");
+}
+
+TEST(AppendEscapedTest, EmptyTextAppendsNothing)
+{
+    std::string line{"prefix"};
+    mt::internal::AppendEscaped(line, {});
+    EXPECT_EQ(line, "prefix");
+}
+
 }  // namespace

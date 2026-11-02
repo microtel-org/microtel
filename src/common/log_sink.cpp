@@ -111,6 +111,34 @@ constexpr unsigned kNibbleBits = 4;
 constexpr unsigned kNibbleMask = 0x0f;
 constexpr std::string_view kHexDigits = "0123456789abcdef";
 
+/// Passes `c` to `put`, rendering LF as `\n`, CR as `\r` and every other
+/// control character except tab as `\xNN`. Bytes >= 0x80 (UTF-8) pass
+/// through unchanged.
+template <typename PutFn>
+void PutEscapedChar(char c, PutFn&& put)
+{
+    const auto byte = static_cast<unsigned char>(c);
+    if (c == '\t' || (byte >= kFirstPrintable && byte != kDelete))
+    {
+        put(c);
+        return;
+    }
+    put('\\');
+    if (c == '\n')
+    {
+        put('n');
+        return;
+    }
+    if (c == '\r')
+    {
+        put('r');
+        return;
+    }
+    put('x');
+    put(kHexDigits.at(byte >> kNibbleBits));
+    put(kHexDigits.at(byte & kNibbleMask));
+}
+
 /// @brief Builds the stderr fallback line in a stack buffer, escaping control
 /// characters in the message so one record can never forge another
 /// (SonarCloud cpp:S5145, logging injection).
@@ -141,14 +169,12 @@ public:
         }
     }
 
-    /// Writes `text`, rendering LF as `\n`, CR as `\r` and every other
-    /// control character except tab as `\xNN`. Bytes >= 0x80 (UTF-8) pass
-    /// through unchanged.
+    /// Writes `text` with control characters escaped, as `PutEscapedChar`.
     void PutSanitized(std::string_view text) noexcept
     {
         for (const char c : text)
         {
-            PutSanitizedChar(c);
+            PutEscapedChar(c, [this](char e) noexcept { Put(e); });
         }
     }
 
@@ -162,30 +188,6 @@ public:
     }
 
 private:
-    void PutSanitizedChar(char c) noexcept
-    {
-        const auto byte = static_cast<unsigned char>(c);
-        if (c == '\t' || (byte >= kFirstPrintable && byte != kDelete))
-        {
-            Put(c);
-            return;
-        }
-        Put('\\');
-        if (c == '\n')
-        {
-            Put('n');
-            return;
-        }
-        if (c == '\r')
-        {
-            Put('r');
-            return;
-        }
-        Put('x');
-        Put(kHexDigits.at(byte >> kNibbleBits));
-        Put(kHexDigits.at(byte & kNibbleMask));
-    }
-
     std::FILE* m_out;
     std::array<char, kFallbackBufferSize> m_buf{};
     std::size_t m_len{0};
@@ -223,6 +225,14 @@ bool SetMinLogLevel(LogLevel level) noexcept
 LogLevel MinLogLevel() noexcept
 {
     return MinLevel().load(std::memory_order_relaxed);
+}
+
+void AppendEscaped(std::string& out, std::string_view text)
+{
+    for (const char c : text)
+    {
+        PutEscapedChar(c, [&out](char e) { out.push_back(e); });
+    }
 }
 
 /// @brief Internal log entry point. Production code calls this; the
