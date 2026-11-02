@@ -1,0 +1,157 @@
+{
+  "rows": {
+    "parity-microtel-http-clang": {
+      "n": 50,
+      "rounds": 5,
+      "p50": [
+        210.0,
+        216.5,
+        229.75
+      ],
+      "p95": [
+        460.0,
+        477.5,
+        486.0
+      ],
+      "spans_per_sec": 1434665.2880910132,
+      "dropped": 0,
+      "image_id": "f44e904139e72ec5bd526c496b8b5ee867b5bcb10314fbf1401b9b0754d52b1a",
+      "image_tag": "bench-sut-parity-microtel-http-clang"
+    },
+    "parity-otelcpp-http-clang": {
+      "n": 50,
+      "rounds": 5,
+      "p50": [
+        777.0,
+        793.0,
+        810.75
+      ],
+      "p95": [
+        2243.0,
+        2786.5,
+        3126.75
+      ],
+      "spans_per_sec": 835773.911228271,
+      "dropped": 0,
+      "image_id": "e27b0602d7dd1ff84d2fa94ab6985bfd90f53c397a63b2227c7e0d13a01f373f",
+      "image_tag": "bench-sut-parity-otelcpp-http-clang"
+    },
+    "parity-otelcpp-http-clang-inmem": {
+      "n": 50,
+      "rounds": 5,
+      "p50": [
+        407.0,
+        411.0,
+        415.0
+      ],
+      "p95": [
+        1723.5,
+        1789.0,
+        1834.0
+      ],
+      "spans_per_sec": null,
+      "dropped": 0,
+      "image_id": "e88e8eab86b42c4dced8df8f32b82b1135e022585559485785bd775966c5c740",
+      "image_tag": "bench-sut-parity-otelcpp-http-clang-inmem"
+    }
+  },
+  "rounds": {
+    "parity-microtel-http-clang": [
+      {
+        "round": "round1",
+        "samples": 10,
+        "bench_started_at": "2026-11-02T21:46:33.224334+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round2",
+        "samples": 10,
+        "bench_started_at": "2026-11-02T21:47:36.797344+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round3",
+        "samples": 10,
+        "bench_started_at": "2026-11-02T21:47:50.433219+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round4",
+        "samples": 10,
+        "bench_started_at": "2026-11-02T21:48:03.749121+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round5",
+        "samples": 10,
+        "bench_started_at": "2026-11-02T21:48:36.837585+00:00",
+        "load_avg_1m": null
+      }
+    ],
+    "parity-otelcpp-http-clang": [
+      {
+        "round": "round1",
+        "samples": 10,
+        "bench_started_at": "2026-11-02T21:46:39.992196+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round2",
+        "samples": 10,
+        "bench_started_at": "2026-11-02T21:47:08.409590+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round3",
+        "samples": 10,
+        "bench_started_at": "2026-11-02T21:47:57.082698+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round4",
+        "samples": 10,
+        "bench_started_at": "2026-11-02T21:48:10.377326+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round5",
+        "samples": 10,
+        "bench_started_at": "2026-11-02T21:48:23.623364+00:00",
+        "load_avg_1m": null
+      }
+    ],
+    "parity-otelcpp-http-clang-inmem": [
+      {
+        "round": "round1",
+        "samples": 10,
+        "bench_started_at": "2026-11-02T21:47:01.762483+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round2",
+        "samples": 10,
+        "bench_started_at": "2026-11-02T21:47:30.162084+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round3",
+        "samples": 10,
+        "bench_started_at": "2026-11-02T21:47:43.444096+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round4",
+        "samples": 10,
+        "bench_started_at": "2026-11-02T21:48:17.039884+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round5",
+        "samples": 10,
+        "bench_started_at": "2026-11-02T21:48:30.278299+00:00",
+        "load_avg_1m": null
+      }
+    ]
+  },
+  "dropped_rounds": []
+}

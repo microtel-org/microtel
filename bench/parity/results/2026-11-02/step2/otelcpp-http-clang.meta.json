@@ -1,0 +1,15 @@
+{
+  "image": "bench-sut-parity-otelcpp-http-clang:perf",
+  "image_id": "c96e7d6a4b1e5de1bcca28f55049622902ff630ed6215d8eeb52046f0b4ecfeb",
+  "perf_version": "perf version 7.2.13-200.fc44.x86_64",
+  "cycles": 2000,
+  "spans_per_run": 10000,
+  "spans_emitted": 20000000,
+  "spans_dropped": 0,
+  "run_p50_median_ns": 739,
+  "wall_s": 21.305553391000103,
+  "process_utime_s": 24.0,
+  "process_stime_s": 4.4,
+  "perf_record_log": "[ perf record: Woken up 104 times to write data ]\n[ perf record: Captured and wrote 26.998 MB <out>/perf.data (193059 samples) ]\n",
+  "perf_script_stderr": ""
+}

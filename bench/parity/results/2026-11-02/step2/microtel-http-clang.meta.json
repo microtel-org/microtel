@@ -1,0 +1,15 @@
+{
+  "image": "bench-sut-parity-microtel-http-clang:perf",
+  "image_id": "4f2949ddfbf4ee91e2e66c23d2e9ea8de8a8c3634866ac5319964da790d88939",
+  "perf_version": "perf version 7.2.13-200.fc44.x86_64",
+  "cycles": 3000,
+  "spans_per_run": 10000,
+  "spans_emitted": 30000000,
+  "spans_dropped": 0,
+  "run_p50_median_ns": 211,
+  "wall_s": 21.944257858000128,
+  "process_utime_s": 17.03,
+  "process_stime_s": 6.37,
+  "perf_record_log": "[ perf record: Woken up 100 times to write data ]\n[ perf record: Captured and wrote 26.147 MB <out>/perf.data (210491 samples) ]\n",
+  "perf_script_stderr": ""
+}

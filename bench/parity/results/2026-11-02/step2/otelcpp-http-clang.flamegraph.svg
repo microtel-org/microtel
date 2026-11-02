@@ -1,0 +1,2558 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" width="1600" height="422" onload="init(evt)" viewBox="0 0 1600 422" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<!-- Flame graph stack visualization. See https://github.com/brendangregg/FlameGraph for latest version, and http://www.brendangregg.com/flamegraphs.html for examples. -->
+<!-- NOTES:  -->
+<defs>
+	<linearGradient id="background" y1="0" y2="1" x1="0" x2="0" >
+		<stop stop-color="#eeeeee" offset="5%" />
+		<stop stop-color="#eeeeb0" offset="95%" />
+	</linearGradient>
+</defs>
+<style type="text/css">
+	text { font-family:Verdana; font-size:12px; fill:rgb(0,0,0); }
+	#search, #ignorecase { opacity:0.1; cursor:pointer; }
+	#search:hover, #search.show, #ignorecase:hover, #ignorecase.show { opacity:1; }
+	#subtitle { text-anchor:middle; font-color:rgb(160,160,160); }
+	#title { text-anchor:middle; font-size:17px}
+	#unzoom { cursor:pointer; }
+	#frames > *:hover { stroke:black; stroke-width:0.5; cursor:pointer; }
+	.hide { display:none; }
+	.parent { opacity:0.5; }
+</style>
+<script type="text/ecmascript">
+<![CDATA[
+	"use strict";
+	var details, searchbtn, unzoombtn, matchedtxt, svg, searching, currentSearchTerm, ignorecase, ignorecaseBtn;
+	function init(evt) {
+		details = document.getElementById("details").firstChild;
+		searchbtn = document.getElementById("search");
+		ignorecaseBtn = document.getElementById("ignorecase");
+		unzoombtn = document.getElementById("unzoom");
+		matchedtxt = document.getElementById("matched");
+		svg = document.getElementsByTagName("svg")[0];
+		searching = 0;
+		currentSearchTerm = null;
+
+		// use GET parameters to restore a flamegraphs state.
+		var params = get_params();
+		if (params.x && params.y)
+			zoom(find_group(document.querySelector('[x="' + params.x + '"][y="' + params.y + '"]')));
+                if (params.s) search(params.s);
+	}
+
+	// event listeners
+	window.addEventListener("click", function(e) {
+		var target = find_group(e.target);
+		if (target) {
+			if (target.nodeName == "a") {
+				if (e.ctrlKey === false) return;
+				e.preventDefault();
+			}
+			if (target.classList.contains("parent")) unzoom(true);
+			zoom(target);
+			if (!document.querySelector('.parent')) {
+				// we have basically done a clearzoom so clear the url
+				var params = get_params();
+				if (params.x) delete params.x;
+				if (params.y) delete params.y;
+				history.replaceState(null, null, parse_params(params));
+				unzoombtn.classList.add("hide");
+				return;
+			}
+
+			// set parameters for zoom state
+			var el = target.querySelector("rect");
+			if (el && el.attributes && el.attributes.y && el.attributes._orig_x) {
+				var params = get_params()
+				params.x = el.attributes._orig_x.value;
+				params.y = el.attributes.y.value;
+				history.replaceState(null, null, parse_params(params));
+			}
+		}
+		else if (e.target.id == "unzoom") clearzoom();
+		else if (e.target.id == "search") search_prompt();
+		else if (e.target.id == "ignorecase") toggle_ignorecase();
+	}, false)
+
+	// mouse-over for info
+	// show
+	window.addEventListener("mouseover", function(e) {
+		var target = find_group(e.target);
+		if (target) details.nodeValue = "Function: " + g_to_text(target);
+	}, false)
+
+	// clear
+	window.addEventListener("mouseout", function(e) {
+		var target = find_group(e.target);
+		if (target) details.nodeValue = ' ';
+	}, false)
+
+	// ctrl-F for search
+	// ctrl-I to toggle case-sensitive search
+	window.addEventListener("keydown",function (e) {
+		if (e.keyCode === 114 || (e.ctrlKey && e.keyCode === 70)) {
+			e.preventDefault();
+			search_prompt();
+		}
+		else if (e.ctrlKey && e.keyCode === 73) {
+			e.preventDefault();
+			toggle_ignorecase();
+		}
+	}, false)
+
+	// functions
+	function get_params() {
+		var params = {};
+		var paramsarr = window.location.search.substr(1).split('&');
+		for (var i = 0; i < paramsarr.length; ++i) {
+			var tmp = paramsarr[i].split("=");
+			if (!tmp[0] || !tmp[1]) continue;
+			params[tmp[0]]  = decodeURIComponent(tmp[1]);
+		}
+		return params;
+	}
+	function parse_params(params) {
+		var uri = "?";
+		for (var key in params) {
+			uri += key + '=' + encodeURIComponent(params[key]) + '&';
+		}
+		if (uri.slice(-1) == "&")
+			uri = uri.substring(0, uri.length - 1);
+		if (uri == '?')
+			uri = window.location.href.split('?')[0];
+		return uri;
+	}
+	function find_child(node, selector) {
+		var children = node.querySelectorAll(selector);
+		if (children.length) return children[0];
+	}
+	function find_group(node) {
+		var parent = node.parentElement;
+		if (!parent) return;
+		if (parent.id == "frames") return node;
+		return find_group(parent);
+	}
+	function orig_save(e, attr, val) {
+		if (e.attributes["_orig_" + attr] != undefined) return;
+		if (e.attributes[attr] == undefined) return;
+		if (val == undefined) val = e.attributes[attr].value;
+		e.setAttribute("_orig_" + attr, val);
+	}
+	function orig_load(e, attr) {
+		if (e.attributes["_orig_"+attr] == undefined) return;
+		e.attributes[attr].value = e.attributes["_orig_" + attr].value;
+		e.removeAttribute("_orig_"+attr);
+	}
+	function g_to_text(e) {
+		var text = find_child(e, "title").firstChild.nodeValue;
+		return (text)
+	}
+	function g_to_func(e) {
+		var func = g_to_text(e);
+		// if there's any manipulation we want to do to the function
+		// name before it's searched, do it here before returning.
+		return (func);
+	}
+	function update_text(e) {
+		var r = find_child(e, "rect");
+		var t = find_child(e, "text");
+		var w = parseFloat(r.attributes.width.value) -3;
+		var txt = find_child(e, "title").textContent.replace(/\([^(]*\)$/,"");
+		t.attributes.x.value = parseFloat(r.attributes.x.value) + 3;
+
+		// Smaller than this size won't fit anything
+		if (w < 2 * 12 * 0.59) {
+			t.textContent = "";
+			return;
+		}
+
+		t.textContent = txt;
+		var sl = t.getSubStringLength(0, txt.length);
+		// check if only whitespace or if we can fit the entire string into width w
+		if (/^ *$/.test(txt) || sl < w)
+			return;
+
+		// this isn't perfect, but gives a good starting point
+		// and avoids calling getSubStringLength too often
+		var start = Math.floor((w/sl) * txt.length);
+		for (var x = start; x > 0; x = x-2) {
+			if (t.getSubStringLength(0, x + 2) <= w) {
+				t.textContent = txt.substring(0, x) + "..";
+				return;
+			}
+		}
+		t.textContent = "";
+	}
+
+	// zoom
+	function zoom_reset(e) {
+		if (e.attributes != undefined) {
+			orig_load(e, "x");
+			orig_load(e, "width");
+		}
+		if (e.childNodes == undefined) return;
+		for (var i = 0, c = e.childNodes; i < c.length; i++) {
+			zoom_reset(c[i]);
+		}
+	}
+	function zoom_child(e, x, ratio) {
+		if (e.attributes != undefined) {
+			if (e.attributes.x != undefined) {
+				orig_save(e, "x");
+				e.attributes.x.value = (parseFloat(e.attributes.x.value) - x - 10) * ratio + 10;
+				if (e.tagName == "text")
+					e.attributes.x.value = find_child(e.parentNode, "rect[x]").attributes.x.value + 3;
+			}
+			if (e.attributes.width != undefined) {
+				orig_save(e, "width");
+				e.attributes.width.value = parseFloat(e.attributes.width.value) * ratio;
+			}
+		}
+
+		if (e.childNodes == undefined) return;
+		for (var i = 0, c = e.childNodes; i < c.length; i++) {
+			zoom_child(c[i], x - 10, ratio);
+		}
+	}
+	function zoom_parent(e) {
+		if (e.attributes) {
+			if (e.attributes.x != undefined) {
+				orig_save(e, "x");
+				e.attributes.x.value = 10;
+			}
+			if (e.attributes.width != undefined) {
+				orig_save(e, "width");
+				e.attributes.width.value = parseInt(svg.width.baseVal.value) - (10 * 2);
+			}
+		}
+		if (e.childNodes == undefined) return;
+		for (var i = 0, c = e.childNodes; i < c.length; i++) {
+			zoom_parent(c[i]);
+		}
+	}
+	function zoom(node) {
+		var attr = find_child(node, "rect").attributes;
+		var width = parseFloat(attr.width.value);
+		var xmin = parseFloat(attr.x.value);
+		var xmax = parseFloat(xmin + width);
+		var ymin = parseFloat(attr.y.value);
+		var ratio = (svg.width.baseVal.value - 2 * 10) / width;
+
+		// XXX: Workaround for JavaScript float issues (fix me)
+		var fudge = 0.0001;
+
+		unzoombtn.classList.remove("hide");
+
+		var el = document.getElementById("frames").children;
+		for (var i = 0; i < el.length; i++) {
+			var e = el[i];
+			var a = find_child(e, "rect").attributes;
+			var ex = parseFloat(a.x.value);
+			var ew = parseFloat(a.width.value);
+			var upstack;
+			// Is it an ancestor
+			if (0 == 0) {
+				upstack = parseFloat(a.y.value) > ymin;
+			} else {
+				upstack = parseFloat(a.y.value) < ymin;
+			}
+			if (upstack) {
+				// Direct ancestor
+				if (ex <= xmin && (ex+ew+fudge) >= xmax) {
+					e.classList.add("parent");
+					zoom_parent(e);
+					update_text(e);
+				}
+				// not in current path
+				else
+					e.classList.add("hide");
+			}
+			// Children maybe
+			else {
+				// no common path
+				if (ex < xmin || ex + fudge >= xmax) {
+					e.classList.add("hide");
+				}
+				else {
+					zoom_child(e, xmin, ratio);
+					update_text(e);
+				}
+			}
+		}
+		search();
+	}
+	function unzoom(dont_update_text) {
+		unzoombtn.classList.add("hide");
+		var el = document.getElementById("frames").children;
+		for(var i = 0; i < el.length; i++) {
+			el[i].classList.remove("parent");
+			el[i].classList.remove("hide");
+			zoom_reset(el[i]);
+			if(!dont_update_text) update_text(el[i]);
+		}
+		search();
+	}
+	function clearzoom() {
+		unzoom();
+
+		// remove zoom state
+		var params = get_params();
+		if (params.x) delete params.x;
+		if (params.y) delete params.y;
+		history.replaceState(null, null, parse_params(params));
+	}
+
+	// search
+	function toggle_ignorecase() {
+		ignorecase = !ignorecase;
+		if (ignorecase) {
+			ignorecaseBtn.classList.add("show");
+		} else {
+			ignorecaseBtn.classList.remove("show");
+		}
+		reset_search();
+		search();
+	}
+	function reset_search() {
+		var el = document.querySelectorAll("#frames rect");
+		for (var i = 0; i < el.length; i++) {
+			orig_load(el[i], "fill")
+		}
+		var params = get_params();
+		delete params.s;
+		history.replaceState(null, null, parse_params(params));
+	}
+	function search_prompt() {
+		if (!searching) {
+			var term = prompt("Enter a search term (regexp " +
+			    "allowed, eg: ^ext4_)"
+			    + (ignorecase ? ", ignoring case" : "")
+			    + "\nPress Ctrl-i to toggle case sensitivity", "");
+			if (term != null) search(term);
+		} else {
+			reset_search();
+			searching = 0;
+			currentSearchTerm = null;
+			searchbtn.classList.remove("show");
+			searchbtn.firstChild.nodeValue = "Search"
+			matchedtxt.classList.add("hide");
+			matchedtxt.firstChild.nodeValue = ""
+		}
+	}
+	function search(term) {
+		if (term) currentSearchTerm = term;
+		if (currentSearchTerm === null) return;
+
+		var re = new RegExp(currentSearchTerm, ignorecase ? 'i' : '');
+		var el = document.getElementById("frames").children;
+		var matches = new Object();
+		var maxwidth = 0;
+		for (var i = 0; i < el.length; i++) {
+			var e = el[i];
+			var func = g_to_func(e);
+			var rect = find_child(e, "rect");
+			if (func == null || rect == null)
+				continue;
+
+			// Save max width. Only works as we have a root frame
+			var w = parseFloat(rect.attributes.width.value);
+			if (w > maxwidth)
+				maxwidth = w;
+
+			if (func.match(re)) {
+				// highlight
+				var x = parseFloat(rect.attributes.x.value);
+				orig_save(rect, "fill");
+				rect.attributes.fill.value = "rgb(230,0,230)";
+
+				// remember matches
+				if (matches[x] == undefined) {
+					matches[x] = w;
+				} else {
+					if (w > matches[x]) {
+						// overwrite with parent
+						matches[x] = w;
+					}
+				}
+				searching = 1;
+			}
+		}
+		if (!searching)
+			return;
+		var params = get_params();
+		params.s = currentSearchTerm;
+		history.replaceState(null, null, parse_params(params));
+
+		searchbtn.classList.add("show");
+		searchbtn.firstChild.nodeValue = "Reset Search";
+
+		// calculate percent matched, excluding vertical overlap
+		var count = 0;
+		var lastx = -1;
+		var lastw = 0;
+		var keys = Array();
+		for (k in matches) {
+			if (matches.hasOwnProperty(k))
+				keys.push(k);
+		}
+		// sort the matched frames by their x location
+		// ascending, then width descending
+		keys.sort(function(a, b){
+			return a - b;
+		});
+		// Step through frames saving only the biggest bottom-up frames
+		// thanks to the sort order. This relies on the tree property
+		// where children are always smaller than their parents.
+		var fudge = 0.0001;	// JavaScript floating point
+		for (var k in keys) {
+			var x = parseFloat(keys[k]);
+			var w = matches[keys[k]];
+			if (x >= lastx + lastw - fudge) {
+				count += w;
+				lastx = x;
+				lastw = w;
+			}
+		}
+		// display matched percent
+		matchedtxt.classList.remove("hide");
+		var pct = 100 * count / maxwidth;
+		if (pct != 100) pct = pct.toFixed(1)
+		matchedtxt.firstChild.nodeValue = "Matched: " + pct + "%";
+	}
+]]>
+</script>
+<rect x="0.0" y="0" width="1600.0" height="422.0" fill="url(#background)"  />
+<text id="title" x="800.00" y="24" >otelcpp-http-clang span hot loop (worker thread, cycles:u)</text>
+<text id="details" x="10.00" y="405" > </text>
+<text id="unzoom" x="10.00" y="24" class="hide">Reset Zoom</text>
+<text id="search" x="1490.00" y="24" >Search</text>
+<text id="ignorecase" x="1574.00" y="24" >ic</text>
+<text id="matched" x="1490.00" y="405" > </text>
+<g id="frames">
+<g >
+<title>void std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_M_construct&lt;char const*&gt; (2,722,418,353 samples, 4.89%)</title><rect x="884.2" y="245" width="77.2" height="15.0" fill="rgb(254,226,54)" rx="2" ry="2" />
+<text  x="887.18" y="255.5" >void std..</text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::MultiRecordable::ReleaseRecordable (5,316,416 samples, 0.01%)</title><rect x="173.5" y="309" width="0.1" height="15.0" fill="rgb(229,112,26)" rx="2" ry="2" />
+<text  x="176.49" y="319.5" ></text>
+</g>
+<g >
+<title>operator new (64,737,698 samples, 0.12%)</title><rect x="963.4" y="261" width="1.9" height="15.0" fill="rgb(216,51,12)" rx="2" ry="2" />
+<text  x="966.43" y="271.5" ></text>
+</g>
+<g >
+<title>opentelemetry::proto::trace::v1::Span::Span (12,850,346 samples, 0.02%)</title><rect x="1088.7" y="261" width="0.3" height="15.0" fill="rgb(217,55,13)" rx="2" ry="2" />
+<text  x="1091.65" y="271.5" ></text>
+</g>
+<g >
+<title>pthread_cond_broadcast (18,007,528 samples, 0.03%)</title><rect x="302.3" y="309" width="0.5" height="15.0" fill="rgb(249,203,48)" rx="2" ry="2" />
+<text  x="305.32" y="319.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::exporter::otlp::OtlpRecordable::SetIdentity (13,216,315,872 samples, 23.74%)</title><rect x="606.4" y="277" width="375.1" height="15.0" fill="rgb(239,156,37)" rx="2" ry="2" />
+<text  x="609.41" y="287.5" >opentelemetry::v1::exporter::otlp::OtlpRecordable:..</text>
+</g>
+<g >
+<title>[libc.so.6] (16,974,028 samples, 0.03%)</title><rect x="429.8" y="293" width="0.5" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="432.81" y="303.5" ></text>
+</g>
+<g >
+<title>[libc.so.6] (57,917,143 samples, 0.10%)</title><rect x="878.9" y="197" width="1.6" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="881.89" y="207.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (38,666,248 samples, 0.07%)</title><rect x="1113.4" y="117" width="1.1" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="1116.42" y="127.5" ></text>
+</g>
+<g >
+<title>[libstdc++.so.6.0.33] (7,444,254 samples, 0.01%)</title><rect x="258.5" y="261" width="0.2" height="15.0" fill="rgb(216,51,12)" rx="2" ry="2" />
+<text  x="261.47" y="271.5" ></text>
+</g>
+<g >
+<title>operator new (40,737,149 samples, 0.07%)</title><rect x="1062.5" y="261" width="1.2" height="15.0" fill="rgb(216,51,12)" rx="2" ry="2" />
+<text  x="1065.51" y="271.5" ></text>
+</g>
+<g >
+<title>bench::(anonymous namespace)::OtelCppBackend::EmitSpan (50,779,755,982 samples, 91.20%)</title><rect x="12.1" y="341" width="1441.0" height="15.0" fill="rgb(226,97,23)" rx="2" ry="2" />
+<text  x="15.07" y="351.5" >bench::(anonymous namespace)::OtelCppBackend::EmitSpan</text>
+</g>
+<g >
+<title>std::ostream::put (28,485,770 samples, 0.05%)</title><rect x="255.1" y="261" width="0.8" height="15.0" fill="rgb(219,64,15)" rx="2" ry="2" />
+<text  x="258.10" y="271.5" ></text>
+</g>
+<g >
+<title>std::_Rb_tree&lt;unsigned long, std::pair&lt;unsigned long const, std::unique_ptr&lt;opentelemetry::v1::sdk::trace::Recordable, std::default_delete&lt;opentelemetry::v1::sdk::trace::Recordable&gt; &gt; &gt;, std::_Select1st&lt;std::pair&lt;unsigned long const, std::unique_ptr&lt;opentelemetry::v1::sdk::trace::Recordable, std::default_delete&lt;opentelemetry::v1::sdk::trace::Recordable&gt; &gt; &gt; &gt;, std::less&lt;unsigned long&gt;, std::allocator&lt;std::pair&lt;unsigned long const, std::unique_ptr&lt;opentelemetry::v1::sdk::trace::Recordable, std::default_delete&lt;opentelemetry::v1::sdk::trace::Recordable&gt; &gt; &gt; &gt; &gt;::_M_erase (602,022,796 samples, 1.08%)</title><rect x="281.7" y="261" width="17.1" height="15.0" fill="rgb(214,41,10)" rx="2" ry="2" />
+<text  x="284.70" y="271.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::trace::TraceState&gt;::shared_ptr_wrapper::CopyTo(opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::trace::TraceState&gt;::PlacementBuffer&amp;) const (101,583,050 samples, 0.18%)</title><rect x="1403.3" y="277" width="2.9" height="15.0" fill="rgb(233,131,31)" rx="2" ry="2" />
+<text  x="1406.31" y="287.5" ></text>
+</g>
+<g >
+<title>__lll_lock_wake_private (136,408,449 samples, 0.24%)</title><rect x="1018.7" y="229" width="3.9" height="15.0" fill="rgb(238,155,37)" rx="2" ry="2" />
+<text  x="1021.70" y="239.5" ></text>
+</g>
+<g >
+<title>__libc_calloc (12,263,054 samples, 0.02%)</title><rect x="1362.7" y="229" width="0.3" height="15.0" fill="rgb(205,4,0)" rx="2" ry="2" />
+<text  x="1365.67" y="239.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (226,358,719 samples, 0.41%)</title><rect x="689.1" y="165" width="6.4" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="692.10" y="175.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::context::Context::DataList&gt;::shared_ptr_wrapper::MoveTo (201,585,144 samples, 0.36%)</title><rect x="1374.0" y="293" width="5.7" height="15.0" fill="rgb(246,192,45)" rx="2" ry="2" />
+<text  x="1377.01" y="303.5" ></text>
+</g>
+<g >
+<title>clock_gettime (1,604,646,235 samples, 2.88%)</title><rect x="1278.6" y="277" width="45.5" height="15.0" fill="rgb(213,39,9)" rx="2" ry="2" />
+<text  x="1281.59" y="287.5" >cloc..</text>
+</g>
+<g >
+<title>[[unknown]] (55,758,065 samples, 0.10%)</title><rect x="1105.4" y="213" width="1.6" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="1108.39" y="223.5" ></text>
+</g>
+<g >
+<title>[libc.so.6] (15,439,856 samples, 0.03%)</title><rect x="180.4" y="293" width="0.4" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="183.37" y="303.5" ></text>
+</g>
+<g >
+<title>pthread_mutex_lock (27,215,264 samples, 0.05%)</title><rect x="106.4" y="277" width="0.8" height="15.0" fill="rgb(247,196,46)" rx="2" ry="2" />
+<text  x="109.41" y="287.5" ></text>
+</g>
+<g >
+<title>std::ostream::flush (71,910,811 samples, 0.13%)</title><rect x="249.4" y="229" width="2.0" height="15.0" fill="rgb(220,71,17)" rx="2" ry="2" />
+<text  x="252.40" y="239.5" ></text>
+</g>
+<g >
+<title>clock_gettime (31,547,540 samples, 0.06%)</title><rect x="169.0" y="309" width="0.9" height="15.0" fill="rgb(213,39,9)" rx="2" ry="2" />
+<text  x="172.00" y="319.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::trace::Span&gt;::shared_ptr_wrapper::Get() const (62,284,990 samples, 0.11%)</title><rect x="1470.4" y="341" width="1.7" height="15.0" fill="rgb(217,57,13)" rx="2" ry="2" />
+<text  x="1473.37" y="351.5" ></text>
+</g>
+<g >
+<title>std::ios_base::ios_base (7,856,575 samples, 0.01%)</title><rect x="252.4" y="261" width="0.2" height="15.0" fill="rgb(212,35,8)" rx="2" ry="2" />
+<text  x="255.35" y="271.5" ></text>
+</g>
+<g >
+<title>google::protobuf::internal::ArenaStringPtr::Destroy (27,932,191 samples, 0.05%)</title><rect x="214.7" y="229" width="0.8" height="15.0" fill="rgb(254,226,54)" rx="2" ry="2" />
+<text  x="217.67" y="239.5" ></text>
+</g>
+<g >
+<title>std::basic_ios&lt;char, std::char_traits&lt;char&gt; &gt;::_M_cache_locale (11,812,676 samples, 0.02%)</title><rect x="258.7" y="261" width="0.3" height="15.0" fill="rgb(223,86,20)" rx="2" ry="2" />
+<text  x="261.68" y="271.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (10,711,679 samples, 0.02%)</title><rect x="896.2" y="101" width="0.3" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="899.22" y="111.5" ></text>
+</g>
+<g >
+<title>std::locale::locale (9,132,168 samples, 0.02%)</title><rect x="261.2" y="229" width="0.2" height="15.0" fill="rgb(214,44,10)" rx="2" ry="2" />
+<text  x="264.18" y="239.5" ></text>
+</g>
+<g >
+<title>operator new (141,131,297 samples, 0.25%)</title><rect x="1428.1" y="293" width="4.0" height="15.0" fill="rgb(216,51,12)" rx="2" ry="2" />
+<text  x="1431.14" y="303.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::MultiSpanProcessor::OnEnd (44,285,623 samples, 0.08%)</title><rect x="159.2" y="325" width="1.3" height="15.0" fill="rgb(223,87,20)" rx="2" ry="2" />
+<text  x="162.25" y="335.5" ></text>
+</g>
+<g >
+<title>free@plt (21,859,282 samples, 0.04%)</title><rect x="603.6" y="277" width="0.6" height="15.0" fill="rgb(229,112,26)" rx="2" ry="2" />
+<text  x="606.61" y="287.5" ></text>
+</g>
+<g >
+<title>std::chrono::_V2::steady_clock::now (26,131,119 samples, 0.05%)</title><rect x="1452.3" y="325" width="0.7" height="15.0" fill="rgb(249,203,48)" rx="2" ry="2" />
+<text  x="1455.26" y="335.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::basic_string (27,239,885 samples, 0.05%)</title><rect x="1064.1" y="261" width="0.8" height="15.0" fill="rgb(212,35,8)" rx="2" ry="2" />
+<text  x="1067.10" y="271.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_M_replace (8,826,465 samples, 0.02%)</title><rect x="246.2" y="213" width="0.3" height="15.0" fill="rgb(226,98,23)" rx="2" ry="2" />
+<text  x="249.22" y="223.5" ></text>
+</g>
+<g >
+<title>operator new (6,156,406 samples, 0.01%)</title><rect x="985.0" y="277" width="0.1" height="15.0" fill="rgb(216,51,12)" rx="2" ry="2" />
+<text  x="987.96" y="287.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::exporter::otlp::OtlpRecordable::SetResource (74,938,522 samples, 0.13%)</title><rect x="586.4" y="293" width="2.2" height="15.0" fill="rgb(252,216,51)" rx="2" ry="2" />
+<text  x="589.43" y="303.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::common::internal_log::GlobalLogHandler::GetLogLevel (10,381,380 samples, 0.02%)</title><rect x="256.6" y="277" width="0.3" height="15.0" fill="rgb(252,217,52)" rx="2" ry="2" />
+<text  x="259.59" y="287.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (174,000,838 samples, 0.31%)</title><rect x="239.6" y="117" width="5.0" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="242.65" y="127.5" ></text>
+</g>
+<g >
+<title>std::ostream::sentry::sentry (3,783,767 samples, 0.01%)</title><rect x="254.4" y="245" width="0.1" height="15.0" fill="rgb(251,214,51)" rx="2" ry="2" />
+<text  x="257.43" y="255.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::TracerContext::GetResource() const (16,519,156 samples, 0.03%)</title><rect x="1324.8" y="309" width="0.5" height="15.0" fill="rgb(227,101,24)" rx="2" ry="2" />
+<text  x="1327.81" y="319.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_stringbuf&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_M_sync (7,450,831 samples, 0.01%)</title><rect x="266.2" y="245" width="0.2" height="15.0" fill="rgb(232,126,30)" rx="2" ry="2" />
+<text  x="269.17" y="255.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (8,876,515 samples, 0.02%)</title><rect x="896.3" y="85" width="0.2" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="899.28" y="95.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_M_create (95,334,063 samples, 0.17%)</title><rect x="881.0" y="245" width="2.7" height="15.0" fill="rgb(248,198,47)" rx="2" ry="2" />
+<text  x="883.99" y="255.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::trace::Tracer::GetCurrentSpan (2,787,616,652 samples, 5.01%)</title><rect x="1336.4" y="309" width="79.1" height="15.0" fill="rgb(238,152,36)" rx="2" ry="2" />
+<text  x="1339.37" y="319.5" >opentelem..</text>
+</g>
+<g >
+<title>std::condition_variable::notify_all (13,151,652 samples, 0.02%)</title><rect x="359.2" y="309" width="0.4" height="15.0" fill="rgb(221,75,18)" rx="2" ry="2" />
+<text  x="362.24" y="319.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_stringstream&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::basic_stringstream (178,854,158 samples, 0.32%)</title><rect x="258.5" y="277" width="5.0" height="15.0" fill="rgb(239,156,37)" rx="2" ry="2" />
+<text  x="261.47" y="287.5" ></text>
+</g>
+<g >
+<title>[libc.so.6] (218,882,489 samples, 0.39%)</title><rect x="47.1" y="309" width="6.2" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="50.10" y="319.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::MultiRecordable::SetName (117,933,372 samples, 0.21%)</title><rect x="508.9" y="309" width="3.3" height="15.0" fill="rgb(239,159,38)" rx="2" ry="2" />
+<text  x="511.90" y="319.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::exporter::otlp::OtlpHttpExporter::MakeRecordable (145,919,607 samples, 0.26%)</title><rect x="1082.6" y="277" width="4.1" height="15.0" fill="rgb(225,92,22)" rx="2" ry="2" />
+<text  x="1085.60" y="287.5" ></text>
+</g>
+<g >
+<title>operator new (13,992,636 samples, 0.03%)</title><rect x="246.7" y="197" width="0.4" height="15.0" fill="rgb(216,51,12)" rx="2" ry="2" />
+<text  x="249.69" y="207.5" ></text>
+</g>
+<g >
+<title>opentelemetry::proto::trace::v1::Span::Span (252,922,055 samples, 0.45%)</title><rect x="1096.4" y="245" width="7.2" height="15.0" fill="rgb(217,55,13)" rx="2" ry="2" />
+<text  x="1099.41" y="255.5" ></text>
+</g>
+<g >
+<title>malloc (9,591,257 samples, 0.02%)</title><rect x="257.4" y="229" width="0.3" height="15.0" fill="rgb(230,119,28)" rx="2" ry="2" />
+<text  x="260.45" y="239.5" ></text>
+</g>
+<g >
+<title>void std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_M_construct&lt;char const*&gt; (51,851,600 samples, 0.09%)</title><rect x="1065.2" y="261" width="1.5" height="15.0" fill="rgb(254,226,54)" rx="2" ry="2" />
+<text  x="1068.25" y="271.5" ></text>
+</g>
+<g >
+<title>malloc (115,483,726 samples, 0.21%)</title><rect x="1428.9" y="277" width="3.2" height="15.0" fill="rgb(230,119,28)" rx="2" ry="2" />
+<text  x="1431.87" y="287.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (104,639,479 samples, 0.19%)</title><rect x="1111.5" y="149" width="3.0" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="1114.55" y="159.5" ></text>
+</g>
+<g >
+<title>operator new (50,138,333 samples, 0.09%)</title><rect x="1442.5" y="325" width="1.5" height="15.0" fill="rgb(216,51,12)" rx="2" ry="2" />
+<text  x="1445.53" y="335.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (11,986,175 samples, 0.02%)</title><rect x="1018.4" y="149" width="0.3" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="1021.36" y="159.5" ></text>
+</g>
+<g >
+<title>std::locale::operator= (7,473,619 samples, 0.01%)</title><rect x="262.5" y="245" width="0.2" height="15.0" fill="rgb(242,173,41)" rx="2" ry="2" />
+<text  x="265.46" y="255.5" ></text>
+</g>
+<g >
+<title>std::ostream::sentry::sentry (135,218,987 samples, 0.24%)</title><rect x="247.6" y="245" width="3.9" height="15.0" fill="rgb(251,214,51)" rx="2" ry="2" />
+<text  x="250.65" y="255.5" ></text>
+</g>
+<g >
+<title>std::ios_base::_M_init (46,141,496 samples, 0.08%)</title><rect x="260.6" y="245" width="1.3" height="15.0" fill="rgb(228,107,25)" rx="2" ry="2" />
+<text  x="263.59" y="255.5" ></text>
+</g>
+<g >
+<title>cfree (12,520,308 samples, 0.02%)</title><rect x="71.5" y="293" width="0.3" height="15.0" fill="rgb(223,86,20)" rx="2" ry="2" />
+<text  x="74.48" y="303.5" ></text>
+</g>
+<g >
+<title>std::locale::locale (18,607,495 samples, 0.03%)</title><rect x="220.4" y="213" width="0.5" height="15.0" fill="rgb(214,44,10)" rx="2" ry="2" />
+<text  x="223.36" y="223.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::reserve (26,610,939 samples, 0.05%)</title><rect x="267.8" y="229" width="0.7" height="15.0" fill="rgb(244,181,43)" rx="2" ry="2" />
+<text  x="270.78" y="239.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::common::KeyValueIterableView&lt;opentelemetry::v1::nostd::span&lt;std::pair&lt;opentelemetry::v1::nostd::string_view, absl::otel_v1::variant&lt;bool, int, long, unsigned int, double, char const*, opentelemetry::v1::nostd::string_view, opentelemetry::v1::nostd::span&lt;bool const, 18446744073709551615ul&gt;, opentelemetry::v1::nostd::span&lt;int const, 18446744073709551615ul&gt;, opentelemetry::v1::nostd::span&lt;long const, 18446744073709551615ul&gt;, opentelemetry::v1::nostd::span&lt;unsigned int const, 18446744073709551615ul&gt;, opentelemetry::v1::nostd::span&lt;double const, 18446744073709551615ul&gt;, opentelemetry::v1::nostd::span&lt;opentelemetry::v1::nostd::string_view const, 18446744073709551615ul&gt;, unsigned long, opentelemetry::v1::nostd::span&lt;unsigned long const, 18446744073709551615ul&gt;, opentelemetry::v1::nostd::span&lt;unsigned char const, 18446744073709551615ul&gt; &gt; &gt; const, 18446744073709551615ul&gt; &gt;::ForEachKeyValue(opentelemetry::v1::nostd::function_ref&lt;bool (opentelemetry::v1::nostd::string_view, absl::otel_v1::variant&lt;bool, int, long, unsigned int, double, char const*, opentelemetry::v1::nostd::string_view, opentelemetry::v1::nostd::span&lt;bool const, 18446744073709551615ul&gt;, opentelemetry::v1::nostd::span&lt;int const, 18446744073709551615ul&gt;, opentelemetry::v1::nostd::span&lt;long const, 18446744073709551615ul&gt;, opentelemetry::v1::nostd::span&lt;unsigned int const, 18446744073709551615ul&gt;, opentelemetry::v1::nostd::span&lt;double const, 18446744073709551615ul&gt;, opentelemetry::v1::nostd::span&lt;opentelemetry::v1::nostd::string_view const, 18446744073709551615ul&gt;, unsigned long, opentelemetry::v1::nostd::span&lt;unsigned long const, 18446744073709551615ul&gt;, opentelemetry::v1::nostd::span&lt;unsigned char const, 18446744073709551615ul&gt; &gt;)&gt;) const (64,284,520 samples, 0.12%)</title><rect x="574.1" y="293" width="1.8" height="15.0" fill="rgb(238,152,36)" rx="2" ry="2" />
+<text  x="577.06" y="303.5" ></text>
+</g>
+<g >
+<title>cfree (337,182,766 samples, 0.61%)</title><rect x="180.8" y="293" width="9.6" height="15.0" fill="rgb(223,86,20)" rx="2" ry="2" />
+<text  x="183.81" y="303.5" ></text>
+</g>
+<g >
+<title>std::num_put&lt;char, std::ostreambuf_iterator&lt;char, std::char_traits&lt;char&gt; &gt; &gt;::do_put(std::ostreambuf_iterator&lt;char, std::char_traits&lt;char&gt; &gt;, std::ios_base&amp;, char, long) const (11,386,119 samples, 0.02%)</title><rect x="252.6" y="261" width="0.3" height="15.0" fill="rgb(220,72,17)" rx="2" ry="2" />
+<text  x="255.61" y="271.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::exporter::otlp::OtlpRecordable::SetIdentity (110,481,437 samples, 0.20%)</title><rect x="575.9" y="293" width="3.1" height="15.0" fill="rgb(239,156,37)" rx="2" ry="2" />
+<text  x="578.88" y="303.5" ></text>
+</g>
+<g >
+<title>cfree (479,262,067 samples, 0.86%)</title><rect x="285.2" y="245" width="13.6" height="15.0" fill="rgb(223,86,20)" rx="2" ry="2" />
+<text  x="288.18" y="255.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::trace::Span&gt;::shared_ptr_wrapper::~shared_ptr_wrapper (994,651,602 samples, 1.79%)</title><rect x="428.9" y="309" width="28.2" height="15.0" fill="rgb(222,82,19)" rx="2" ry="2" />
+<text  x="431.87" y="319.5" >o..</text>
+</g>
+<g >
+<title>[[vdso]] (1,640,677,171 samples, 2.95%)</title><rect x="312.7" y="277" width="46.5" height="15.0" fill="rgb(218,60,14)" rx="2" ry="2" />
+<text  x="315.68" y="287.5" >[[vd..</text>
+</g>
+<g >
+<title>[libc.so.6] (8,308,073 samples, 0.01%)</title><rect x="83.6" y="277" width="0.3" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="86.63" y="287.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (118,800,672 samples, 0.21%)</title><rect x="1111.1" y="165" width="3.4" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="1114.15" y="175.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (11,407,609 samples, 0.02%)</title><rect x="896.2" y="117" width="0.3" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="899.20" y="127.5" ></text>
+</g>
+<g >
+<title>[libc.so.6] (18,957,475 samples, 0.03%)</title><rect x="284.6" y="245" width="0.6" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="287.65" y="255.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::trace::DefaultSpan::~DefaultSpan (10,326,383 samples, 0.02%)</title><rect x="1332.2" y="309" width="0.3" height="15.0" fill="rgb(235,141,33)" rx="2" ry="2" />
+<text  x="1335.17" y="319.5" ></text>
+</g>
+<g >
+<title>malloc (29,775,331 samples, 0.05%)</title><rect x="419.8" y="309" width="0.8" height="15.0" fill="rgb(230,119,28)" rx="2" ry="2" />
+<text  x="422.77" y="319.5" ></text>
+</g>
+<g >
+<title>std::ios_base::_M_init (9,399,380 samples, 0.02%)</title><rect x="262.8" y="261" width="0.2" height="15.0" fill="rgb(228,107,25)" rx="2" ry="2" />
+<text  x="265.76" y="271.5" ></text>
+</g>
+<g >
+<title>cfree (280,269,246 samples, 0.50%)</title><rect x="411.8" y="309" width="8.0" height="15.0" fill="rgb(223,86,20)" rx="2" ry="2" />
+<text  x="414.81" y="319.5" ></text>
+</g>
+<g >
+<title>[libc.so.6] (210,141,651 samples, 0.38%)</title><rect x="64.5" y="293" width="6.0" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="67.50" y="303.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::AlwaysOnSampler::ShouldSample (46,053,907 samples, 0.08%)</title><rect x="156.8" y="325" width="1.3" height="15.0" fill="rgb(223,86,20)" rx="2" ry="2" />
+<text  x="159.83" y="335.5" ></text>
+</g>
+<g >
+<title>pthread_mutex_unlock (62,284,874 samples, 0.11%)</title><rect x="1482.8" y="341" width="1.8" height="15.0" fill="rgb(231,120,28)" rx="2" ry="2" />
+<text  x="1485.80" y="351.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (54,151,746 samples, 0.10%)</title><rect x="680.0" y="213" width="1.5" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="682.99" y="223.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_M_replace (33,036,844 samples, 0.06%)</title><rect x="217.1" y="261" width="1.0" height="15.0" fill="rgb(226,98,23)" rx="2" ry="2" />
+<text  x="220.14" y="271.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (12,611,057 samples, 0.02%)</title><rect x="896.2" y="133" width="0.3" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="899.17" y="143.5" ></text>
+</g>
+<g >
+<title>std::ostream::sentry::sentry (7,008,791 samples, 0.01%)</title><rect x="269.1" y="261" width="0.2" height="15.0" fill="rgb(251,214,51)" rx="2" ry="2" />
+<text  x="272.10" y="271.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::trace::TraceState&gt;::shared_ptr_wrapper::~shared_ptr_wrapper (49,262,567 samples, 0.09%)</title><rect x="442.5" y="293" width="1.4" height="15.0" fill="rgb(208,14,3)" rx="2" ry="2" />
+<text  x="445.53" y="303.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::AlwaysOnSampler::ShouldSample (259,960,454 samples, 0.47%)</title><rect x="496.7" y="309" width="7.4" height="15.0" fill="rgb(223,86,20)" rx="2" ry="2" />
+<text  x="499.73" y="319.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_stringbuf&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_M_sync (4,714,811 samples, 0.01%)</title><rect x="247.3" y="213" width="0.1" height="15.0" fill="rgb(232,126,30)" rx="2" ry="2" />
+<text  x="250.31" y="223.5" ></text>
+</g>
+<g >
+<title>memcpy@plt (21,923,631 samples, 0.04%)</title><rect x="675.3" y="245" width="0.6" height="15.0" fill="rgb(224,88,21)" rx="2" ry="2" />
+<text  x="678.31" y="255.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::trace::TraceState&gt;::shared_ptr_wrapper::~shared_ptr_wrapper (412,699,195 samples, 0.74%)</title><rect x="445.3" y="277" width="11.7" height="15.0" fill="rgb(208,14,3)" rx="2" ry="2" />
+<text  x="448.32" y="287.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::trace::Tracer&gt;::shared_ptr_wrapper::Get() const (58,392,638 samples, 0.10%)</title><rect x="1478.0" y="341" width="1.7" height="15.0" fill="rgb(230,116,27)" rx="2" ry="2" />
+<text  x="1481.04" y="351.5" ></text>
+</g>
+<g >
+<title>free@plt (44,633,120 samples, 0.08%)</title><rect x="280.2" y="261" width="1.3" height="15.0" fill="rgb(229,112,26)" rx="2" ry="2" />
+<text  x="283.23" y="271.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::trace::Span&gt;::shared_ptr_wrapper::Get() const (64,116,388 samples, 0.12%)</title><rect x="54.2" y="325" width="1.8" height="15.0" fill="rgb(217,57,13)" rx="2" ry="2" />
+<text  x="57.17" y="335.5" ></text>
+</g>
+<g >
+<title>[libc.so.6] (6,671,269 samples, 0.01%)</title><rect x="257.0" y="261" width="0.2" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="260.00" y="271.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::common::(anonymous namespace)::TlsRandomNumberGenerator::Seed (7,376,846 samples, 0.01%)</title><rect x="527.3" y="277" width="0.2" height="15.0" fill="rgb(231,121,29)" rx="2" ry="2" />
+<text  x="530.25" y="287.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::MultiSpanProcessor::OnStart (46,315,769 samples, 0.08%)</title><rect x="522.8" y="309" width="1.4" height="15.0" fill="rgb(228,107,25)" rx="2" ry="2" />
+<text  x="525.84" y="319.5" ></text>
+</g>
+<g >
+<title>std::locale::locale (18,361,355 samples, 0.03%)</title><rect x="221.8" y="245" width="0.5" height="15.0" fill="rgb(214,44,10)" rx="2" ry="2" />
+<text  x="224.83" y="255.5" ></text>
+</g>
+<g >
+<title>[libc.so.6] (26,976,052 samples, 0.05%)</title><rect x="213.9" y="213" width="0.8" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="216.91" y="223.5" ></text>
+</g>
+<g >
+<title>cfree (9,554,614 samples, 0.02%)</title><rect x="215.2" y="213" width="0.3" height="15.0" fill="rgb(223,86,20)" rx="2" ry="2" />
+<text  x="218.20" y="223.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::Span::End (199,601,629 samples, 0.36%)</title><rect x="100.8" y="277" width="5.6" height="15.0" fill="rgb(224,91,21)" rx="2" ry="2" />
+<text  x="103.75" y="287.5" ></text>
+</g>
+<g >
+<title>google::protobuf::internal::ArenaStringPtr::Set (11,151,426,896 samples, 20.03%)</title><rect x="645.0" y="261" width="316.4" height="15.0" fill="rgb(235,139,33)" rx="2" ry="2" />
+<text  x="647.98" y="271.5" >google::protobuf::internal::ArenaStringPtr..</text>
+</g>
+<g >
+<title>std::chrono::_V2::system_clock::now (17,784,328 samples, 0.03%)</title><rect x="1434.3" y="309" width="0.5" height="15.0" fill="rgb(224,91,21)" rx="2" ry="2" />
+<text  x="1437.26" y="319.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::trace::TraceState&gt;::shared_ptr_wrapper::Get() const (114,215,004 samples, 0.21%)</title><rect x="981.5" y="277" width="3.2" height="15.0" fill="rgb(252,220,52)" rx="2" ry="2" />
+<text  x="984.45" y="287.5" ></text>
+</g>
+<g >
+<title>operator new (18,966,819 samples, 0.03%)</title><rect x="268.0" y="213" width="0.5" height="15.0" fill="rgb(216,51,12)" rx="2" ry="2" />
+<text  x="271.00" y="223.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::context::ThreadLocalContextStorage::GetCurrent (102,873,946 samples, 0.18%)</title><rect x="1369.2" y="293" width="2.9" height="15.0" fill="rgb(212,32,7)" rx="2" ry="2" />
+<text  x="1372.23" y="303.5" ></text>
+</g>
+<g >
+<title>std::_Sp_counted_ptr&lt;opentelemetry::v1::trace::Span*, (__gnu_cxx::_Lock_policy)2&gt;::_M_dispose (74,308,197 samples, 0.13%)</title><rect x="1450.1" y="325" width="2.2" height="15.0" fill="rgb(247,197,47)" rx="2" ry="2" />
+<text  x="1453.15" y="335.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::exporter::otlp::OtlpHttpExporter::MakeRecordable (2,766,886,318 samples, 4.97%)</title><rect x="1089.1" y="261" width="78.5" height="15.0" fill="rgb(225,92,22)" rx="2" ry="2" />
+<text  x="1092.09" y="271.5" >opentelem..</text>
+</g>
+<g >
+<title>[[unknown]] (61,722,448 samples, 0.11%)</title><rect x="1112.8" y="133" width="1.7" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="1115.77" y="143.5" ></text>
+</g>
+<g >
+<title>bench::Histogram::Record (458,961,953 samples, 0.82%)</title><rect x="1453.7" y="341" width="13.0" height="15.0" fill="rgb(251,211,50)" rx="2" ry="2" />
+<text  x="1456.72" y="351.5" ></text>
+</g>
+<g >
+<title>[libc.so.6] (6,618,228 samples, 0.01%)</title><rect x="961.2" y="181" width="0.2" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="964.24" y="191.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (6,347,369 samples, 0.01%)</title><rect x="669.9" y="229" width="0.2" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="672.89" y="239.5" ></text>
+</g>
+<g >
+<title>std::locale::operator= (13,139,404 samples, 0.02%)</title><rect x="261.4" y="229" width="0.4" height="15.0" fill="rgb(242,173,41)" rx="2" ry="2" />
+<text  x="264.43" y="239.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (167,220,062 samples, 0.30%)</title><rect x="1109.8" y="181" width="4.7" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="1112.77" y="191.5" ></text>
+</g>
+<g >
+<title>malloc (1,870,840,147 samples, 3.36%)</title><rect x="1114.5" y="229" width="53.1" height="15.0" fill="rgb(230,119,28)" rx="2" ry="2" />
+<text  x="1117.52" y="239.5" >malloc</text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::swap (16,302,244 samples, 0.03%)</title><rect x="268.5" y="229" width="0.5" height="15.0" fill="rgb(218,60,14)" rx="2" ry="2" />
+<text  x="271.54" y="239.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (44,217,475 samples, 0.08%)</title><rect x="1105.7" y="181" width="1.3" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="1108.71" y="191.5" ></text>
+</g>
+<g >
+<title>std::_Rb_tree&lt;unsigned long, std::pair&lt;unsigned long const, std::unique_ptr&lt;opentelemetry::v1::sdk::trace::Recordable, std::default_delete&lt;opentelemetry::v1::sdk::trace::Recordable&gt; &gt; &gt;, std::_Select1st&lt;std::pair&lt;unsigned long const, std::unique_ptr&lt;opentelemetry::v1::sdk::trace::Recordable, std::default_delete&lt;opentelemetry::v1::sdk::trace::Recordable&gt; &gt; &gt; &gt;, std::less&lt;unsigned long&gt;, std::allocator&lt;std::pair&lt;unsigned long const, std::unique_ptr&lt;opentelemetry::v1::sdk::trace::Recordable, std::default_delete&lt;opentelemetry::v1::sdk::trace::Recordable&gt; &gt; &gt; &gt; &gt;::_M_get_insert_hint_unique_pos (125,451,047 samples, 0.23%)</title><rect x="1192.0" y="261" width="3.6" height="15.0" fill="rgb(206,7,1)" rx="2" ry="2" />
+<text  x="1195.00" y="271.5" ></text>
+</g>
+<g >
+<title>std::ostream::sentry::sentry(std::ostream&amp;)@plt (5,238,067 samples, 0.01%)</title><rect x="256.1" y="261" width="0.1" height="15.0" fill="rgb(232,126,30)" rx="2" ry="2" />
+<text  x="259.09" y="271.5" ></text>
+</g>
+<g >
+<title>__lll_lock_wake_private (265,979,643 samples, 0.48%)</title><rect x="1107.0" y="229" width="7.5" height="15.0" fill="rgb(238,155,37)" rx="2" ry="2" />
+<text  x="1109.97" y="239.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_stringbuf&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::overflow (68,553,744 samples, 0.12%)</title><rect x="245.5" y="229" width="1.9" height="15.0" fill="rgb(221,75,18)" rx="2" ry="2" />
+<text  x="248.50" y="239.5" ></text>
+</g>
+<g >
+<title>[libprotobuf.so.32.0.12] (222,845,015 samples, 0.40%)</title><rect x="663.6" y="245" width="6.3" height="15.0" fill="rgb(224,88,21)" rx="2" ry="2" />
+<text  x="666.56" y="255.5" ></text>
+</g>
+<g >
+<title>[libstdc++.so.6.0.33] (5,644,043 samples, 0.01%)</title><rect x="254.8" y="229" width="0.2" height="15.0" fill="rgb(216,51,12)" rx="2" ry="2" />
+<text  x="257.81" y="239.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (34,492,511 samples, 0.06%)</title><rect x="1106.0" y="165" width="1.0" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="1108.99" y="175.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::MultiRecordable::~MultiRecordable (59,077,343 samples, 0.11%)</title><rect x="298.8" y="293" width="1.7" height="15.0" fill="rgb(241,166,39)" rx="2" ry="2" />
+<text  x="301.78" y="303.5" ></text>
+</g>
+<g >
+<title>_IO_file_overflow (5,793,563 samples, 0.01%)</title><rect x="227.2" y="229" width="0.1" height="15.0" fill="rgb(242,173,41)" rx="2" ry="2" />
+<text  x="230.16" y="239.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::trace::TraceState&gt;::shared_ptr_wrapper::CopyTo(opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::trace::TraceState&gt;::PlacementBuffer&amp;) const (39,888,532 samples, 0.07%)</title><rect x="1331.0" y="293" width="1.2" height="15.0" fill="rgb(233,131,31)" rx="2" ry="2" />
+<text  x="1334.04" y="303.5" ></text>
+</g>
+<g >
+<title>free@plt (30,124,332 samples, 0.05%)</title><rect x="53.3" y="325" width="0.9" height="15.0" fill="rgb(229,112,26)" rx="2" ry="2" />
+<text  x="56.31" y="335.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (13,259,530 samples, 0.02%)</title><rect x="1018.3" y="165" width="0.4" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="1021.32" y="175.5" ></text>
+</g>
+<g >
+<title>malloc (252,680,900 samples, 0.45%)</title><rect x="1408.3" y="277" width="7.2" height="15.0" fill="rgb(230,119,28)" rx="2" ry="2" />
+<text  x="1411.31" y="287.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::exporter::otlp::OtlpRecordable::SetStartTime (50,129,334 samples, 0.09%)</title><rect x="591.6" y="293" width="1.5" height="15.0" fill="rgb(252,220,52)" rx="2" ry="2" />
+<text  x="594.65" y="303.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::MultiSpanProcessor::MakeRecordable (145,352,434 samples, 0.26%)</title><rect x="518.7" y="309" width="4.1" height="15.0" fill="rgb(248,200,47)" rx="2" ry="2" />
+<text  x="521.72" y="319.5" ></text>
+</g>
+<g >
+<title>std::_Sp_counted_ptr&lt;opentelemetry::v1::trace::Span*, (__gnu_cxx::_Lock_policy)2&gt;::_M_destroy (8,109,853 samples, 0.01%)</title><rect x="1449.9" y="325" width="0.2" height="15.0" fill="rgb(225,92,22)" rx="2" ry="2" />
+<text  x="1452.92" y="335.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::trace::TraceState&gt;::shared_ptr_wrapper::~shared_ptr_wrapper (110,004,834 samples, 0.20%)</title><rect x="73.0" y="293" width="3.1" height="15.0" fill="rgb(208,14,3)" rx="2" ry="2" />
+<text  x="76.00" y="303.5" ></text>
+</g>
+<g >
+<title>operator new (2,345,066,418 samples, 4.21%)</title><rect x="894.9" y="229" width="66.5" height="15.0" fill="rgb(216,51,12)" rx="2" ry="2" />
+<text  x="897.88" y="239.5" >operato..</text>
+</g>
+<g >
+<title>malloc (35,773,952 samples, 0.06%)</title><rect x="1181.8" y="261" width="1.0" height="15.0" fill="rgb(230,119,28)" rx="2" ry="2" />
+<text  x="1184.81" y="271.5" ></text>
+</g>
+<g >
+<title>std::basic_ostream&lt;char, std::char_traits&lt;char&gt; &gt;&amp; std::__ostream_insert&lt;char, std::char_traits&lt;char&gt; &gt; (165,737,766 samples, 0.30%)</title><rect x="264.6" y="277" width="4.7" height="15.0" fill="rgb(220,73,17)" rx="2" ry="2" />
+<text  x="267.59" y="287.5" ></text>
+</g>
+<g >
+<title>std::locale::~locale (4,723,941 samples, 0.01%)</title><rect x="221.2" y="213" width="0.1" height="15.0" fill="rgb(250,210,50)" rx="2" ry="2" />
+<text  x="224.21" y="223.5" ></text>
+</g>
+<g >
+<title>_IO_file_xsputn (608,614,199 samples, 1.09%)</title><rect x="227.4" y="229" width="17.2" height="15.0" fill="rgb(245,188,45)" rx="2" ry="2" />
+<text  x="230.35" y="239.5" ></text>
+</g>
+<g >
+<title>[libc.so.6] (27,380,286 samples, 0.05%)</title><rect x="411.0" y="309" width="0.8" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="414.04" y="319.5" ></text>
+</g>
+<g >
+<title>std::locale::locale (16,042,209 samples, 0.03%)</title><rect x="263.1" y="261" width="0.4" height="15.0" fill="rgb(214,44,10)" rx="2" ry="2" />
+<text  x="266.09" y="271.5" ></text>
+</g>
+<g >
+<title>std::_Rb_tree_iterator&lt;std::pair&lt;unsigned long const, std::unique_ptr&lt;opentelemetry::v1::sdk::trace::Recordable, std::default_delete&lt;opentelemetry::v1::sdk::trace::Recordable&gt; &gt; &gt; &gt; std::_Rb_tree&lt;unsigned long, std::pair&lt;unsigned long const, std::unique_ptr&lt;opentelemetry::v1::sdk::trace::Recordable, std::default_delete&lt;opentelemetry::v1::sdk::trace::Recordable&gt; &gt; &gt;, std::_Select1st&lt;std::pair&lt;unsigned long const, std::unique_ptr&lt;opentelemetry::v1::sdk::trace::Recordable, std::default_delete&lt;opentelemetry::v1::sdk::trace::Recordable&gt; &gt; &gt; &gt;, std::less&lt;unsigned long&gt;, std::allocator&lt;std::pair&lt;unsigned long const, std::unique_ptr&lt;opentelemetry::v1::sdk::trace::Recordable, std::default_delete&lt;opentelemetry::v1::sdk::trace::Recordable&gt; &gt; &gt; &gt; &gt;::_M_emplace_hint_unique&lt;std::piecewise_construct_t const&amp;, std::tuple&lt;unsigned long&amp;&amp;&gt;, std::tuple&lt;&gt; &gt; (28,757,731 samples, 0.05%)</title><rect x="1224.5" y="293" width="0.8" height="15.0" fill="rgb(226,98,23)" rx="2" ry="2" />
+<text  x="1227.48" y="303.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (11,446,604 samples, 0.02%)</title><rect x="681.2" y="85" width="0.3" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="684.20" y="95.5" ></text>
+</g>
+<g >
+<title>malloc (228,482,594 samples, 0.41%)</title><rect x="1185.5" y="245" width="6.5" height="15.0" fill="rgb(230,119,28)" rx="2" ry="2" />
+<text  x="1188.51" y="255.5" ></text>
+</g>
+<g >
+<title>malloc@plt (72,171,514 samples, 0.13%)</title><rect x="673.3" y="245" width="2.0" height="15.0" fill="rgb(246,192,46)" rx="2" ry="2" />
+<text  x="676.26" y="255.5" ></text>
+</g>
+<g >
+<title>[libc.so.6] (11,836,861 samples, 0.02%)</title><rect x="217.2" y="245" width="0.4" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="220.24" y="255.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::MultiRecordable::~MultiRecordable (54,219,344 samples, 0.10%)</title><rect x="174.8" y="309" width="1.6" height="15.0" fill="rgb(241,166,39)" rx="2" ry="2" />
+<text  x="177.84" y="319.5" ></text>
+</g>
+<g >
+<title>[libc.so.6] (160,093,078 samples, 0.29%)</title><rect x="659.0" y="245" width="4.6" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="662.02" y="255.5" ></text>
+</g>
+<g >
+<title>std::ostream&amp; std::ostream::_M_insert&lt;long&gt; (6,504,436 samples, 0.01%)</title><rect x="270.1" y="277" width="0.2" height="15.0" fill="rgb(205,2,0)" rx="2" ry="2" />
+<text  x="273.13" y="287.5" ></text>
+</g>
+<g >
+<title>std::_Sp_counted_ptr&lt;opentelemetry::v1::trace::Span*, (__gnu_cxx::_Lock_policy)2&gt;::_M_destroy (39,161,054 samples, 0.07%)</title><rect x="1484.6" y="341" width="1.2" height="15.0" fill="rgb(225,92,22)" rx="2" ry="2" />
+<text  x="1487.64" y="351.5" ></text>
+</g>
+<g >
+<title>[libc.so.6] (33,167,383 samples, 0.06%)</title><rect x="225.8" y="245" width="0.9" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="228.75" y="255.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::common::Random::GenerateRandomBuffer (226,327,798 samples, 0.41%)</title><rect x="530.3" y="293" width="6.4" height="15.0" fill="rgb(240,161,38)" rx="2" ry="2" />
+<text  x="533.27" y="303.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::trace::TraceState&gt;::shared_ptr_wrapper::~shared_ptr_wrapper (370,654,851 samples, 0.67%)</title><rect x="1391.8" y="293" width="10.5" height="15.0" fill="rgb(208,14,3)" rx="2" ry="2" />
+<text  x="1394.76" y="303.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::trace::Span&gt;::shared_ptr_wrapper::~shared_ptr_wrapper (73,032,869 samples, 0.13%)</title><rect x="1472.1" y="341" width="2.1" height="15.0" fill="rgb(222,82,19)" rx="2" ry="2" />
+<text  x="1475.14" y="351.5" ></text>
+</g>
+<g >
+<title>[libc.so.6] (7,215,285 samples, 0.01%)</title><rect x="1431.9" y="261" width="0.2" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="1434.94" y="271.5" ></text>
+</g>
+<g >
+<title>clock_gettime (96,009,181 samples, 0.17%)</title><rect x="570.9" y="293" width="2.8" height="15.0" fill="rgb(213,39,9)" rx="2" ry="2" />
+<text  x="573.94" y="303.5" ></text>
+</g>
+<g >
+<title>std::basic_ios&lt;char, std::char_traits&lt;char&gt; &gt;::init (6,074,474 samples, 0.01%)</title><rect x="263.5" y="277" width="0.2" height="15.0" fill="rgb(206,7,1)" rx="2" ry="2" />
+<text  x="266.54" y="287.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_M_replace (27,817,217 samples, 0.05%)</title><rect x="256.9" y="277" width="0.8" height="15.0" fill="rgb(226,98,23)" rx="2" ry="2" />
+<text  x="259.93" y="287.5" ></text>
+</g>
+<g >
+<title>[libc.so.6] (13,028,741 samples, 0.02%)</title><rect x="679.0" y="229" width="0.4" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="682.00" y="239.5" ></text>
+</g>
+<g >
+<title>cfree (435,333,785 samples, 0.78%)</title><rect x="41.0" y="325" width="12.3" height="15.0" fill="rgb(223,86,20)" rx="2" ry="2" />
+<text  x="43.96" y="335.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (26,033,054 samples, 0.05%)</title><rect x="1106.2" y="117" width="0.8" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="1109.23" y="127.5" ></text>
+</g>
+<g >
+<title>[libc.so.6] (789,205,557 samples, 1.42%)</title><rect x="1033.7" y="213" width="22.4" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="1036.70" y="223.5" >[..</text>
+</g>
+<g >
+<title>[[unknown]] (584,353,778 samples, 1.05%)</title><rect x="228.0" y="181" width="16.6" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="231.00" y="191.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (18,100,810 samples, 0.03%)</title><rect x="658.5" y="245" width="0.5" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="661.51" y="255.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::TracerContext::GetIdGenerator() const (8,215,090 samples, 0.01%)</title><rect x="1324.1" y="309" width="0.3" height="15.0" fill="rgb(245,187,44)" rx="2" ry="2" />
+<text  x="1327.15" y="319.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_stringstream&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::basic_stringstream (25,465,714 samples, 0.05%)</title><rect x="257.7" y="277" width="0.7" height="15.0" fill="rgb(239,156,37)" rx="2" ry="2" />
+<text  x="260.72" y="287.5" ></text>
+</g>
+<g >
+<title>[libc.so.6] (136,335,225 samples, 0.24%)</title><rect x="415.9" y="293" width="3.9" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="418.90" y="303.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (78,100,228 samples, 0.14%)</title><rect x="693.3" y="117" width="2.2" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="696.31" y="127.5" ></text>
+</g>
+<g >
+<title>std::_Rb_tree_increment(std::_Rb_tree_node_base*)@plt (75,116,212 samples, 0.13%)</title><rect x="1222.4" y="293" width="2.1" height="15.0" fill="rgb(242,171,41)" rx="2" ry="2" />
+<text  x="1225.35" y="303.5" ></text>
+</g>
+<g >
+<title>malloc (29,853,128 samples, 0.05%)</title><rect x="1353.9" y="293" width="0.9" height="15.0" fill="rgb(230,119,28)" rx="2" ry="2" />
+<text  x="1356.92" y="303.5" ></text>
+</g>
+<g >
+<title>[[vdso]] (1,591,164,208 samples, 2.86%)</title><rect x="1229.6" y="261" width="45.1" height="15.0" fill="rgb(218,60,14)" rx="2" ry="2" />
+<text  x="1232.58" y="271.5" >[[vd..</text>
+</g>
+<g >
+<title>opentelemetry::v1::trace::TraceState::GetDefault (137,886,290 samples, 0.25%)</title><rect x="1402.3" y="293" width="3.9" height="15.0" fill="rgb(251,213,51)" rx="2" ry="2" />
+<text  x="1405.28" y="303.5" ></text>
+</g>
+<g >
+<title>all (55,678,403,512 samples, 100%)</title><rect x="10.0" y="373" width="1580.0" height="15.0" fill="rgb(213,39,9)" rx="2" ry="2" />
+<text  x="13.00" y="383.5" ></text>
+</g>
+<g >
+<title>_IO_file_write (597,993,298 samples, 1.07%)</title><rect x="227.6" y="213" width="17.0" height="15.0" fill="rgb(218,59,14)" rx="2" ry="2" />
+<text  x="230.61" y="223.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::Span::~Span (1,475,056,138 samples, 2.65%)</title><rect x="70.5" y="309" width="41.8" height="15.0" fill="rgb(216,52,12)" rx="2" ry="2" />
+<text  x="73.46" y="319.5" >ope..</text>
+</g>
+<g >
+<title>[[unknown]] (28,729,829 samples, 0.05%)</title><rect x="1106.2" y="133" width="0.8" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="1109.15" y="143.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::MultiRecordable::SetDuration (42,138,449 samples, 0.08%)</title><rect x="173.6" y="309" width="1.2" height="15.0" fill="rgb(213,37,9)" rx="2" ry="2" />
+<text  x="176.64" y="319.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::trace::TraceState&gt;::shared_ptr_wrapper::CopyTo(opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::trace::TraceState&gt;::PlacementBuffer&amp;) const (47,032,833 samples, 0.08%)</title><rect x="1474.2" y="341" width="1.3" height="15.0" fill="rgb(233,131,31)" rx="2" ry="2" />
+<text  x="1477.21" y="351.5" ></text>
+</g>
+<g >
+<title>pthread_mutex_lock (137,928,927 samples, 0.25%)</title><rect x="102.5" y="261" width="3.9" height="15.0" fill="rgb(247,196,46)" rx="2" ry="2" />
+<text  x="105.50" y="271.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::trace::TraceState&gt;::shared_ptr_wrapper::Get() const (54,176,925 samples, 0.10%)</title><rect x="119.5" y="325" width="1.5" height="15.0" fill="rgb(252,220,52)" rx="2" ry="2" />
+<text  x="122.51" y="335.5" ></text>
+</g>
+<g >
+<title>std::_Rb_tree_insert_and_rebalance (80,443,457 samples, 0.14%)</title><rect x="1173.8" y="277" width="2.3" height="15.0" fill="rgb(225,94,22)" rx="2" ry="2" />
+<text  x="1176.77" y="287.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::exporter::otlp::OtlpRecordable::SetName (143,555,015 samples, 0.26%)</title><rect x="582.4" y="293" width="4.0" height="15.0" fill="rgb(241,166,39)" rx="2" ry="2" />
+<text  x="585.36" y="303.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (379,994,956 samples, 0.68%)</title><rect x="684.7" y="197" width="10.8" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="687.74" y="207.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::RandomIdGenerator::GenerateTraceId (46,602,517 samples, 0.08%)</title><rect x="162.0" y="325" width="1.3" height="15.0" fill="rgb(228,107,25)" rx="2" ry="2" />
+<text  x="164.96" y="335.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::trace::TraceState&gt;::shared_ptr_wrapper::MoveTo (278,755,093 samples, 0.50%)</title><rect x="463.7" y="309" width="7.9" height="15.0" fill="rgb(213,40,9)" rx="2" ry="2" />
+<text  x="466.71" y="319.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (45,804,482 samples, 0.08%)</title><rect x="899.6" y="117" width="1.3" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="902.57" y="127.5" ></text>
+</g>
+<g >
+<title>__lll_lock_wait_private (30,710,245 samples, 0.06%)</title><rect x="1017.8" y="229" width="0.9" height="15.0" fill="rgb(254,228,54)" rx="2" ry="2" />
+<text  x="1020.83" y="239.5" ></text>
+</g>
+<g >
+<title>void std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_M_construct&lt;char const*&gt; (226,010,154 samples, 0.41%)</title><rect x="1056.1" y="245" width="6.4" height="15.0" fill="rgb(254,226,54)" rx="2" ry="2" />
+<text  x="1059.10" y="255.5" ></text>
+</g>
+<g >
+<title>operator new(unsigned long)@plt (39,218,219 samples, 0.07%)</title><rect x="965.3" y="261" width="1.1" height="15.0" fill="rgb(249,205,49)" rx="2" ry="2" />
+<text  x="968.26" y="271.5" ></text>
+</g>
+<g >
+<title>malloc (1,181,454,964 samples, 2.12%)</title><rect x="1022.6" y="229" width="33.5" height="15.0" fill="rgb(230,119,28)" rx="2" ry="2" />
+<text  x="1025.57" y="239.5" >ma..</text>
+</g>
+<g >
+<title>[[vdso]] (22,471,653 samples, 0.04%)</title><rect x="1278.0" y="277" width="0.6" height="15.0" fill="rgb(218,60,14)" rx="2" ry="2" />
+<text  x="1280.96" y="287.5" ></text>
+</g>
+<g >
+<title>malloc (292,428,735 samples, 0.53%)</title><rect x="966.4" y="245" width="8.3" height="15.0" fill="rgb(230,119,28)" rx="2" ry="2" />
+<text  x="969.38" y="255.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_M_replace (4,789,821 samples, 0.01%)</title><rect x="265.6" y="245" width="0.2" height="15.0" fill="rgb(226,98,23)" rx="2" ry="2" />
+<text  x="268.64" y="255.5" ></text>
+</g>
+<g >
+<title>[libc.so.6] (5,103,178,091 samples, 9.17%)</title><rect x="735.7" y="213" width="144.8" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="738.72" y="223.5" >[libc.so.6]</text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::common::internal_log::GlobalLogHandler::GetLogHandler (12,280,167 samples, 0.02%)</title><rect x="256.2" y="277" width="0.4" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="259.24" y="287.5" ></text>
+</g>
+<g >
+<title>__lll_lock_wait_private (21,678,384 samples, 0.04%)</title><rect x="895.9" y="213" width="0.6" height="15.0" fill="rgb(254,228,54)" rx="2" ry="2" />
+<text  x="898.91" y="223.5" ></text>
+</g>
+<g >
+<title>std::basic_streambuf&lt;char, std::char_traits&lt;char&gt; &gt;::xsputn (97,418,486 samples, 0.17%)</title><rect x="244.7" y="245" width="2.7" height="15.0" fill="rgb(244,181,43)" rx="2" ry="2" />
+<text  x="247.68" y="255.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_stringbuf&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_M_pbump (6,062,369 samples, 0.01%)</title><rect x="265.9" y="245" width="0.2" height="15.0" fill="rgb(217,56,13)" rx="2" ry="2" />
+<text  x="268.93" y="255.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::Tracer::StartSpan (40,150,904 samples, 0.07%)</title><rect x="1481.0" y="341" width="1.2" height="15.0" fill="rgb(245,185,44)" rx="2" ry="2" />
+<text  x="1484.03" y="351.5" ></text>
+</g>
+<g >
+<title>malloc (2,134,068,806 samples, 3.83%)</title><rect x="900.9" y="213" width="60.5" height="15.0" fill="rgb(230,119,28)" rx="2" ry="2" />
+<text  x="903.87" y="223.5" >malloc</text>
+</g>
+<g >
+<title>std::basic_ostream&lt;char, std::char_traits&lt;char&gt; &gt;&amp; std::__ostream_insert&lt;char, std::char_traits&lt;char&gt; &gt; (1,026,977,672 samples, 1.84%)</title><rect x="222.4" y="261" width="29.1" height="15.0" fill="rgb(220,73,17)" rx="2" ry="2" />
+<text  x="225.38" y="271.5" >st..</text>
+</g>
+<g >
+<title>[[unknown]] (123,556,186 samples, 0.22%)</title><rect x="692.0" y="133" width="3.5" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="695.02" y="143.5" ></text>
+</g>
+<g >
+<title>[libc.so.6] (69,140,106 samples, 0.12%)</title><rect x="993.8" y="277" width="2.0" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="996.82" y="287.5" ></text>
+</g>
+<g >
+<title>[[vdso]] (14,940,117 samples, 0.03%)</title><rect x="1492.7" y="325" width="0.5" height="15.0" fill="rgb(218,60,14)" rx="2" ry="2" />
+<text  x="1495.73" y="335.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (10,441,714 samples, 0.02%)</title><rect x="1018.4" y="117" width="0.3" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="1021.40" y="127.5" ></text>
+</g>
+<g >
+<title>operator new (10,785,722 samples, 0.02%)</title><rect x="257.4" y="245" width="0.3" height="15.0" fill="rgb(216,51,12)" rx="2" ry="2" />
+<text  x="260.41" y="255.5" ></text>
+</g>
+<g >
+<title>[libstdc++.so.6.0.33] (5,348,586 samples, 0.01%)</title><rect x="220.2" y="213" width="0.1" height="15.0" fill="rgb(216,51,12)" rx="2" ry="2" />
+<text  x="223.19" y="223.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::trace::Span&gt;::shared_ptr_wrapper::~shared_ptr_wrapper (1,987,821,420 samples, 3.57%)</title><rect x="56.0" y="325" width="56.4" height="15.0" fill="rgb(222,82,19)" rx="2" ry="2" />
+<text  x="58.99" y="335.5" >opent..</text>
+</g>
+<g >
+<title>clock_gettime@plt (6,223,951 samples, 0.01%)</title><rect x="1469.6" y="341" width="0.2" height="15.0" fill="rgb(229,112,27)" rx="2" ry="2" />
+<text  x="1472.62" y="351.5" ></text>
+</g>
+<g >
+<title>std::_Rb_tree&lt;unsigned long, std::pair&lt;unsigned long const, std::unique_ptr&lt;opentelemetry::v1::sdk::trace::Recordable, std::default_delete&lt;opentelemetry::v1::sdk::trace::Recordable&gt; &gt; &gt;, std::_Select1st&lt;std::pair&lt;unsigned long const, std::unique_ptr&lt;opentelemetry::v1::sdk::trace::Recordable, std::default_delete&lt;opentelemetry::v1::sdk::trace::Recordable&gt; &gt; &gt; &gt;, std::less&lt;unsigned long&gt;, std::allocator&lt;std::pair&lt;unsigned long const, std::unique_ptr&lt;opentelemetry::v1::sdk::trace::Recordable, std::default_delete&lt;opentelemetry::v1::sdk::trace::Recordable&gt; &gt; &gt; &gt; &gt;::_M_erase_aux (757,970,519 samples, 1.36%)</title><rect x="277.3" y="277" width="21.5" height="15.0" fill="rgb(242,173,41)" rx="2" ry="2" />
+<text  x="280.28" y="287.5" >s..</text>
+</g>
+<g >
+<title>opentelemetry::v1::exporter::otlp::OtlpRecordable::SetTraceFlags (110,951,356 samples, 0.20%)</title><rect x="593.1" y="293" width="3.1" height="15.0" fill="rgb(245,188,45)" rx="2" ry="2" />
+<text  x="596.07" y="303.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::Span::End (6,918,574,726 samples, 12.43%)</title><rect x="163.3" y="325" width="196.3" height="15.0" fill="rgb(224,91,21)" rx="2" ry="2" />
+<text  x="166.29" y="335.5" >opentelemetry::v1::sdk::t..</text>
+</g>
+<g >
+<title>[[unknown]] (19,461,113 samples, 0.03%)</title><rect x="1018.1" y="197" width="0.6" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="1021.15" y="207.5" ></text>
+</g>
+<g >
+<title>[libc.so.6] (18,347,537 samples, 0.03%)</title><rect x="1055.6" y="197" width="0.5" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="1058.57" y="207.5" ></text>
+</g>
+<g >
+<title>[[vdso]] (16,371,481 samples, 0.03%)</title><rect x="1228.6" y="277" width="0.5" height="15.0" fill="rgb(218,60,14)" rx="2" ry="2" />
+<text  x="1231.61" y="287.5" ></text>
+</g>
+<g >
+<title>malloc (18,284,288 samples, 0.03%)</title><rect x="268.0" y="197" width="0.5" height="15.0" fill="rgb(230,119,28)" rx="2" ry="2" />
+<text  x="271.02" y="207.5" ></text>
+</g>
+<g >
+<title>operator delete (4,587,566 samples, 0.01%)</title><rect x="984.7" y="277" width="0.1" height="15.0" fill="rgb(247,196,46)" rx="2" ry="2" />
+<text  x="987.69" y="287.5" ></text>
+</g>
+<g >
+<title>[libstdc++.so.6.0.33] (3,661,435 samples, 0.01%)</title><rect x="218.3" y="245" width="0.2" height="15.0" fill="rgb(216,51,12)" rx="2" ry="2" />
+<text  x="221.35" y="255.5" ></text>
+</g>
+<g >
+<title>[libc.so.6] (13,061,872 samples, 0.02%)</title><rect x="620.7" y="261" width="0.4" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="623.69" y="271.5" ></text>
+</g>
+<g >
+<title>operator delete (3,850,822 samples, 0.01%)</title><rect x="215.7" y="245" width="0.1" height="15.0" fill="rgb(247,196,46)" rx="2" ry="2" />
+<text  x="218.68" y="255.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (24,013,682 samples, 0.04%)</title><rect x="680.8" y="101" width="0.7" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="683.85" y="111.5" ></text>
+</g>
+<g >
+<title>[libc.so.6] (12,246,775 samples, 0.02%)</title><rect x="1362.7" y="213" width="0.3" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="1365.67" y="223.5" ></text>
+</g>
+<g >
+<title>operator new (292,428,735 samples, 0.53%)</title><rect x="966.4" y="261" width="8.3" height="15.0" fill="rgb(216,51,12)" rx="2" ry="2" />
+<text  x="969.38" y="271.5" ></text>
+</g>
+<g >
+<title>clock_gettime (3,412,715,198 samples, 6.13%)</title><rect x="1493.2" y="325" width="96.8" height="15.0" fill="rgb(213,39,9)" rx="2" ry="2" />
+<text  x="1496.16" y="335.5" >clock_gettime</text>
+</g>
+<g >
+<title>free@plt (41,212,033 samples, 0.07%)</title><rect x="71.8" y="293" width="1.2" height="15.0" fill="rgb(229,112,26)" rx="2" ry="2" />
+<text  x="74.83" y="303.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (405,833,534 samples, 0.73%)</title><rect x="233.1" y="149" width="11.5" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="236.07" y="159.5" ></text>
+</g>
+<g >
+<title>__lll_lock_wake_private (153,092,604 samples, 0.27%)</title><rect x="896.5" y="213" width="4.4" height="15.0" fill="rgb(238,155,37)" rx="2" ry="2" />
+<text  x="899.53" y="223.5" ></text>
+</g>
+<g >
+<title>[libstdc++.so.6.0.33] (6,392,295 samples, 0.01%)</title><rect x="527.3" y="261" width="0.1" height="15.0" fill="rgb(216,51,12)" rx="2" ry="2" />
+<text  x="530.25" y="271.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_stringstream&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::basic_stringstream (4,615,786 samples, 0.01%)</title><rect x="301.9" y="293" width="0.1" height="15.0" fill="rgb(239,156,37)" rx="2" ry="2" />
+<text  x="304.89" y="303.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::RandomIdGenerator::GenerateTraceId (324,934,869 samples, 0.58%)</title><rect x="527.5" y="309" width="9.2" height="15.0" fill="rgb(228,107,25)" rx="2" ry="2" />
+<text  x="530.47" y="319.5" ></text>
+</g>
+<g >
+<title>cfree (452,250,735 samples, 0.81%)</title><rect x="83.9" y="277" width="12.8" height="15.0" fill="rgb(223,86,20)" rx="2" ry="2" />
+<text  x="86.87" y="287.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (35,753,830 samples, 0.06%)</title><rect x="680.5" y="149" width="1.0" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="683.51" y="159.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::Span::End (47,055,497 samples, 0.08%)</title><rect x="1479.7" y="341" width="1.3" height="15.0" fill="rgb(224,91,21)" rx="2" ry="2" />
+<text  x="1482.69" y="351.5" ></text>
+</g>
+<g >
+<title>__lll_lock_wake_private (15,469,529 samples, 0.03%)</title><rect x="658.5" y="229" width="0.5" height="15.0" fill="rgb(238,155,37)" rx="2" ry="2" />
+<text  x="661.52" y="239.5" ></text>
+</g>
+<g >
+<title>std::ostreambuf_iterator&lt;char, std::char_traits&lt;char&gt; &gt; std::num_put&lt;char, std::ostreambuf_iterator&lt;char, std::char_traits&lt;char&gt; &gt; &gt;::_M_insert_int&lt;long&gt;(std::ostreambuf_iterator&lt;char, std::char_traits&lt;char&gt; &gt;, std::ios_base&amp;, char, long) const (19,630,695 samples, 0.04%)</title><rect x="254.5" y="245" width="0.6" height="15.0" fill="rgb(238,155,37)" rx="2" ry="2" />
+<text  x="257.54" y="255.5" ></text>
+</g>
+<g >
+<title>[libprotobuf.so.32.0.12] (199,503,680 samples, 0.36%)</title><rect x="621.1" y="261" width="5.6" height="15.0" fill="rgb(224,88,21)" rx="2" ry="2" />
+<text  x="624.06" y="271.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::context::ThreadLocalContextStorage::GetCurrent (55,959,532 samples, 0.10%)</title><rect x="1361.4" y="277" width="1.6" height="15.0" fill="rgb(212,32,7)" rx="2" ry="2" />
+<text  x="1364.44" y="287.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::MultiRecordable::SetTraceFlags (127,940,617 samples, 0.23%)</title><rect x="1072.9" y="293" width="3.7" height="15.0" fill="rgb(244,180,43)" rx="2" ry="2" />
+<text  x="1075.94" y="303.5" ></text>
+</g>
+<g >
+<title>google::protobuf::internal::ArenaStringPtr::Set (33,059,696 samples, 0.06%)</title><rect x="995.8" y="277" width="0.9" height="15.0" fill="rgb(235,139,33)" rx="2" ry="2" />
+<text  x="998.78" y="287.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (16,041,884 samples, 0.03%)</title><rect x="880.5" y="197" width="0.5" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="883.54" y="207.5" ></text>
+</g>
+<g >
+<title>__lll_lock_wait_private (72,823,066 samples, 0.13%)</title><rect x="1104.9" y="229" width="2.1" height="15.0" fill="rgb(254,228,54)" rx="2" ry="2" />
+<text  x="1107.90" y="239.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::context::RuntimeContextStorage&gt;::shared_ptr_wrapper::Get() const (115,180,639 samples, 0.21%)</title><rect x="1383.0" y="293" width="3.2" height="15.0" fill="rgb(224,90,21)" rx="2" ry="2" />
+<text  x="1385.98" y="303.5" ></text>
+</g>
+<g >
+<title>[libc.so.6] (4,477,435 samples, 0.01%)</title><rect x="1017.7" y="229" width="0.1" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="1020.70" y="239.5" ></text>
+</g>
+<g >
+<title>[libc.so.6] (15,885,849 samples, 0.03%)</title><rect x="59.0" y="309" width="0.4" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="61.97" y="319.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::trace::DefaultSpan::GetContext() const (39,354,578 samples, 0.07%)</title><rect x="1436.3" y="325" width="1.1" height="15.0" fill="rgb(239,160,38)" rx="2" ry="2" />
+<text  x="1439.27" y="335.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::trace::Tracer::GetCurrentSpan (8,220,970 samples, 0.01%)</title><rect x="1441.7" y="325" width="0.2" height="15.0" fill="rgb(238,152,36)" rx="2" ry="2" />
+<text  x="1444.70" y="335.5" ></text>
+</g>
+<g >
+<title>google::protobuf::internal::ArenaStringPtr::Set(std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;&amp;&amp;, google::protobuf::Arena*)@plt (3,656,405 samples, 0.01%)</title><rect x="606.3" y="277" width="0.1" height="15.0" fill="rgb(239,160,38)" rx="2" ry="2" />
+<text  x="609.27" y="287.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (11,730,284 samples, 0.02%)</title><rect x="1018.4" y="133" width="0.3" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="1021.36" y="143.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::TracerContext::GetSampler() const (4,736,856 samples, 0.01%)</title><rect x="1436.1" y="325" width="0.2" height="15.0" fill="rgb(226,98,23)" rx="2" ry="2" />
+<text  x="1439.14" y="335.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::common::Random::GenerateRandomBuffer (81,782,786 samples, 0.15%)</title><rect x="494.4" y="309" width="2.3" height="15.0" fill="rgb(240,161,38)" rx="2" ry="2" />
+<text  x="497.41" y="319.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (194,609,687 samples, 0.35%)</title><rect x="690.0" y="149" width="5.5" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="693.00" y="159.5" ></text>
+</g>
+<g >
+<title>[libstdc++.so.6.0.33] (9,047,706 samples, 0.02%)</title><rect x="220.5" y="197" width="0.2" height="15.0" fill="rgb(216,51,12)" rx="2" ry="2" />
+<text  x="223.49" y="207.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::exporter::otlp::OtlpRecordable::SetName (2,467,679,510 samples, 4.43%)</title><rect x="996.8" y="277" width="70.0" height="15.0" fill="rgb(241,166,39)" rx="2" ry="2" />
+<text  x="999.82" y="287.5" >opentel..</text>
+</g>
+<g >
+<title>[[unknown]] (109,903,445 samples, 0.20%)</title><rect x="1019.4" y="197" width="3.2" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="1022.45" y="207.5" ></text>
+</g>
+<g >
+<title>[libprotobuf.so.32.0.12] (9,258,396 samples, 0.02%)</title><rect x="602.8" y="277" width="0.3" height="15.0" fill="rgb(224,88,21)" rx="2" ry="2" />
+<text  x="605.80" y="287.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_M_mutate (18,411,740 samples, 0.03%)</title><rect x="257.2" y="261" width="0.5" height="15.0" fill="rgb(217,56,13)" rx="2" ry="2" />
+<text  x="260.20" y="271.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (158,203,885 samples, 0.28%)</title><rect x="240.1" y="101" width="4.5" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="243.09" y="111.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::MultiRecordable::SetStartTime (31,392,325 samples, 0.06%)</title><rect x="515.6" y="309" width="0.9" height="15.0" fill="rgb(251,212,50)" rx="2" ry="2" />
+<text  x="518.64" y="319.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::BatchSpanProcessor::MakeRecordable (75,766,560 samples, 0.14%)</title><rect x="596.2" y="293" width="2.2" height="15.0" fill="rgb(213,38,9)" rx="2" ry="2" />
+<text  x="599.22" y="303.5" ></text>
+</g>
+<g >
+<title>cfree (19,266,719 samples, 0.03%)</title><rect x="603.1" y="277" width="0.5" height="15.0" fill="rgb(223,86,20)" rx="2" ry="2" />
+<text  x="606.06" y="287.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::TracerContext::GetSampler() const (27,882,206 samples, 0.05%)</title><rect x="1325.3" y="309" width="0.8" height="15.0" fill="rgb(226,98,23)" rx="2" ry="2" />
+<text  x="1328.28" y="319.5" ></text>
+</g>
+<g >
+<title>[libprotobuf.so.32.0.12] (22,854,169 samples, 0.04%)</title><rect x="1001.9" y="261" width="0.6" height="15.0" fill="rgb(224,88,21)" rx="2" ry="2" />
+<text  x="1004.90" y="271.5" ></text>
+</g>
+<g >
+<title>pthread_cond_broadcast (40,975,038 samples, 0.07%)</title><rect x="300.5" y="293" width="1.2" height="15.0" fill="rgb(249,203,48)" rx="2" ry="2" />
+<text  x="303.52" y="303.5" ></text>
+</g>
+<g >
+<title>std::_Rb_tree_increment (641,046,297 samples, 1.15%)</title><rect x="1204.2" y="293" width="18.2" height="15.0" fill="rgb(247,196,46)" rx="2" ry="2" />
+<text  x="1207.16" y="303.5" ></text>
+</g>
+<g >
+<title>__lll_lock_wait_private (76,074,233 samples, 0.14%)</title><rect x="679.4" y="229" width="2.1" height="15.0" fill="rgb(254,228,54)" rx="2" ry="2" />
+<text  x="682.37" y="239.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::context::RuntimeContextStorage&gt;::shared_ptr_wrapper::~shared_ptr_wrapper (165,586,560 samples, 0.30%)</title><rect x="1364.5" y="277" width="4.7" height="15.0" fill="rgb(230,115,27)" rx="2" ry="2" />
+<text  x="1367.53" y="287.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (311,532,545 samples, 0.56%)</title><rect x="686.7" y="181" width="8.8" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="689.69" y="191.5" ></text>
+</g>
+<g >
+<title>google::protobuf::internal::ArenaStringPtr::Set (62,094,111 samples, 0.11%)</title><rect x="604.2" y="277" width="1.8" height="15.0" fill="rgb(235,139,33)" rx="2" ry="2" />
+<text  x="607.23" y="287.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::context::RuntimeContextStorage&gt;::shared_ptr_wrapper::~shared_ptr_wrapper (66,457,761 samples, 0.12%)</title><rect x="1386.2" y="293" width="1.9" height="15.0" fill="rgb(230,115,27)" rx="2" ry="2" />
+<text  x="1389.24" y="303.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::trace::TraceState&gt;::shared_ptr_wrapper::CopyTo(opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::trace::TraceState&gt;::PlacementBuffer&amp;) const (97,070,180 samples, 0.17%)</title><rect x="1438.9" y="309" width="2.8" height="15.0" fill="rgb(233,131,31)" rx="2" ry="2" />
+<text  x="1441.95" y="319.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::exporter::otlp::OtlpRecordable::SetSpanKind (108,957,143 samples, 0.20%)</title><rect x="588.6" y="293" width="3.0" height="15.0" fill="rgb(212,32,7)" rx="2" ry="2" />
+<text  x="591.56" y="303.5" ></text>
+</g>
+<g >
+<title>std::basic_ostream&lt;char, std::char_traits&lt;char&gt; &gt;&amp; std::__ostream_insert&lt;char, std::char_traits&lt;char&gt; &gt; (28,366,947 samples, 0.05%)</title><rect x="263.8" y="277" width="0.8" height="15.0" fill="rgb(220,73,17)" rx="2" ry="2" />
+<text  x="266.75" y="287.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::exporter::otlp::OtlpRecordable::~OtlpRecordable (147,682,918 samples, 0.27%)</title><rect x="211.7" y="277" width="4.2" height="15.0" fill="rgb(240,163,39)" rx="2" ry="2" />
+<text  x="214.69" y="287.5" ></text>
+</g>
+<g >
+<title>std::basic_ios&lt;char, std::char_traits&lt;char&gt; &gt;::init (129,081,811 samples, 0.23%)</title><rect x="259.1" y="261" width="3.7" height="15.0" fill="rgb(206,7,1)" rx="2" ry="2" />
+<text  x="262.10" y="271.5" ></text>
+</g>
+<g >
+<title>operator new (7,226,186,703 samples, 12.98%)</title><rect x="675.9" y="245" width="205.1" height="15.0" fill="rgb(216,51,12)" rx="2" ry="2" />
+<text  x="678.93" y="255.5" >operator new</text>
+</g>
+<g >
+<title>std::basic_ios&lt;char, std::char_traits&lt;char&gt; &gt;::_M_cache_locale (42,991,008 samples, 0.08%)</title><rect x="218.6" y="229" width="1.2" height="15.0" fill="rgb(223,86,20)" rx="2" ry="2" />
+<text  x="221.62" y="239.5" ></text>
+</g>
+<g >
+<title>operator new (2,256,008,627 samples, 4.05%)</title><rect x="1103.6" y="245" width="64.0" height="15.0" fill="rgb(216,51,12)" rx="2" ry="2" />
+<text  x="1106.59" y="255.5" >operato..</text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::MultiSpanProcessor::OnStart (115,237,145 samples, 0.21%)</title><rect x="1195.6" y="293" width="3.2" height="15.0" fill="rgb(228,107,25)" rx="2" ry="2" />
+<text  x="1198.56" y="303.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (58,104,372 samples, 0.10%)</title><rect x="242.9" y="53" width="1.7" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="245.94" y="63.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::trace::TraceState::GetDefault (152,118,286 samples, 0.27%)</title><rect x="1437.4" y="325" width="4.3" height="15.0" fill="rgb(251,213,51)" rx="2" ry="2" />
+<text  x="1440.39" y="335.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::Span::End (12,185,335 samples, 0.02%)</title><rect x="76.1" y="293" width="0.4" height="15.0" fill="rgb(224,91,21)" rx="2" ry="2" />
+<text  x="79.12" y="303.5" ></text>
+</g>
+<g >
+<title>[libc.so.6] (11,738,244 samples, 0.02%)</title><rect x="264.6" y="261" width="0.3" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="267.59" y="271.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::trace::TraceState&gt;::shared_ptr_wrapper::CopyTo(opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::trace::TraceState&gt;::PlacementBuffer&amp;) const (114,085,933 samples, 0.20%)</title><rect x="500.9" y="277" width="3.2" height="15.0" fill="rgb(233,131,31)" rx="2" ry="2" />
+<text  x="503.87" y="287.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (22,133,719 samples, 0.04%)</title><rect x="1021.9" y="117" width="0.7" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="1024.94" y="127.5" ></text>
+</g>
+<g >
+<title>std::locale::id::_M_id() const (17,557,683 samples, 0.03%)</title><rect x="261.9" y="245" width="0.5" height="15.0" fill="rgb(233,131,31)" rx="2" ry="2" />
+<text  x="264.90" y="255.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (30,937,266 samples, 0.06%)</title><rect x="1106.1" y="149" width="0.9" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="1109.09" y="159.5" ></text>
+</g>
+<g >
+<title>clock_gettime (85,163,611 samples, 0.15%)</title><rect x="1467.2" y="341" width="2.4" height="15.0" fill="rgb(213,39,9)" rx="2" ry="2" />
+<text  x="1470.21" y="351.5" ></text>
+</g>
+<g >
+<title>cfree (16,266,673 samples, 0.03%)</title><rect x="1466.7" y="341" width="0.5" height="15.0" fill="rgb(223,86,20)" rx="2" ry="2" />
+<text  x="1469.75" y="351.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (49,136,448 samples, 0.09%)</title><rect x="680.1" y="197" width="1.4" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="683.13" y="207.5" ></text>
+</g>
+<g >
+<title>std::basic_streambuf&lt;char, std::char_traits&lt;char&gt; &gt;::xsputn (9,119,868 samples, 0.02%)</title><rect x="269.3" y="277" width="0.3" height="15.0" fill="rgb(244,181,43)" rx="2" ry="2" />
+<text  x="272.30" y="287.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::common::Random::GenerateRandomBuffer (111,382,430 samples, 0.20%)</title><rect x="524.3" y="293" width="3.2" height="15.0" fill="rgb(240,161,38)" rx="2" ry="2" />
+<text  x="527.31" y="303.5" ></text>
+</g>
+<g >
+<title>std::chrono::_V2::steady_clock::now()@plt (13,407,893 samples, 0.02%)</title><rect x="1433.9" y="309" width="0.4" height="15.0" fill="rgb(242,170,40)" rx="2" ry="2" />
+<text  x="1436.88" y="319.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (21,627,688 samples, 0.04%)</title><rect x="1106.4" y="101" width="0.6" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="1109.36" y="111.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (207,870,003 samples, 0.37%)</title><rect x="1108.6" y="197" width="5.9" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="1111.62" y="207.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::context::Context::DataList&gt;::shared_ptr_wrapper::~shared_ptr_wrapper (99,201,265 samples, 0.18%)</title><rect x="426.1" y="309" width="2.8" height="15.0" fill="rgb(241,166,39)" rx="2" ry="2" />
+<text  x="429.06" y="319.5" ></text>
+</g>
+<g >
+<title>std::basic_ostream&lt;char, std::char_traits&lt;char&gt; &gt;&amp; std::__ostream_insert&lt;char, std::char_traits&lt;char&gt; &gt; (4,979,236 samples, 0.01%)</title><rect x="302.0" y="293" width="0.2" height="15.0" fill="rgb(220,73,17)" rx="2" ry="2" />
+<text  x="305.02" y="303.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::trace::TraceState::GetDefault (21,460,824 samples, 0.04%)</title><rect x="1482.2" y="341" width="0.6" height="15.0" fill="rgb(251,213,51)" rx="2" ry="2" />
+<text  x="1485.17" y="351.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::MultiRecordable::SetDuration (39,065,562 samples, 0.07%)</title><rect x="158.1" y="325" width="1.1" height="15.0" fill="rgb(213,37,9)" rx="2" ry="2" />
+<text  x="161.14" y="335.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::TracerContext::GetIdGenerator() const (12,651,922 samples, 0.02%)</title><rect x="1435.1" y="325" width="0.4" height="15.0" fill="rgb(245,187,44)" rx="2" ry="2" />
+<text  x="1438.12" y="335.5" ></text>
+</g>
+<g >
+<title>[libc.so.6] (25,348,128 samples, 0.05%)</title><rect x="210.0" y="277" width="0.7" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="213.00" y="287.5" ></text>
+</g>
+<g >
+<title>opentelemetry::proto::trace::v1::Span::~Span (142,518,153 samples, 0.26%)</title><rect x="211.8" y="261" width="4.1" height="15.0" fill="rgb(253,221,52)" rx="2" ry="2" />
+<text  x="214.84" y="271.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (15,469,529 samples, 0.03%)</title><rect x="658.5" y="213" width="0.5" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="661.52" y="223.5" ></text>
+</g>
+<g >
+<title>std::ostream&amp; std::ostream::_M_insert&lt;long&gt; (76,114,451 samples, 0.14%)</title><rect x="252.9" y="261" width="2.2" height="15.0" fill="rgb(205,2,0)" rx="2" ry="2" />
+<text  x="255.94" y="271.5" ></text>
+</g>
+<g >
+<title>cfree (9,154,705 samples, 0.02%)</title><rect x="280.0" y="261" width="0.2" height="15.0" fill="rgb(223,86,20)" rx="2" ry="2" />
+<text  x="282.97" y="271.5" ></text>
+</g>
+<g >
+<title>pthread_mutex_lock (40,848,373 samples, 0.07%)</title><rect x="1444.1" y="325" width="1.1" height="15.0" fill="rgb(247,196,46)" rx="2" ry="2" />
+<text  x="1447.06" y="335.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::sdk::common::internal_log::LogHandler&gt;::shared_ptr_wrapper::CopyTo(opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::sdk::common::internal_log::LogHandler&gt;::PlacementBuffer&amp;) const (4,754,645 samples, 0.01%)</title><rect x="215.9" y="277" width="0.1" height="15.0" fill="rgb(245,184,44)" rx="2" ry="2" />
+<text  x="218.89" y="287.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::common::internal_log::DefaultLogHandler::Handle (10,051,110 samples, 0.02%)</title><rect x="190.7" y="293" width="0.2" height="15.0" fill="rgb(244,180,43)" rx="2" ry="2" />
+<text  x="193.66" y="303.5" ></text>
+</g>
+<g >
+<title>[libstdc++.so.6.0.33] (6,537,446 samples, 0.01%)</title><rect x="222.1" y="229" width="0.2" height="15.0" fill="rgb(216,51,12)" rx="2" ry="2" />
+<text  x="225.09" y="239.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::exporter::otlp::OtlpRecordable::SetTraceFlags (3,669,354 samples, 0.01%)</title><rect x="1076.5" y="277" width="0.1" height="15.0" fill="rgb(245,188,45)" rx="2" ry="2" />
+<text  x="1079.46" y="287.5" ></text>
+</g>
+<g >
+<title>operator delete (6,883,880 samples, 0.01%)</title><rect x="215.5" y="229" width="0.2" height="15.0" fill="rgb(247,196,46)" rx="2" ry="2" />
+<text  x="218.47" y="239.5" ></text>
+</g>
+<g >
+<title>std::ios_base::_M_init (53,285,748 samples, 0.10%)</title><rect x="219.8" y="229" width="1.5" height="15.0" fill="rgb(228,107,25)" rx="2" ry="2" />
+<text  x="222.84" y="239.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (6,597,203 samples, 0.01%)</title><rect x="1018.5" y="101" width="0.2" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="1021.51" y="111.5" ></text>
+</g>
+<g >
+<title>clock_gettime (1,609,064,543 samples, 2.89%)</title><rect x="1229.1" y="277" width="45.6" height="15.0" fill="rgb(213,39,9)" rx="2" ry="2" />
+<text  x="1232.07" y="287.5" >cloc..</text>
+</g>
+<g >
+<title>[libc.so.6] (171,063,580 samples, 0.31%)</title><rect x="437.7" y="277" width="4.8" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="440.67" y="287.5" ></text>
+</g>
+<g >
+<title>operator new (24,465,628 samples, 0.04%)</title><rect x="1203.5" y="293" width="0.7" height="15.0" fill="rgb(216,51,12)" rx="2" ry="2" />
+<text  x="1206.47" y="303.5" ></text>
+</g>
+<g >
+<title>cfree (80,704,976 samples, 0.14%)</title><rect x="212.4" y="229" width="2.3" height="15.0" fill="rgb(223,86,20)" rx="2" ry="2" />
+<text  x="215.38" y="239.5" ></text>
+</g>
+<g >
+<title>std::basic_streambuf&lt;char, std::char_traits&lt;char&gt; &gt;::xsputn (144,920,961 samples, 0.26%)</title><rect x="265.0" y="261" width="4.1" height="15.0" fill="rgb(244,181,43)" rx="2" ry="2" />
+<text  x="267.98" y="271.5" ></text>
+</g>
+<g >
+<title>free@plt (20,090,614 samples, 0.04%)</title><rect x="1469.8" y="341" width="0.6" height="15.0" fill="rgb(229,112,26)" rx="2" ry="2" />
+<text  x="1472.80" y="351.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::MultiRecordable::SetTraceFlags (76,953,015 samples, 0.14%)</title><rect x="516.5" y="309" width="2.2" height="15.0" fill="rgb(244,180,43)" rx="2" ry="2" />
+<text  x="519.53" y="319.5" ></text>
+</g>
+<g >
+<title>malloc (5,926,159 samples, 0.01%)</title><rect x="217.9" y="213" width="0.2" height="15.0" fill="rgb(230,119,28)" rx="2" ry="2" />
+<text  x="220.91" y="223.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (47,986,829 samples, 0.09%)</title><rect x="1105.6" y="197" width="1.4" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="1108.61" y="207.5" ></text>
+</g>
+<g >
+<title>std::basic_ios&lt;char, std::char_traits&lt;char&gt; &gt;::_M_cache_locale (48,698,759 samples, 0.09%)</title><rect x="259.2" y="245" width="1.4" height="15.0" fill="rgb(223,86,20)" rx="2" ry="2" />
+<text  x="262.21" y="255.5" ></text>
+</g>
+<g >
+<title>malloc@plt (5,572,970 samples, 0.01%)</title><rect x="1354.8" y="293" width="0.1" height="15.0" fill="rgb(246,192,46)" rx="2" ry="2" />
+<text  x="1357.76" y="303.5" ></text>
+</g>
+<g >
+<title>std::basic_ios&lt;char, std::char_traits&lt;char&gt; &gt;::init (116,185,236 samples, 0.21%)</title><rect x="218.5" y="245" width="3.2" height="15.0" fill="rgb(206,7,1)" rx="2" ry="2" />
+<text  x="221.45" y="255.5" ></text>
+</g>
+<g >
+<title>void std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_M_construct&lt;char const*&gt; (43,000,086 samples, 0.08%)</title><rect x="980.2" y="261" width="1.3" height="15.0" fill="rgb(254,226,54)" rx="2" ry="2" />
+<text  x="983.23" y="271.5" ></text>
+</g>
+<g >
+<title>std::_Rb_tree&lt;unsigned long, std::pair&lt;unsigned long const, std::unique_ptr&lt;opentelemetry::v1::sdk::trace::Recordable, std::default_delete&lt;opentelemetry::v1::sdk::trace::Recordable&gt; &gt; &gt;, std::_Select1st&lt;std::pair&lt;unsigned long const, std::unique_ptr&lt;opentelemetry::v1::sdk::trace::Recordable, std::default_delete&lt;opentelemetry::v1::sdk::trace::Recordable&gt; &gt; &gt; &gt;, std::less&lt;unsigned long&gt;, std::allocator&lt;std::pair&lt;unsigned long const, std::unique_ptr&lt;opentelemetry::v1::sdk::trace::Recordable, std::default_delete&lt;opentelemetry::v1::sdk::trace::Recordable&gt; &gt; &gt; &gt; &gt;::_M_erase (36,830,443 samples, 0.07%)</title><rect x="276.2" y="277" width="1.1" height="15.0" fill="rgb(214,41,10)" rx="2" ry="2" />
+<text  x="279.23" y="287.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::RandomIdGenerator::GenerateSpanId (51,441,120 samples, 0.09%)</title><rect x="160.5" y="325" width="1.5" height="15.0" fill="rgb(229,110,26)" rx="2" ry="2" />
+<text  x="163.50" y="335.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::BatchSpanProcessor::OnStart (58,285,044 samples, 0.10%)</title><rect x="598.4" y="293" width="1.6" height="15.0" fill="rgb(243,175,42)" rx="2" ry="2" />
+<text  x="601.37" y="303.5" ></text>
+</g>
+<g >
+<title>[libc.so.6] (11,944,023 samples, 0.02%)</title><rect x="1362.7" y="197" width="0.3" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="1365.68" y="207.5" ></text>
+</g>
+<g >
+<title>opentelemetry::proto::trace::v1::Span::SharedDtor (125,490,049 samples, 0.23%)</title><rect x="212.1" y="245" width="3.6" height="15.0" fill="rgb(252,217,52)" rx="2" ry="2" />
+<text  x="215.12" y="255.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::common::internal_log::DefaultLogHandler::Handle (1,414,869,922 samples, 2.54%)</title><rect x="216.1" y="277" width="40.1" height="15.0" fill="rgb(244,180,43)" rx="2" ry="2" />
+<text  x="219.09" y="287.5" >ope..</text>
+</g>
+<g >
+<title>operator new(unsigned long)@plt (14,777,301 samples, 0.03%)</title><rect x="1063.7" y="261" width="0.4" height="15.0" fill="rgb(249,205,49)" rx="2" ry="2" />
+<text  x="1066.66" y="271.5" ></text>
+</g>
+<g >
+<title>cfree (32,901,212 samples, 0.06%)</title><rect x="210.7" y="277" width="1.0" height="15.0" fill="rgb(223,86,20)" rx="2" ry="2" />
+<text  x="213.72" y="287.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::context::RuntimeContextStorage&gt;::shared_ptr_wrapper::CopyTo(opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::context::RuntimeContextStorage&gt;::PlacementBuffer&amp;) const (52,799,798 samples, 0.09%)</title><rect x="1363.0" y="277" width="1.5" height="15.0" fill="rgb(227,103,24)" rx="2" ry="2" />
+<text  x="1366.03" y="287.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::Tracer::StartSpan (37,855,469,620 samples, 67.99%)</title><rect x="360.9" y="325" width="1074.2" height="15.0" fill="rgb(245,185,44)" rx="2" ry="2" />
+<text  x="363.88" y="335.5" >opentelemetry::v1::sdk::trace::Tracer::StartSpan</text>
+</g>
+<g >
+<title>clock_gettime@plt (5,948,849 samples, 0.01%)</title><rect x="169.9" y="309" width="0.2" height="15.0" fill="rgb(229,112,27)" rx="2" ry="2" />
+<text  x="172.89" y="319.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::MultiRecordable::SetSpanKind (134,133,731 samples, 0.24%)</title><rect x="1068.0" y="293" width="3.8" height="15.0" fill="rgb(210,24,5)" rx="2" ry="2" />
+<text  x="1071.02" y="303.5" ></text>
+</g>
+<g >
+<title>[libc.so.6] (7,423,473 samples, 0.01%)</title><rect x="1104.7" y="229" width="0.2" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="1107.69" y="239.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::trace::TraceState&gt;::shared_ptr_wrapper::CopyTo(opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::trace::TraceState&gt;::PlacementBuffer&amp;) const (250,540,679 samples, 0.45%)</title><rect x="112.4" y="325" width="7.1" height="15.0" fill="rgb(233,131,31)" rx="2" ry="2" />
+<text  x="115.40" y="335.5" ></text>
+</g>
+<g >
+<title>[libc.so.6] (10,942,511 samples, 0.02%)</title><rect x="211.3" y="261" width="0.4" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="214.34" y="271.5" ></text>
+</g>
+<g >
+<title>pthread_mutex_lock (166,144,979 samples, 0.30%)</title><rect x="302.9" y="309" width="4.7" height="15.0" fill="rgb(247,196,46)" rx="2" ry="2" />
+<text  x="305.89" y="319.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (66,324,172 samples, 0.12%)</title><rect x="899.0" y="133" width="1.9" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="901.99" y="143.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::trace::TraceState&gt;::shared_ptr_wrapper::~shared_ptr_wrapper (142,644,900 samples, 0.26%)</title><rect x="96.7" y="277" width="4.1" height="15.0" fill="rgb(208,14,3)" rx="2" ry="2" />
+<text  x="99.70" y="287.5" ></text>
+</g>
+<g >
+<title>memcpy@plt (29,375,718 samples, 0.05%)</title><rect x="1015.9" y="245" width="0.8" height="15.0" fill="rgb(224,88,21)" rx="2" ry="2" />
+<text  x="1018.86" y="255.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::context::Context::DataList&gt;::shared_ptr_wrapper::Get() const (65,503,372 samples, 0.12%)</title><rect x="1372.1" y="293" width="1.9" height="15.0" fill="rgb(235,141,33)" rx="2" ry="2" />
+<text  x="1375.15" y="303.5" ></text>
+</g>
+<g >
+<title>__cxa_thread_atexit_impl (12,413,021 samples, 0.02%)</title><rect x="1362.7" y="245" width="0.3" height="15.0" fill="rgb(236,144,34)" rx="2" ry="2" />
+<text  x="1365.67" y="255.5" ></text>
+</g>
+<g >
+<title>[libc.so.6] (136,792,551 samples, 0.25%)</title><rect x="294.9" y="229" width="3.9" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="297.90" y="239.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (300,422,991 samples, 0.54%)</title><rect x="236.1" y="133" width="8.5" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="239.06" y="143.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::basic_string(char const*, unsigned long, std::allocator&lt;char&gt; const&amp;)@plt (14,600,331 samples, 0.03%)</title><rect x="979.7" y="261" width="0.4" height="15.0" fill="rgb(232,128,30)" rx="2" ry="2" />
+<text  x="982.71" y="271.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::trace::TraceState&gt;::shared_ptr_wrapper::~shared_ptr_wrapper (803,163,057 samples, 1.44%)</title><rect x="471.6" y="309" width="22.8" height="15.0" fill="rgb(208,14,3)" rx="2" ry="2" />
+<text  x="474.62" y="319.5" >o..</text>
+</g>
+<g >
+<title>[libc.so.6] (185,776,187 samples, 0.33%)</title><rect x="91.4" y="261" width="5.3" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="94.43" y="271.5" ></text>
+</g>
+<g >
+<title>malloc@plt (21,447,483 samples, 0.04%)</title><rect x="894.3" y="229" width="0.6" height="15.0" fill="rgb(246,192,46)" rx="2" ry="2" />
+<text  x="897.28" y="239.5" ></text>
+</g>
+<g >
+<title>pthread_once (4,387,666 samples, 0.01%)</title><rect x="263.3" y="245" width="0.1" height="15.0" fill="rgb(224,87,20)" rx="2" ry="2" />
+<text  x="266.32" y="255.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::swap (8,143,593 samples, 0.01%)</title><rect x="247.1" y="213" width="0.2" height="15.0" fill="rgb(218,60,14)" rx="2" ry="2" />
+<text  x="250.08" y="223.5" ></text>
+</g>
+<g >
+<title>cfree (389,273,769 samples, 0.70%)</title><rect x="59.4" y="309" width="11.1" height="15.0" fill="rgb(223,86,20)" rx="2" ry="2" />
+<text  x="62.42" y="319.5" ></text>
+</g>
+<g >
+<title>google::protobuf::internal::ArenaStringPtr::Set(std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt; const&amp;, google::protobuf::Arena*)@plt (9,987,637 samples, 0.02%)</title><rect x="606.0" y="277" width="0.3" height="15.0" fill="rgb(219,65,15)" rx="2" ry="2" />
+<text  x="608.99" y="287.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::trace::TraceState&gt;::shared_ptr_wrapper::CopyTo(opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::trace::TraceState&gt;::PlacementBuffer&amp;) const (57,508,955 samples, 0.10%)</title><rect x="498.0" y="293" width="1.6" height="15.0" fill="rgb(233,131,31)" rx="2" ry="2" />
+<text  x="500.98" y="303.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::trace::DefaultSpan::GetContext() const (215,114,140 samples, 0.39%)</title><rect x="1326.1" y="309" width="6.1" height="15.0" fill="rgb(239,160,38)" rx="2" ry="2" />
+<text  x="1329.07" y="319.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::Span::~Span (17,412,490 samples, 0.03%)</title><rect x="360.4" y="325" width="0.5" height="15.0" fill="rgb(216,52,12)" rx="2" ry="2" />
+<text  x="363.39" y="335.5" ></text>
+</g>
+<g >
+<title>cfree (643,478,417 samples, 1.16%)</title><rect x="626.7" y="261" width="18.3" height="15.0" fill="rgb(223,86,20)" rx="2" ry="2" />
+<text  x="629.72" y="271.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (16,528,004 samples, 0.03%)</title><rect x="1018.2" y="181" width="0.5" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="1021.23" y="191.5" ></text>
+</g>
+<g >
+<title>operator delete (16,055,149 samples, 0.03%)</title><rect x="1415.5" y="309" width="0.4" height="15.0" fill="rgb(247,196,46)" rx="2" ry="2" />
+<text  x="1418.48" y="319.5" ></text>
+</g>
+<g >
+<title>[libstdc++.so.6.0.33] (15,086,677 samples, 0.03%)</title><rect x="254.0" y="245" width="0.4" height="15.0" fill="rgb(216,51,12)" rx="2" ry="2" />
+<text  x="256.96" y="255.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::MultiRecordable::SetInstrumentationScope (108,503,615 samples, 0.19%)</title><rect x="505.8" y="309" width="3.1" height="15.0" fill="rgb(242,174,41)" rx="2" ry="2" />
+<text  x="508.82" y="319.5" ></text>
+</g>
+<g >
+<title>operator new (327,157,430 samples, 0.59%)</title><rect x="1406.2" y="293" width="9.3" height="15.0" fill="rgb(216,51,12)" rx="2" ry="2" />
+<text  x="1409.19" y="303.5" ></text>
+</g>
+<g >
+<title>[libc.so.6] (13,835,657 samples, 0.02%)</title><rect x="40.6" y="325" width="0.4" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="43.57" y="335.5" ></text>
+</g>
+<g >
+<title>[libc.so.6] (245,279,352 samples, 0.44%)</title><rect x="638.0" y="245" width="7.0" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="641.02" y="255.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::MultiRecordable::ReleaseRecordable (975,787,622 samples, 1.75%)</title><rect x="271.1" y="293" width="27.7" height="15.0" fill="rgb(229,112,26)" rx="2" ry="2" />
+<text  x="274.09" y="303.5" >o..</text>
+</g>
+<g >
+<title>malloc@plt (6,233,162 samples, 0.01%)</title><rect x="1015.7" y="245" width="0.2" height="15.0" fill="rgb(246,192,46)" rx="2" ry="2" />
+<text  x="1018.68" y="255.5" ></text>
+</g>
+<g >
+<title>std::basic_streambuf&lt;char, std::char_traits&lt;char&gt; &gt;::xsputn (27,979,322 samples, 0.05%)</title><rect x="251.5" y="261" width="0.8" height="15.0" fill="rgb(244,181,43)" rx="2" ry="2" />
+<text  x="254.53" y="271.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (38,257,225 samples, 0.07%)</title><rect x="680.4" y="165" width="1.1" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="683.44" y="175.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (31,754,354 samples, 0.06%)</title><rect x="900.0" y="101" width="0.9" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="902.97" y="111.5" ></text>
+</g>
+<g >
+<title>operator new (96,920,386 samples, 0.17%)</title><rect x="1170.5" y="277" width="2.8" height="15.0" fill="rgb(216,51,12)" rx="2" ry="2" />
+<text  x="1173.55" y="287.5" ></text>
+</g>
+<g >
+<title>opentelemetry::proto::trace::v1::Span::SharedDtor (5,164,765 samples, 0.01%)</title><rect x="211.7" y="261" width="0.1" height="15.0" fill="rgb(252,217,52)" rx="2" ry="2" />
+<text  x="214.69" y="271.5" ></text>
+</g>
+<g >
+<title>_IO_fwrite (622,433,795 samples, 1.12%)</title><rect x="227.0" y="245" width="17.6" height="15.0" fill="rgb(210,23,5)" rx="2" ry="2" />
+<text  x="229.96" y="255.5" ></text>
+</g>
+<g >
+<title>[libc.so.6] (102,684,704 samples, 0.18%)</title><rect x="1007.9" y="245" width="2.9" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="1010.92" y="255.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::trace::TraceState&gt;::shared_ptr_wrapper::MoveTo (41,242,209 samples, 0.07%)</title><rect x="121.0" y="325" width="1.2" height="15.0" fill="rgb(213,40,9)" rx="2" ry="2" />
+<text  x="124.04" y="335.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (45,503,711 samples, 0.08%)</title><rect x="243.3" y="37" width="1.3" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="246.29" y="47.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::trace::TraceState&gt;::shared_ptr_wrapper::~shared_ptr_wrapper (87,802,976 samples, 0.16%)</title><rect x="1475.5" y="341" width="2.5" height="15.0" fill="rgb(208,14,3)" rx="2" ry="2" />
+<text  x="1478.55" y="351.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::Span::Span (27,749,577,088 samples, 49.84%)</title><rect x="536.7" y="309" width="787.4" height="15.0" fill="rgb(230,116,27)" rx="2" ry="2" />
+<text  x="539.69" y="319.5" >opentelemetry::v1::sdk::trace::Span::Span</text>
+</g>
+<g >
+<title>operator new (52,838,507 samples, 0.09%)</title><rect x="1168.2" y="277" width="1.5" height="15.0" fill="rgb(216,51,12)" rx="2" ry="2" />
+<text  x="1171.19" y="287.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::MultiSpanProcessor::OnEnd (4,432,944,952 samples, 7.96%)</title><rect x="176.4" y="309" width="125.8" height="15.0" fill="rgb(223,87,20)" rx="2" ry="2" />
+<text  x="179.38" y="319.5" >opentelemetry::..</text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_M_create (57,234,842 samples, 0.10%)</title><rect x="985.1" y="277" width="1.7" height="15.0" fill="rgb(248,198,47)" rx="2" ry="2" />
+<text  x="988.15" y="287.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::trace::TraceState&gt;::shared_ptr_wrapper::CopyTo(opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::trace::TraceState&gt;::PlacementBuffer&amp;) const (233,014,937 samples, 0.42%)</title><rect x="457.1" y="309" width="6.6" height="15.0" fill="rgb(233,131,31)" rx="2" ry="2" />
+<text  x="460.10" y="319.5" ></text>
+</g>
+<g >
+<title>__lll_lock_wake_private (16,041,884 samples, 0.03%)</title><rect x="880.5" y="213" width="0.5" height="15.0" fill="rgb(238,155,37)" rx="2" ry="2" />
+<text  x="883.54" y="223.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::context::Context::DataList&gt;::shared_ptr_wrapper::MoveTo (70,722,495 samples, 0.13%)</title><rect x="424.0" y="309" width="2.1" height="15.0" fill="rgb(246,192,45)" rx="2" ry="2" />
+<text  x="427.05" y="319.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::context::Context::GetValue(opentelemetry::v1::nostd::string_view) const (76,232,758 samples, 0.14%)</title><rect x="1354.9" y="293" width="2.2" height="15.0" fill="rgb(209,19,4)" rx="2" ry="2" />
+<text  x="1357.92" y="303.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::trace::TraceState::GetDefault (52,205,237 samples, 0.09%)</title><rect x="1334.9" y="309" width="1.5" height="15.0" fill="rgb(251,213,51)" rx="2" ry="2" />
+<text  x="1337.89" y="319.5" ></text>
+</g>
+<g >
+<title>std::locale::id::_M_id() const (6,264,374 samples, 0.01%)</title><rect x="221.3" y="229" width="0.2" height="15.0" fill="rgb(233,131,31)" rx="2" ry="2" />
+<text  x="224.35" y="239.5" ></text>
+</g>
+<g >
+<title>operator new (279,324,563 samples, 0.50%)</title><rect x="1184.1" y="261" width="7.9" height="15.0" fill="rgb(216,51,12)" rx="2" ry="2" />
+<text  x="1187.07" y="271.5" ></text>
+</g>
+<g >
+<title>std::ios_base::ios_base (13,418,612 samples, 0.02%)</title><rect x="269.6" y="277" width="0.3" height="15.0" fill="rgb(212,35,8)" rx="2" ry="2" />
+<text  x="272.55" y="287.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::MultiSpanProcessor::MakeRecordable (4,193,082,603 samples, 7.53%)</title><rect x="1076.6" y="293" width="119.0" height="15.0" fill="rgb(248,200,47)" rx="2" ry="2" />
+<text  x="1079.57" y="303.5" >opentelemetry:..</text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::TracerContext::GetProcessor() const (23,214,108 samples, 0.04%)</title><rect x="1435.5" y="325" width="0.6" height="15.0" fill="rgb(251,215,51)" rx="2" ry="2" />
+<text  x="1438.48" y="335.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (64,169,098 samples, 0.12%)</title><rect x="1020.7" y="149" width="1.9" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="1023.75" y="159.5" ></text>
+</g>
+<g >
+<title>operator new(unsigned long)@plt (30,190,757 samples, 0.05%)</title><rect x="1169.7" y="277" width="0.8" height="15.0" fill="rgb(249,205,49)" rx="2" ry="2" />
+<text  x="1172.69" y="287.5" ></text>
+</g>
+<g >
+<title>operator new (1,388,513,942 samples, 2.49%)</title><rect x="1016.7" y="245" width="39.4" height="15.0" fill="rgb(216,51,12)" rx="2" ry="2" />
+<text  x="1019.69" y="255.5" >ope..</text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::TracerContext::GetProcessor() const (97,669,167 samples, 0.18%)</title><rect x="1198.8" y="293" width="2.8" height="15.0" fill="rgb(251,215,51)" rx="2" ry="2" />
+<text  x="1201.83" y="303.5" ></text>
+</g>
+<g >
+<title>std::chrono::_V2::steady_clock::now (1,767,835,761 samples, 3.18%)</title><rect x="309.1" y="309" width="50.1" height="15.0" fill="rgb(249,203,48)" rx="2" ry="2" />
+<text  x="312.08" y="319.5" >std::..</text>
+</g>
+<g >
+<title>malloc (23,169,986 samples, 0.04%)</title><rect x="893.6" y="229" width="0.7" height="15.0" fill="rgb(230,119,28)" rx="2" ry="2" />
+<text  x="896.62" y="239.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (493,237,740 samples, 0.89%)</title><rect x="681.5" y="213" width="14.0" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="684.53" y="223.5" ></text>
+</g>
+<g >
+<title>operator new (409,935,077 samples, 0.74%)</title><rect x="1420.5" y="309" width="11.6" height="15.0" fill="rgb(216,51,12)" rx="2" ry="2" />
+<text  x="1423.52" y="319.5" ></text>
+</g>
+<g >
+<title>malloc (6,535,762,729 samples, 11.74%)</title><rect x="695.5" y="229" width="185.5" height="15.0" fill="rgb(230,119,28)" rx="2" ry="2" />
+<text  x="698.53" y="239.5" >malloc</text>
+</g>
+<g >
+<title>[[unknown]] (153,092,604 samples, 0.27%)</title><rect x="896.5" y="197" width="4.4" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="899.53" y="207.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::exporter::otlp::OtlpRecordable::SetDuration (63,288,925 samples, 0.11%)</title><rect x="170.1" y="309" width="1.8" height="15.0" fill="rgb(214,45,10)" rx="2" ry="2" />
+<text  x="173.06" y="319.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::common::KeyValueIterableView&lt;opentelemetry::v1::nostd::span&lt;std::pair&lt;opentelemetry::v1::nostd::string_view, absl::otel_v1::variant&lt;bool, int, long, unsigned int, double, char const*, opentelemetry::v1::nostd::string_view, opentelemetry::v1::nostd::span&lt;bool const, 18446744073709551615ul&gt;, opentelemetry::v1::nostd::span&lt;int const, 18446744073709551615ul&gt;, opentelemetry::v1::nostd::span&lt;long const, 18446744073709551615ul&gt;, opentelemetry::v1::nostd::span&lt;unsigned int const, 18446744073709551615ul&gt;, opentelemetry::v1::nostd::span&lt;double const, 18446744073709551615ul&gt;, opentelemetry::v1::nostd::span&lt;opentelemetry::v1::nostd::string_view const, 18446744073709551615ul&gt;, unsigned long, opentelemetry::v1::nostd::span&lt;unsigned long const, 18446744073709551615ul&gt;, opentelemetry::v1::nostd::span&lt;unsigned char const, 18446744073709551615ul&gt; &gt; &gt; const, 18446744073709551615ul&gt; &gt;::ForEachKeyValue(opentelemetry::v1::nostd::function_ref&lt;bool (opentelemetry::v1::nostd::string_view, absl::otel_v1::variant&lt;bool, int, long, unsigned int, double, char const*, opentelemetry::v1::nostd::string_view, opentelemetry::v1::nostd::span&lt;bool const, 18446744073709551615ul&gt;, opentelemetry::v1::nostd::span&lt;int const, 18446744073709551615ul&gt;, opentelemetry::v1::nostd::span&lt;long const, 18446744073709551615ul&gt;, opentelemetry::v1::nostd::span&lt;unsigned int const, 18446744073709551615ul&gt;, opentelemetry::v1::nostd::span&lt;double const, 18446744073709551615ul&gt;, opentelemetry::v1::nostd::span&lt;opentelemetry::v1::nostd::string_view const, 18446744073709551615ul&gt;, unsigned long, opentelemetry::v1::nostd::span&lt;unsigned long const, 18446744073709551615ul&gt;, opentelemetry::v1::nostd::span&lt;unsigned char const, 18446744073709551615ul&gt; &gt;)&gt;) const (88,842,430 samples, 0.16%)</title><rect x="421.2" y="309" width="2.5" height="15.0" fill="rgb(238,152,36)" rx="2" ry="2" />
+<text  x="424.18" y="319.5" ></text>
+</g>
+<g >
+<title>std::chrono::_V2::system_clock::now()@plt (12,482,435 samples, 0.02%)</title><rect x="1434.8" y="309" width="0.3" height="15.0" fill="rgb(217,58,13)" rx="2" ry="2" />
+<text  x="1437.76" y="319.5" ></text>
+</g>
+<g >
+<title>[libc.so.6] (7,620,367 samples, 0.01%)</title><rect x="227.7" y="197" width="0.3" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="230.74" y="207.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::MultiRecordable::SetIdentity (60,418,548 samples, 0.11%)</title><rect x="504.1" y="309" width="1.7" height="15.0" fill="rgb(237,149,35)" rx="2" ry="2" />
+<text  x="507.11" y="319.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::trace::SpanContextKeyValueIterableView&lt;opentelemetry::v1::nostd::span&lt;std::pair&lt;opentelemetry::v1::trace::SpanContext, std::initializer_list&lt;std::pair&lt;opentelemetry::v1::nostd::string_view, absl::otel_v1::variant&lt;bool, int, long, unsigned int, double, char const*, opentelemetry::v1::nostd::string_view, opentelemetry::v1::nostd::span&lt;bool const, 18446744073709551615ul&gt;, opentelemetry::v1::nostd::span&lt;int const, 18446744073709551615ul&gt;, opentelemetry::v1::nostd::span&lt;long const, 18446744073709551615ul&gt;, opentelemetry::v1::nostd::span&lt;unsigned int const, 18446744073709551615ul&gt;, opentelemetry::v1::nostd::span&lt;double const, 18446744073709551615ul&gt;, opentelemetry::v1::nostd::span&lt;opentelemetry::v1::nostd::string_view const, 18446744073709551615ul&gt;, unsigned long, opentelemetry::v1::nostd::span&lt;unsigned long const, 18446744073709551615ul&gt;, opentelemetry::v1::nostd::span&lt;unsigned char const, 18446744073709551615ul&gt; &gt; &gt; &gt; &gt; const, 18446744073709551615ul&gt; &gt;::ForEachKeyValue(opentelemetry::v1::nostd::function_ref&lt;bool (opentelemetry::v1::trace::SpanContext, opentelemetry::v1::common::KeyValueIterable const&amp;)&gt;) const (85,447,240 samples, 0.15%)</title><rect x="1332.5" y="309" width="2.4" height="15.0" fill="rgb(221,76,18)" rx="2" ry="2" />
+<text  x="1335.47" y="319.5" ></text>
+</g>
+<g >
+<title>__lll_lock_wake_private (493,237,740 samples, 0.89%)</title><rect x="681.5" y="229" width="14.0" height="15.0" fill="rgb(238,155,37)" rx="2" ry="2" />
+<text  x="684.53" y="239.5" ></text>
+</g>
+<g >
+<title>std::ostream::operator&lt;&lt; (15,118,951 samples, 0.03%)</title><rect x="270.3" y="277" width="0.4" height="15.0" fill="rgb(213,39,9)" rx="2" ry="2" />
+<text  x="273.31" y="287.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::basic_string(std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;&amp;&amp;)@plt (3,755,181 samples, 0.01%)</title><rect x="980.1" y="261" width="0.1" height="15.0" fill="rgb(230,116,27)" rx="2" ry="2" />
+<text  x="983.12" y="271.5" ></text>
+</g>
+<g >
+<title>[libprotobuf.so.32.0.12] (146,667,621 samples, 0.26%)</title><rect x="1010.8" y="245" width="4.2" height="15.0" fill="rgb(224,88,21)" rx="2" ry="2" />
+<text  x="1013.83" y="255.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (72,153,182 samples, 0.13%)</title><rect x="1020.5" y="165" width="2.1" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="1023.52" y="175.5" ></text>
+</g>
+<g >
+<title>malloc (255,391,286 samples, 0.46%)</title><rect x="1420.5" y="293" width="7.3" height="15.0" fill="rgb(230,119,28)" rx="2" ry="2" />
+<text  x="1423.52" y="303.5" ></text>
+</g>
+<g >
+<title>malloc@plt (43,911,651 samples, 0.08%)</title><rect x="1182.8" y="261" width="1.3" height="15.0" fill="rgb(246,192,46)" rx="2" ry="2" />
+<text  x="1185.82" y="271.5" ></text>
+</g>
+<g >
+<title>malloc@plt (27,038,585 samples, 0.05%)</title><rect x="962.6" y="261" width="0.8" height="15.0" fill="rgb(246,192,46)" rx="2" ry="2" />
+<text  x="965.63" y="271.5" ></text>
+</g>
+<g >
+<title>std::chrono::_V2::steady_clock::now (1,742,641,777 samples, 3.13%)</title><rect x="1225.3" y="293" width="49.5" height="15.0" fill="rgb(249,203,48)" rx="2" ry="2" />
+<text  x="1228.30" y="303.5" >std:..</text>
+</g>
+<g >
+<title>__lll_lock_wake_private (6,347,369 samples, 0.01%)</title><rect x="669.9" y="245" width="0.2" height="15.0" fill="rgb(238,155,37)" rx="2" ry="2" />
+<text  x="672.89" y="255.5" ></text>
+</g>
+<g >
+<title>malloc (42,359,469 samples, 0.08%)</title><rect x="961.4" y="261" width="1.2" height="15.0" fill="rgb(230,119,28)" rx="2" ry="2" />
+<text  x="964.43" y="271.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::MultiRecordable::SetResource (41,397,149 samples, 0.07%)</title><rect x="512.2" y="309" width="1.2" height="15.0" fill="rgb(250,208,49)" rx="2" ry="2" />
+<text  x="515.25" y="319.5" ></text>
+</g>
+<g >
+<title>__gnu_cxx::stdio_sync_filebuf&lt;char, std::char_traits&lt;char&gt; &gt;::sync (13,142,180 samples, 0.02%)</title><rect x="249.0" y="229" width="0.4" height="15.0" fill="rgb(225,94,22)" rx="2" ry="2" />
+<text  x="252.01" y="239.5" ></text>
+</g>
+<g >
+<title>write (585,797,641 samples, 1.05%)</title><rect x="228.0" y="197" width="16.6" height="15.0" fill="rgb(228,107,25)" rx="2" ry="2" />
+<text  x="230.96" y="207.5" ></text>
+</g>
+<g >
+<title>cfree (53,669,338 samples, 0.10%)</title><rect x="167.5" y="309" width="1.5" height="15.0" fill="rgb(223,86,20)" rx="2" ry="2" />
+<text  x="170.47" y="319.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (104,500,164 samples, 0.19%)</title><rect x="897.9" y="165" width="3.0" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="900.91" y="175.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::BatchSpanProcessor::OnEnd (57,516,754 samples, 0.10%)</title><rect x="171.9" y="309" width="1.6" height="15.0" fill="rgb(238,155,37)" rx="2" ry="2" />
+<text  x="174.86" y="319.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (86,764,031 samples, 0.16%)</title><rect x="242.1" y="69" width="2.5" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="245.12" y="79.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::sdk::common::internal_log::LogHandler&gt;::shared_ptr_wrapper::Get() const (4,441,306 samples, 0.01%)</title><rect x="190.5" y="293" width="0.1" height="15.0" fill="rgb(233,131,31)" rx="2" ry="2" />
+<text  x="193.46" y="303.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_stringstream&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::basic_stringstream (150,444,557 samples, 0.27%)</title><rect x="218.1" y="261" width="4.2" height="15.0" fill="rgb(239,156,37)" rx="2" ry="2" />
+<text  x="221.08" y="271.5" ></text>
+</g>
+<g >
+<title>bench::EmitOnce (23,404,930 samples, 0.04%)</title><rect x="1453.1" y="341" width="0.6" height="15.0" fill="rgb(216,52,12)" rx="2" ry="2" />
+<text  x="1456.06" y="351.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::context::Context::GetValue(opentelemetry::v1::nostd::string_view) const (3,842,059 samples, 0.01%)</title><rect x="423.7" y="309" width="0.1" height="15.0" fill="rgb(209,19,4)" rx="2" ry="2" />
+<text  x="426.70" y="319.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (16,114,818 samples, 0.03%)</title><rect x="896.1" y="165" width="0.4" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="899.07" y="175.5" ></text>
+</g>
+<g >
+<title>operator delete (5,315,736 samples, 0.01%)</title><rect x="302.2" y="309" width="0.1" height="15.0" fill="rgb(247,196,46)" rx="2" ry="2" />
+<text  x="305.17" y="319.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::MultiRecordable::SetResource (41,454,693 samples, 0.07%)</title><rect x="1066.8" y="293" width="1.2" height="15.0" fill="rgb(250,208,49)" rx="2" ry="2" />
+<text  x="1069.84" y="303.5" ></text>
+</g>
+<g >
+<title>malloc (24,304,251 samples, 0.04%)</title><rect x="1015.0" y="245" width="0.7" height="15.0" fill="rgb(230,119,28)" rx="2" ry="2" />
+<text  x="1017.99" y="255.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::RandomIdGenerator::GenerateSpanId (116,867,605 samples, 0.21%)</title><rect x="524.2" y="309" width="3.3" height="15.0" fill="rgb(229,110,26)" rx="2" ry="2" />
+<text  x="527.16" y="319.5" ></text>
+</g>
+<g >
+<title>pthread_mutex_unlock (165,524,437 samples, 0.30%)</title><rect x="1445.2" y="325" width="4.7" height="15.0" fill="rgb(231,120,28)" rx="2" ry="2" />
+<text  x="1448.22" y="335.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::BatchSpanProcessor::OnEnd (2,820,847,504 samples, 5.07%)</title><rect x="191.0" y="293" width="80.1" height="15.0" fill="rgb(238,155,37)" rx="2" ry="2" />
+<text  x="194.05" y="303.5" >opentelem..</text>
+</g>
+<g >
+<title>google::protobuf::internal::ArenaStringPtr::Set (2,113,124,867 samples, 3.80%)</title><rect x="1002.5" y="261" width="60.0" height="15.0" fill="rgb(235,139,33)" rx="2" ry="2" />
+<text  x="1005.54" y="271.5" >google..</text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_M_replace (13,157,350 samples, 0.02%)</title><rect x="267.4" y="229" width="0.4" height="15.0" fill="rgb(226,98,23)" rx="2" ry="2" />
+<text  x="270.41" y="239.5" ></text>
+</g>
+<g >
+<title>malloc@plt (13,412,494 samples, 0.02%)</title><rect x="1427.8" y="293" width="0.3" height="15.0" fill="rgb(246,192,46)" rx="2" ry="2" />
+<text  x="1430.76" y="303.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::basic_string (177,459,649 samples, 0.32%)</title><rect x="974.7" y="261" width="5.0" height="15.0" fill="rgb(212,35,8)" rx="2" ry="2" />
+<text  x="977.67" y="271.5" ></text>
+</g>
+<g >
+<title>google::protobuf::internal::ArenaStringPtr::Destroy (4,105,358 samples, 0.01%)</title><rect x="212.0" y="245" width="0.1" height="15.0" fill="rgb(254,226,54)" rx="2" ry="2" />
+<text  x="214.98" y="255.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (27,044,944 samples, 0.05%)</title><rect x="1017.9" y="213" width="0.8" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="1020.93" y="223.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (136,408,449 samples, 0.24%)</title><rect x="1018.7" y="213" width="3.9" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="1021.70" y="223.5" ></text>
+</g>
+<g >
+<title>std::locale::locale (4,234,303 samples, 0.01%)</title><rect x="270.0" y="277" width="0.1" height="15.0" fill="rgb(214,44,10)" rx="2" ry="2" />
+<text  x="273.01" y="287.5" ></text>
+</g>
+<g >
+<title>_IO_fflush (34,366,407 samples, 0.06%)</title><rect x="250.4" y="213" width="0.9" height="15.0" fill="rgb(218,60,14)" rx="2" ry="2" />
+<text  x="253.37" y="223.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::MultiRecordable::SetName (2,690,582,823 samples, 4.83%)</title><rect x="990.5" y="293" width="76.3" height="15.0" fill="rgb(239,159,38)" rx="2" ry="2" />
+<text  x="993.49" y="303.5" >opentele..</text>
+</g>
+<g >
+<title>[[unknown]] (18,472,964 samples, 0.03%)</title><rect x="896.0" y="197" width="0.5" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="899.00" y="207.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (122,128,340 samples, 0.22%)</title><rect x="897.4" y="181" width="3.5" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="900.41" y="191.5" ></text>
+</g>
+<g >
+<title>malloc (21,430,465 samples, 0.04%)</title><rect x="1095.8" y="245" width="0.6" height="15.0" fill="rgb(230,119,28)" rx="2" ry="2" />
+<text  x="1098.78" y="255.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::TracerContext::GetProcessor() const (15,053,460 samples, 0.03%)</title><rect x="1324.4" y="309" width="0.4" height="15.0" fill="rgb(251,215,51)" rx="2" ry="2" />
+<text  x="1327.38" y="319.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (265,524,628 samples, 0.48%)</title><rect x="1107.0" y="213" width="7.5" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="1109.98" y="223.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (17,753,528 samples, 0.03%)</title><rect x="896.0" y="181" width="0.5" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="899.02" y="191.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::trace::TraceState::GetDefault (158,302,353 samples, 0.28%)</title><rect x="499.6" y="293" width="4.5" height="15.0" fill="rgb(251,213,51)" rx="2" ry="2" />
+<text  x="502.62" y="303.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::context::RuntimeContext::GetCurrent (427,982,568 samples, 0.77%)</title><rect x="1357.1" y="293" width="12.1" height="15.0" fill="rgb(212,36,8)" rx="2" ry="2" />
+<text  x="1360.08" y="303.5" ></text>
+</g>
+<g >
+<title>std::ostream::sentry::sentry (10,000,696 samples, 0.02%)</title><rect x="255.6" y="245" width="0.3" height="15.0" fill="rgb(251,214,51)" rx="2" ry="2" />
+<text  x="258.62" y="255.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_stringbuf&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::overflow (95,762,432 samples, 0.17%)</title><rect x="266.4" y="245" width="2.7" height="15.0" fill="rgb(221,75,18)" rx="2" ry="2" />
+<text  x="269.38" y="255.5" ></text>
+</g>
+<g >
+<title>malloc (96,920,386 samples, 0.17%)</title><rect x="1170.5" y="261" width="2.8" height="15.0" fill="rgb(230,119,28)" rx="2" ry="2" />
+<text  x="1173.55" y="271.5" ></text>
+</g>
+<g >
+<title>__gnu_cxx::stdio_sync_filebuf&lt;char, std::char_traits&lt;char&gt; &gt;::xsputn (13,317,307 samples, 0.02%)</title><rect x="216.8" y="261" width="0.3" height="15.0" fill="rgb(242,174,41)" rx="2" ry="2" />
+<text  x="219.76" y="271.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::exporter::otlp::OtlpRecordable::SetInstrumentationScope (117,688,152 samples, 0.21%)</title><rect x="579.0" y="293" width="3.4" height="15.0" fill="rgb(244,182,43)" rx="2" ry="2" />
+<text  x="582.02" y="303.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (30,309,087 samples, 0.05%)</title><rect x="680.7" y="117" width="0.8" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="683.67" y="127.5" ></text>
+</g>
+<g >
+<title>std::ostream::sentry::sentry (9,674,981 samples, 0.02%)</title><rect x="270.8" y="277" width="0.2" height="15.0" fill="rgb(251,214,51)" rx="2" ry="2" />
+<text  x="273.77" y="287.5" ></text>
+</g>
+<g >
+<title>operator delete (5,805,231 samples, 0.01%)</title><rect x="281.5" y="261" width="0.2" height="15.0" fill="rgb(247,196,46)" rx="2" ry="2" />
+<text  x="284.50" y="271.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (33,383,512 samples, 0.06%)</title><rect x="680.6" y="133" width="0.9" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="683.58" y="143.5" ></text>
+</g>
+<g >
+<title>bench::(anonymous namespace)::WorkerThread (55,678,403,512 samples, 100.00%)</title><rect x="10.0" y="357" width="1580.0" height="15.0" fill="rgb(210,26,6)" rx="2" ry="2" />
+<text  x="13.00" y="367.5" >bench::(anonymous namespace)::WorkerThread</text>
+</g>
+<g >
+<title>[[unknown]] (8,955,627 samples, 0.02%)</title><rect x="1106.7" y="85" width="0.3" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="1109.71" y="95.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_M_mutate (17,078,928 samples, 0.03%)</title><rect x="217.6" y="245" width="0.5" height="15.0" fill="rgb(217,56,13)" rx="2" ry="2" />
+<text  x="220.59" y="255.5" ></text>
+</g>
+<g >
+<title>std::locale::operator= (11,544,045 samples, 0.02%)</title><rect x="220.9" y="213" width="0.3" height="15.0" fill="rgb(242,173,41)" rx="2" ry="2" />
+<text  x="223.89" y="223.5" ></text>
+</g>
+<g >
+<title>__cxa_thread_atexit (12,722,094 samples, 0.02%)</title><rect x="1362.7" y="261" width="0.3" height="15.0" fill="rgb(253,223,53)" rx="2" ry="2" />
+<text  x="1365.67" y="271.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::context::Context::DataList&gt;::shared_ptr_wrapper::~shared_ptr_wrapper (45,573,310 samples, 0.08%)</title><rect x="1379.7" y="293" width="1.3" height="15.0" fill="rgb(241,166,39)" rx="2" ry="2" />
+<text  x="1382.73" y="303.5" ></text>
+</g>
+<g >
+<title>pthread_mutex_unlock (139,984,751 samples, 0.25%)</title><rect x="107.3" y="277" width="4.0" height="15.0" fill="rgb(231,120,28)" rx="2" ry="2" />
+<text  x="110.28" y="287.5" ></text>
+</g>
+<g >
+<title>std::chrono::_V2::steady_clock::now (3,673,624,068 samples, 6.60%)</title><rect x="1485.8" y="341" width="104.2" height="15.0" fill="rgb(249,203,48)" rx="2" ry="2" />
+<text  x="1488.75" y="351.5" >std::chrono:..</text>
+</g>
+<g >
+<title>[[vdso]] (3,370,706,419 samples, 6.05%)</title><rect x="1494.3" y="309" width="95.7" height="15.0" fill="rgb(218,60,14)" rx="2" ry="2" />
+<text  x="1497.35" y="319.5" >[[vdso]]</text>
+</g>
+<g >
+<title>[libc.so.6] (242,322,483 samples, 0.44%)</title><rect x="1160.7" y="197" width="6.9" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="1163.71" y="207.5" ></text>
+</g>
+<g >
+<title>std::_Rb_tree_increment(std::_Rb_tree_node_base*)@plt (20,376,472 samples, 0.04%)</title><rect x="308.5" y="309" width="0.6" height="15.0" fill="rgb(242,171,41)" rx="2" ry="2" />
+<text  x="311.50" y="319.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (75,913,881 samples, 0.14%)</title><rect x="898.7" y="149" width="2.2" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="901.72" y="159.5" ></text>
+</g>
+<g >
+<title>clock_gettime@plt (13,873,836 samples, 0.02%)</title><rect x="573.7" y="293" width="0.4" height="15.0" fill="rgb(229,112,27)" rx="2" ry="2" />
+<text  x="576.66" y="303.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::MultiRecordable::SetIdentity (13,629,838,092 samples, 24.48%)</title><rect x="600.0" y="293" width="386.8" height="15.0" fill="rgb(237,149,35)" rx="2" ry="2" />
+<text  x="603.02" y="303.5" >opentelemetry::v1::sdk::trace::MultiRecordable::SetI..</text>
+</g>
+<g >
+<title>operator new(unsigned long)@plt (4,443,668 samples, 0.01%)</title><rect x="1420.4" y="309" width="0.1" height="15.0" fill="rgb(249,205,49)" rx="2" ry="2" />
+<text  x="1423.39" y="319.5" ></text>
+</g>
+<g >
+<title>[libc.so.6] (1,496,364,897 samples, 2.69%)</title><rect x="1125.1" y="213" width="42.5" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="1128.12" y="223.5" >[li..</text>
+</g>
+<g >
+<title>[[unknown]] (46,310,908 samples, 0.08%)</title><rect x="680.2" y="181" width="1.3" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="683.21" y="191.5" ></text>
+</g>
+<g >
+<title>std::_Rb_tree_iterator&lt;std::pair&lt;unsigned long const, std::unique_ptr&lt;opentelemetry::v1::sdk::trace::Recordable, std::default_delete&lt;opentelemetry::v1::sdk::trace::Recordable&gt; &gt; &gt; &gt; std::_Rb_tree&lt;unsigned long, std::pair&lt;unsigned long const, std::unique_ptr&lt;opentelemetry::v1::sdk::trace::Recordable, std::default_delete&lt;opentelemetry::v1::sdk::trace::Recordable&gt; &gt; &gt;, std::_Select1st&lt;std::pair&lt;unsigned long const, std::unique_ptr&lt;opentelemetry::v1::sdk::trace::Recordable, std::default_delete&lt;opentelemetry::v1::sdk::trace::Recordable&gt; &gt; &gt; &gt;, std::less&lt;unsigned long&gt;, std::allocator&lt;std::pair&lt;unsigned long const, std::unique_ptr&lt;opentelemetry::v1::sdk::trace::Recordable, std::default_delete&lt;opentelemetry::v1::sdk::trace::Recordable&gt; &gt; &gt; &gt; &gt;::_M_emplace_hint_unique&lt;std::piecewise_construct_t const&amp;, std::tuple&lt;unsigned long&amp;&amp;&gt;, std::tuple&lt;&gt; &gt; (685,500,663 samples, 1.23%)</title><rect x="1176.1" y="277" width="19.5" height="15.0" fill="rgb(226,98,23)" rx="2" ry="2" />
+<text  x="1179.10" y="287.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::trace::DefaultSpan::~DefaultSpan (461,876,739 samples, 0.83%)</title><rect x="443.9" y="293" width="13.1" height="15.0" fill="rgb(235,141,33)" rx="2" ry="2" />
+<text  x="446.93" y="303.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (462,857,138 samples, 0.83%)</title><rect x="231.4" y="165" width="13.2" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="234.45" y="175.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::context::RuntimeContext::GetCurrent (8,562,969 samples, 0.02%)</title><rect x="423.8" y="309" width="0.2" height="15.0" fill="rgb(212,36,8)" rx="2" ry="2" />
+<text  x="426.81" y="319.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (14,711,700 samples, 0.03%)</title><rect x="896.1" y="149" width="0.4" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="899.11" y="159.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::trace::TraceState&gt;::shared_ptr_wrapper::CopyTo(opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::trace::TraceState&gt;::PlacementBuffer&amp;) const (128,022,173 samples, 0.23%)</title><rect x="1388.1" y="293" width="3.7" height="15.0" fill="rgb(233,131,31)" rx="2" ry="2" />
+<text  x="1391.13" y="303.5" ></text>
+</g>
+<g >
+<title>std::chrono::_V2::system_clock::now (1,740,749,812 samples, 3.13%)</title><rect x="1274.8" y="293" width="49.3" height="15.0" fill="rgb(224,91,21)" rx="2" ry="2" />
+<text  x="1277.75" y="303.5" >std:..</text>
+</g>
+<g >
+<title>operator new (7,287,519 samples, 0.01%)</title><rect x="217.9" y="229" width="0.2" height="15.0" fill="rgb(216,51,12)" rx="2" ry="2" />
+<text  x="220.87" y="239.5" ></text>
+</g>
+<g >
+<title>operator delete(void*)@plt (20,676,054 samples, 0.04%)</title><rect x="1441.9" y="325" width="0.6" height="15.0" fill="rgb(215,48,11)" rx="2" ry="2" />
+<text  x="1444.94" y="335.5" ></text>
+</g>
+<g >
+<title>cfree (431,261,111 samples, 0.77%)</title><rect x="430.3" y="293" width="12.2" height="15.0" fill="rgb(223,86,20)" rx="2" ry="2" />
+<text  x="433.29" y="303.5" ></text>
+</g>
+<g >
+<title>std::_Rb_tree_increment (31,383,860 samples, 0.06%)</title><rect x="307.6" y="309" width="0.9" height="15.0" fill="rgb(247,196,46)" rx="2" ry="2" />
+<text  x="310.61" y="319.5" ></text>
+</g>
+<g >
+<title>[libc.so.6] (1,489,145,745 samples, 2.67%)</title><rect x="919.2" y="197" width="42.2" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="922.17" y="207.5" >[li..</text>
+</g>
+<g >
+<title>std::_Sp_counted_ptr&lt;opentelemetry::v1::trace::Span*, (__gnu_cxx::_Lock_policy)2&gt;::_M_dispose (55,576,503 samples, 0.10%)</title><rect x="1432.2" y="309" width="1.6" height="15.0" fill="rgb(247,197,47)" rx="2" ry="2" />
+<text  x="1435.23" y="319.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (155,938,546 samples, 0.28%)</title><rect x="240.2" y="85" width="4.4" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="243.16" y="95.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::BatchSpanProcessor::MakeRecordable (2,870,157,438 samples, 5.15%)</title><rect x="1086.7" y="277" width="81.5" height="15.0" fill="rgb(213,38,9)" rx="2" ry="2" />
+<text  x="1089.74" y="287.5" >opentelem..</text>
+</g>
+<g >
+<title>pthread_mutex_unlock (34,832,912 samples, 0.06%)</title><rect x="111.3" y="293" width="1.0" height="15.0" fill="rgb(231,120,28)" rx="2" ry="2" />
+<text  x="114.31" y="303.5" ></text>
+</g>
+<g >
+<title>[libc.so.6] (46,276,772 samples, 0.08%)</title><rect x="1166.3" y="181" width="1.3" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="1169.27" y="191.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::sdk::common::internal_log::LogHandler&gt;::shared_ptr_wrapper::CopyTo(opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::sdk::common::internal_log::LogHandler&gt;::PlacementBuffer&amp;) const (7,126,005 samples, 0.01%)</title><rect x="256.4" y="261" width="0.2" height="15.0" fill="rgb(245,184,44)" rx="2" ry="2" />
+<text  x="259.39" y="271.5" ></text>
+</g>
+<g >
+<title>operator new (156,469,842 samples, 0.28%)</title><rect x="1415.9" y="309" width="4.5" height="15.0" fill="rgb(216,51,12)" rx="2" ry="2" />
+<text  x="1418.95" y="319.5" ></text>
+</g>
+<g >
+<title>std::_Rb_tree&lt;unsigned long, std::pair&lt;unsigned long const, std::unique_ptr&lt;opentelemetry::v1::sdk::trace::Recordable, std::default_delete&lt;opentelemetry::v1::sdk::trace::Recordable&gt; &gt; &gt;, std::_Select1st&lt;std::pair&lt;unsigned long const, std::unique_ptr&lt;opentelemetry::v1::sdk::trace::Recordable, std::default_delete&lt;opentelemetry::v1::sdk::trace::Recordable&gt; &gt; &gt; &gt;, std::less&lt;unsigned long&gt;, std::allocator&lt;std::pair&lt;unsigned long const, std::unique_ptr&lt;opentelemetry::v1::sdk::trace::Recordable, std::default_delete&lt;opentelemetry::v1::sdk::trace::Recordable&gt; &gt; &gt; &gt; &gt;::_M_erase_aux (7,273,073 samples, 0.01%)</title><rect x="301.7" y="293" width="0.2" height="15.0" fill="rgb(242,173,41)" rx="2" ry="2" />
+<text  x="304.69" y="303.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::Span::Span (27,301,349 samples, 0.05%)</title><rect x="359.6" y="325" width="0.8" height="15.0" fill="rgb(230,116,27)" rx="2" ry="2" />
+<text  x="362.62" y="335.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_M_create(unsigned long&amp;, unsigned long)@plt (16,205,326 samples, 0.03%)</title><rect x="883.7" y="245" width="0.5" height="15.0" fill="rgb(235,141,33)" rx="2" ry="2" />
+<text  x="886.70" y="255.5" ></text>
+</g>
+<g >
+<title>[[vdso]] (1,584,484,773 samples, 2.85%)</title><rect x="1279.2" y="261" width="44.9" height="15.0" fill="rgb(218,60,14)" rx="2" ry="2" />
+<text  x="1282.17" y="271.5" >[[vd..</text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::basic_string(char const*, unsigned long, std::allocator&lt;char&gt; const&amp;)@plt (13,095,148 samples, 0.02%)</title><rect x="1064.9" y="261" width="0.3" height="15.0" fill="rgb(232,128,30)" rx="2" ry="2" />
+<text  x="1067.88" y="271.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (95,286,643 samples, 0.17%)</title><rect x="1019.9" y="181" width="2.7" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="1022.86" y="191.5" ></text>
+</g>
+<g >
+<title>operator delete(void*)@plt (4,781,313 samples, 0.01%)</title><rect x="984.8" y="277" width="0.2" height="15.0" fill="rgb(215,48,11)" rx="2" ry="2" />
+<text  x="987.82" y="287.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::Span::~Span (1,225,702,032 samples, 2.20%)</title><rect x="76.5" y="293" width="34.8" height="15.0" fill="rgb(216,52,12)" rx="2" ry="2" />
+<text  x="79.47" y="303.5" >op..</text>
+</g>
+<g >
+<title>std::ostream::flush (5,627,404 samples, 0.01%)</title><rect x="247.4" y="245" width="0.2" height="15.0" fill="rgb(220,71,17)" rx="2" ry="2" />
+<text  x="250.45" y="255.5" ></text>
+</g>
+<g >
+<title>malloc (112,619,560 samples, 0.20%)</title><rect x="670.1" y="245" width="3.2" height="15.0" fill="rgb(230,119,28)" rx="2" ry="2" />
+<text  x="673.07" y="255.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::trace::TraceState&gt;::shared_ptr_wrapper::~shared_ptr_wrapper (1,219,885,133 samples, 2.19%)</title><rect x="122.2" y="325" width="34.6" height="15.0" fill="rgb(208,14,3)" rx="2" ry="2" />
+<text  x="125.21" y="335.5" >op..</text>
+</g>
+<g >
+<title>malloc@plt (19,841,367 samples, 0.04%)</title><rect x="420.6" y="309" width="0.6" height="15.0" fill="rgb(246,192,46)" rx="2" ry="2" />
+<text  x="423.61" y="319.5" ></text>
+</g>
+<g >
+<title>malloc (13,992,636 samples, 0.03%)</title><rect x="246.7" y="181" width="0.4" height="15.0" fill="rgb(230,119,28)" rx="2" ry="2" />
+<text  x="249.69" y="191.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::context::RuntimeContextStorage&gt;::shared_ptr_wrapper::CopyTo(opentelemetry::v1::nostd::shared_ptr&lt;opentelemetry::v1::context::RuntimeContextStorage&gt;::PlacementBuffer&amp;) const (68,917,286 samples, 0.12%)</title><rect x="1381.0" y="293" width="2.0" height="15.0" fill="rgb(227,103,24)" rx="2" ry="2" />
+<text  x="1384.02" y="303.5" ></text>
+</g>
+<g >
+<title>_IO_fwrite (3,958,666 samples, 0.01%)</title><rect x="216.6" y="261" width="0.2" height="15.0" fill="rgb(210,23,5)" rx="2" ry="2" />
+<text  x="219.64" y="271.5" ></text>
+</g>
+<g >
+<title>clock_gettime (1,659,828,373 samples, 2.98%)</title><rect x="312.1" y="293" width="47.1" height="15.0" fill="rgb(213,39,9)" rx="2" ry="2" />
+<text  x="315.14" y="303.5" >cloc..</text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::MultiRecordable::SetInstrumentationScope (130,085,505 samples, 0.23%)</title><rect x="986.8" y="293" width="3.7" height="15.0" fill="rgb(242,174,41)" rx="2" ry="2" />
+<text  x="989.80" y="303.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::trace::SpanContextKeyValueIterableView&lt;opentelemetry::v1::nostd::span&lt;std::pair&lt;opentelemetry::v1::trace::SpanContext, std::initializer_list&lt;std::pair&lt;opentelemetry::v1::nostd::string_view, absl::otel_v1::variant&lt;bool, int, long, unsigned int, double, char const*, opentelemetry::v1::nostd::string_view, opentelemetry::v1::nostd::span&lt;bool const, 18446744073709551615ul&gt;, opentelemetry::v1::nostd::span&lt;int const, 18446744073709551615ul&gt;, opentelemetry::v1::nostd::span&lt;long const, 18446744073709551615ul&gt;, opentelemetry::v1::nostd::span&lt;unsigned int const, 18446744073709551615ul&gt;, opentelemetry::v1::nostd::span&lt;double const, 18446744073709551615ul&gt;, opentelemetry::v1::nostd::span&lt;opentelemetry::v1::nostd::string_view const, 18446744073709551615ul&gt;, unsigned long, opentelemetry::v1::nostd::span&lt;unsigned long const, 18446744073709551615ul&gt;, opentelemetry::v1::nostd::span&lt;unsigned char const, 18446744073709551615ul&gt; &gt; &gt; &gt; &gt; const, 18446744073709551615ul&gt; &gt;::ForEachKeyValue(opentelemetry::v1::nostd::function_ref&lt;bool (opentelemetry::v1::trace::SpanContext, opentelemetry::v1::common::KeyValueIterable const&amp;)&gt;) const (65,911,353 samples, 0.12%)</title><rect x="1201.6" y="293" width="1.9" height="15.0" fill="rgb(221,76,18)" rx="2" ry="2" />
+<text  x="1204.60" y="303.5" ></text>
+</g>
+<g >
+<title>operator new (19,929,431 samples, 0.04%)</title><rect x="1167.6" y="261" width="0.6" height="15.0" fill="rgb(216,51,12)" rx="2" ry="2" />
+<text  x="1170.61" y="271.5" ></text>
+</g>
+<g >
+<title>void std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_M_construct&lt;char const*&gt;(char const*, char const*, std::forward_iterator_tag)@plt (4,404,902 samples, 0.01%)</title><rect x="1066.7" y="261" width="0.1" height="15.0" fill="rgb(249,203,48)" rx="2" ry="2" />
+<text  x="1069.72" y="271.5" ></text>
+</g>
+<g >
+<title>std::ostream::sentry::sentry (6,629,591 samples, 0.01%)</title><rect x="255.9" y="261" width="0.2" height="15.0" fill="rgb(251,214,51)" rx="2" ry="2" />
+<text  x="258.90" y="271.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::MultiRecordable::SetSpanKind (78,181,062 samples, 0.14%)</title><rect x="513.4" y="309" width="2.2" height="15.0" fill="rgb(210,24,5)" rx="2" ry="2" />
+<text  x="516.42" y="319.5" ></text>
+</g>
+<g >
+<title>[[unknown]] (44,092,516 samples, 0.08%)</title><rect x="1021.3" y="133" width="1.3" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="1024.32" y="143.5" ></text>
+</g>
+<g >
+<title>_IO_file_xsputn (8,716,614 samples, 0.02%)</title><rect x="226.7" y="245" width="0.3" height="15.0" fill="rgb(245,188,45)" rx="2" ry="2" />
+<text  x="229.71" y="255.5" ></text>
+</g>
+<g >
+<title>[libc.so.6] (156,905,739 samples, 0.28%)</title><rect x="185.9" y="277" width="4.5" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="188.92" y="287.5" ></text>
+</g>
+<g >
+<title>opentelemetry::v1::sdk::trace::MultiRecordable::SetStartTime (39,079,980 samples, 0.07%)</title><rect x="1071.8" y="293" width="1.1" height="15.0" fill="rgb(251,212,50)" rx="2" ry="2" />
+<text  x="1074.83" y="303.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::reserve (21,645,651 samples, 0.04%)</title><rect x="246.5" y="213" width="0.6" height="15.0" fill="rgb(244,181,43)" rx="2" ry="2" />
+<text  x="249.47" y="223.5" ></text>
+</g>
+<g >
+<title>std::_Rb_tree&lt;unsigned long, std::pair&lt;unsigned long const, std::unique_ptr&lt;opentelemetry::v1::sdk::trace::Recordable, std::default_delete&lt;opentelemetry::v1::sdk::trace::Recordable&gt; &gt; &gt;, std::_Select1st&lt;std::pair&lt;unsigned long const, std::unique_ptr&lt;opentelemetry::v1::sdk::trace::Recordable, std::default_delete&lt;opentelemetry::v1::sdk::trace::Recordable&gt; &gt; &gt; &gt;, std::less&lt;unsigned long&gt;, std::allocator&lt;std::pair&lt;unsigned long const, std::unique_ptr&lt;opentelemetry::v1::sdk::trace::Recordable, std::default_delete&lt;opentelemetry::v1::sdk::trace::Recordable&gt; &gt; &gt; &gt; &gt;::_M_get_insert_hint_unique_pos (16,544,421 samples, 0.03%)</title><rect x="1173.3" y="277" width="0.5" height="15.0" fill="rgb(206,7,1)" rx="2" ry="2" />
+<text  x="1176.30" y="287.5" ></text>
+</g>
+</g>
+</svg>

@@ -1,0 +1,24 @@
+{
+  "image": "bench-sut-parity-otelcpp-http-clang",
+  "image_id": "e27b0602d7dd1ff84d2fa94ab6985bfd90f53c397a63b2227c7e0d13a01f373f",
+  "attributes_per_span": 0,
+  "spans": 10000,
+  "spans_emitted": 10000,
+  "spans_dropped": {
+    "queue_full": 0,
+    "record_too_large": 0,
+    "span_attribute_limit": 0,
+    "attribute_value_truncated": 0,
+    "other": 0,
+    "total": 0
+  },
+  "calling_thread_allocs": 142546,
+  "calling_thread_allocs_per_span": 14.2546,
+  "background_allocs": 10491,
+  "background_allocs_per_span": 1.0491,
+  "background_by_thread": {
+    "1:emit_app": 12,
+    "2:emit_app": 10130,
+    "4:emit_app": 349
+  }
+}
