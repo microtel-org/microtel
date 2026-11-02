@@ -29,7 +29,14 @@ def main():
     out = pathlib.Path(sys.argv[1])
     ref = sys.argv[2] if len(sys.argv) > 2 else None
     pooled, meta, rounds = {}, {}, {}
+    # A round in which any SUT failed (run_rounds.sh marks it) is dropped for
+    # every SUT, so each SUT's pool comes from the same rounds.
+    dropped = sorted(p.parent.name for p in out.glob("round*/FAILED"))
+    if dropped:
+        print(f"Dropped rounds (a SUT failed): {', '.join(dropped)}\n")
     for res in sorted(out.glob("round*/*/results.json")):
+        if res.parent.parent.name in dropped:
+            continue
         data = json.loads(res.read_text())
         rnd = res.parent.parent.name
         for sut in data.get("suts", []):
@@ -61,7 +68,8 @@ def main():
         if refp50:
             cell += f" {med / refp50:.2f}× |"
         print(cell)
-    (out / "merged.json").write_text(json.dumps({"rows": rows, "rounds": rounds}, indent=2))
+    (out / "merged.json").write_text(
+        json.dumps({"rows": rows, "rounds": rounds, "dropped_rounds": dropped}, indent=2))
 
 
 if __name__ == "__main__":
