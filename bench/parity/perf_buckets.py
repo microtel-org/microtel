@@ -90,9 +90,12 @@ def classify(frames):
     if worker is None:
         return None, None
     inner = frames[:worker]
-    if any(PROTOBUF.search(s) or "libprotobuf" in d for s, d in inner):
+    # Rules match function names only, not parameter types: a signature such
+    # as Tracer::StartSpan(..., KeyValueIterable const&, ...) is not
+    # attribute storage.
+    if any(PROTOBUF.search(short(s)) or "libprotobuf" in d for s, d in inner):
         return "libprotobuf", None
-    named = [s for s, _ in inner if s and s != "[unknown]"]
+    named = [short(s) for s, _ in inner if s and s != "[unknown]"]
     emit = next((i for i, s in enumerate(named) if "EmitSpan" in s), None)
     if emit is None:
         return "harness", None
@@ -100,7 +103,7 @@ def classify(frames):
         for name, rx in RULES:
             if rx.search(s):
                 return name, None
-    return "other", short(named[0])
+    return "other", named[0]
 
 
 def main():
