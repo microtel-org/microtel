@@ -207,8 +207,11 @@ private:
         // Parity study (bench/parity): the SDK's own SpanData recordable in
         // place of OtlpRecordable, so no protobuf is built on the calling
         // thread. Same BatchSpanProcessor, sampler and harness.
+        // The exporter keeps finished spans in a bounded ring (the factory's
+        // default size); nothing here reads them back.
         static_cast<void>(opts.endpoint);
-        exporter = opentelemetry::exporter::memory::InMemorySpanExporterFactory::Create();
+        std::shared_ptr<opentelemetry::exporter::memory::InMemorySpanData> span_data;
+        exporter = opentelemetry::exporter::memory::InMemorySpanExporterFactory::Create(span_data);
 #elif defined(BENCH_BACKEND_OTELCPP_HTTP)
         otlp::OtlpHttpExporterOptions http_opts;
         http_opts.url = opts.endpoint + "/v1/traces";
