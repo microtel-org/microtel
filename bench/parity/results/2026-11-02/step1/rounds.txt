@@ -1,0 +1,36 @@
+== round 1  2026-11-02T21:43:48Z  governor=performance boost=0
+   21:46:33 parity-microtel-http-clang  load1=0.40  tctl=+40.9°C
+   21:46:39 parity-microtel-http-clang  done  tctl=+42.8°C
+   21:46:39 parity-otelcpp-http-clang  load1=0.37  tctl=+42.8°C
+   21:46:46 parity-otelcpp-http-clang  done  tctl=+44.1°C
+   21:47:01 parity-otelcpp-http-clang-inmem  load1=0.39  tctl=+42.1°C
+   21:47:08 parity-otelcpp-http-clang-inmem  done  tctl=+43.1°C
+== round 2  2026-11-02T21:47:08Z  governor=performance boost=0
+   21:47:08 parity-otelcpp-http-clang  load1=0.48  tctl=+43.1°C
+   21:47:14 parity-otelcpp-http-clang  done  tctl=+44.1°C
+   21:47:30 parity-otelcpp-http-clang-inmem  load1=0.47  tctl=+42.1°C
+   21:47:36 parity-otelcpp-http-clang-inmem  done  tctl=+43.1°C
+   21:47:36 parity-microtel-http-clang  load1=0.43  tctl=+43.1°C
+   21:47:43 parity-microtel-http-clang  done  tctl=+43.6°C
+== round 3  2026-11-02T21:47:43Z  governor=performance boost=0
+   21:47:43 parity-otelcpp-http-clang-inmem  load1=0.44  tctl=+43.6°C
+   21:47:50 parity-otelcpp-http-clang-inmem  done  tctl=+43.9°C
+   21:47:50 parity-microtel-http-clang  load1=0.40  tctl=+43.9°C
+   21:47:56 parity-microtel-http-clang  done  tctl=+44.0°C
+   21:47:56 parity-otelcpp-http-clang  load1=0.42  tctl=+44.0°C
+   21:48:03 parity-otelcpp-http-clang  done  tctl=+44.4°C
+== round 4  2026-11-02T21:48:03Z  governor=performance boost=0
+   21:48:03 parity-microtel-http-clang  load1=0.39  tctl=+44.4°C
+   21:48:10 parity-microtel-http-clang  done  tctl=+44.4°C
+   21:48:10 parity-otelcpp-http-clang  load1=0.35  tctl=+44.4°C
+   21:48:16 parity-otelcpp-http-clang  done  tctl=+44.5°C
+   21:48:16 parity-otelcpp-http-clang-inmem  load1=0.38  tctl=+44.5°C
+   21:48:23 parity-otelcpp-http-clang-inmem  done  tctl=+44.2°C
+== round 5  2026-11-02T21:48:23Z  governor=performance boost=0
+   21:48:23 parity-otelcpp-http-clang  load1=0.35  tctl=+44.2°C
+   21:48:30 parity-otelcpp-http-clang  done  tctl=+44.5°C
+   21:48:30 parity-otelcpp-http-clang-inmem  load1=0.32  tctl=+44.4°C
+   21:48:36 parity-otelcpp-http-clang-inmem  done  tctl=+44.2°C
+   21:48:36 parity-microtel-http-clang  load1=0.35  tctl=+44.2°C
+   21:48:43 parity-microtel-http-clang  done  tctl=+44.2°C
+== done 2026-11-02T21:48:43Z

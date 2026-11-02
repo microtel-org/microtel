@@ -1,0 +1,16 @@
+stress-ng: info:  [14217] setting to a 30 mins run per stressor
+stress-ng: info:  [14217] dispatching hogs: 12 cpu, 4 vm
+stress-ng: info:  [14217] note: boost is disabled and this may impact top performance; setting /sys/devices/system/cpu/cpufreq/boost to 1 may improve performance.
+stress-ng: info:  [14217] note: 12 cpus have scaling governors set to powersave and this may impact performance; setting /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor to 'performance' may improve performance
+stress-ng: info:  [14247] vm: using 960.25MB per stressor instance (total 3.75GB of 4.98GB available memory)
+stress-ng: info:  [14252] vm: x86 movdiri instruction not supported, dropping back to plain 64 bit writes
+stress-ng: metrc: [14217] stressor       bogo ops real time  usr time  sys time   bogo ops/s     bogo ops/s
+stress-ng: metrc: [14217]                           (secs)    (secs)    (secs)   (real time) (usr+sys time)
+stress-ng: metrc: [14217] cpu            21343031   1800.00  15824.65      3.57     11857.23        1348.42
+stress-ng: metrc: [14217] vm            197081885   1800.45   4083.77   1267.30    109462.43       36830.40
+stress-ng: info:  [14217] skipped: 0
+stress-ng: info:  [14217] passed: 16: cpu (12) vm (4)
+stress-ng: info:  [14217] failed: 0
+stress-ng: info:  [14217] metrics untrustworthy: 0
+stress-ng: info:  [14217] successful run completed in 30 mins
+stress-ng exit 0

@@ -1,0 +1,10 @@
+SetIdentity, root span:  5
+SetIdentity, child span: 6
+  set_trace_id (16 bytes):      3
+  set_span_id (8 bytes):        1
+  set_parent_span_id (8 bytes): 1
+  TraceState::ToHeader (empty): 0
+  set_trace_state(""):          1
+  mutable_trace_id()->assign (16 bytes): 2
+  trace_state skipped when Empty():      0
+OtlpRecordable construction:  0
