@@ -4,7 +4,7 @@
 """Allocations per span for one SUT image, with malloc_count.so (bench/parity/README.md).
 
 Usage:  python3 -I bench/parity/count_mallocs.py <image> <malloc_count.so> <attrs> <out.json>
-        [--spans N] [--warmup N] [--env KEY=VALUE ...]
+        [--spans N] [--warmup N] [--env KEY=VALUE ...] [--settle SECONDS]
 
 Starts the blackhole sink and the SUT on the bench network, with the counter
 preloaded into the SUT. Runs a warmup and a flush, takes a per-thread snapshot
@@ -71,6 +71,8 @@ def main():
     ap.add_argument("out")
     ap.add_argument("--spans", type=int, default=10000)
     ap.add_argument("--warmup", type=int, default=1000)
+    ap.add_argument("--settle", type=float, default=0.0,
+                    help="seconds to wait after each flush, before the snapshot")
     ap.add_argument("--env", action="append", default=[],
                     help="extra SUT environment, e.g. EMIT_OTELCPP_BSP_MAX_QUEUE_SIZE=16384")
     a = ap.parse_args()
@@ -94,10 +96,12 @@ def main():
             f = s.makefile("r")
             command(f, s, {"cmd": "run", "spans": a.warmup, "threads": 1, "rate_hz": 0})
             command(f, s, {"cmd": "flush"})
+            time.sleep(a.settle)
             podman("kill", "--signal", "USR2", SUT)
             wait_for(lambda: logs().count("malloc_count end") >= 1, 10, "no first snapshot")
             run = command(f, s, {"cmd": "run", "spans": a.spans, "threads": 1, "rate_hz": 0})
             command(f, s, {"cmd": "flush"})
+            time.sleep(a.settle)
             podman("kill", "--signal", "USR2", SUT)
             wait_for(lambda: logs().count("malloc_count end") >= 2, 10, "no second snapshot")
             command(f, s, {"cmd": "quit"})
@@ -114,6 +118,7 @@ def main():
             "image_id": podman("image", "inspect", "--format", "{{.Id}}", a.image).stdout.strip(),
             "attributes_per_span": a.attrs,
             "env": a.env,
+            "settle_s": a.settle,
             "spans": a.spans,
             "spans_emitted": run.get("spans_emitted"),
             "spans_dropped": run.get("spans_dropped"),

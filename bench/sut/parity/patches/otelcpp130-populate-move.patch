@@ -1,0 +1,22 @@
+diff --git a/exporters/otlp/src/otlp_recordable_utils.cc b/exporters/otlp/src/otlp_recordable_utils.cc
+index 635d46d1..298918cd 100644
+--- a/exporters/otlp/src/otlp_recordable_utils.cc
++++ b/exporters/otlp/src/otlp_recordable_utils.cc
+@@ -93,7 +93,7 @@ void OtlpRecordableUtils::PopulateRequest(
+ 
+   for (const auto &recordable : spans)
+   {
+-    const auto *otlp_recordable = static_cast<const OtlpRecordable *>(recordable.get());
++    auto *otlp_recordable = static_cast<OtlpRecordable *>(recordable.get());
+     const auto *resource        = otlp_recordable->GetResource();
+     const auto *instrumentation = otlp_recordable->GetInstrumentationScope();
+ 
+@@ -131,7 +131,7 @@ void OtlpRecordableUtils::PopulateRequest(
+     }
+ 
+     // The recordable span can only be copied here since the request message is Arena allocated.
+-    scope_spans->add_spans()->CopyFrom(otlp_recordable->span());
++    *scope_spans->add_spans() = std::move(otlp_recordable->span());
+   }
+ }
+ 

@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """perf profile of the span hot loop for one SUT (bench/parity/README.md, part 2).
 
-Usage:  python3 -I bench/parity/perf_profile.py <perf-image> <cycles> <out-dir>
+Usage:  python3 -I bench/parity/perf_profile.py <perf-image> <cycles> <out-dir> [--env KEY=VALUE ...]
 
 Starts the blackhole sink and the SUT image, runs a 10,000-span warmup, then
 starts the host's `perf record -e cycles:u -F 4999 --call-graph fp` on the
@@ -58,6 +58,8 @@ def main():
     ap.add_argument("image")
     ap.add_argument("cycles", type=int)
     ap.add_argument("out")
+    ap.add_argument("--env", action="append", default=[],
+                    help="extra SUT environment, e.g. EMIT_OTELCPP_BSP_MAX_QUEUE_SIZE=16384")
     a = ap.parse_args()
     out = pathlib.Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
@@ -70,7 +72,8 @@ def main():
     try:
         podman("run", "-d", "--name", SUT, "--network", NET, "-p", f"{CONTROL}:{CONTROL}",
                "--cap-add", "PERFMON", "--cap-add", "SYS_PTRACE",
-               "-e", "OTEL_EXPORTER_OTLP_ENDPOINT=http://sink:4318", a.image)
+               "-e", "OTEL_EXPORTER_OTLP_ENDPOINT=http://sink:4318",
+               *[x for kv in a.env for x in ("-e", kv)], a.image)
         deadline = time.monotonic() + 60
         while "ready on control port" not in logs():
             if time.monotonic() > deadline:

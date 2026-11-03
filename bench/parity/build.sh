@@ -42,6 +42,7 @@ add otelcpp-grpc-gcc-nohard   $OTEL "EXPORTER=grpc SDK_CC=gcc SDK_CXX=g++" "$NOH
 add otelcpp-http-clang-pbsrc  $OTEL "EXPORTER=http SDK_CC=clang-18 SDK_CXX=clang++-18 PROTOBUF_TAG=v21.12"
 add otelcpp-http-clang-inmem  $OTEL "EXPORTER=http SDK_CC=clang-18 SDK_CXX=clang++-18 INMEMORY=ON"
 add otelcpp130-http-clang     $OTEL "OTELCPP_VERSION=v1.30.0 EXPORTER=http SDK_CC=clang-18 SDK_CXX=clang++-18 ALL_COMPONENTS=ON"
+add otelcpp130-http-clang-move $OTEL "OTELCPP_VERSION=v1.30.0 EXPORTER=http SDK_CC=clang-18 SDK_CXX=clang++-18 ALL_COMPONENTS=ON OTELCPP_PATCH=otelcpp130-populate-move.patch"
 add otelcpp130-grpc-clang     $OTEL "OTELCPP_VERSION=v1.30.0 EXPORTER=grpc SDK_CC=clang-18 SDK_CXX=clang++-18"
 add microtel-http-clang       $MT   "CC_BIN=clang-18 CXX_BIN=clang++-18 GRPC=OFF"
 add microtel-grpc-clang       $MT   "CC_BIN=clang-18 CXX_BIN=clang++-18 GRPC=ON"
@@ -50,7 +51,7 @@ add microtel-grpc-gcc         $MT   "CC_BIN=gcc CXX_BIN=g++ GRPC=ON"
 ORDER=(microtel-http-clang microtel-grpc-clang microtel-http-gcc microtel-grpc-gcc
        otelcpp-http-clang otelcpp-http-clang-inmem otelcpp-http-gcc-nohard
        otelcpp-http-clang-pbsrc otelcpp-grpc-gcc-nohard otelcpp130-http-clang
-       otelcpp-grpc-clang otelcpp130-grpc-clang)
+       otelcpp-grpc-clang otelcpp130-grpc-clang otelcpp130-http-clang-move)
 
 # Only these get a :perf image (linux-tools in the runtime stage) for part 2.
 PERF_VARIANTS=" otelcpp-http-clang otelcpp-http-clang-inmem microtel-http-clang "

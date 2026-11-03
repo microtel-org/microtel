@@ -287,6 +287,21 @@ suts:
       EMIT_OTELCPP_BSP_MAX_QUEUE_SIZE: "16384"
     b0: false
 
+  # Experiment (bench/parity/RESULTS.md section 5): v1.30.0 with PopulateRequest
+  # moving the recordable's span into the request, as v1.19.0 did, instead of
+  # CopyFrom (patches/otelcpp130-populate-move.patch).
+  - name: parity-otelcpp130-http-clang-move-q16k
+    description: "parity: opentelemetry-cpp v1.30.0 + PopulateRequest move-assign, Clang 18, BSP max_queue_size 16384"
+    dockerfile: bench/sut/parity/otelcpp.Dockerfile
+    image_name: bench-sut-parity-otelcpp130-http-clang-move
+    protocol: http
+    ports:
+      control: 19090
+    env:
+      OTEL_EXPORTER_OTLP_ENDPOINT: ""
+      EMIT_OTELCPP_BSP_MAX_QUEUE_SIZE: "16384"
+    b0: false
+
   - name: parity-otelcpp130-grpc-clang
     description: "parity: opentelemetry-cpp v1.30.0, Clang 18, BENCH flags"
     dockerfile: bench/sut/parity/otelcpp.Dockerfile

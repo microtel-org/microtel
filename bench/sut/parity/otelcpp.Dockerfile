@@ -20,6 +20,8 @@
 #   PROTOBUF_TAG     empty: Ubuntu's libprotobuf32t64. A protobuf tag (v21.12 is
 #                    3.21.12, Ubuntu's version): built here with BENCH flags.
 #   INMEMORY         ON: spans go to the SDK's in-memory exporter (EXPORTER=http).
+#   OTELCPP_PATCH    a file in bench/sut/parity/patches/, applied to the
+#                    opentelemetry-cpp tree before building (experiments only).
 #   ALL_COMPONENTS   ON: the emit-app finds opentelemetry-cpp without naming
 #                    components (v1.30.0 renamed them; the targets are unchanged).
 
@@ -34,6 +36,7 @@ ARG CXX_STD=17
 ARG PROTOBUF_TAG=
 ARG INMEMORY=OFF
 ARG ALL_COMPONENTS=OFF
+ARG OTELCPP_PATCH=
 ARG INSTALL_PERF=false
 
 FROM ubuntu:24.04 AS base
@@ -92,9 +95,16 @@ ARG SDK_CXX
 ARG EXTRA_FLAGS
 ARG CXX_STD
 
+ARG OTELCPP_PATCH
+
 RUN git clone --depth 1 --branch ${OTELCPP_VERSION} \
         https://github.com/open-telemetry/opentelemetry-cpp.git \
         /src/opentelemetry-cpp
+
+COPY bench/sut/parity/patches /src/patches
+RUN if [ -n "$OTELCPP_PATCH" ]; then \
+        git -C /src/opentelemetry-cpp apply --verbose "/src/patches/$OTELCPP_PATCH"; \
+    fi
 
 # Both the pre-1.30 option names and v1.30's OTELCPP_* ones are passed; each
 # release ignores the names it does not know.
