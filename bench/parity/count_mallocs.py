@@ -4,7 +4,7 @@
 """Allocations per span for one SUT image, with malloc_count.so (bench/parity/README.md).
 
 Usage:  python3 -I bench/parity/count_mallocs.py <image> <malloc_count.so> <attrs> <out.json>
-        [--spans N] [--warmup N]
+        [--spans N] [--warmup N] [--env KEY=VALUE ...]
 
 Starts the blackhole sink and the SUT on the bench network, with the counter
 preloaded into the SUT. Runs a warmup and a flush, takes a per-thread snapshot
@@ -71,6 +71,8 @@ def main():
     ap.add_argument("out")
     ap.add_argument("--spans", type=int, default=10000)
     ap.add_argument("--warmup", type=int, default=1000)
+    ap.add_argument("--env", action="append", default=[],
+                    help="extra SUT environment, e.g. EMIT_OTELCPP_BSP_MAX_QUEUE_SIZE=16384")
     a = ap.parse_args()
 
     podman("network", "create", NET, check=False)
@@ -84,6 +86,7 @@ def main():
                "-e", "LD_PRELOAD=/malloc_count.so",
                "-e", f"EMIT_ATTRIBUTES_PER_SPAN={a.attrs}",
                "-e", "OTEL_EXPORTER_OTLP_ENDPOINT=http://sink:4318",
+               *[x for kv in a.env for x in ("-e", kv)],
                a.image)
         logs = lambda: podman("logs", SUT, check=False).stderr + podman("logs", SUT, check=False).stdout
         wait_for(lambda: "ready on control port" in logs(), 60, "SUT not ready")
@@ -110,6 +113,7 @@ def main():
             "image": a.image,
             "image_id": podman("image", "inspect", "--format", "{{.Id}}", a.image).stdout.strip(),
             "attributes_per_span": a.attrs,
+            "env": a.env,
             "spans": a.spans,
             "spans_emitted": run.get("spans_emitted"),
             "spans_dropped": run.get("spans_dropped"),

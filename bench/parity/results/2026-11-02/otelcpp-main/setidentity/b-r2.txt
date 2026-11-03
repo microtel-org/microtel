@@ -1,0 +1,15 @@
+SetIdentity, root span:  3
+SetIdentity, child span: 4
+  set_trace_id (16 bytes):      2
+  set_span_id (8 bytes):        1
+  set_parent_span_id (8 bytes): 1
+  TraceState::ToHeader (empty): 0
+  set_trace_state(""):          1
+  mutable_trace_id()->assign (16 bytes): 2
+  trace_state skipped when Empty():      0
+SetIdentity, root span, trace state "vendor=abc,other=1": 5
+serialized, root, empty trace state (28 bytes): 0a100101010101010101010101010101010112080202020202020202
+serialized, child, empty trace state (38 bytes): 0a10010101010101010101010101010101011208020202020202020222080303030303030303
+serialized, root, trace state (48 bytes): 0a1001010101010101010101010101010101120802020202020202021a1276656e646f723d6162632c6f746865723d31
+serialized, child, trace state (58 bytes): 0a1001010101010101010101010101010101120802020202020202021a1276656e646f723d6162632c6f746865723d3122080303030303030303
+OtlpRecordable construction:  0

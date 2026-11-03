@@ -1,0 +1,27 @@
+{
+  "image": "bench-sut-parity-otelcpp-main-a",
+  "image_id": "80510f129b2171c0809523ecd875f3545bad874abd94944e7bf8cdd799ef6e37",
+  "attributes_per_span": 5,
+  "env": [
+    "EMIT_OTELCPP_BSP_MAX_QUEUE_SIZE=16384"
+  ],
+  "spans": 10000,
+  "spans_emitted": 10000,
+  "spans_dropped": {
+    "queue_full": 0,
+    "record_too_large": 0,
+    "span_attribute_limit": 0,
+    "attribute_value_truncated": 0,
+    "other": 0,
+    "total": 0
+  },
+  "calling_thread_allocs": 360002,
+  "calling_thread_allocs_per_span": 36.0002,
+  "background_allocs": 62532,
+  "background_allocs_per_span": 6.2532,
+  "background_by_thread": {
+    "1:emit_app": 12,
+    "2:emit_app": 61374,
+    "4:emit_app": 1146
+  }
+}

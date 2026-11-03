@@ -1,0 +1,5 @@
+== bench-sut-parity-otelcpp-main-a  (otelcpp 0a5bb0b58d638bfb34e5e4bc0698c9e8e64b0402, commit b1d90ec)
+   ok in 22s  -> bench/parity/results/2026-11-02/otelcpp-main/build/a.build.txt
+== bench-sut-parity-otelcpp-main-a:check  (otelcpp 0a5bb0b58d638bfb34e5e4bc0698c9e8e64b0402, commit b1d90ec)
+   ok in 79s  -> bench/parity/results/2026-11-02/otelcpp-main/build/a.check.txt
+   compared 74 sections: identical

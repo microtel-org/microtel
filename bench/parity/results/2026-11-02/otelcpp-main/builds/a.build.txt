@@ -1,0 +1,145 @@
+podman build -f bench/sut/parity/otelcpp-dev.Dockerfile -t bench-sut-parity-otelcpp-main-a --label parity.commit=b1d90ec --label otelcpp.commit=0a5bb0b58d638bfb34e5e4bc0698c9e8e64b0402 --build-context otelsrc=/tmp/tmp.M722V1xD1n --build-arg DEV_IMAGE=localhost/otelcpp-dev:0a5bb0b 
+[1/2] STEP 1/12: FROM localhost/otelcpp-dev:0a5bb0b AS build
+[1/2] STEP 2/12: ARG CXX_STD
+--> Using cache 6929c5523e4fceffa5c3f3d36b94d14202ace3718f401a06dc96cf833ca6e6b1
+--> 6929c5523e4f
+[1/2] STEP 3/12: USER root
+--> Using cache d10b32d7798cc157ba63f8cf581bd3aafd1131abbe034f06d072b7830e683776
+--> d10b32d7798c
+[1/2] STEP 4/12: ENV BENCH_CXXFLAGS="-O2 -g -fno-omit-frame-pointer"
+--> Using cache e54593a74abe7f3fb17317b7994a6b46ee58bf4bd88144234a1489d1f23066f9
+--> e54593a74abe
+[1/2] STEP 5/12: ENV THIRD_PARTY=/home/devuser/third-party/install
+--> Using cache 0077ed8e4f703b148c47331f2c1992ae50ed19876bc3a04973e3df4e89066e9d
+--> 0077ed8e4f70
+[1/2] STEP 6/12: COPY --from=otelsrc . /src/opentelemetry-cpp
+--> Using cache 3399bd8eef89739513a318ac607661bd8156daaf10928a921203d3fdb4aab9fb
+--> 3399bd8eef89
+[1/2] STEP 7/12: RUN cmake -S /src/opentelemetry-cpp -B /build/otelcpp         -G Ninja         -DCMAKE_BUILD_TYPE=Release         -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++         -DCMAKE_C_FLAGS="${BENCH_CXXFLAGS}"         -DCMAKE_CXX_FLAGS="${BENCH_CXXFLAGS}"         -DCMAKE_CXX_STANDARD="$CXX_STD"         -DCMAKE_CXX_SCAN_FOR_MODULES=OFF         -DCMAKE_PREFIX_PATH="$THIRD_PARTY"         -DCMAKE_INSTALL_PREFIX=/opt/otelcpp         -DOTELCPP_BUILD_TESTING=OFF         -DOTELCPP_WITH_BENCHMARK=OFF         -DOTELCPP_WITH_EXAMPLES=OFF         -DOTELCPP_WITH_OTLP_HTTP=ON         -DOTELCPP_WITH_OTLP_GRPC=OFF     && cmake --build /build/otelcpp     && cmake --install /build/otelcpp
+--> Using cache 6b481150bb6c43c9f8f7fbe99c3d7ae60b37ac067c5a5f348c1c48951bfbd869
+--> 6b481150bb6c
+[1/2] STEP 8/12: COPY bench/emit-app /src/emit-app
+--> afdf5fcde67e
+[1/2] STEP 9/12: RUN cmake -S /src/emit-app -B /build/emit-app         -G Ninja         -DCMAKE_BUILD_TYPE=Release         -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++         -DCMAKE_C_FLAGS="${BENCH_CXXFLAGS}"         -DCMAKE_CXX_FLAGS="${BENCH_CXXFLAGS}"         -DCMAKE_CXX_STANDARD="$CXX_STD"         -DCMAKE_CXX_SCAN_FOR_MODULES=OFF         -DBENCH_BACKEND=OTELCPP_HTTP         -DBENCH_OTELCPP_ALL_COMPONENTS=ON         -DCMAKE_PREFIX_PATH="/opt/otelcpp;$THIRD_PARTY"     && cmake --build /build/emit-app
+-- The CXX compiler identification is Clang 22.1.8
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/clang++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found CURL: /home/devuser/third-party/install/lib/cmake/CURL/CURLConfig.cmake (found version "8.21.0-DEV")
+-- Found Threads: TRUE
+-- Found opentelemetry-cpp: /opt/otelcpp/lib/cmake/opentelemetry-cpp/opentelemetry-cpp-config.cmake (found version "1.31.0")
+-- Configuring done (0.5s)
+-- Generating done (0.0s)
+CMake Warning:
+  Manually-specified variables were not used by the project:
+
+    CMAKE_C_COMPILER
+    CMAKE_C_FLAGS
+
+
+-- Build files have been written to: /build/emit-app
+[1/6] Building CXX object CMakeFiles/emit_app.dir/src/workload.cpp.o
+[2/6] Building CXX object CMakeFiles/emit_app.dir/src/histogram.cpp.o
+[3/6] Building CXX object CMakeFiles/emit_app.dir/src/main.cpp.o
+[4/6] Building CXX object CMakeFiles/emit_app.dir/src/control_socket.cpp.o
+[5/6] Building CXX object CMakeFiles/emit_app.dir/src/backend_otelcpp.cpp.o
+[6/6] Linking CXX executable emit_app
+--> bc38d54163a5
+[1/2] STEP 10/12: COPY bench/parity/setidentity_allocs.cpp /src/setidentity/setidentity_allocs.cpp
+--> b8e5ce9fc9c2
+[1/2] STEP 11/12: COPY bench/parity/setidentity/CMakeLists.txt /src/setidentity/cmake/CMakeLists.txt
+--> 067f2949974d
+[1/2] STEP 12/12: RUN cmake -S /src/setidentity/cmake -B /build/setidentity         -G Ninja         -DCMAKE_BUILD_TYPE=Release         -DCMAKE_CXX_COMPILER=clang++         -DCMAKE_CXX_FLAGS="${BENCH_CXXFLAGS}"         -DCMAKE_CXX_STANDARD="$CXX_STD"         -DCMAKE_PREFIX_PATH="/opt/otelcpp;$THIRD_PARTY"     && cmake --build /build/setidentity
+-- The CXX compiler identification is Clang 22.1.8
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/clang++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE
+-- Found CURL: /home/devuser/third-party/install/lib/cmake/CURL/CURLConfig.cmake (found version "8.21.0-DEV")
+-- Found opentelemetry-cpp: /opt/otelcpp/lib/cmake/opentelemetry-cpp/opentelemetry-cpp-config.cmake (found version "1.31.0")
+-- Configuring done (0.5s)
+-- Generating done (0.0s)
+-- Build files have been written to: /build/setidentity
+[1/2] Building CXX object CMakeFiles/setidentity_allocs.dir/src/setidentity/setidentity_allocs.cpp.o
+[2/2] Linking CXX executable setidentity_allocs
+--> ded6d113596b
+[2/2] STEP 1/8: FROM ubuntu:24.04 AS runtime
+[2/2] STEP 2/8: COPY --from=build /home/devuser/third-party/install/lib/ /tmp/third-party-lib/
+--> fcd6f8e5c021
+[2/2] STEP 3/8: RUN cp -a /tmp/third-party-lib/libcurl.so* /tmp/third-party-lib/libz.so* /usr/local/lib/     && rm -rf /tmp/third-party-lib     && apt-get update     && apt-get install -y --no-install-recommends libssl3 ca-certificates     && ldconfig     && rm -rf /var/lib/apt/lists/*
+Get:1 http://archive.ubuntu.com/ubuntu noble InRelease [256 kB]
+Get:2 http://archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+Get:3 http://security.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+Get:4 http://archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
+Get:5 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages [1808 kB]
+Get:6 http://archive.ubuntu.com/ubuntu noble/multiverse amd64 Packages [331 kB]
+Get:7 http://archive.ubuntu.com/ubuntu noble/universe amd64 Packages [19.3 MB]
+Get:8 http://security.ubuntu.com/ubuntu noble-security/main amd64 Packages [1420 kB]
+Get:9 http://archive.ubuntu.com/ubuntu noble/restricted amd64 Packages [117 kB]
+Get:10 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1741 kB]
+Get:11 http://archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [2240 kB]
+Get:12 http://archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Packages [61.7 kB]
+Get:13 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [2172 kB]
+Get:14 http://archive.ubuntu.com/ubuntu noble-backports/multiverse amd64 Packages [669 B]
+Get:15 http://archive.ubuntu.com/ubuntu noble-backports/main amd64 Packages [49.0 kB]
+Get:16 http://archive.ubuntu.com/ubuntu noble-backports/universe amd64 Packages [36.0 kB]
+Get:17 http://security.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1551 kB]
+Get:18 http://security.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [2132 kB]
+Get:19 http://security.ubuntu.com/ubuntu noble-security/multiverse amd64 Packages [55.6 kB]
+Fetched 33.7 MB in 2s (16.5 MB/s)
+Reading package lists...
+Reading package lists...
+Building dependency tree...
+Reading state information...
+libssl3t64 is already the newest version (3.0.13-0ubuntu3.16).
+The following NEW packages will be installed:
+  ca-certificates openssl
+0 upgraded, 2 newly installed, 0 to remove and 0 not upgraded.
+Need to get 1143 kB of archives.
+After this operation, 2268 kB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 openssl amd64 3.0.13-0ubuntu3.16 [1004 kB]
+Get:2 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 ca-certificates all 20260816ubuntu0.24.04.1 [139 kB]
+debconf: delaying package configuration, since apt-utils is not installed
+Fetched 1143 kB in 1s (1475 kB/s)
+Selecting previously unselected package openssl.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 4381 files and directories currently installed.)
+Preparing to unpack .../openssl_3.0.13-0ubuntu3.16_amd64.deb ...
+Unpacking openssl (3.0.13-0ubuntu3.16) ...
+Selecting previously unselected package ca-certificates.
+Preparing to unpack .../ca-certificates_20260816ubuntu0.24.04.1_all.deb ...
+Unpacking ca-certificates (20260816ubuntu0.24.04.1) ...
+Setting up openssl (3.0.13-0ubuntu3.16) ...
+Setting up ca-certificates (20260816ubuntu0.24.04.1) ...
+debconf: unable to initialize frontend: Dialog
+debconf: (TERM is not set, so the dialog frontend is not usable.)
+debconf: falling back to frontend: Readline
+debconf: unable to initialize frontend: Readline
+debconf: (Can't locate Term/ReadLine.pm in @INC (you may need to install the Term::ReadLine module) (@INC entries checked: /etc/perl /usr/local/lib/x86_64-linux-gnu/perl/5.38.2 /usr/local/share/perl/5.38.2 /usr/lib/x86_64-linux-gnu/perl5/5.38 /usr/share/perl5 /usr/lib/x86_64-linux-gnu/perl-base /usr/lib/x86_64-linux-gnu/perl/5.38 /usr/share/perl/5.38 /usr/local/lib/site_perl) at /usr/share/perl5/Debconf/FrontEnd/Readline.pm line 8.)
+debconf: falling back to frontend: Teletype
+Updating certificates in /etc/ssl/certs...
+120 added, 0 removed; done.
+Processing triggers for ca-certificates (20260816ubuntu0.24.04.1) ...
+Updating certificates in /etc/ssl/certs...
+0 added, 0 removed; done.
+Running hooks in /etc/ca-certificates/update.d...
+done.
+--> 068d19435c51
+[2/2] STEP 4/8: COPY --from=build /build/emit-app/emit_app /emit_app
+--> 2d22cd5b919e
+[2/2] STEP 5/8: COPY --from=build /build/setidentity/setidentity_allocs /setidentity_allocs
+--> a743fe49fb56
+[2/2] STEP 6/8: EXPOSE 9090
+--> 676a76ff9440
+[2/2] STEP 7/8: ENTRYPOINT ["/emit_app"]
+--> 192b975dcced
+[2/2] STEP 8/8: LABEL "parity.commit"="b1d90ec" "otelcpp.commit"="0a5bb0b58d638bfb34e5e4bc0698c9e8e64b0402"
+[2/2] COMMIT bench-sut-parity-otelcpp-main-a
+--> 80510f129b21
+Successfully tagged localhost/bench-sut-parity-otelcpp-main-a:latest
+80510f129b2171c0809523ecd875f3545bad874abd94944e7bf8cdd799ef6e37

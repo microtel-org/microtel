@@ -1,0 +1,46 @@
+== round 1  2026-11-03T01:38:30Z  governor=performance boost=0
+   01:41:00 parity-otelcpp-main-a  load1=0.42  tctl=+40.8°C
+   01:41:06 parity-otelcpp-main-a  done  tctl=+42.6°C
+   01:41:07 parity-otelcpp-main-b  load1=0.38  tctl=+42.5°C
+   01:41:13 parity-otelcpp-main-b  done  tctl=+43.6°C
+   01:41:13 parity-otelcpp-main-c  load1=0.35  tctl=+43.6°C
+   01:41:20 parity-otelcpp-main-c  done  tctl=+44.0°C
+   01:41:20 parity-otelcpp-main-d  load1=0.30  tctl=+44.0°C
+   01:41:27 parity-otelcpp-main-d  done  tctl=+44.1°C
+== round 2  2026-11-03T01:41:27Z  governor=performance boost=0
+   01:41:27 parity-otelcpp-main-b  load1=0.27  tctl=+44.1°C
+   01:41:33 parity-otelcpp-main-b  done  tctl=+44.2°C
+   01:41:33 parity-otelcpp-main-c  load1=0.33  tctl=+44.2°C
+   01:41:40 parity-otelcpp-main-c  done  tctl=+44.1°C
+   01:41:55 parity-otelcpp-main-d  load1=0.39  tctl=+41.9°C
+   01:42:02 parity-otelcpp-main-d  done  tctl=+42.8°C
+   01:42:02 parity-otelcpp-main-a  load1=0.36  tctl=+42.8°C
+   01:42:09 parity-otelcpp-main-a  done  tctl=+43.4°C
+== round 3  2026-11-03T01:42:09Z  governor=performance boost=0
+   01:42:09 parity-otelcpp-main-c  load1=0.33  tctl=+43.4°C
+   01:42:15 parity-otelcpp-main-c  done  tctl=+43.6°C
+   01:42:15 parity-otelcpp-main-d  load1=0.43  tctl=+43.6°C
+   01:42:22 parity-otelcpp-main-d  done  tctl=+43.6°C
+   01:42:22 parity-otelcpp-main-a  load1=0.39  tctl=+43.6°C
+   01:42:32 parity-otelcpp-main-a  done  tctl=+43.1°C
+   01:42:32 parity-otelcpp-main-b  load1=0.33  tctl=+43.1°C
+   01:42:38 parity-otelcpp-main-b  done  tctl=+43.4°C
+== round 4  2026-11-03T01:42:38Z  governor=performance boost=0
+   01:42:38 parity-otelcpp-main-d  load1=0.30  tctl=+43.4°C
+   01:42:45 parity-otelcpp-main-d  done  tctl=+43.4°C
+   01:42:45 parity-otelcpp-main-a  load1=0.48  tctl=+43.4°C
+   01:42:52 parity-otelcpp-main-a  done  tctl=+43.9°C
+   01:42:52 parity-otelcpp-main-b  load1=0.44  tctl=+43.9°C
+   01:42:59 parity-otelcpp-main-b  done  tctl=+44.0°C
+   01:42:59 parity-otelcpp-main-c  load1=0.40  tctl=+44.0°C
+   01:43:05 parity-otelcpp-main-c  done  tctl=+43.6°C
+== round 5  2026-11-03T01:43:05Z  governor=performance boost=0
+   01:43:20 parity-otelcpp-main-a  load1=0.44  tctl=+41.2°C
+   01:43:27 parity-otelcpp-main-a  done  tctl=+42.1°C
+   01:43:27 parity-otelcpp-main-b  load1=0.40  tctl=+42.1°C
+   01:43:34 parity-otelcpp-main-b  done  tctl=+42.6°C
+   01:43:34 parity-otelcpp-main-c  load1=0.37  tctl=+42.6°C
+   01:43:40 parity-otelcpp-main-c  done  tctl=+42.9°C
+   01:43:40 parity-otelcpp-main-d  load1=0.39  tctl=+42.9°C
+   01:43:47 parity-otelcpp-main-d  done  tctl=+42.9°C
+== done 2026-11-03T01:43:47Z
