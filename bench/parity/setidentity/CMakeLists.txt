@@ -5,6 +5,7 @@
 # (bench/sut/parity/otelcpp-dev.Dockerfile).
 cmake_minimum_required(VERSION 3.16)
 project(setidentity_allocs CXX)
-find_package(opentelemetry-cpp CONFIG REQUIRED COMPONENTS otlp_recordable)
+# No component list: main renamed the components, not the targets.
+find_package(opentelemetry-cpp CONFIG REQUIRED)
 add_executable(setidentity_allocs ../setidentity_allocs.cpp)
 target_link_libraries(setidentity_allocs PRIVATE opentelemetry-cpp::otlp_recordable)

@@ -58,6 +58,7 @@ RUN cmake -S /src/emit-app -B /build/emit-app \
         -DCMAKE_CXX_STANDARD="$CXX_STD" \
         -DCMAKE_CXX_SCAN_FOR_MODULES=OFF \
         -DBENCH_BACKEND=OTELCPP_HTTP \
+        -DBENCH_OTELCPP_ALL_COMPONENTS=ON \
         -DCMAKE_PREFIX_PATH="/opt/otelcpp;$THIRD_PARTY" \
     && cmake --build /build/emit-app
 

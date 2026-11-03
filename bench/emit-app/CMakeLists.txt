@@ -81,9 +81,18 @@ elseif(BENCH_BACKEND STREQUAL "OTELCPP_GRPC")
 
 elseif(BENCH_BACKEND STREQUAL "OTELCPP_HTTP")
     find_package(CURL REQUIRED)
-    find_package(opentelemetry-cpp REQUIRED COMPONENTS
-        trace metrics logs otlp_http_exporter otlp_http_metric_exporter
-        otlp_http_log_record_exporter)
+    # opentelemetry-cpp main renamed the package components (trace -> sdk,
+    # otlp_http_exporter -> exporters_otlp_http, ...) but kept the target
+    # names; ON finds every built component, for building against main.
+    option(BENCH_OTELCPP_ALL_COMPONENTS
+        "find_package(opentelemetry-cpp) without naming components" OFF)
+    if(BENCH_OTELCPP_ALL_COMPONENTS)
+        find_package(opentelemetry-cpp REQUIRED)
+    else()
+        find_package(opentelemetry-cpp REQUIRED COMPONENTS
+            trace metrics logs otlp_http_exporter otlp_http_metric_exporter
+            otlp_http_log_record_exporter)
+    endif()
     target_sources(emit_app PRIVATE src/backend_otelcpp.cpp)
     target_link_libraries(emit_app PRIVATE
         opentelemetry-cpp::trace
