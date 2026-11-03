@@ -55,6 +55,23 @@ start.)
 
 ## Span emit latency
 
+### a and c, 10 rounds (2026-11-03)
+
+`run_rounds.sh`, 10 interleaved rounds × 10 samples, a and c only, queue 16384,
+no drops, no failed rounds ([`timing10/`](timing10/)). Same host settings
+(governor performance, boost 0). Ratios: median of the ten per-round ratios
+against the same round's a, with the range.
+
+| Variant | p50, ns (IQR) | p95, ns | p50 ÷ a, per round | p95 ÷ a, per round |
+|---|---:|---:|---|---|
+| a | 601 (519–652) | 1810 | 1 | 1 |
+| c | 444 (434–471) | 1195 | 0.74 (0.68–0.88) | 0.66 (0.64–0.80) |
+
+c is faster than a in every round. a's per-sample p50s again spread widely
+(441–747 ns, c 406–535).
+
+### All four variants, 5 rounds (2026-11-02)
+
 `run_rounds.sh`, 5 interleaved rounds × 10 samples, queue 16384, no drops, no
 failed rounds ([`timing/`](timing/)). Ratios are the median of the five
 per-round ratios against the same round's a.

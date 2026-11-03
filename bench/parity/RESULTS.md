@@ -219,10 +219,10 @@ The flags are the same as the other SUTs. Each variant was built twice, and the 
 |---|---:|---:|---:|---|---|
 | a | 4 / 5 | 9 | 36 | 1 | 1 |
 | b | 3 / 4 | 8 | 35 | 0.82 (0.78–0.94) | 0.94 |
-| c | 1 / 1 | **5** | **11** | 0.76 (0.74–0.98) | 0.71 |
+| c | 1 / 1 | **5** | **11** | **0.74 (0.68–0.88)** | **0.66 (0.64–0.80)** |
 | d | 1 / 1 | 5 | 11 | 0.76 (0.72–0.90) | 0.66 |
 
-Each ratio is the median of the five per-round ratios against a in the same round, with the range in brackets. The absolute p50 values were 574, 467, 445 and 438 ns.
+Each ratio is the median of the per-round ratios against a in the same round, with the range in brackets. c's ratios come from a 10-round rerun of a and c alone on 2026-11-03, with 100 samples each. b's and d's come from the first 5-round run of all four variants. In that run c was 0.76 (0.74–0.98) for p50 and 0.71 for p95. In the rerun, a's p50 was 601 ns and c's 444 ns.
 
 - **#4580 reproduces its author's 9 → 5 allocations for a minimal span** on this harness. With 5 attributes the count goes from 36 to 11.
 - **The `SetIdentity` changes save nothing measurable on top of #4580.** Allocations are identical, and d ÷ c is 0.98 for p50 (range 0.92–1.01).
@@ -262,7 +262,7 @@ v1.30.0 has the same design: `otlp_recordable.h:119`, `otlp_recordable.cc:148` a
 In order of size, smallest first:
 
 1. **Two `SetIdentity` changes**: skip an empty `trace_state`, and fill `trace_id` in place. That takes a root span from 5 to 3 allocations on v1.19.0, and from 4 to 3 on main ([details above](#otlprecordablesetidentity-field-by-field)). With #4580 applied, it saves nothing ([section 4](#4-opentelemetry-cpp-main-and-pr-4580)).
-2. **Fewer allocations in the rest of `OtlpRecordable`.** That means an arena-backed recordable message, or adopting the message into the export request instead of deep-copying it. This is the subject of upstream open-telemetry/opentelemetry-cpp#4558, and of open PR #4580 (arena): 9 → 5 calling-thread allocations for a minimal span and p50 0.76× on main ([section 4](#4-opentelemetry-cpp-main-and-pr-4580)). With 5 attributes, the recordable is the biggest part of opentelemetry-cpp's 47.6 allocations per span.
+2. **Fewer allocations in the rest of `OtlpRecordable`.** That means an arena-backed recordable message, or adopting the message into the export request instead of deep-copying it. This is the subject of upstream open-telemetry/opentelemetry-cpp#4558, and of open PR #4580 (arena): 9 → 5 calling-thread allocations for a minimal span and p50 0.74× on main (10 rounds) ([section 4](#4-opentelemetry-cpp-main-and-pr-4580)). With 5 attributes, the recordable is the biggest part of opentelemetry-cpp's 47.6 allocations per span.
 3. **The design change: no protobuf on the calling thread.** Record into a plain, SpanData-style recordable, which opentelemetry-cpp already has, and build the protobuf message on the export thread when a batch is serialized. Here, swapping the recordable alone removed 65% of the span-time gap, an upper bound (step 1b). It needs a recordable-to-protobuf conversion at export time inside the OTLP exporter, and no new dependency.
 
 All three are ordinary C++14 inside opentelemetry-cpp's SDK and OTLP exporter. They need no C++17 or C++20 features and nothing from microtel.

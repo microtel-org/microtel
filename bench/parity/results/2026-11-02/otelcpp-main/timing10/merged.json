@@ -1,0 +1,167 @@
+{
+  "rows": {
+    "parity-otelcpp-main-a": {
+      "n": 100,
+      "rounds": 10,
+      "p50": [
+        519.25,
+        601.0,
+        652.25
+      ],
+      "p95": [
+        1745.0,
+        1809.5,
+        1891.75
+      ],
+      "spans_per_sec": 838264.6179242559,
+      "dropped": 0,
+      "image_id": "80510f129b2171c0809523ecd875f3545bad874abd94944e7bf8cdd799ef6e37",
+      "image_tag": "bench-sut-parity-otelcpp-main-a"
+    },
+    "parity-otelcpp-main-c": {
+      "n": 100,
+      "rounds": 10,
+      "p50": [
+        434.0,
+        444.0,
+        471.25
+      ],
+      "p95": [
+        1049.75,
+        1195.0,
+        1605.75
+      ],
+      "spans_per_sec": 956049.6813258767,
+      "dropped": 0,
+      "image_id": "f5fe27b8ab547ad026a1e97261e24bcf4572a0841ccc8f8811281914bf0279e4",
+      "image_tag": "bench-sut-parity-otelcpp-main-c"
+    }
+  },
+  "rounds": {
+    "parity-otelcpp-main-a": [
+      {
+        "round": "round1",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T11:41:32.776214+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round10",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T11:47:57.699094+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round2",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T11:42:24.064117+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round3",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T11:42:30.939805+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round4",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T11:43:06.352739+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round5",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T11:43:43.128455+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round6",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T11:46:18.460485+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round7",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T11:46:25.260325+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round8",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T11:47:15.601118+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round9",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T11:47:37.428958+00:00",
+        "load_avg_1m": null
+      }
+    ],
+    "parity-otelcpp-main-c": [
+      {
+        "round": "round1",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T11:41:39.782919+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round10",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T11:47:50.984813+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round2",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T11:42:17.212751+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round3",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T11:42:52.752535+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round4",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T11:42:59.582027+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round5",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T11:43:49.886738+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round6",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T11:43:56.671089+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round7",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T11:46:32.092161+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round8",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T11:46:38.857114+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round9",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T11:47:44.231060+00:00",
+        "load_avg_1m": null
+      }
+    ]
+  },
+  "dropped_rounds": []
+}
