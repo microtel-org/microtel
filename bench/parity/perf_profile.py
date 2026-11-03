@@ -135,8 +135,9 @@ def main():
             # the profile cannot see, as an upper bound for the worker.
             "process_utime_s": (cpu1[0] - cpu0[0]) / CLK_TCK,
             "process_stime_s": (cpu1[1] - cpu0[1]) / CLK_TCK,
-            "perf_record_log": perf_log[-2000:],
-            "perf_script_stderr": script.stderr[-2000:],
+            # The output directory is replaced so no local path is recorded.
+            "perf_record_log": perf_log[-2000:].replace(str(out), "<out>"),
+            "perf_script_stderr": script.stderr[-2000:].replace(str(out), "<out>"),
         }
         (out / "meta.json").write_text(json.dumps(meta, indent=2))
         print(json.dumps({k: v for k, v in meta.items() if "log" not in k and "stderr" not in k}))

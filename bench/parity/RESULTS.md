@@ -1,6 +1,6 @@
 # microtel vs opentelemetry-cpp: where the span-cost gap comes from
 
-**Status: draft, on the local `bench/otelcpp-parity` branch. Not reviewed, not for publication.**
+**Status: preliminary investigation, 2026-11-02/03. One host (single memory channel, boost off); see [Host and conditions](#host-and-conditions). Not part of microtel's published benchmark results.**
 Measured 2026-11-02; revised after review the same day (queue rerun, CPU per span, `SetIdentity` detail), then extended with opentelemetry-cpp main and #4580 ([section 4](#4-opentelemetry-cpp-main-and-pr-4580)). Data in [`results/2026-11-02/`](results/2026-11-02/).
 
 ## Summary
