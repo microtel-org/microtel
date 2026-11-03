@@ -5,7 +5,7 @@ Measured 2026-11-02; revised after review the same day (queue rerun, CPU per spa
 
 ## Summary
 
-1. **Toolchain vs design: almost all design** (high confidence for OTLP/HTTP). Both binaries are Clang 18.1.3 with identical flags and no hardening (checked from `DW_AT_producer` and the binaries). opentelemetry-cpp (v1.19.0, protobuf 3.21.12 (Ubuntu)) still takes 3.66× microtel's span time (793 vs 216 ns p50), the same ratio as the published snapshot, and 3.58× (776 vs 216 ns) when its queue is large enough not to drop spans. The only hardened code in either path is Ubuntu's `libprotobuf.so.32`, which is 4.5% of opentelemetry-cpp's span time. The GCC and hardening variants were not run this time. v1.30.0 (protobuf 3.21.12, Ubuntu; same compiler and flags) takes 3.30× (722 vs 219 ns) in a later 10-round run where v1.19.0 took 3.51× ([section 5](#5-opentelemetry-cpp-v1300)).
+1. **Toolchain vs design: almost all design** (high confidence for OTLP/HTTP). Both binaries are Clang 18.1.3 with identical flags and no hardening (checked from `DW_AT_producer` and the binaries). opentelemetry-cpp (v1.19.0, protobuf 3.21.12 (Ubuntu)) still takes 3.66× microtel's span time (793 vs 216 ns p50), the same ratio as the published snapshot, and 3.58× (776 vs 216 ns) when its queue is large enough not to drop spans. The only hardened code in either path is Ubuntu's `libprotobuf.so.32`, which is 4.5% of opentelemetry-cpp's span time. The GCC and hardening variants were not run this time. v1.30.0 (protobuf 3.21.12, Ubuntu; same compiler and flags) takes 3.30× microtel's span time (range 3.02–3.43) and 3.41× (3.11–3.55) in two later 10-round runs, where v1.19.0 took 3.51× and 3.56× ([section 5](#5-opentelemetry-cpp-v1300)).
 2. **Protobuf on the calling thread: 46–65% of the gap** (medium-high). Building the protobuf span in `OtlpRecordable` is 266 ns of opentelemetry-cpp's (v1.19.0, protobuf 3.21.12 (Ubuntu)) span time in the perf profile, which is 46% of the 577 ns gap. Swapping in the SDK's own SpanData recordable removes 366 of the 560 ns gap (65%), with both variants at a 16,384-span queue and confirmed drop-free. The swap uses the same `BatchSpanProcessor` and options and changes only the exporter. It also takes away export-thread work, so 65% is an upper bound.
 3. **Most of that protobuf cost is malloc** (high). opentelemetry-cpp (v1.19.0, protobuf 3.21.12 (Ubuntu)) makes 14.2 heap allocations per span on the calling thread, against microtel's 2.0, and 47.6 against 11.0 with 5 attributes; exactly 14 and 47 when nothing is dropped. v1.30.0 (protobuf 3.21.12, Ubuntu) makes 10 and 43, but many more on background threads (5.3 and 31.3 per span, against 1.1): its export path copies each span into the request, and on this protobuf every copied string goes to the heap ([section 5](#5-opentelemetry-cpp-v1300)). Its biggest single cost is `OtlpRecordable::SetIdentity`, at 26% of span time (21 points of it allocation), and it makes 5 allocations per root span. Across all threads, opentelemetry-cpp uses **1.8× microtel's CPU per span** (1,420 vs 780 ns, user + kernel, with the profiling harness included in both).
 4. **Footprint, gRPC vs protobuf: not measured in this run.** Part 5 was skipped by request.
@@ -248,6 +248,17 @@ Method: 10 interleaved rounds on 2026-11-03, microtel and both opentelemetry-cpp
 | microtel-http | clang 18.1.3 | none (vendored upb) | 219 (210–232) | 480 | 1 | 2 / 11 |
 | otelcpp-http v1.19.0 | clang 18.1.3 | 3.21.12, Ubuntu | 772 (758–792) | 1,846 | 3.51 (3.34–3.67) | 14 / 47 |
 | otelcpp-http v1.30.0 | clang 18.1.3 | 3.21.12, Ubuntu | 722 (684–749) | 1,838 | 3.30 (3.02–3.43) | 10 / 43 |
+
+A second 10-round run on 2026-11-03 added v1.30.0 with the `PopulateRequest` move restored (see below), so all four SUTs are in the same rounds. Again 0 drops and 1,000,000 of 1,000,000 spans delivered for each ([`timing4/`](results/2026-11-03/v130/timing4/)).
+
+| SUT | p50, ns (IQR) | p95, ns | p50 ÷ microtel | Calling-thread allocations per span, 0 / 5 attributes |
+|---|---:|---:|---|---:|
+| microtel-http | 219 (210–232) | 479 | 1 | 2 / 11 |
+| otelcpp-http v1.19.0 | 766 (756–792) | 1,854 | 3.56 (3.24–3.67) | 14 / 47 |
+| otelcpp-http v1.30.0 | 740 (716–760) | 1,826 | 3.41 (3.11–3.55) | 10 / 43 |
+| otelcpp-http v1.30.0 + move | 747 (729–769) | 1,792 | 3.43 (3.19–3.58) | 10 / 43 |
+
+The two runs agree within their ranges: v1.30.0 is 3.30 and 3.41 times microtel. In the second run, v1.30.0 ÷ v1.19.0 is 0.96 (0.94–0.99) and the move variant ÷ v1.30.0 is 1.02 (0.97–1.05).
 
 - **v1.30.0 is a little faster than v1.19.0 on the calling thread.** v1.30.0 ÷ v1.19.0 is 0.94 for p50 (range 0.89–0.97), and the same for p95: 0.99 (0.97–1.02). It makes 4 fewer allocations per span there. The gap to microtel stays above 3×.
 - **v1.30.0 allocates much more on background threads**: 5.3 per span against v1.19.0's 1.1 with no attributes, and 31.3 against 1.1 with 5. Its median flush also takes 5.1 ms against 1.8 ms (10-round rerun with the move variant; 5.3 against 1.9 in the run above).

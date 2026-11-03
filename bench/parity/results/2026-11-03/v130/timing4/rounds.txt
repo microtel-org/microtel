@@ -1,0 +1,91 @@
+== round 1  2026-11-03T14:07:56Z  governor=performance boost=0
+   14:07:56 parity-microtel-http-clang  load1=0.33  tctl=+35.9°C
+   14:08:02 parity-microtel-http-clang  done  tctl=+38.1°C
+   14:08:02 parity-otelcpp-http-clang-q16k  load1=0.31  tctl=+38.1°C
+   14:08:09 parity-otelcpp-http-clang-q16k  done  tctl=+39.0°C
+   14:08:09 parity-otelcpp130-http-clang-q16k  load1=0.48  tctl=+39.0°C
+   14:08:16 parity-otelcpp130-http-clang-q16k  done  tctl=+39.2°C
+   14:08:16 parity-otelcpp130-http-clang-move-q16k  load1=0.44  tctl=+39.1°C
+   14:08:23 parity-otelcpp130-http-clang-move-q16k  done  tctl=+39.2°C
+== round 2  2026-11-03T14:08:23Z  governor=performance boost=0
+   14:08:23 parity-otelcpp-http-clang-q16k  load1=0.41  tctl=+39.2°C
+   14:08:29 parity-otelcpp-http-clang-q16k  done  tctl=+39.4°C
+   14:08:29 parity-otelcpp130-http-clang-q16k  load1=0.42  tctl=+39.4°C
+   14:08:36 parity-otelcpp130-http-clang-q16k  done  tctl=+39.5°C
+   14:08:36 parity-otelcpp130-http-clang-move-q16k  load1=0.38  tctl=+39.5°C
+   14:08:43 parity-otelcpp130-http-clang-move-q16k  done  tctl=+39.8°C
+   14:08:43 parity-microtel-http-clang  load1=0.35  tctl=+39.8°C
+   14:08:50 parity-microtel-http-clang  done  tctl=+39.6°C
+== round 3  2026-11-03T14:08:50Z  governor=performance boost=0
+   14:08:50 parity-otelcpp130-http-clang-q16k  load1=0.37  tctl=+39.6°C
+   14:08:56 parity-otelcpp130-http-clang-q16k  done  tctl=+39.6°C
+   14:09:26 parity-otelcpp130-http-clang-move-q16k  load1=0.43  tctl=+36.4°C
+   14:09:33 parity-otelcpp130-http-clang-move-q16k  done  tctl=+37.9°C
+   14:09:33 parity-microtel-http-clang  load1=0.44  tctl=+37.9°C
+   14:09:40 parity-microtel-http-clang  done  tctl=+38.6°C
+   14:09:40 parity-otelcpp-http-clang-q16k  load1=0.41  tctl=+38.6°C
+   14:09:46 parity-otelcpp-http-clang-q16k  done  tctl=+39.0°C
+== round 4  2026-11-03T14:09:47Z  governor=performance boost=0
+   14:09:47 parity-otelcpp130-http-clang-move-q16k  load1=0.37  tctl=+39.0°C
+   14:09:53 parity-otelcpp130-http-clang-move-q16k  done  tctl=+39.2°C
+   14:09:53 parity-microtel-http-clang  load1=0.40  tctl=+39.2°C
+   14:10:00 parity-microtel-http-clang  done  tctl=+39.4°C
+   14:10:00 parity-otelcpp-http-clang-q16k  load1=0.36  tctl=+39.4°C
+   14:10:07 parity-otelcpp-http-clang-q16k  done  tctl=+39.5°C
+   14:10:07 parity-otelcpp130-http-clang-q16k  load1=0.33  tctl=+39.5°C
+   14:10:13 parity-otelcpp130-http-clang-q16k  done  tctl=+39.6°C
+== round 5  2026-11-03T14:10:13Z  governor=performance boost=0
+   14:10:13 parity-microtel-http-clang  load1=0.44  tctl=+39.6°C
+   14:10:20 parity-microtel-http-clang  done  tctl=+39.8°C
+   14:10:20 parity-otelcpp-http-clang-q16k  load1=0.41  tctl=+39.8°C
+   14:10:27 parity-otelcpp-http-clang-q16k  done  tctl=+39.8°C
+   14:10:27 parity-otelcpp130-http-clang-q16k  load1=0.38  tctl=+39.8°C
+   14:10:34 parity-otelcpp130-http-clang-q16k  done  tctl=+39.8°C
+   14:10:34 parity-otelcpp130-http-clang-move-q16k  load1=0.48  tctl=+39.8°C
+   14:10:40 parity-otelcpp130-http-clang-move-q16k  done  tctl=+39.8°C
+== round 6  2026-11-03T14:10:40Z  governor=performance boost=0
+   14:10:40 parity-otelcpp-http-clang-q16k  load1=0.44  tctl=+39.8°C
+   14:10:47 parity-otelcpp-http-clang-q16k  done  tctl=+39.8°C
+   14:10:47 parity-otelcpp130-http-clang-q16k  load1=0.40  tctl=+39.8°C
+   14:10:54 parity-otelcpp130-http-clang-q16k  done  tctl=+40.1°C
+   14:10:54 parity-otelcpp130-http-clang-move-q16k  load1=0.34  tctl=+40.1°C
+   14:11:01 parity-otelcpp130-http-clang-move-q16k  done  tctl=+40.1°C
+   14:11:01 parity-microtel-http-clang  load1=0.31  tctl=+40.1°C
+   14:11:07 parity-microtel-http-clang  done  tctl=+40.2°C
+== round 7  2026-11-03T14:11:07Z  governor=performance boost=0
+   14:11:07 parity-otelcpp130-http-clang-q16k  load1=0.29  tctl=+40.2°C
+   14:11:14 parity-otelcpp130-http-clang-q16k  done  tctl=+41.5°C
+   14:11:14 parity-otelcpp130-http-clang-move-q16k  load1=0.47  tctl=+41.5°C
+   14:11:21 parity-otelcpp130-http-clang-move-q16k  done  tctl=+41.6°C
+   14:12:36 parity-microtel-http-clang  load1=0.43  tctl=+36.0°C
+   14:12:43 parity-microtel-http-clang  done  tctl=+38.1°C
+   14:12:43 parity-otelcpp-http-clang-q16k  load1=0.39  tctl=+38.1°C
+   14:12:49 parity-otelcpp-http-clang-q16k  done  tctl=+39.0°C
+== round 8  2026-11-03T14:12:50Z  governor=performance boost=0
+   14:12:50 parity-otelcpp130-http-clang-move-q16k  load1=0.41  tctl=+39.0°C
+   14:12:56 parity-otelcpp130-http-clang-move-q16k  done  tctl=+39.5°C
+   14:12:56 parity-microtel-http-clang  load1=0.37  tctl=+39.5°C
+   14:13:03 parity-microtel-http-clang  done  tctl=+40.0°C
+   14:13:03 parity-otelcpp-http-clang-q16k  load1=0.34  tctl=+40.0°C
+   14:13:10 parity-otelcpp-http-clang-q16k  done  tctl=+40.0°C
+   14:13:10 parity-otelcpp130-http-clang-q16k  load1=0.44  tctl=+40.0°C
+   14:13:16 parity-otelcpp130-http-clang-q16k  done  tctl=+40.2°C
+== round 9  2026-11-03T14:13:16Z  governor=performance boost=0
+   14:13:16 parity-microtel-http-clang  load1=0.41  tctl=+40.1°C
+   14:13:23 parity-microtel-http-clang  done  tctl=+40.6°C
+   14:13:38 parity-otelcpp-http-clang-q16k  load1=0.45  tctl=+39.0°C
+   14:13:45 parity-otelcpp-http-clang-q16k  done  tctl=+39.8°C
+   14:14:00 parity-otelcpp130-http-clang-q16k  load1=0.38  tctl=+37.9°C
+   14:14:07 parity-otelcpp130-http-clang-q16k  done  tctl=+39.0°C
+   14:14:07 parity-otelcpp130-http-clang-move-q16k  load1=0.35  tctl=+39.0°C
+   14:14:13 parity-otelcpp130-http-clang-move-q16k  done  tctl=+39.8°C
+== round 10  2026-11-03T14:14:13Z  governor=performance boost=0
+   14:14:13 parity-otelcpp-http-clang-q16k  load1=0.45  tctl=+39.8°C
+   14:14:20 parity-otelcpp-http-clang-q16k  done  tctl=+40.0°C
+   14:14:20 parity-otelcpp130-http-clang-q16k  load1=0.42  tctl=+40.0°C
+   14:14:27 parity-otelcpp130-http-clang-q16k  done  tctl=+40.2°C
+   14:14:27 parity-otelcpp130-http-clang-move-q16k  load1=0.38  tctl=+40.2°C
+   14:14:34 parity-otelcpp130-http-clang-move-q16k  done  tctl=+40.2°C
+   14:14:34 parity-microtel-http-clang  load1=0.48  tctl=+40.2°C
+   14:14:40 parity-microtel-http-clang  done  tctl=+40.2°C
+== done 2026-11-03T14:14:40Z
