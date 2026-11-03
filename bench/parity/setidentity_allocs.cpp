@@ -3,9 +3,12 @@
 //
 // Heap allocations made by one opentelemetry-cpp OtlpRecordable::SetIdentity
 // call, and by each protobuf setter it makes (bench/parity/RESULTS.md).
-// Built in the parity otelcpp image's build stage, against the same
-// opentelemetry-cpp and libprotobuf as the SUT. Counts every malloc in the
-// process by interposing malloc in the executable.
+// Built in the parity otelcpp images' build stage (otelcpp.Dockerfile builds it
+// by hand, otelcpp-dev.Dockerfile with setidentity/CMakeLists.txt), against the
+// same opentelemetry-cpp and protobuf as the SUT. Counts every malloc in the
+// process by interposing malloc in the executable. With --dump, also prints the
+// serialized Span after SetIdentity, for an empty and a non-empty trace state,
+// so two builds can be checked for identical wire output.
 
 #include <opentelemetry/exporters/otlp/otlp_recordable.h>
 #include <opentelemetry/trace/span_context.h>
@@ -15,6 +18,7 @@
 #include <cstdio>
 #include <cstring>
 #include <string>
+#include <string_view>
 
 extern "C" void* __libc_malloc(std::size_t);
 
@@ -40,7 +44,20 @@ unsigned long Count(F f)
     return g_allocs - before;
 }
 
-int main()
+void Dump(const char* label, const trace::SpanContext& ctx, const trace::SpanId& parent)
+{
+    opentelemetry::exporter::otlp::OtlpRecordable r;
+    r.SetIdentity(ctx, parent);
+    const std::string bytes = r.span().SerializeAsString();
+    std::printf("%s (%zu bytes): ", label, bytes.size());
+    for (const unsigned char c : bytes)
+    {
+        std::printf("%02x", c);
+    }
+    std::printf("\n");
+}
+
+int main(int argc, char** argv)
 {
     std::uint8_t tid[16];
     std::uint8_t sid[8];
@@ -91,6 +108,20 @@ int main()
                             s.set_trace_state(ctx.trace_state()->ToHeader());
                         }
                     }));
+    }
+    const trace::SpanContext with_state(trace::TraceId(tid), trace::SpanId(sid), trace::TraceFlags(1), false,
+                                        trace::TraceState::FromHeader("vendor=abc,other=1"));
+    {
+        opentelemetry::exporter::otlp::OtlpRecordable r;
+        std::printf("SetIdentity, root span, trace state \"vendor=abc,other=1\": %lu\n",
+                    Count([&] { r.SetIdentity(with_state, no_parent); }));
+    }
+    if (argc > 1 && std::string_view(argv[1]) == "--dump")
+    {
+        Dump("serialized, root, empty trace state", ctx, no_parent);
+        Dump("serialized, child, empty trace state", ctx, parent);
+        Dump("serialized, root, trace state", with_state, no_parent);
+        Dump("serialized, child, trace state", with_state, parent);
     }
     std::printf("OtlpRecordable construction:  %lu\n",
                 Count([&] { opentelemetry::exporter::otlp::OtlpRecordable x; }));

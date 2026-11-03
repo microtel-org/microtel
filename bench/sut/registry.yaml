@@ -213,6 +213,57 @@ suts:
       EMIT_OTELCPP_BSP_MAX_QUEUE_SIZE: "16384"
     b0: false
 
+  # opentelemetry-cpp main and #4580, built in upstream's dev container with
+  # its third_party_release protobuf (otelcpp-dev.Dockerfile), queue 16384 so
+  # nothing drops, as in the queue16k rerun.
+  - name: parity-otelcpp-main-a
+    description: "parity: opentelemetry-cpp main 0a5bb0b, dev container clang 22, BSP max_queue_size 16384"
+    dockerfile: bench/sut/parity/otelcpp-dev.Dockerfile
+    image_name: bench-sut-parity-otelcpp-main-a
+    protocol: http
+    ports:
+      control: 19090
+    env:
+      OTEL_EXPORTER_OTLP_ENDPOINT: ""
+      EMIT_OTELCPP_BSP_MAX_QUEUE_SIZE: "16384"
+    b0: false
+
+  - name: parity-otelcpp-main-b
+    description: "parity: opentelemetry-cpp main + SetIdentity Empty() check and in-place trace_id, dev container clang 22, BSP max_queue_size 16384"
+    dockerfile: bench/sut/parity/otelcpp-dev.Dockerfile
+    image_name: bench-sut-parity-otelcpp-main-b
+    protocol: http
+    ports:
+      control: 19090
+    env:
+      OTEL_EXPORTER_OTLP_ENDPOINT: ""
+      EMIT_OTELCPP_BSP_MAX_QUEUE_SIZE: "16384"
+    b0: false
+
+  - name: parity-otelcpp-main-c
+    description: "parity: opentelemetry-cpp main + #4580 (5aa9922), dev container clang 22, BSP max_queue_size 16384"
+    dockerfile: bench/sut/parity/otelcpp-dev.Dockerfile
+    image_name: bench-sut-parity-otelcpp-main-c
+    protocol: http
+    ports:
+      control: 19090
+    env:
+      OTEL_EXPORTER_OTLP_ENDPOINT: ""
+      EMIT_OTELCPP_BSP_MAX_QUEUE_SIZE: "16384"
+    b0: false
+
+  - name: parity-otelcpp-main-d
+    description: "parity: opentelemetry-cpp main + #4580 + SetIdentity Empty() check and in-place trace_id, dev container clang 22, BSP max_queue_size 16384"
+    dockerfile: bench/sut/parity/otelcpp-dev.Dockerfile
+    image_name: bench-sut-parity-otelcpp-main-d
+    protocol: http
+    ports:
+      control: 19090
+    env:
+      OTEL_EXPORTER_OTLP_ENDPOINT: ""
+      EMIT_OTELCPP_BSP_MAX_QUEUE_SIZE: "16384"
+    b0: false
+
   - name: parity-otelcpp130-http-clang
     description: "parity: opentelemetry-cpp v1.30.0, Clang 18, BENCH flags"
     dockerfile: bench/sut/parity/otelcpp.Dockerfile
