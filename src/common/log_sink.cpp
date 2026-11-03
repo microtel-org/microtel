@@ -115,7 +115,7 @@ constexpr std::string_view kHexDigits = "0123456789abcdef";
 /// control character except tab as `\xNN`. Bytes >= 0x80 (UTF-8) pass
 /// through unchanged.
 template <typename PutFn>
-void PutEscapedChar(char c, PutFn&& put)
+void PutEscapedChar(char c, const PutFn& put)
 {
     const auto byte = static_cast<unsigned char>(c);
     if (c == '\t' || (byte >= kFirstPrintable && byte != kDelete))
