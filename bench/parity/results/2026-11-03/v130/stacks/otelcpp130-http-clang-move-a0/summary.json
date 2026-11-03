@@ -1,0 +1,66 @@
+{
+  "image": "bench-sut-parity-otelcpp130-http-clang-move",
+  "image_id": "f7af7abc1b394e9506ca49307f4422e00e2ef1693cae161b5f0ddd762b5ac874",
+  "attributes_per_span": 0,
+  "spans": 10000,
+  "env": [
+    "EMIT_OTELCPP_BSP_MAX_QUEUE_SIZE=16384"
+  ],
+  "spans_emitted": 10000,
+  "flush": {
+    "flush_ns": 1227827
+  },
+  "worker_allocs_per_span": 10.0002,
+  "background_allocs_per_span": 1.3017,
+  "table_overflow": 0,
+  "sites": {
+    "worker": {
+      "opentelemetry::v1::exporter::otlp::OtlpRecordable::SetIdentity": 50000,
+      "opentelemetry::v1::sdk::trace::MultiRecordable::AddRecordable": 10000,
+      "opentelemetry::v1::sdk::trace::Tracer::StartSpan": 10000,
+      "opentelemetry::v1::sdk::trace::MultiSpanProcessor::MakeRecordable": 10000,
+      "opentelemetry::v1::exporter::otlp::OtlpRecordable::SetName": 10000,
+      "opentelemetry::v1::exporter::otlp::OtlpHttpExporter::MakeRecordable": 10000,
+      "opentelemetry::v1::sdk::common::::TlsRandomNumberGenerator::Seed": 1,
+      "__cxa_thread_atexit_impl@@GLIBC_2.18": 1
+    },
+    "background": {
+      "opentelemetry::proto::trace::v1::Span* google::protobuf::Arena::CreateMaybeMessage": 10000,
+      "?? [libcurl.so.4.8.0]": 616,
+      "opentelemetry::v1::exporter::otlp::OtlpRecordableUtils::PopulateRequest": 399,
+      "strdup@@GLIBC_2.2.5": 330,
+      "opentelemetry::v1::exporter::otlp::OtlpPopulateAttributeUtils::PopulateAttribute": 260,
+      "opentelemetry::v1::ext::http::client::curl::HttpOperation::GetResponseHeaders[abi:cxx11]": 180,
+      "opentelemetry::v1::ext::http::client::curl::HttpOperation::SendAsync": 100,
+      "opentelemetry::proto::common::v1::KeyValue* google::protobuf::Arena::CreateMaybeMessage": 80,
+      "opentelemetry::proto::common::v1::AnyValue* google::protobuf::Arena::CreateMaybeMessage": 80,
+      "opentelemetry::v1::ext::http::client::curl::Session::SendRequest": 80,
+      "opentelemetry::v1::ext::http::client::curl::HttpOperation::HttpOperation": 80,
+      "opentelemetry::v1::ext::http::client::curl::Request::AddHeader": 80,
+      "opentelemetry::v1::ext::http::client::curl::HttpOperation::WriteVectorHeaderCallback": 80,
+      "void opentelemetry::proto::common::v1::AnyValue::set_string_value": 80,
+      "opentelemetry::v1::ext::http::client::curl::HttpClient::CreateSession": 60,
+      "opentelemetry::v1::exporter::otlp::OtlpHttpClient::createSession": 60,
+      "opentelemetry::v1::ext::http::client::curl::HttpClient::ScheduleAddSession": 40,
+      "opentelemetry::v1::ext::http::client::curl::Session::CreateRequest": 40,
+      "opentelemetry::v1::exporter::otlp::OtlpHttpClient::Export": 40,
+      "opentelemetry::v1::ext::http::client::curl::HttpClient::ScheduleRemoveSession": 40,
+      "curl_slist_append@@CURL_OPENSSL_4": 40,
+      "opentelemetry::proto::trace::v1::ResourceSpans* google::protobuf::Arena::CreateMaybeMessage": 20,
+      "opentelemetry::proto::common::v1::InstrumentationScope* google::protobuf::Arena::CreateMaybeMessage": 20,
+      "opentelemetry::v1::sdk::trace::BatchSpanProcessor::Export": 20,
+      "opentelemetry::proto::trace::v1::ScopeSpans* google::protobuf::Arena::CreateMaybeMessage": 20,
+      "opentelemetry::v1::exporter::otlp::OtlpHttpClient::addSession": 20,
+      "?? [libprotobuf.so.32.0.12]": 20,
+      "opentelemetry::v1::exporter::otlp::OtlpHttpExporter::Export": 20,
+      "opentelemetry::v1::ext::http::client::curl::Session::Session": 20,
+      "opentelemetry::v1::ext::http::client::curl::HttpOperation::Cleanup": 20,
+      "opentelemetry::proto::resource::v1::Resource* google::protobuf::Arena::CreateMaybeMessage": 20,
+      "opentelemetry::v1::exporter::otlp::OtlpHttpClient::ReleaseSession": 20,
+      "opentelemetry::v1::ext::http::client::curl::HttpClient::doRemoveSessions": 20,
+      "bench::RunControlLoop": 8,
+      "bench::::ExtractUint64Field": 2,
+      "bench::SerializeRunResult[abi:cxx11]": 2
+    }
+  }
+}

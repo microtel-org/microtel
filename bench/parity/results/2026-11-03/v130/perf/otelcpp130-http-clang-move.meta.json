@@ -1,0 +1,15 @@
+{
+  "image": "bench-sut-parity-otelcpp130-http-clang-move",
+  "image_id": "f7af7abc1b394e9506ca49307f4422e00e2ef1693cae161b5f0ddd762b5ac874",
+  "perf_version": "perf version 7.2.13-200.fc44.x86_64",
+  "cycles": 300,
+  "spans_per_run": 10000,
+  "spans_emitted": 3000000,
+  "spans_dropped": 0,
+  "run_p50_median_ns": 734,
+  "wall_s": 3.523324239999056,
+  "process_utime_s": 3.73,
+  "process_stime_s": 0.5,
+  "perf_record_log": "[ perf record: Woken up 14 times to write data ]\n[ perf record: Captured and wrote 5.053 MB <out>/perf.data (35837 samples) ]\n",
+  "perf_script_stderr": ""
+}

@@ -1,0 +1,5 @@
+== bench-sut-parity-otelcpp130-http-clang-move  (commit aeef94d)
+   ok in 94s  -> bench/parity/results/2026-11-03/v130/builds-move/otelcpp130-http-clang-move.log
+== bench-sut-parity-otelcpp130-http-clang-move:check  (--no-cache rebuild)
+   ok in 115s  -> bench/parity/results/2026-11-03/v130/builds-move/otelcpp130-http-clang-move.check.log
+   compared 48 sections: identical

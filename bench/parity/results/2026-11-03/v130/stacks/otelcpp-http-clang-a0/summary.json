@@ -1,0 +1,69 @@
+{
+  "image": "bench-sut-parity-otelcpp-http-clang",
+  "image_id": "aa7f8bd5bae0ab0af6709008492193f3bde6ca317f4117e6d355d2c18d1f76b9",
+  "attributes_per_span": 0,
+  "spans": 10000,
+  "env": [
+    "EMIT_OTELCPP_BSP_MAX_QUEUE_SIZE=16384"
+  ],
+  "spans_emitted": 10000,
+  "flush": {
+    "flush_ns": 578306
+  },
+  "worker_allocs_per_span": 14.0002,
+  "background_allocs_per_span": 8.6923,
+  "table_overflow": 0,
+  "sites": {
+    "worker": {
+      "opentelemetry::v1::exporter::otlp::OtlpRecordable::SetIdentity": 50000,
+      "opentelemetry::v1::sdk::trace::Tracer::StartSpan": 30000,
+      "opentelemetry::v1::sdk::trace::MultiSpanProcessor::MakeRecordable": 20000,
+      "opentelemetry::v1::trace::Tracer::GetCurrentSpan": 20000,
+      "opentelemetry::v1::exporter::otlp::OtlpRecordable::SetName": 10000,
+      "opentelemetry::v1::exporter::otlp::OtlpHttpExporter::MakeRecordable": 10000,
+      "__cxa_thread_atexit_impl@@GLIBC_2.18": 1,
+      "opentelemetry::v1::sdk::common::::TlsRandomNumberGenerator::Seed": 1
+    },
+    "background": {
+      "?? [libcurl.so.4.8.0]": 13730,
+      "opentelemetry::proto::trace::v1::Span* google::protobuf::Arena::CreateMaybeMessage": 10000,
+      "opentelemetry::v1::exporter::otlp::OtlpRecordableUtils::PopulateRequest": 9303,
+      "strdup@@GLIBC_2.2.5": 7363,
+      "opentelemetry::v1::exporter::otlp::OtlpPopulateAttributeUtils::PopulateAttribute": 5759,
+      "opentelemetry::v1::ext::http::client::curl::HttpOperation::GetResponseHeaders[abi:cxx11]": 3987,
+      "opentelemetry::proto::common::v1::AnyValue* google::protobuf::Arena::CreateMaybeMessage": 3544,
+      "opentelemetry::proto::common::v1::KeyValue* google::protobuf::Arena::CreateMaybeMessage": 3544,
+      "opentelemetry::proto::common::v1::KeyValue::MergeImpl": 3101,
+      "opentelemetry::v1::ext::http::client::curl::HttpOperation::SendAsync": 2215,
+      "opentelemetry::v1::ext::http::client::curl::Request::AddHeader": 1772,
+      "opentelemetry::v1::ext::http::client::curl::HttpOperation::WriteVectorHeaderCallback": 1772,
+      "opentelemetry::v1::ext::http::client::curl::Session::SendRequest": 1772,
+      "opentelemetry::proto::common::v1::AnyValue::MergeImpl": 1772,
+      "opentelemetry::v1::exporter::otlp::OtlpHttpClient::createSession": 1772,
+      "opentelemetry::v1::exporter::otlp::OtlpPopulateAttributeUtils::PopulateAnyValue": 1772,
+      "opentelemetry::v1::ext::http::client::curl::HttpOperation::HttpOperation": 1772,
+      "opentelemetry::v1::ext::http::client::curl::HttpClient::CreateSession": 1329,
+      "opentelemetry::v1::ext::http::client::curl::Session::CreateRequest": 886,
+      "opentelemetry::v1::exporter::otlp::OtlpHttpClient::Export": 886,
+      "opentelemetry::proto::common::v1::InstrumentationScope::MergeImpl": 886,
+      "curl_slist_append@@CURL_OPENSSL_4": 886,
+      "opentelemetry::v1::ext::http::client::curl::HttpClient::ScheduleAddSession": 886,
+      "opentelemetry::v1::ext::http::client::curl::HttpClient::ScheduleRemoveSession": 886,
+      "opentelemetry::proto::common::v1::InstrumentationScope* google::protobuf::Arena::CreateMaybeMessage": 443,
+      "opentelemetry::proto::resource::v1::Resource* google::protobuf::Arena::CreateMaybeMessage": 443,
+      "opentelemetry::proto::trace::v1::ResourceSpans* google::protobuf::Arena::CreateMaybeMessage": 443,
+      "opentelemetry::v1::ext::http::client::curl::Session::Session": 443,
+      "?? [libprotobuf.so.32.0.12]": 443,
+      "opentelemetry::v1::exporter::otlp::OtlpHttpClient::addSession": 443,
+      "opentelemetry::v1::ext::http::client::curl::HttpOperation::Cleanup": 443,
+      "opentelemetry::proto::resource::v1::Resource::CopyFrom": 443,
+      "opentelemetry::v1::sdk::trace::BatchSpanProcessor::Export": 443,
+      "opentelemetry::proto::trace::v1::ScopeSpans* google::protobuf::Arena::CreateMaybeMessage": 443,
+      "opentelemetry::v1::ext::http::client::curl::HttpClient::doRemoveSessions": 443,
+      "opentelemetry::v1::exporter::otlp::OtlpHttpClient::ReleaseSession": 443,
+      "bench::RunControlLoop": 8,
+      "bench::SerializeRunResult[abi:cxx11]": 2,
+      "bench::::ExtractUint64Field": 2
+    }
+  }
+}

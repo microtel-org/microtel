@@ -56,4 +56,88 @@ Observed, not investigated:
 - **Throughput.** The driver's spans/s, which includes the flush, is 735,113
   against 974,658.
 
-Not profiled.
+Profiled below.
+
+## Background allocations and flush time, profiled
+
+**Cause.** opentelemetry-cpp #4035 (`91805271`, first released in v1.27.0)
+changed how `OtlpRecordableUtils::PopulateRequest` puts each span into the
+export request:
+- before: `*scope_spans->add_spans() = std::move(input_span->span());`
+- after: `scope_spans->add_spans()->CopyFrom(otlp_recordable->span());`
+
+The new line carries the comment "The recordable span can only be copied here
+since the request message is Arena allocated". It is still on main.
+
+On Ubuntu's protobuf 3.21.12 the request is not arena-backed in the way that
+comment assumes. `OtlpHttpExporter::Export` creates the request with
+`Arena::Create<ExportTraceServiceRequest>(arena)`. In 3.21.12 that places the
+message's memory on the arena but constructs it as `T()`, without the arena
+(`google/protobuf/arena.h:702-716`). So the request and everything added to it
+are plain heap messages:
+- **v1.19.0:** the move between two arena-less messages is a swap;
+- **v1.30.0:** `CopyFrom` copies every string field onto the heap.
+
+protobuf 35.1's `Arena::Create<T>` does construct messages on the arena (the
+`is_arena_constructable` branch), which is why main with the bundled 35.1.0
+shows only 1.24 background allocations per span (`results/2026-11-02/otelcpp-main/`).
+Other protobuf versions were not checked.
+
+**Call sites.** From [`malloc_stacks.py`](../../../malloc_stacks.py), every
+allocation with its stack, 10,000 spans ([`stacks/`](stacks/)):
+- **v1.30.0, 0 attributes:** `Span::MergeImpl` under `PopulateRequest`, 4.0
+  per span (3.0 `ArenaStringPtr::Set` creating a heap `std::string`, 1.0 for
+  the 16-byte `trace_id`'s buffer).
+- **v1.30.0, 5 attributes:** about 5.2 more per attribute (31.3 against 5.3),
+  5 of them in `KeyValue` and `AnyValue` `MergeImpl`.
+- **Both versions:** `CreateMaybeMessage<Span>`, 1.0 per span.
+
+In v1.30.0 the sampler's totals match `count_mallocs.py` exactly (10.0002 and
+5.3017 per span). In v1.19.0 the sampler's slowdown of the emitting thread
+makes its batch processor export smaller batches: about 443 requests, where
+v1.30.0 under the same sampler made 20. Its background totals under the sampler (8.7) are per-request overhead,
+not what an unslowed run does (1.11, confirmed with a 3 s settle before the
+snapshot). v1.30.0 does not show this effect.
+
+**Experiment.** v1.30.0 with that one line changed back to the move
+([`patches/otelcpp130-populate-move.patch`](../../../../sut/parity/patches/otelcpp130-populate-move.patch),
+built twice, identical in 48 sections). Allocations: two runs each,
+identical.
+
+| | v1.19.0 | v1.30.0 | v1.30.0 + move |
+|---|---:|---:|---:|
+| Background allocations per span, 0 attributes | 1.11 | 5.30 | **1.30** |
+| Background allocations per span, 5 attributes | 1.09 | 31.30 | **1.30** |
+| Calling-thread allocations per span, 0 / 5 attributes | 14 / 47 | 10 / 43 | 10 / 43 |
+| Flush, median of 100 samples, ms (IQR) | 1.78 (1.50–2.14) | 5.12 (4.90–5.31) | **3.17** (3.02–3.37) |
+| Flush ÷ v1.30.0, per round | | 1 | 0.62 (0.57–0.69) |
+| Span emit p50 ÷ v1.30.0, per round | | 1 | 1.00 (0.96–1.04) |
+| Spans/s (driver, includes the flush) ÷ v1.30.0, per round | | 1 | 1.21 (1.15–1.23) |
+
+The timing columns come from 10 interleaved rounds of the three SUTs, queue
+16,384, 0 drops, 100% delivered ([`timing-move/`](timing-move/)).
+
+**Export-thread CPU.** [`perf_threads.py`](../../../perf_threads.py) over a
+`perf_profile.py` run, 3,000,000 spans each, `cycles:u`, background threads
+only ([`perf/`](perf/)). Cycles per span:
+
+| Stage | v1.19.0 | v1.30.0 | v1.30.0 + move |
+|---|---:|---:|---:|
+| build request: copy spans (`MergeImpl`) | 3 | **498** | 0 |
+| build request: other | 392 | 238 | 226 |
+| serialize request | 251 | 149 | 242 |
+| destroy request | 691 | 654 | 652 |
+| HTTP client (curl) | 154 | 335 | 338 |
+| batch processor | 47 | 355 | 205 |
+| other | 32 | 26 | 23 |
+| **total** | **1,571** | **2,255** | **1,686** |
+
+Process kernel time over the same runs: 0.37 s, 0.88 s and 0.50 s.
+
+**Reading.** The copy is v1.30.0's extra background allocations, all of them,
+and about 58% of its extra flush time (1.95 of 3.34 ms). The rest of the flush
+gap, and the 115 cycles per span left after the move, are in the HTTP client
+(libcurl) and in `BatchSpanProcessor::Export`. Those samples' innermost frames
+are in Ubuntu's stripped libc and libcurl, so this profile cannot name them;
+they were not investigated further. The calling thread is unaffected by the
+copy: span p50 is the same with and without it.

@@ -1,0 +1,28 @@
+{
+  "image": "bench-sut-parity-otelcpp130-http-clang-move",
+  "image_id": "f7af7abc1b394e9506ca49307f4422e00e2ef1693cae161b5f0ddd762b5ac874",
+  "attributes_per_span": 0,
+  "env": [
+    "EMIT_OTELCPP_BSP_MAX_QUEUE_SIZE=16384"
+  ],
+  "settle_s": 0.0,
+  "spans": 10000,
+  "spans_emitted": 10000,
+  "spans_dropped": {
+    "queue_full": 0,
+    "record_too_large": 0,
+    "span_attribute_limit": 0,
+    "attribute_value_truncated": 0,
+    "other": 0,
+    "total": 0
+  },
+  "calling_thread_allocs": 100002,
+  "calling_thread_allocs_per_span": 10.0002,
+  "background_allocs": 13017,
+  "background_allocs_per_span": 1.3017,
+  "background_by_thread": {
+    "1:emit_app": 12,
+    "2:emit_app": 11859,
+    "4:emit_app": 1146
+  }
+}
