@@ -12,7 +12,7 @@
 # Output: <out-dir>/round<r>/<sut>/results.json, plus <out-dir>/rounds.log.
 set -euo pipefail
 
-OUT=${1:?usage: run_rounds.sh <out-dir> <rounds> <sut>...}
+OUT=$(realpath -m "${1:?usage: run_rounds.sh <out-dir> <rounds> <sut>...}")  # absolute: the driver runs from bench/
 ROUNDS=${2:?}
 shift 2
 SUTS=("$@")

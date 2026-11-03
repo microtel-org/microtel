@@ -1,7 +1,7 @@
 # microtel vs opentelemetry-cpp: where the span-cost gap comes from
 
 **Status: draft, on the local `bench/otelcpp-parity` branch. Not reviewed, not for publication.**
-Measured 2026-11-02; revised after review the same day (queue rerun, CPU per span, `SetIdentity` detail). Data in [`results/2026-11-02/`](results/2026-11-02/).
+Measured 2026-11-02; revised after review the same day (queue rerun, CPU per span, `SetIdentity` detail), then extended with opentelemetry-cpp main and #4580 ([section 4](#4-opentelemetry-cpp-main-and-pr-4580)). Data in [`results/2026-11-02/`](results/2026-11-02/).
 
 ## Summary
 
@@ -9,7 +9,7 @@ Measured 2026-11-02; revised after review the same day (queue rerun, CPU per spa
 2. **Protobuf on the calling thread: 46–65% of the gap** (medium-high). Building the protobuf span in `OtlpRecordable` is 266 ns of opentelemetry-cpp's span time in the perf profile, which is 46% of the 577 ns gap. Swapping in the SDK's own SpanData recordable removes 366 of the 560 ns gap (65%), with both variants at a 16,384-span queue and confirmed drop-free. The swap uses the same `BatchSpanProcessor` and options and changes only the exporter. It also takes away export-thread work, so 65% is an upper bound.
 3. **Most of that protobuf cost is malloc** (high). opentelemetry-cpp makes 14.2 heap allocations per span on the calling thread, against microtel's 2.0, and 47.6 against 11.0 with 5 attributes. Its biggest single cost is `OtlpRecordable::SetIdentity`, at 26% of span time (21 points of it allocation), and it makes 5 allocations per root span. Across all threads, opentelemetry-cpp uses **1.8× microtel's CPU per span** (1,420 vs 780 ns, user + kernel, with the profiling harness included in both).
 4. **Footprint, gRPC vs protobuf: not measured in this run.** Part 5 was skipped by request.
-5. **What could change in opentelemetry-cpp under C++14:** the design, inside its own SDK and exporter. That means recording into its existing SpanData-style recordable and building the protobuf message on the export thread (medium confidence). Smaller fixes in `OtlpRecordable` come first. Two small `SetIdentity` changes take a root span from 5 to 3 allocations (measured, high confidence), and upstream issue open-telemetry/opentelemetry-cpp#4558 (open, triage/accepted) already proposes arena-backed or adopted messages for the per-attribute cost. Porting microtel's own exporter is a separate, larger option; see the [appendix](#appendix-porting-microtels-exporter-to-c14).
+5. **What could change in opentelemetry-cpp under C++14:** the design, inside its own SDK and exporter. That means recording into its existing SpanData-style recordable and building the protobuf message on the export thread (medium confidence). Smaller fixes in `OtlpRecordable` come first. Two small `SetIdentity` changes take a root span from 5 to 3 allocations on v1.19.0 (measured, high confidence), but only from 4 to 3 on current main, and nothing on top of open PR #4580. That PR implements the arena option of upstream issue open-telemetry/opentelemetry-cpp#4558 and takes a minimal span from 9 to 5 calling-thread allocations ([section 4](#4-opentelemetry-cpp-main-and-pr-4580)). Porting microtel's own exporter is a separate, larger option; see the [appendix](#appendix-porting-microtels-exporter-to-c14).
 
 ## Host and conditions
 
@@ -194,7 +194,42 @@ Where the allocations come from:
 
 Together they take a root span from 5 to 3 allocations and a child span from 6 to 4, which is 2 of the 14.25 per span measured above. Both changes are plain C++ that compiles under C++14.
 
-No upstream PR touching `SetIdentity` was found. The closest is issue open-telemetry/opentelemetry-cpp#4558 (open, `triage/accepted`, 2026-09-11), *"OtlpRecordable: about 5 heap allocations per attribute, then a deep copy at export"*. It covers the per-attribute cost on `main` and asks whether to arena-back the recordable or adopt its message into the request. An arena-backed recordable would remove these per-field allocations too. Only v1.19.0 with protobuf 3.21.12 was measured. Newer protobuf releases change `ArenaStringPtr`, so counts on v1.30.0 or main with a newer protobuf may differ.
+No upstream PR making these changes was found; open PR #4580 rewrites the same lines for an arena, and with it the changes save nothing ([section 4](#4-opentelemetry-cpp-main-and-pr-4580)). The closest issue is open-telemetry/opentelemetry-cpp#4558 (open, `triage/accepted`, 2026-09-11), *"OtlpRecordable: about 5 heap allocations per attribute, then a deep copy at export"*. It covers the per-attribute cost on `main` and asks whether to arena-back the recordable or adopt its message into the request. An arena-backed recordable would remove these per-field allocations too. This table is v1.19.0 with protobuf 3.21.12; on main with protobuf 35.1 the counts differ (section 4).
+
+## 4. opentelemetry-cpp main and PR #4580
+
+A follow-up on 2026-11-02 measured the `SetIdentity` changes against current opentelemetry-cpp, together with open-telemetry/opentelemetry-cpp#4580. That PR, open with changes requested, allocates the recordable's message on an arena owned by the recordable, with a 512-byte block stored inside it (option A of #4558). microtel is not involved. Full data: [`results/2026-11-02/otelcpp-main/`](results/2026-11-02/otelcpp-main/).
+
+| Variant | Commit | What |
+|---|---|---|
+| a | `0a5bb0b` | `main` |
+| b | `53cd5bb` | a + both `SetIdentity` changes |
+| c | `5e5b283` | a merged with the #4580 head `5aa9922` (conflicts with #4734 resolved) |
+| d | `3012c13` | c + both `SetIdentity` changes |
+
+**Build.** Upstream's own dev container (`.devcontainer/Dockerfile.dev` at `0a5bb0b`), so the dependencies are the versions in its `third_party_release`:
+- clang 22.1.8;
+- protobuf 35.1.0 and abseil 20250512.1, both static.
+
+The flags are the same as the other SUTs. Each variant was built twice, and the two builds are identical in all 74 compared sections.
+
+**Method.** Same harness and counter as steps 1 and 3, with the queue at 16,384 for both, so nothing drops. Allocation counts: two runs each, identical.
+
+| Variant | `SetIdentity` allocations, root / child | Calling-thread allocations per span, 0 attributes | 5 attributes | p50 ÷ a | p95 ÷ a |
+|---|---:|---:|---:|---|---|
+| a | 4 / 5 | 9 | 36 | 1 | 1 |
+| b | 3 / 4 | 8 | 35 | 0.82 (0.78–0.94) | 0.94 |
+| c | 1 / 1 | **5** | **11** | 0.76 (0.74–0.98) | 0.71 |
+| d | 1 / 1 | 5 | 11 | 0.76 (0.72–0.90) | 0.66 |
+
+Each ratio is the median of the five per-round ratios against a in the same round, with the range in brackets. The absolute p50 values were 574, 467, 445 and 438 ns.
+
+- **#4580 reproduces its author's 9 → 5 allocations for a minimal span** on this harness. With 5 attributes the count goes from 36 to 11.
+- **The `SetIdentity` changes save nothing measurable on top of #4580.** Allocations are identical, and d ÷ c is 0.98 for p50 (range 0.92–1.01).
+- **On protobuf 35.1 without #4580, only the `Empty()` check saves anything.** `mutable_trace_id()->assign` costs the same 2 allocations as `set_trace_id`. So the 5 → 3 measured on v1.19.0 with protobuf 3.21.12 becomes 4 → 3 here.
+- **Wire output is unchanged.** The serialized `Span` bytes after `SetIdentity` are identical in a, b, c and d, for root and child spans, with empty and non-empty trace state.
+- **Caveat on b's p50.** a's per-sample p50s were unusually spread out (424–708 ns), and its fastest samples match the other variants. b's 0.82 is more than one allocation should cost, and it was not profiled.
+- **Not measured:** memory per recordable (#4580 reports 216 → 752 bytes) and export-thread CPU.
 
 ## Design difference, with source citations
 
@@ -226,8 +261,8 @@ v1.30.0 has the same design: `otlp_recordable.h:119`, `otlp_recordable.cc:148` a
 
 In order of size, smallest first:
 
-1. **Two `SetIdentity` changes**: skip an empty `trace_state`, and fill `trace_id` in place. That takes a root span from 5 to 3 allocations. It is measured, and the [details are above](#otlprecordablesetidentity-field-by-field).
-2. **Fewer allocations in the rest of `OtlpRecordable`.** That means an arena-backed recordable message, or adopting the message into the export request instead of deep-copying it. This is the subject of upstream open-telemetry/opentelemetry-cpp#4558. With 5 attributes, the recordable is the biggest part of opentelemetry-cpp's 47.6 allocations per span.
+1. **Two `SetIdentity` changes**: skip an empty `trace_state`, and fill `trace_id` in place. That takes a root span from 5 to 3 allocations on v1.19.0, and from 4 to 3 on main ([details above](#otlprecordablesetidentity-field-by-field)). With #4580 applied, it saves nothing ([section 4](#4-opentelemetry-cpp-main-and-pr-4580)).
+2. **Fewer allocations in the rest of `OtlpRecordable`.** That means an arena-backed recordable message, or adopting the message into the export request instead of deep-copying it. This is the subject of upstream open-telemetry/opentelemetry-cpp#4558, and of open PR #4580 (arena): 9 → 5 calling-thread allocations for a minimal span and p50 0.76× on main ([section 4](#4-opentelemetry-cpp-main-and-pr-4580)). With 5 attributes, the recordable is the biggest part of opentelemetry-cpp's 47.6 allocations per span.
 3. **The design change: no protobuf on the calling thread.** Record into a plain, SpanData-style recordable, which opentelemetry-cpp already has, and build the protobuf message on the export thread when a batch is serialized. Here, swapping the recordable alone removed 65% of the span-time gap, an upper bound (step 1b). It needs a recordable-to-protobuf conversion at export time inside the OTLP exporter, and no new dependency.
 
 All three are ordinary C++14 inside opentelemetry-cpp's SDK and OTLP exporter. They need no C++17 or C++20 features and nothing from microtel.
@@ -242,7 +277,6 @@ Porting microtel's own upb + nghttp2 exporter is a separate and much larger opti
 - **Virtual dispatch.** An indirect call's cost lands in its caller, so sampling cannot separate it.
 - **Which call sites make opentelemetry-cpp's 14 allocations.** The counter is per thread, not per caller.
 - **opentelemetry-cpp's drop count in steps 1–3.** The SDK exposes none. Steps 1–3 ran before the bench counted drops, so their only signal is the sink's delivery rate (95–99%). The queue rerun counts drops through the SDK's log, a counter that was checked against the sink.
-- **`SetIdentity` allocations on newer protobuf releases.** Only v1.19.0 with protobuf 3.21.12 was measured.
 
 ## Reproducing
 
@@ -260,6 +294,12 @@ python3 -I bench/parity/merge.py <out> parity-microtel-http-clang
 python3 -I bench/parity/perf_profile.py bench-sut-parity-<variant>:perf <cycles> <dir> && python3 -I bench/parity/perf_buckets.py <dir>
 cc -O2 -fPIC -shared -o malloc_count.so bench/parity/malloc_count.c   # in ubuntu:24.04
 python3 -I bench/parity/count_mallocs.py bench-sut-parity-<variant> malloc_count.so <attrs> <out.json>
+# Section 4: build upstream's dev image, then each variant commit twice inside it
+podman build -f .devcontainer/Dockerfile.dev -t otelcpp-dev:0a5bb0b <opentelemetry-cpp clone>
+bench/parity/build_otelcpp_dev.sh <log-dir> localhost/otelcpp-dev:0a5bb0b <clone> a=<commit> b=<commit> c=<commit> d=<commit>
+bench/parity/run_rounds.sh <out> 5 parity-otelcpp-main-a parity-otelcpp-main-b parity-otelcpp-main-c parity-otelcpp-main-d
+python3 -I bench/parity/count_mallocs.py bench-sut-parity-otelcpp-main-<v> malloc_count.so <attrs> <out.json> --env EMIT_OTELCPP_BSP_MAX_QUEUE_SIZE=16384
+podman run --rm --entrypoint /setidentity_allocs bench-sut-parity-otelcpp-main-<v> --dump
 ```
 
 ## Appendix: porting microtel's exporter to C++14

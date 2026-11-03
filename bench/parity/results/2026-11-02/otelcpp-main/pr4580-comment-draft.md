@@ -24,4 +24,4 @@ On top of this PR they make no measurable difference: same allocation counts, an
 
 One practical note: the PR currently conflicts with `main`, in `CHANGELOG.md` and in `otlp_recordable.h`. #4734 added `attribute_value_depth_limit` to `SpanLimits`, so the constructor this PR moves into `otlp_recordable.cc` needs that extra initializer.
 
-Harness and method: [allocation counting](https://github.com/microtel-org/microtel/blob/bench/otelcpp-parity/bench/parity/RESULTS.md#3-allocations-per-span), from a parity study in the microtel repo.
+Harness, method and data: [section 4](https://github.com/microtel-org/microtel/blob/bench/otelcpp-parity/bench/parity/RESULTS.md#4-opentelemetry-cpp-main-and-pr-4580) of a parity study in the microtel repo.
