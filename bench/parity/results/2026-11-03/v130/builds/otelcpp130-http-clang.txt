@@ -1,0 +1,275 @@
+podman build -f bench/sut/parity/otelcpp.Dockerfile -t bench-sut-parity-otelcpp130-http-clang --label parity.commit=4bf0d37 --build-arg INSTALL_PERF=false --build-arg OTELCPP_VERSION=v1.30.0 --build-arg EXPORTER=http --build-arg SDK_CC=clang-18 --build-arg SDK_CXX=clang++-18 --build-arg ALL_COMPONENTS=ON 
+[1/5] STEP 1/6: FROM ubuntu:24.04 AS base
+[1/5] STEP 2/6: ARG DEBIAN_FRONTEND=noninteractive
+--> Using cache 940de015ac960454c8ce99aed040f118967487ff03c77dfec246ea99033491d7
+--> 940de015ac96
+[1/5] STEP 3/6: ARG EXPORTER
+--> Using cache 0a51dfcb5243c010a76573f0af4d7abd7f2ab2d93b9e17ab59cdd677cc769b23
+--> 0a51dfcb5243
+[1/5] STEP 4/6: ARG PROTOBUF_TAG
+--> Using cache 9bb16846268ba742e4d56871d9875fffe0d4252e1ab9a0f2d043738fbe155eb8
+--> 9bb16846268b
+[1/5] STEP 5/6: RUN apt-get update     && apt-get install -y --no-install-recommends         ca-certificates clang-18 g++ cmake ninja-build git curl pkg-config         libssl-dev libcurl4-openssl-dev zlib1g-dev     && if [ -z "$PROTOBUF_TAG" ]; then         apt-get install -y --no-install-recommends libprotobuf-dev protobuf-compiler;     fi     && if [ "$EXPORTER" = "grpc" ]; then         apt-get install -y --no-install-recommends             libgrpc++-dev libprotobuf-dev protobuf-compiler protobuf-compiler-grpc;     fi     && rm -rf /var/lib/apt/lists/*
+--> Using cache 8fc5da20c551f8e94988650803026a1a8a8d658ea0f8a7395e813acf414372cc
+--> 8fc5da20c551
+[1/5] STEP 6/6: ENV BENCH_CXXFLAGS="-O2 -g -fno-omit-frame-pointer"
+--> Using cache 992248c95da65861886c46536c78ebe161df75e775eb0e2b9498648ffbdbc3a6
+--> 992248c95da6
+[5/5] STEP 1/11: FROM ubuntu:24.04 AS runtime
+[5/5] STEP 2/11: ARG EXPORTER
+--> Using cache b5ef32d2a18305d8e7a426d0379c62241ce55b0a82ccde053eae8cecbea3594a
+--> b5ef32d2a183
+[5/5] STEP 3/11: ARG PROTOBUF_TAG
+--> Using cache 1c612e4664036e475616763aad66379812c0498c7b2f23396ca11632d974ae34
+--> 1c612e466403
+[5/5] STEP 4/11: ARG INSTALL_PERF
+--> Using cache 3ef053d3e1c63bb72a973bfdc07aa183bc0af85c644154a66aa86ec9a5fd09ff
+--> 3ef053d3e1c6
+[5/5] STEP 5/11: COPY --from=emit-build /opt/otelcpp/lib/ /tmp/otelcpp-lib/
+[2/5] STEP 1/6: FROM 992248c95da65861886c46536c78ebe161df75e775eb0e2b9498648ffbdbc3a6 AS protobuf-build
+[2/5] STEP 2/6: ARG PROTOBUF_TAG
+--> Using cache 06602ef3f0be4e15c0dfcf83f499f77ef05d0a9afb06e7cd325df2ee4316db69
+--> 06602ef3f0be
+[2/5] STEP 3/6: ARG SDK_CC
+--> Using cache b13af6c2ccbc3ea66293fbfb83d857cddeb614e191a954452486c94c46b6bb34
+--> b13af6c2ccbc
+[2/5] STEP 4/6: ARG SDK_CXX
+--> Using cache 8b7f72a1878cd89371793cbfd908ad2e6017ffff1665af46b821a099aedd345e
+--> 8b7f72a1878c
+[2/5] STEP 5/6: ARG EXTRA_FLAGS
+--> Using cache 4184b0c23c8f295c47d0524ecacb6a23be1448b364d91d5cd65e2fb2a5709245
+--> 4184b0c23c8f
+[2/5] STEP 6/6: RUN mkdir -p /opt/protobuf/lib     && if [ -n "$PROTOBUF_TAG" ]; then         git clone --depth 1 --branch "$PROTOBUF_TAG"             https://github.com/protocolbuffers/protobuf.git /src/protobuf         && cmake -S /src/protobuf -B /build/protobuf -G Ninja             -DCMAKE_BUILD_TYPE=Release             -DCMAKE_C_COMPILER="$SDK_CC" -DCMAKE_CXX_COMPILER="$SDK_CXX"             -DCMAKE_C_FLAGS="${BENCH_CXXFLAGS} ${EXTRA_FLAGS}"             -DCMAKE_CXX_FLAGS="${BENCH_CXXFLAGS} ${EXTRA_FLAGS}"             -DCMAKE_INSTALL_PREFIX=/opt/protobuf             -DCMAKE_INSTALL_LIBDIR=lib             -Dprotobuf_BUILD_TESTS=OFF             -Dprotobuf_BUILD_SHARED_LIBS=ON         && cmake --build /build/protobuf         && cmake --install /build/protobuf;     fi
+--> Using cache 2d89f3627008f20cc450d5fdfab98fd01ebf39bd363f4ffae0835eb74740e74d
+--> 2d89f3627008
+[3/5] STEP 1/9: FROM 2d89f3627008f20cc450d5fdfab98fd01ebf39bd363f4ffae0835eb74740e74d AS otelcpp-build
+[3/5] STEP 2/9: ARG OTELCPP_VERSION
+--> Using cache 8aa56c98f35858a4d92c05329042c28ef74b0d3d646bc67edbf991990fff4bde
+--> 8aa56c98f358
+[3/5] STEP 3/9: ARG EXPORTER
+--> Using cache eba6ab57a09039c747346aae683311db603f03f2da0c6824c3673014579e993c
+--> eba6ab57a090
+[3/5] STEP 4/9: ARG SDK_CC
+--> Using cache 7dc63596a751757e878e9298365064c25551e60fe3014bd3034f0ba7ad57c6f1
+--> 7dc63596a751
+[3/5] STEP 5/9: ARG SDK_CXX
+--> Using cache c95974256c433d53c899c37919c6f4a05b5883e9b01b1f6ca49859c25e90a420
+--> c95974256c43
+[3/5] STEP 6/9: ARG EXTRA_FLAGS
+--> Using cache 9b2a14c7724789656b9b21161f14b56bc57686bd809104290c1f8af9e5074f03
+--> 9b2a14c77247
+[3/5] STEP 7/9: ARG CXX_STD
+--> Using cache 2c9b404a9128a25f5509072d8a891510b885a53af413faf5ca1f4e0e6f5acffb
+--> 2c9b404a9128
+[3/5] STEP 8/9: RUN git clone --depth 1 --branch ${OTELCPP_VERSION}         https://github.com/open-telemetry/opentelemetry-cpp.git         /src/opentelemetry-cpp
+--> Using cache 2a08b2efe49b10018d9d458b89e7084985498e10d30ab45656b65d5a6e9e911e
+--> 2a08b2efe49b
+[3/5] STEP 9/9: RUN GRPC=OFF; HTTP=ON;     if [ "$EXPORTER" = "grpc" ]; then GRPC=ON; HTTP=OFF; fi;     cmake -S /src/opentelemetry-cpp -B /build/otelcpp         -G Ninja         -DCMAKE_BUILD_TYPE=Release         -DCMAKE_C_COMPILER="$SDK_CC" -DCMAKE_CXX_COMPILER="$SDK_CXX"         -DCMAKE_C_FLAGS="${BENCH_CXXFLAGS} ${EXTRA_FLAGS}"         -DCMAKE_CXX_FLAGS="${BENCH_CXXFLAGS} ${EXTRA_FLAGS}"         -DCMAKE_CXX_STANDARD="$CXX_STD"         -DCMAKE_CXX_SCAN_FOR_MODULES=OFF         -DCMAKE_PREFIX_PATH=/opt/protobuf         -DCMAKE_INSTALL_PREFIX=/opt/otelcpp         -DBUILD_TESTING=OFF -DOTELCPP_BUILD_TESTING=OFF         -DWITH_BENCHMARK=OFF -DOTELCPP_WITH_BENCHMARK=OFF         -DWITH_EXAMPLES=OFF -DOTELCPP_WITH_EXAMPLES=OFF         -DWITH_OTLP_GRPC=$GRPC -DOTELCPP_WITH_OTLP_GRPC=$GRPC         -DWITH_OTLP_HTTP=$HTTP -DOTELCPP_WITH_OTLP_HTTP=$HTTP         -DWITH_ABSEIL=OFF         -DOPENTELEMETRY_BUILD_SHARED_LIBS=OFF     && cmake --build /build/otelcpp     && cmake --install /build/otelcpp
+--> Using cache e74592e3ea22031e10870c8ba7b2fff4bc1c1eac235fa1410779510914940019
+--> e74592e3ea22
+[4/5] STEP 1/12: FROM e74592e3ea22031e10870c8ba7b2fff4bc1c1eac235fa1410779510914940019 AS emit-build
+[4/5] STEP 2/12: ARG EXPORTER
+--> Using cache d1f21c0814082b412d4d44a125984d246181149702136ebd2d1a062f23d13ddc
+--> d1f21c081408
+[4/5] STEP 3/12: ARG SDK_CC
+--> Using cache bc62dc1aac88fed150f481222f6b5578c75194f94b54aaf2d71d4ff3617e5904
+--> bc62dc1aac88
+[4/5] STEP 4/12: ARG SDK_CXX
+--> Using cache 6184c8285f496551eb151d2b78735d43cbe5ae65b043c71173df1d84c3681831
+--> 6184c8285f49
+[4/5] STEP 5/12: ARG EMIT_CC
+--> Using cache dab00c31c129c75f975096a22283adfc7a4579f5c5a4b76d7cc86212850e780d
+--> dab00c31c129
+[4/5] STEP 6/12: ARG EMIT_CXX
+--> Using cache 7edacde8712e28e0e0eb253aa5ceabaff91c1534787a5c32b1c956cba8a70989
+--> 7edacde8712e
+[4/5] STEP 7/12: ARG EXTRA_FLAGS
+--> Using cache 213bca7cbb4e55c7df479713538fe752942eea9025e6484c124aea74a6e30905
+--> 213bca7cbb4e
+[4/5] STEP 8/12: ARG CXX_STD
+--> Using cache 14d7b35a64193c333aa0c44045a84bb3511327371522b92c179ca894c17fdde7
+--> 14d7b35a6419
+[4/5] STEP 9/12: ARG INMEMORY
+--> Using cache fde942ad015f4ffe9a7ccc3cd0c3c272a3047c8f79f00f4674767d77b4a142ca
+--> fde942ad015f
+[4/5] STEP 10/12: ARG ALL_COMPONENTS
+--> 984d4a5138b6
+[4/5] STEP 11/12: COPY bench/emit-app /src/emit-app
+--> bb19e3e1c549
+[4/5] STEP 12/12: RUN BACKEND=OTELCPP_HTTP;     if [ "$EXPORTER" = "grpc" ]; then BACKEND=OTELCPP_GRPC; fi;     cmake -S /src/emit-app -B /build/emit-app         -G Ninja         -DCMAKE_BUILD_TYPE=Release         -DCMAKE_C_COMPILER="${EMIT_CC:-$SDK_CC}" -DCMAKE_CXX_COMPILER="${EMIT_CXX:-$SDK_CXX}"         -DCMAKE_C_FLAGS="${BENCH_CXXFLAGS} ${EXTRA_FLAGS}"         -DCMAKE_CXX_FLAGS="${BENCH_CXXFLAGS} ${EXTRA_FLAGS}"         -DCMAKE_CXX_STANDARD="$CXX_STD"         -DCMAKE_CXX_SCAN_FOR_MODULES=OFF         -DBENCH_BACKEND=$BACKEND         -DBENCH_OTELCPP_INMEMORY_SPANS=$INMEMORY         -DBENCH_OTELCPP_ALL_COMPONENTS=$ALL_COMPONENTS         -DCMAKE_PREFIX_PATH="/opt/otelcpp;/opt/protobuf"     && cmake --build /build/emit-app
+-- The CXX compiler identification is Clang 18.1.3
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/clang++-18 - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found CURL: /usr/lib/x86_64-linux-gnu/libcurl.so (found version "8.5.0")  
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE  
+-- Found Protobuf: /usr/lib/x86_64-linux-gnu/libprotobuf.so (found version "3.21.12") 
+-- Found opentelemetry-cpp: /opt/otelcpp/lib/cmake/opentelemetry-cpp/opentelemetry-cpp-config.cmake (found version "1.30.0") 
+-- Configuring done (0.5s)
+-- Generating done (0.0s)
+CMake Warning:
+  Manually-specified variables were not used by the project:
+
+    CMAKE_C_COMPILER
+    CMAKE_C_FLAGS
+
+
+-- Build files have been written to: /build/emit-app
+[1/6] Building CXX object CMakeFiles/emit_app.dir/src/histogram.cpp.o
+[2/6] Building CXX object CMakeFiles/emit_app.dir/src/workload.cpp.o
+[3/6] Building CXX object CMakeFiles/emit_app.dir/src/main.cpp.o
+[4/6] Building CXX object CMakeFiles/emit_app.dir/src/control_socket.cpp.o
+[5/6] Building CXX object CMakeFiles/emit_app.dir/src/backend_otelcpp.cpp.o
+[6/6] Linking CXX executable emit_app
+--> 140aba38830c
+--> c4c9e61c4cb3
+[5/5] STEP 6/11: COPY --from=emit-build /opt/protobuf/lib/ /tmp/protobuf-lib/
+--> 4e1ea80668ca
+[5/5] STEP 7/11: RUN cp -a /tmp/otelcpp-lib/*.so* /usr/local/lib/ 2>/dev/null;     cp -a /tmp/protobuf-lib/*.so* /usr/local/lib/ 2>/dev/null;     rm -rf /tmp/otelcpp-lib /tmp/protobuf-lib;     apt-get update     && apt-get install -y --no-install-recommends libssl3 libcurl4     && if [ -z "$PROTOBUF_TAG" ]; then         apt-get install -y --no-install-recommends libprotobuf32t64;     fi     && if [ "$EXPORTER" = "grpc" ]; then         apt-get install -y --no-install-recommends             libgrpc++1.51t64 libprotobuf32t64 libcares2 libre2-10 libabsl20220623t64;     fi     && if [ "$INSTALL_PERF" = "true" ]; then         apt-get install -y --no-install-recommends linux-tools-generic         && PERF_BIN=$(find /usr/lib/linux-tools -name perf | head -1)         && ln -sf "$PERF_BIN" /usr/local/bin/perf;     fi     && ldconfig     && rm -rf /var/lib/apt/lists/*
+Get:1 http://security.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+Get:2 http://archive.ubuntu.com/ubuntu noble InRelease [256 kB]
+Get:3 http://security.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1551 kB]
+Get:4 http://archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+Get:5 http://archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
+Get:6 http://archive.ubuntu.com/ubuntu noble/universe amd64 Packages [19.3 MB]
+Get:7 http://security.ubuntu.com/ubuntu noble-security/main amd64 Packages [1420 kB]
+Get:8 http://security.ubuntu.com/ubuntu noble-security/multiverse amd64 Packages [55.6 kB]
+Get:9 http://security.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [2132 kB]
+Get:10 http://archive.ubuntu.com/ubuntu noble/multiverse amd64 Packages [331 kB]
+Get:11 http://archive.ubuntu.com/ubuntu noble/restricted amd64 Packages [117 kB]
+Get:12 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages [1808 kB]
+Get:13 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [2172 kB]
+Get:14 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1741 kB]
+Get:15 http://archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [2240 kB]
+Get:16 http://archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Packages [61.7 kB]
+Get:17 http://archive.ubuntu.com/ubuntu noble-backports/universe amd64 Packages [36.0 kB]
+Get:18 http://archive.ubuntu.com/ubuntu noble-backports/multiverse amd64 Packages [669 B]
+Get:19 http://archive.ubuntu.com/ubuntu noble-backports/main amd64 Packages [49.0 kB]
+Fetched 33.7 MB in 4s (9201 kB/s)
+Reading package lists...
+Reading package lists...
+Building dependency tree...
+Reading state information...
+libssl3t64 is already the newest version (3.0.13-0ubuntu3.16).
+The following additional packages will be installed:
+  libbrotli1 libgssapi-krb5-2 libk5crypto3 libkeyutils1 libkrb5-3
+  libkrb5support0 libldap2 libnghttp2-14 libpsl5t64 librtmp1 libsasl2-2
+  libsasl2-modules-db libssh-4
+Suggested packages:
+  krb5-doc krb5-user
+Recommended packages:
+  ca-certificates krb5-locales libldap-common publicsuffix libsasl2-modules
+The following NEW packages will be installed:
+  libbrotli1 libcurl4t64 libgssapi-krb5-2 libk5crypto3 libkeyutils1 libkrb5-3
+  libkrb5support0 libldap2 libnghttp2-14 libpsl5t64 librtmp1 libsasl2-2
+  libsasl2-modules-db libssh-4
+0 upgraded, 14 newly installed, 0 to remove and 0 not upgraded.
+Need to get 1943 kB of archives.
+After this operation, 5474 kB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libkrb5support0 amd64 1.20.1-6ubuntu2.10 [34.9 kB]
+Get:2 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libk5crypto3 amd64 1.20.1-6ubuntu2.10 [81.9 kB]
+Get:3 http://archive.ubuntu.com/ubuntu noble/main amd64 libkeyutils1 amd64 1.6.3-3build1 [9490 B]
+Get:4 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libkrb5-3 amd64 1.20.1-6ubuntu2.10 [348 kB]
+Get:5 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libgssapi-krb5-2 amd64 1.20.1-6ubuntu2.10 [143 kB]
+Get:6 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libnghttp2-14 amd64 1.59.0-1ubuntu0.4 [74.6 kB]
+Get:7 http://archive.ubuntu.com/ubuntu noble/main amd64 libpsl5t64 amd64 0.21.2-1.1build1 [57.1 kB]
+Get:8 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libbrotli1 amd64 1.1.0-2ubuntu0.1 [331 kB]
+Get:9 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libsasl2-modules-db amd64 2.1.28+dfsg1-5ubuntu3.1 [20.4 kB]
+Get:10 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libsasl2-2 amd64 2.1.28+dfsg1-5ubuntu3.1 [53.2 kB]
+Get:11 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libldap2 amd64 2.6.10+dfsg-0ubuntu0.24.04.1 [198 kB]
+Get:12 http://archive.ubuntu.com/ubuntu noble/main amd64 librtmp1 amd64 2.4+20151223.gitfa8646d.1-2build7 [56.3 kB]
+Get:13 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libssh-4 amd64 0.10.6-2ubuntu0.5 [191 kB]
+Get:14 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libcurl4t64 amd64 8.5.0-2ubuntu10.16 [344 kB]
+debconf: delaying package configuration, since apt-utils is not installed
+Fetched 1943 kB in 1s (2236 kB/s)
+Selecting previously unselected package libkrb5support0:amd64.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 4381 files and directories currently installed.)
+Preparing to unpack .../00-libkrb5support0_1.20.1-6ubuntu2.10_amd64.deb ...
+Unpacking libkrb5support0:amd64 (1.20.1-6ubuntu2.10) ...
+Selecting previously unselected package libk5crypto3:amd64.
+Preparing to unpack .../01-libk5crypto3_1.20.1-6ubuntu2.10_amd64.deb ...
+Unpacking libk5crypto3:amd64 (1.20.1-6ubuntu2.10) ...
+Selecting previously unselected package libkeyutils1:amd64.
+Preparing to unpack .../02-libkeyutils1_1.6.3-3build1_amd64.deb ...
+Unpacking libkeyutils1:amd64 (1.6.3-3build1) ...
+Selecting previously unselected package libkrb5-3:amd64.
+Preparing to unpack .../03-libkrb5-3_1.20.1-6ubuntu2.10_amd64.deb ...
+Unpacking libkrb5-3:amd64 (1.20.1-6ubuntu2.10) ...
+Selecting previously unselected package libgssapi-krb5-2:amd64.
+Preparing to unpack .../04-libgssapi-krb5-2_1.20.1-6ubuntu2.10_amd64.deb ...
+Unpacking libgssapi-krb5-2:amd64 (1.20.1-6ubuntu2.10) ...
+Selecting previously unselected package libnghttp2-14:amd64.
+Preparing to unpack .../05-libnghttp2-14_1.59.0-1ubuntu0.4_amd64.deb ...
+Unpacking libnghttp2-14:amd64 (1.59.0-1ubuntu0.4) ...
+Selecting previously unselected package libpsl5t64:amd64.
+Preparing to unpack .../06-libpsl5t64_0.21.2-1.1build1_amd64.deb ...
+Unpacking libpsl5t64:amd64 (0.21.2-1.1build1) ...
+Selecting previously unselected package libbrotli1:amd64.
+Preparing to unpack .../07-libbrotli1_1.1.0-2ubuntu0.1_amd64.deb ...
+Unpacking libbrotli1:amd64 (1.1.0-2ubuntu0.1) ...
+Selecting previously unselected package libsasl2-modules-db:amd64.
+Preparing to unpack .../08-libsasl2-modules-db_2.1.28+dfsg1-5ubuntu3.1_amd64.deb ...
+Unpacking libsasl2-modules-db:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...
+Selecting previously unselected package libsasl2-2:amd64.
+Preparing to unpack .../09-libsasl2-2_2.1.28+dfsg1-5ubuntu3.1_amd64.deb ...
+Unpacking libsasl2-2:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...
+Selecting previously unselected package libldap2:amd64.
+Preparing to unpack .../10-libldap2_2.6.10+dfsg-0ubuntu0.24.04.1_amd64.deb ...
+Unpacking libldap2:amd64 (2.6.10+dfsg-0ubuntu0.24.04.1) ...
+Selecting previously unselected package librtmp1:amd64.
+Preparing to unpack .../11-librtmp1_2.4+20151223.gitfa8646d.1-2build7_amd64.deb ...
+Unpacking librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2build7) ...
+Selecting previously unselected package libssh-4:amd64.
+Preparing to unpack .../12-libssh-4_0.10.6-2ubuntu0.5_amd64.deb ...
+Unpacking libssh-4:amd64 (0.10.6-2ubuntu0.5) ...
+Selecting previously unselected package libcurl4t64:amd64.
+Preparing to unpack .../13-libcurl4t64_8.5.0-2ubuntu10.16_amd64.deb ...
+Unpacking libcurl4t64:amd64 (8.5.0-2ubuntu10.16) ...
+Setting up libkeyutils1:amd64 (1.6.3-3build1) ...
+Setting up libbrotli1:amd64 (1.1.0-2ubuntu0.1) ...
+Setting up libpsl5t64:amd64 (0.21.2-1.1build1) ...
+Setting up libnghttp2-14:amd64 (1.59.0-1ubuntu0.4) ...
+Setting up libkrb5support0:amd64 (1.20.1-6ubuntu2.10) ...
+Setting up libsasl2-modules-db:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...
+Setting up librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2build7) ...
+Setting up libk5crypto3:amd64 (1.20.1-6ubuntu2.10) ...
+Setting up libsasl2-2:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...
+Setting up libkrb5-3:amd64 (1.20.1-6ubuntu2.10) ...
+Setting up libldap2:amd64 (2.6.10+dfsg-0ubuntu0.24.04.1) ...
+Setting up libgssapi-krb5-2:amd64 (1.20.1-6ubuntu2.10) ...
+Setting up libssh-4:amd64 (0.10.6-2ubuntu0.5) ...
+Setting up libcurl4t64:amd64 (8.5.0-2ubuntu10.16) ...
+Processing triggers for libc-bin (2.39-0ubuntu8.9) ...
+Reading package lists...
+Building dependency tree...
+Reading state information...
+The following NEW packages will be installed:
+  libprotobuf32t64
+0 upgraded, 1 newly installed, 0 to remove and 0 not upgraded.
+Need to get 923 kB of archives.
+After this operation, 3083 kB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libprotobuf32t64 amd64 3.21.12-8.2ubuntu0.4 [923 kB]
+debconf: delaying package configuration, since apt-utils is not installed
+Fetched 923 kB in 0s (6292 kB/s)
+Selecting previously unselected package libprotobuf32t64:amd64.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 4481 files and directories currently installed.)
+Preparing to unpack .../libprotobuf32t64_3.21.12-8.2ubuntu0.4_amd64.deb ...
+Unpacking libprotobuf32t64:amd64 (3.21.12-8.2ubuntu0.4) ...
+Setting up libprotobuf32t64:amd64 (3.21.12-8.2ubuntu0.4) ...
+Processing triggers for libc-bin (2.39-0ubuntu8.9) ...
+--> 5d8786f4601c
+[5/5] STEP 8/11: COPY --from=emit-build /build/emit-app/emit_app /emit_app
+--> 0c97678bcf9b
+[5/5] STEP 9/11: EXPOSE 9090
+--> 37c3a0243c59
+[5/5] STEP 10/11: ENTRYPOINT ["/emit_app"]
+--> 8beb72a156c3
+[5/5] STEP 11/11: LABEL "parity.commit"="4bf0d37"
+[5/5] COMMIT bench-sut-parity-otelcpp130-http-clang
+--> b30e2dde15b2
+Successfully tagged localhost/bench-sut-parity-otelcpp130-http-clang:latest
+b30e2dde15b2cb0777d85c7f1a7b527f220f1fa0f33ecae7dacd3976f5dcade0

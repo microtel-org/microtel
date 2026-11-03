@@ -1,0 +1,2121 @@
+[1/5] STEP 1/6: FROM ubuntu:24.04 AS base
+[1/5] STEP 2/6: ARG DEBIAN_FRONTEND=noninteractive
+--> 130f6d353443
+[1/5] STEP 3/6: ARG EXPORTER
+--> a03ab7973d13
+[1/5] STEP 4/6: ARG PROTOBUF_TAG
+--> 2a763f2eed9a
+[1/5] STEP 5/6: RUN apt-get update     && apt-get install -y --no-install-recommends         ca-certificates clang-18 g++ cmake ninja-build git curl pkg-config         libssl-dev libcurl4-openssl-dev zlib1g-dev     && if [ -z "$PROTOBUF_TAG" ]; then         apt-get install -y --no-install-recommends libprotobuf-dev protobuf-compiler;     fi     && if [ "$EXPORTER" = "grpc" ]; then         apt-get install -y --no-install-recommends             libgrpc++-dev libprotobuf-dev protobuf-compiler protobuf-compiler-grpc;     fi     && rm -rf /var/lib/apt/lists/*
+Get:1 http://security.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+Get:2 http://security.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1551 kB]
+Get:3 http://archive.ubuntu.com/ubuntu noble InRelease [256 kB]
+Get:4 http://security.ubuntu.com/ubuntu noble-security/main amd64 Packages [1420 kB]
+Get:5 http://security.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [2132 kB]
+Get:6 http://security.ubuntu.com/ubuntu noble-security/multiverse amd64 Packages [55.6 kB]
+Get:7 http://archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+Get:8 http://archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
+Get:9 http://archive.ubuntu.com/ubuntu noble/universe amd64 Packages [19.3 MB]
+Get:10 http://archive.ubuntu.com/ubuntu noble/multiverse amd64 Packages [331 kB]
+Get:11 http://archive.ubuntu.com/ubuntu noble/restricted amd64 Packages [117 kB]
+Get:12 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages [1808 kB]
+Get:13 http://archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [2240 kB]
+Get:14 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [2172 kB]
+Get:15 http://archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Packages [61.7 kB]
+Get:16 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1741 kB]
+Get:17 http://archive.ubuntu.com/ubuntu noble-backports/main amd64 Packages [49.0 kB]
+Get:18 http://archive.ubuntu.com/ubuntu noble-backports/universe amd64 Packages [36.0 kB]
+Get:19 http://archive.ubuntu.com/ubuntu noble-backports/multiverse amd64 Packages [669 B]
+Fetched 33.7 MB in 3s (11.4 MB/s)
+Reading package lists...
+Reading package lists...
+Building dependency tree...
+Reading state information...
+The following additional packages will be installed:
+  binutils binutils-common binutils-x86-64-linux-gnu cmake-data cpp cpp-13
+  cpp-13-x86-64-linux-gnu cpp-x86-64-linux-gnu g++-13 g++-13-x86-64-linux-gnu
+  g++-x86-64-linux-gnu gcc gcc-13 gcc-13-base gcc-13-x86-64-linux-gnu
+  gcc-x86-64-linux-gnu git-man libarchive13t64 libasan8 libatomic1 libbinutils
+  libbrotli1 libbsd0 libc-dev-bin libc6-dev libcc1-0 libclang-common-18-dev
+  libclang-cpp18 libclang1-18 libcrypt-dev libctf-nobfd0 libctf0
+  libcurl3t64-gnutls libcurl4t64 libedit2 liberror-perl libexpat1 libgc1
+  libgcc-13-dev libgdbm-compat4t64 libgdbm6t64 libgomp1 libgprofng0
+  libgssapi-krb5-2 libhwasan0 libicu74 libisl23 libitm1 libjansson4
+  libjsoncpp25 libk5crypto3 libkeyutils1 libkrb5-3 libkrb5support0 libldap2
+  libllvm18 liblsan0 libmpc3 libmpfr6 libnghttp2-14 libobjc-13-dev libobjc4
+  libperl5.38t64 libpkgconf3 libpsl5t64 libquadmath0 librhash0 librtmp1
+  libsasl2-2 libsasl2-modules-db libsframe1 libssh-4 libstdc++-13-dev libtsan2
+  libubsan1 libuv1t64 libxml2 linux-libc-dev llvm-18-linker-tools openssl perl
+  perl-modules-5.38 pkgconf pkgconf-bin rpcsvc-proto
+Suggested packages:
+  binutils-doc gprofng-gui clang-18-doc wasi-libc cmake-doc cmake-format
+  elpa-cmake-mode cpp-doc gcc-13-locales cpp-13-doc g++-multilib
+  g++-13-multilib gcc-13-doc gcc-multilib make manpages-dev autoconf automake
+  libtool flex bison gdb gcc-doc gcc-13-multilib gdb-x86-64-linux-gnu
+  gettext-base git-daemon-run | git-daemon-sysvinit git-doc git-email git-gui
+  gitk gitweb git-cvs git-mediawiki git-svn lrzip glibc-doc libcurl4-doc
+  libidn-dev libkrb5-dev libldap2-dev librtmp-dev libssh2-1-dev gdbm-l10n
+  krb5-doc krb5-user libssl-doc libstdc++-13-doc python3 perl-doc
+  libterm-readline-gnu-perl | libterm-readline-perl-perl
+  libtap-harness-archive-perl
+Recommended packages:
+  llvm-18-dev python3 make patch less ssh-client manpages manpages-dev
+  libc-devtools libclang-rt-18-dev krb5-locales libldap-common publicsuffix
+  libsasl2-modules netbase
+The following NEW packages will be installed:
+  binutils binutils-common binutils-x86-64-linux-gnu ca-certificates clang-18
+  cmake cmake-data cpp cpp-13 cpp-13-x86-64-linux-gnu cpp-x86-64-linux-gnu
+  curl g++ g++-13 g++-13-x86-64-linux-gnu g++-x86-64-linux-gnu gcc gcc-13
+  gcc-13-base gcc-13-x86-64-linux-gnu gcc-x86-64-linux-gnu git git-man
+  libarchive13t64 libasan8 libatomic1 libbinutils libbrotli1 libbsd0
+  libc-dev-bin libc6-dev libcc1-0 libclang-common-18-dev libclang-cpp18
+  libclang1-18 libcrypt-dev libctf-nobfd0 libctf0 libcurl3t64-gnutls
+  libcurl4-openssl-dev libcurl4t64 libedit2 liberror-perl libexpat1 libgc1
+  libgcc-13-dev libgdbm-compat4t64 libgdbm6t64 libgomp1 libgprofng0
+  libgssapi-krb5-2 libhwasan0 libicu74 libisl23 libitm1 libjansson4
+  libjsoncpp25 libk5crypto3 libkeyutils1 libkrb5-3 libkrb5support0 libldap2
+  libllvm18 liblsan0 libmpc3 libmpfr6 libnghttp2-14 libobjc-13-dev libobjc4
+  libperl5.38t64 libpkgconf3 libpsl5t64 libquadmath0 librhash0 librtmp1
+  libsasl2-2 libsasl2-modules-db libsframe1 libssh-4 libssl-dev
+  libstdc++-13-dev libtsan2 libubsan1 libuv1t64 libxml2 linux-libc-dev
+  llvm-18-linker-tools ninja-build openssl perl perl-modules-5.38 pkg-config
+  pkgconf pkgconf-bin rpcsvc-proto zlib1g-dev
+0 upgraded, 96 newly installed, 0 to remove and 0 not upgraded.
+Need to get 167 MB of archives.
+After this operation, 681 MB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 perl-modules-5.38 all 5.38.2-3.2ubuntu0.6 [3110 kB]
+Get:2 http://archive.ubuntu.com/ubuntu noble/main amd64 libgdbm6t64 amd64 1.23-5.1build1 [34.4 kB]
+Get:3 http://archive.ubuntu.com/ubuntu noble/main amd64 libgdbm-compat4t64 amd64 1.23-5.1build1 [6710 B]
+Get:4 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libperl5.38t64 amd64 5.38.2-3.2ubuntu0.6 [4864 kB]
+Get:5 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 perl amd64 5.38.2-3.2ubuntu0.6 [231 kB]
+Get:6 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 openssl amd64 3.0.13-0ubuntu3.16 [1004 kB]
+Get:7 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 ca-certificates all 20260816ubuntu0.24.04.1 [139 kB]
+Get:8 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libbsd0 amd64 0.12.1-1build1.1 [41.2 kB]
+Get:9 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libexpat1 amd64 2.6.1-2ubuntu0.6 [98.9 kB]
+Get:10 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libkrb5support0 amd64 1.20.1-6ubuntu2.10 [34.9 kB]
+Get:11 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libk5crypto3 amd64 1.20.1-6ubuntu2.10 [81.9 kB]
+Get:12 http://archive.ubuntu.com/ubuntu noble/main amd64 libkeyutils1 amd64 1.6.3-3build1 [9490 B]
+Get:13 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libkrb5-3 amd64 1.20.1-6ubuntu2.10 [348 kB]
+Get:14 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libgssapi-krb5-2 amd64 1.20.1-6ubuntu2.10 [143 kB]
+Get:15 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libicu74 amd64 74.2-1ubuntu3.1 [10.9 MB]
+Get:16 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libxml2 amd64 2.9.14+dfsg-1.3ubuntu3.10 [764 kB]
+Get:17 http://archive.ubuntu.com/ubuntu noble/main amd64 libedit2 amd64 3.1-20230828-1build1 [97.6 kB]
+Get:18 http://archive.ubuntu.com/ubuntu noble/main amd64 libjansson4 amd64 2.14-2build2 [32.8 kB]
+Get:19 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libnghttp2-14 amd64 1.59.0-1ubuntu0.4 [74.6 kB]
+Get:20 http://archive.ubuntu.com/ubuntu noble/main amd64 libpsl5t64 amd64 0.21.2-1.1build1 [57.1 kB]
+Get:21 http://archive.ubuntu.com/ubuntu noble/main amd64 libuv1t64 amd64 1.48.0-1.1build1 [97.3 kB]
+Get:22 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 binutils-common amd64 2.42-4ubuntu2.10 [240 kB]
+Get:23 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libsframe1 amd64 2.42-4ubuntu2.10 [15.7 kB]
+Get:24 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libbinutils amd64 2.42-4ubuntu2.10 [577 kB]
+Get:25 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libctf-nobfd0 amd64 2.42-4ubuntu2.10 [98.0 kB]
+Get:26 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libctf0 amd64 2.42-4ubuntu2.10 [94.5 kB]
+Get:27 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libgprofng0 amd64 2.42-4ubuntu2.10 [849 kB]
+Get:28 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 binutils-x86-64-linux-gnu amd64 2.42-4ubuntu2.10 [2463 kB]
+Get:29 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 binutils amd64 2.42-4ubuntu2.10 [18.2 kB]
+Get:30 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libllvm18 amd64 1:18.1.3-1ubuntu1 [27.5 MB]
+Get:31 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libclang-cpp18 amd64 1:18.1.3-1ubuntu1 [13.5 MB]
+Get:32 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 gcc-13-base amd64 13.3.0-6ubuntu2~24.04.1 [51.6 kB]
+Get:33 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libgomp1 amd64 14.2.0-4ubuntu2~24.04.1 [148 kB]
+Get:34 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libitm1 amd64 14.2.0-4ubuntu2~24.04.1 [29.7 kB]
+Get:35 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libatomic1 amd64 14.2.0-4ubuntu2~24.04.1 [10.5 kB]
+Get:36 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libasan8 amd64 14.2.0-4ubuntu2~24.04.1 [3027 kB]
+Get:37 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 liblsan0 amd64 14.2.0-4ubuntu2~24.04.1 [1322 kB]
+Get:38 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libtsan2 amd64 14.2.0-4ubuntu2~24.04.1 [2772 kB]
+Get:39 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libubsan1 amd64 14.2.0-4ubuntu2~24.04.1 [1184 kB]
+Get:40 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libhwasan0 amd64 14.2.0-4ubuntu2~24.04.1 [1641 kB]
+Get:41 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libquadmath0 amd64 14.2.0-4ubuntu2~24.04.1 [153 kB]
+Get:42 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libgcc-13-dev amd64 13.3.0-6ubuntu2~24.04.1 [2681 kB]
+Get:43 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libc-dev-bin amd64 2.39-0ubuntu8.9 [20.4 kB]
+Get:44 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 linux-libc-dev amd64 6.8.0-147.147 [1595 kB]
+Get:45 http://archive.ubuntu.com/ubuntu noble/main amd64 libcrypt-dev amd64 1:4.4.36-4build1 [112 kB]
+Get:46 http://archive.ubuntu.com/ubuntu noble/main amd64 rpcsvc-proto amd64 1.4.2-0ubuntu7 [67.4 kB]
+Get:47 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libc6-dev amd64 2.39-0ubuntu8.9 [2126 kB]
+Get:48 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libstdc++-13-dev amd64 13.3.0-6ubuntu2~24.04.1 [2420 kB]
+Get:49 http://archive.ubuntu.com/ubuntu noble/main amd64 libgc1 amd64 1:8.2.6-1build1 [90.3 kB]
+Get:50 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 libobjc4 amd64 14.2.0-4ubuntu2~24.04.1 [47.1 kB]
+Get:51 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 libobjc-13-dev amd64 13.3.0-6ubuntu2~24.04.1 [194 kB]
+Get:52 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 libclang-common-18-dev amd64 1:18.1.3-1ubuntu1 [736 kB]
+Get:53 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 llvm-18-linker-tools amd64 1:18.1.3-1ubuntu1 [1314 kB]
+Get:54 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libclang1-18 amd64 1:18.1.3-1ubuntu1 [7803 kB]
+Get:55 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 clang-18 amd64 1:18.1.3-1ubuntu1 [80.0 kB]
+Get:56 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libarchive13t64 amd64 3.7.2-2ubuntu0.9 [383 kB]
+Get:57 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libbrotli1 amd64 1.1.0-2ubuntu0.1 [331 kB]
+Get:58 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libsasl2-modules-db amd64 2.1.28+dfsg1-5ubuntu3.1 [20.4 kB]
+Get:59 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libsasl2-2 amd64 2.1.28+dfsg1-5ubuntu3.1 [53.2 kB]
+Get:60 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libldap2 amd64 2.6.10+dfsg-0ubuntu0.24.04.1 [198 kB]
+Get:61 http://archive.ubuntu.com/ubuntu noble/main amd64 librtmp1 amd64 2.4+20151223.gitfa8646d.1-2build7 [56.3 kB]
+Get:62 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libssh-4 amd64 0.10.6-2ubuntu0.5 [191 kB]
+Get:63 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libcurl4t64 amd64 8.5.0-2ubuntu10.16 [344 kB]
+Get:64 http://archive.ubuntu.com/ubuntu noble/main amd64 libjsoncpp25 amd64 1.9.5-6build1 [82.8 kB]
+Get:65 http://archive.ubuntu.com/ubuntu noble/main amd64 librhash0 amd64 1.4.3-3build1 [129 kB]
+Get:66 http://archive.ubuntu.com/ubuntu noble/main amd64 cmake-data all 3.28.3-1build7 [2155 kB]
+Get:67 http://archive.ubuntu.com/ubuntu noble/main amd64 cmake amd64 3.28.3-1build7 [11.2 MB]
+Get:68 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libisl23 amd64 0.26-3build1.1 [680 kB]
+Get:69 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libmpfr6 amd64 4.2.1-1build1.1 [353 kB]
+Get:70 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libmpc3 amd64 1.3.1-1build1.1 [54.6 kB]
+Get:71 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 cpp-13-x86-64-linux-gnu amd64 13.3.0-6ubuntu2~24.04.1 [10.7 MB]
+Get:72 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 cpp-13 amd64 13.3.0-6ubuntu2~24.04.1 [1042 B]
+Get:73 http://archive.ubuntu.com/ubuntu noble/main amd64 cpp-x86-64-linux-gnu amd64 4:13.2.0-7ubuntu1 [5326 B]
+Get:74 http://archive.ubuntu.com/ubuntu noble/main amd64 cpp amd64 4:13.2.0-7ubuntu1 [22.4 kB]
+Get:75 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 curl amd64 8.5.0-2ubuntu10.16 [226 kB]
+Get:76 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libcc1-0 amd64 14.2.0-4ubuntu2~24.04.1 [48.0 kB]
+Get:77 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 gcc-13-x86-64-linux-gnu amd64 13.3.0-6ubuntu2~24.04.1 [21.1 MB]
+Get:78 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 gcc-13 amd64 13.3.0-6ubuntu2~24.04.1 [494 kB]
+Get:79 http://archive.ubuntu.com/ubuntu noble/main amd64 gcc-x86-64-linux-gnu amd64 4:13.2.0-7ubuntu1 [1212 B]
+Get:80 http://archive.ubuntu.com/ubuntu noble/main amd64 gcc amd64 4:13.2.0-7ubuntu1 [5018 B]
+Get:81 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 g++-13-x86-64-linux-gnu amd64 13.3.0-6ubuntu2~24.04.1 [12.2 MB]
+Get:82 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 g++-13 amd64 13.3.0-6ubuntu2~24.04.1 [16.0 kB]
+Get:83 http://archive.ubuntu.com/ubuntu noble/main amd64 g++-x86-64-linux-gnu amd64 4:13.2.0-7ubuntu1 [964 B]
+Get:84 http://archive.ubuntu.com/ubuntu noble/main amd64 g++ amd64 4:13.2.0-7ubuntu1 [1100 B]
+Get:85 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libcurl3t64-gnutls amd64 8.5.0-2ubuntu10.16 [337 kB]
+Get:86 http://archive.ubuntu.com/ubuntu noble/main amd64 liberror-perl all 0.17029-2 [25.6 kB]
+Get:87 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 git-man all 1:2.43.0-1ubuntu7.4 [1101 kB]
+Get:88 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 git amd64 1:2.43.0-1ubuntu7.4 [3681 kB]
+Get:89 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libcurl4-openssl-dev amd64 8.5.0-2ubuntu10.16 [447 kB]
+Get:90 http://archive.ubuntu.com/ubuntu noble/main amd64 libpkgconf3 amd64 1.8.1-2build1 [30.7 kB]
+Get:91 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libssl-dev amd64 3.0.13-0ubuntu3.16 [2409 kB]
+Get:92 http://archive.ubuntu.com/ubuntu noble/universe amd64 ninja-build amd64 1.11.1-2 [129 kB]
+Get:93 http://archive.ubuntu.com/ubuntu noble/main amd64 pkgconf-bin amd64 1.8.1-2build1 [20.7 kB]
+Get:94 http://archive.ubuntu.com/ubuntu noble/main amd64 pkgconf amd64 1.8.1-2build1 [16.8 kB]
+Get:95 http://archive.ubuntu.com/ubuntu noble/main amd64 pkg-config amd64 1.8.1-2build1 [7264 B]
+Get:96 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 zlib1g-dev amd64 1:1.3.dfsg-3.1ubuntu2.3 [894 kB]
+debconf: delaying package configuration, since apt-utils is not installed
+Fetched 167 MB in 8s (22.0 MB/s)
+Selecting previously unselected package perl-modules-5.38.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 4381 files and directories currently installed.)
+Preparing to unpack .../00-perl-modules-5.38_5.38.2-3.2ubuntu0.6_all.deb ...
+Unpacking perl-modules-5.38 (5.38.2-3.2ubuntu0.6) ...
+Selecting previously unselected package libgdbm6t64:amd64.
+Preparing to unpack .../01-libgdbm6t64_1.23-5.1build1_amd64.deb ...
+Unpacking libgdbm6t64:amd64 (1.23-5.1build1) ...
+Selecting previously unselected package libgdbm-compat4t64:amd64.
+Preparing to unpack .../02-libgdbm-compat4t64_1.23-5.1build1_amd64.deb ...
+Unpacking libgdbm-compat4t64:amd64 (1.23-5.1build1) ...
+Selecting previously unselected package libperl5.38t64:amd64.
+Preparing to unpack .../03-libperl5.38t64_5.38.2-3.2ubuntu0.6_amd64.deb ...
+Unpacking libperl5.38t64:amd64 (5.38.2-3.2ubuntu0.6) ...
+Selecting previously unselected package perl.
+Preparing to unpack .../04-perl_5.38.2-3.2ubuntu0.6_amd64.deb ...
+Unpacking perl (5.38.2-3.2ubuntu0.6) ...
+Selecting previously unselected package openssl.
+Preparing to unpack .../05-openssl_3.0.13-0ubuntu3.16_amd64.deb ...
+Unpacking openssl (3.0.13-0ubuntu3.16) ...
+Selecting previously unselected package ca-certificates.
+Preparing to unpack .../06-ca-certificates_20260816ubuntu0.24.04.1_all.deb ...
+Unpacking ca-certificates (20260816ubuntu0.24.04.1) ...
+Selecting previously unselected package libbsd0:amd64.
+Preparing to unpack .../07-libbsd0_0.12.1-1build1.1_amd64.deb ...
+Unpacking libbsd0:amd64 (0.12.1-1build1.1) ...
+Selecting previously unselected package libexpat1:amd64.
+Preparing to unpack .../08-libexpat1_2.6.1-2ubuntu0.6_amd64.deb ...
+Unpacking libexpat1:amd64 (2.6.1-2ubuntu0.6) ...
+Selecting previously unselected package libkrb5support0:amd64.
+Preparing to unpack .../09-libkrb5support0_1.20.1-6ubuntu2.10_amd64.deb ...
+Unpacking libkrb5support0:amd64 (1.20.1-6ubuntu2.10) ...
+Selecting previously unselected package libk5crypto3:amd64.
+Preparing to unpack .../10-libk5crypto3_1.20.1-6ubuntu2.10_amd64.deb ...
+Unpacking libk5crypto3:amd64 (1.20.1-6ubuntu2.10) ...
+Selecting previously unselected package libkeyutils1:amd64.
+Preparing to unpack .../11-libkeyutils1_1.6.3-3build1_amd64.deb ...
+Unpacking libkeyutils1:amd64 (1.6.3-3build1) ...
+Selecting previously unselected package libkrb5-3:amd64.
+Preparing to unpack .../12-libkrb5-3_1.20.1-6ubuntu2.10_amd64.deb ...
+Unpacking libkrb5-3:amd64 (1.20.1-6ubuntu2.10) ...
+Selecting previously unselected package libgssapi-krb5-2:amd64.
+Preparing to unpack .../13-libgssapi-krb5-2_1.20.1-6ubuntu2.10_amd64.deb ...
+Unpacking libgssapi-krb5-2:amd64 (1.20.1-6ubuntu2.10) ...
+Selecting previously unselected package libicu74:amd64.
+Preparing to unpack .../14-libicu74_74.2-1ubuntu3.1_amd64.deb ...
+Unpacking libicu74:amd64 (74.2-1ubuntu3.1) ...
+Selecting previously unselected package libxml2:amd64.
+Preparing to unpack .../15-libxml2_2.9.14+dfsg-1.3ubuntu3.10_amd64.deb ...
+Unpacking libxml2:amd64 (2.9.14+dfsg-1.3ubuntu3.10) ...
+Selecting previously unselected package libedit2:amd64.
+Preparing to unpack .../16-libedit2_3.1-20230828-1build1_amd64.deb ...
+Unpacking libedit2:amd64 (3.1-20230828-1build1) ...
+Selecting previously unselected package libjansson4:amd64.
+Preparing to unpack .../17-libjansson4_2.14-2build2_amd64.deb ...
+Unpacking libjansson4:amd64 (2.14-2build2) ...
+Selecting previously unselected package libnghttp2-14:amd64.
+Preparing to unpack .../18-libnghttp2-14_1.59.0-1ubuntu0.4_amd64.deb ...
+Unpacking libnghttp2-14:amd64 (1.59.0-1ubuntu0.4) ...
+Selecting previously unselected package libpsl5t64:amd64.
+Preparing to unpack .../19-libpsl5t64_0.21.2-1.1build1_amd64.deb ...
+Unpacking libpsl5t64:amd64 (0.21.2-1.1build1) ...
+Selecting previously unselected package libuv1t64:amd64.
+Preparing to unpack .../20-libuv1t64_1.48.0-1.1build1_amd64.deb ...
+Unpacking libuv1t64:amd64 (1.48.0-1.1build1) ...
+Selecting previously unselected package binutils-common:amd64.
+Preparing to unpack .../21-binutils-common_2.42-4ubuntu2.10_amd64.deb ...
+Unpacking binutils-common:amd64 (2.42-4ubuntu2.10) ...
+Selecting previously unselected package libsframe1:amd64.
+Preparing to unpack .../22-libsframe1_2.42-4ubuntu2.10_amd64.deb ...
+Unpacking libsframe1:amd64 (2.42-4ubuntu2.10) ...
+Selecting previously unselected package libbinutils:amd64.
+Preparing to unpack .../23-libbinutils_2.42-4ubuntu2.10_amd64.deb ...
+Unpacking libbinutils:amd64 (2.42-4ubuntu2.10) ...
+Selecting previously unselected package libctf-nobfd0:amd64.
+Preparing to unpack .../24-libctf-nobfd0_2.42-4ubuntu2.10_amd64.deb ...
+Unpacking libctf-nobfd0:amd64 (2.42-4ubuntu2.10) ...
+Selecting previously unselected package libctf0:amd64.
+Preparing to unpack .../25-libctf0_2.42-4ubuntu2.10_amd64.deb ...
+Unpacking libctf0:amd64 (2.42-4ubuntu2.10) ...
+Selecting previously unselected package libgprofng0:amd64.
+Preparing to unpack .../26-libgprofng0_2.42-4ubuntu2.10_amd64.deb ...
+Unpacking libgprofng0:amd64 (2.42-4ubuntu2.10) ...
+Selecting previously unselected package binutils-x86-64-linux-gnu.
+Preparing to unpack .../27-binutils-x86-64-linux-gnu_2.42-4ubuntu2.10_amd64.deb ...
+Unpacking binutils-x86-64-linux-gnu (2.42-4ubuntu2.10) ...
+Selecting previously unselected package binutils.
+Preparing to unpack .../28-binutils_2.42-4ubuntu2.10_amd64.deb ...
+Unpacking binutils (2.42-4ubuntu2.10) ...
+Selecting previously unselected package libllvm18:amd64.
+Preparing to unpack .../29-libllvm18_1%3a18.1.3-1ubuntu1_amd64.deb ...
+Unpacking libllvm18:amd64 (1:18.1.3-1ubuntu1) ...
+Selecting previously unselected package libclang-cpp18.
+Preparing to unpack .../30-libclang-cpp18_1%3a18.1.3-1ubuntu1_amd64.deb ...
+Unpacking libclang-cpp18 (1:18.1.3-1ubuntu1) ...
+Selecting previously unselected package gcc-13-base:amd64.
+Preparing to unpack .../31-gcc-13-base_13.3.0-6ubuntu2~24.04.1_amd64.deb ...
+Unpacking gcc-13-base:amd64 (13.3.0-6ubuntu2~24.04.1) ...
+Selecting previously unselected package libgomp1:amd64.
+Preparing to unpack .../32-libgomp1_14.2.0-4ubuntu2~24.04.1_amd64.deb ...
+Unpacking libgomp1:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Selecting previously unselected package libitm1:amd64.
+Preparing to unpack .../33-libitm1_14.2.0-4ubuntu2~24.04.1_amd64.deb ...
+Unpacking libitm1:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Selecting previously unselected package libatomic1:amd64.
+Preparing to unpack .../34-libatomic1_14.2.0-4ubuntu2~24.04.1_amd64.deb ...
+Unpacking libatomic1:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Selecting previously unselected package libasan8:amd64.
+Preparing to unpack .../35-libasan8_14.2.0-4ubuntu2~24.04.1_amd64.deb ...
+Unpacking libasan8:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Selecting previously unselected package liblsan0:amd64.
+Preparing to unpack .../36-liblsan0_14.2.0-4ubuntu2~24.04.1_amd64.deb ...
+Unpacking liblsan0:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Selecting previously unselected package libtsan2:amd64.
+Preparing to unpack .../37-libtsan2_14.2.0-4ubuntu2~24.04.1_amd64.deb ...
+Unpacking libtsan2:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Selecting previously unselected package libubsan1:amd64.
+Preparing to unpack .../38-libubsan1_14.2.0-4ubuntu2~24.04.1_amd64.deb ...
+Unpacking libubsan1:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Selecting previously unselected package libhwasan0:amd64.
+Preparing to unpack .../39-libhwasan0_14.2.0-4ubuntu2~24.04.1_amd64.deb ...
+Unpacking libhwasan0:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Selecting previously unselected package libquadmath0:amd64.
+Preparing to unpack .../40-libquadmath0_14.2.0-4ubuntu2~24.04.1_amd64.deb ...
+Unpacking libquadmath0:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Selecting previously unselected package libgcc-13-dev:amd64.
+Preparing to unpack .../41-libgcc-13-dev_13.3.0-6ubuntu2~24.04.1_amd64.deb ...
+Unpacking libgcc-13-dev:amd64 (13.3.0-6ubuntu2~24.04.1) ...
+Selecting previously unselected package libc-dev-bin.
+Preparing to unpack .../42-libc-dev-bin_2.39-0ubuntu8.9_amd64.deb ...
+Unpacking libc-dev-bin (2.39-0ubuntu8.9) ...
+Selecting previously unselected package linux-libc-dev:amd64.
+Preparing to unpack .../43-linux-libc-dev_6.8.0-147.147_amd64.deb ...
+Unpacking linux-libc-dev:amd64 (6.8.0-147.147) ...
+Selecting previously unselected package libcrypt-dev:amd64.
+Preparing to unpack .../44-libcrypt-dev_1%3a4.4.36-4build1_amd64.deb ...
+Unpacking libcrypt-dev:amd64 (1:4.4.36-4build1) ...
+Selecting previously unselected package rpcsvc-proto.
+Preparing to unpack .../45-rpcsvc-proto_1.4.2-0ubuntu7_amd64.deb ...
+Unpacking rpcsvc-proto (1.4.2-0ubuntu7) ...
+Selecting previously unselected package libc6-dev:amd64.
+Preparing to unpack .../46-libc6-dev_2.39-0ubuntu8.9_amd64.deb ...
+Unpacking libc6-dev:amd64 (2.39-0ubuntu8.9) ...
+Selecting previously unselected package libstdc++-13-dev:amd64.
+Preparing to unpack .../47-libstdc++-13-dev_13.3.0-6ubuntu2~24.04.1_amd64.deb ...
+Unpacking libstdc++-13-dev:amd64 (13.3.0-6ubuntu2~24.04.1) ...
+Selecting previously unselected package libgc1:amd64.
+Preparing to unpack .../48-libgc1_1%3a8.2.6-1build1_amd64.deb ...
+Unpacking libgc1:amd64 (1:8.2.6-1build1) ...
+Selecting previously unselected package libobjc4:amd64.
+Preparing to unpack .../49-libobjc4_14.2.0-4ubuntu2~24.04.1_amd64.deb ...
+Unpacking libobjc4:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Selecting previously unselected package libobjc-13-dev:amd64.
+Preparing to unpack .../50-libobjc-13-dev_13.3.0-6ubuntu2~24.04.1_amd64.deb ...
+Unpacking libobjc-13-dev:amd64 (13.3.0-6ubuntu2~24.04.1) ...
+Selecting previously unselected package libclang-common-18-dev:amd64.
+Preparing to unpack .../51-libclang-common-18-dev_1%3a18.1.3-1ubuntu1_amd64.deb ...
+Unpacking libclang-common-18-dev:amd64 (1:18.1.3-1ubuntu1) ...
+Selecting previously unselected package llvm-18-linker-tools.
+Preparing to unpack .../52-llvm-18-linker-tools_1%3a18.1.3-1ubuntu1_amd64.deb ...
+Unpacking llvm-18-linker-tools (1:18.1.3-1ubuntu1) ...
+Selecting previously unselected package libclang1-18.
+Preparing to unpack .../53-libclang1-18_1%3a18.1.3-1ubuntu1_amd64.deb ...
+Unpacking libclang1-18 (1:18.1.3-1ubuntu1) ...
+Selecting previously unselected package clang-18.
+Preparing to unpack .../54-clang-18_1%3a18.1.3-1ubuntu1_amd64.deb ...
+Unpacking clang-18 (1:18.1.3-1ubuntu1) ...
+Selecting previously unselected package libarchive13t64:amd64.
+Preparing to unpack .../55-libarchive13t64_3.7.2-2ubuntu0.9_amd64.deb ...
+Unpacking libarchive13t64:amd64 (3.7.2-2ubuntu0.9) ...
+Selecting previously unselected package libbrotli1:amd64.
+Preparing to unpack .../56-libbrotli1_1.1.0-2ubuntu0.1_amd64.deb ...
+Unpacking libbrotli1:amd64 (1.1.0-2ubuntu0.1) ...
+Selecting previously unselected package libsasl2-modules-db:amd64.
+Preparing to unpack .../57-libsasl2-modules-db_2.1.28+dfsg1-5ubuntu3.1_amd64.deb ...
+Unpacking libsasl2-modules-db:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...
+Selecting previously unselected package libsasl2-2:amd64.
+Preparing to unpack .../58-libsasl2-2_2.1.28+dfsg1-5ubuntu3.1_amd64.deb ...
+Unpacking libsasl2-2:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...
+Selecting previously unselected package libldap2:amd64.
+Preparing to unpack .../59-libldap2_2.6.10+dfsg-0ubuntu0.24.04.1_amd64.deb ...
+Unpacking libldap2:amd64 (2.6.10+dfsg-0ubuntu0.24.04.1) ...
+Selecting previously unselected package librtmp1:amd64.
+Preparing to unpack .../60-librtmp1_2.4+20151223.gitfa8646d.1-2build7_amd64.deb ...
+Unpacking librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2build7) ...
+Selecting previously unselected package libssh-4:amd64.
+Preparing to unpack .../61-libssh-4_0.10.6-2ubuntu0.5_amd64.deb ...
+Unpacking libssh-4:amd64 (0.10.6-2ubuntu0.5) ...
+Selecting previously unselected package libcurl4t64:amd64.
+Preparing to unpack .../62-libcurl4t64_8.5.0-2ubuntu10.16_amd64.deb ...
+Unpacking libcurl4t64:amd64 (8.5.0-2ubuntu10.16) ...
+Selecting previously unselected package libjsoncpp25:amd64.
+Preparing to unpack .../63-libjsoncpp25_1.9.5-6build1_amd64.deb ...
+Unpacking libjsoncpp25:amd64 (1.9.5-6build1) ...
+Selecting previously unselected package librhash0:amd64.
+Preparing to unpack .../64-librhash0_1.4.3-3build1_amd64.deb ...
+Unpacking librhash0:amd64 (1.4.3-3build1) ...
+Selecting previously unselected package cmake-data.
+Preparing to unpack .../65-cmake-data_3.28.3-1build7_all.deb ...
+Unpacking cmake-data (3.28.3-1build7) ...
+Selecting previously unselected package cmake.
+Preparing to unpack .../66-cmake_3.28.3-1build7_amd64.deb ...
+Unpacking cmake (3.28.3-1build7) ...
+Selecting previously unselected package libisl23:amd64.
+Preparing to unpack .../67-libisl23_0.26-3build1.1_amd64.deb ...
+Unpacking libisl23:amd64 (0.26-3build1.1) ...
+Selecting previously unselected package libmpfr6:amd64.
+Preparing to unpack .../68-libmpfr6_4.2.1-1build1.1_amd64.deb ...
+Unpacking libmpfr6:amd64 (4.2.1-1build1.1) ...
+Selecting previously unselected package libmpc3:amd64.
+Preparing to unpack .../69-libmpc3_1.3.1-1build1.1_amd64.deb ...
+Unpacking libmpc3:amd64 (1.3.1-1build1.1) ...
+Selecting previously unselected package cpp-13-x86-64-linux-gnu.
+Preparing to unpack .../70-cpp-13-x86-64-linux-gnu_13.3.0-6ubuntu2~24.04.1_amd64.deb ...
+Unpacking cpp-13-x86-64-linux-gnu (13.3.0-6ubuntu2~24.04.1) ...
+Selecting previously unselected package cpp-13.
+Preparing to unpack .../71-cpp-13_13.3.0-6ubuntu2~24.04.1_amd64.deb ...
+Unpacking cpp-13 (13.3.0-6ubuntu2~24.04.1) ...
+Selecting previously unselected package cpp-x86-64-linux-gnu.
+Preparing to unpack .../72-cpp-x86-64-linux-gnu_4%3a13.2.0-7ubuntu1_amd64.deb ...
+Unpacking cpp-x86-64-linux-gnu (4:13.2.0-7ubuntu1) ...
+Selecting previously unselected package cpp.
+Preparing to unpack .../73-cpp_4%3a13.2.0-7ubuntu1_amd64.deb ...
+Unpacking cpp (4:13.2.0-7ubuntu1) ...
+Selecting previously unselected package curl.
+Preparing to unpack .../74-curl_8.5.0-2ubuntu10.16_amd64.deb ...
+Unpacking curl (8.5.0-2ubuntu10.16) ...
+Selecting previously unselected package libcc1-0:amd64.
+Preparing to unpack .../75-libcc1-0_14.2.0-4ubuntu2~24.04.1_amd64.deb ...
+Unpacking libcc1-0:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Selecting previously unselected package gcc-13-x86-64-linux-gnu.
+Preparing to unpack .../76-gcc-13-x86-64-linux-gnu_13.3.0-6ubuntu2~24.04.1_amd64.deb ...
+Unpacking gcc-13-x86-64-linux-gnu (13.3.0-6ubuntu2~24.04.1) ...
+Selecting previously unselected package gcc-13.
+Preparing to unpack .../77-gcc-13_13.3.0-6ubuntu2~24.04.1_amd64.deb ...
+Unpacking gcc-13 (13.3.0-6ubuntu2~24.04.1) ...
+Selecting previously unselected package gcc-x86-64-linux-gnu.
+Preparing to unpack .../78-gcc-x86-64-linux-gnu_4%3a13.2.0-7ubuntu1_amd64.deb ...
+Unpacking gcc-x86-64-linux-gnu (4:13.2.0-7ubuntu1) ...
+Selecting previously unselected package gcc.
+Preparing to unpack .../79-gcc_4%3a13.2.0-7ubuntu1_amd64.deb ...
+Unpacking gcc (4:13.2.0-7ubuntu1) ...
+Selecting previously unselected package g++-13-x86-64-linux-gnu.
+Preparing to unpack .../80-g++-13-x86-64-linux-gnu_13.3.0-6ubuntu2~24.04.1_amd64.deb ...
+Unpacking g++-13-x86-64-linux-gnu (13.3.0-6ubuntu2~24.04.1) ...
+Selecting previously unselected package g++-13.
+Preparing to unpack .../81-g++-13_13.3.0-6ubuntu2~24.04.1_amd64.deb ...
+Unpacking g++-13 (13.3.0-6ubuntu2~24.04.1) ...
+Selecting previously unselected package g++-x86-64-linux-gnu.
+Preparing to unpack .../82-g++-x86-64-linux-gnu_4%3a13.2.0-7ubuntu1_amd64.deb ...
+Unpacking g++-x86-64-linux-gnu (4:13.2.0-7ubuntu1) ...
+Selecting previously unselected package g++.
+Preparing to unpack .../83-g++_4%3a13.2.0-7ubuntu1_amd64.deb ...
+Unpacking g++ (4:13.2.0-7ubuntu1) ...
+Selecting previously unselected package libcurl3t64-gnutls:amd64.
+Preparing to unpack .../84-libcurl3t64-gnutls_8.5.0-2ubuntu10.16_amd64.deb ...
+Unpacking libcurl3t64-gnutls:amd64 (8.5.0-2ubuntu10.16) ...
+Selecting previously unselected package liberror-perl.
+Preparing to unpack .../85-liberror-perl_0.17029-2_all.deb ...
+Unpacking liberror-perl (0.17029-2) ...
+Selecting previously unselected package git-man.
+Preparing to unpack .../86-git-man_1%3a2.43.0-1ubuntu7.4_all.deb ...
+Unpacking git-man (1:2.43.0-1ubuntu7.4) ...
+Selecting previously unselected package git.
+Preparing to unpack .../87-git_1%3a2.43.0-1ubuntu7.4_amd64.deb ...
+Unpacking git (1:2.43.0-1ubuntu7.4) ...
+Selecting previously unselected package libcurl4-openssl-dev:amd64.
+Preparing to unpack .../88-libcurl4-openssl-dev_8.5.0-2ubuntu10.16_amd64.deb ...
+Unpacking libcurl4-openssl-dev:amd64 (8.5.0-2ubuntu10.16) ...
+Selecting previously unselected package libpkgconf3:amd64.
+Preparing to unpack .../89-libpkgconf3_1.8.1-2build1_amd64.deb ...
+Unpacking libpkgconf3:amd64 (1.8.1-2build1) ...
+Selecting previously unselected package libssl-dev:amd64.
+Preparing to unpack .../90-libssl-dev_3.0.13-0ubuntu3.16_amd64.deb ...
+Unpacking libssl-dev:amd64 (3.0.13-0ubuntu3.16) ...
+Selecting previously unselected package ninja-build.
+Preparing to unpack .../91-ninja-build_1.11.1-2_amd64.deb ...
+Unpacking ninja-build (1.11.1-2) ...
+Selecting previously unselected package pkgconf-bin.
+Preparing to unpack .../92-pkgconf-bin_1.8.1-2build1_amd64.deb ...
+Unpacking pkgconf-bin (1.8.1-2build1) ...
+Selecting previously unselected package pkgconf:amd64.
+Preparing to unpack .../93-pkgconf_1.8.1-2build1_amd64.deb ...
+Unpacking pkgconf:amd64 (1.8.1-2build1) ...
+Selecting previously unselected package pkg-config:amd64.
+Preparing to unpack .../94-pkg-config_1.8.1-2build1_amd64.deb ...
+Unpacking pkg-config:amd64 (1.8.1-2build1) ...
+Selecting previously unselected package zlib1g-dev:amd64.
+Preparing to unpack .../95-zlib1g-dev_1%3a1.3.dfsg-3.1ubuntu2.3_amd64.deb ...
+Unpacking zlib1g-dev:amd64 (1:1.3.dfsg-3.1ubuntu2.3) ...
+Setting up libexpat1:amd64 (2.6.1-2ubuntu0.6) ...
+Setting up libkeyutils1:amd64 (1.6.3-3build1) ...
+Setting up libgdbm6t64:amd64 (1.23-5.1build1) ...
+Setting up libgdbm-compat4t64:amd64 (1.23-5.1build1) ...
+Setting up libbrotli1:amd64 (1.1.0-2ubuntu0.1) ...
+Setting up libuv1t64:amd64 (1.48.0-1.1build1) ...
+Setting up binutils-common:amd64 (2.42-4ubuntu2.10) ...
+Setting up libpsl5t64:amd64 (0.21.2-1.1build1) ...
+Setting up libnghttp2-14:amd64 (1.59.0-1ubuntu0.4) ...
+Setting up linux-libc-dev:amd64 (6.8.0-147.147) ...
+Setting up libctf-nobfd0:amd64 (2.42-4ubuntu2.10) ...
+Setting up libgomp1:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Setting up libsframe1:amd64 (2.42-4ubuntu2.10) ...
+Setting up ninja-build (1.11.1-2) ...
+Setting up libjansson4:amd64 (2.14-2build2) ...
+Setting up libkrb5support0:amd64 (1.20.1-6ubuntu2.10) ...
+Setting up libsasl2-modules-db:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...
+Setting up libpkgconf3:amd64 (1.8.1-2build1) ...
+Setting up rpcsvc-proto (1.4.2-0ubuntu7) ...
+Setting up gcc-13-base:amd64 (13.3.0-6ubuntu2~24.04.1) ...
+Setting up libmpfr6:amd64 (4.2.1-1build1.1) ...
+Setting up librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2build7) ...
+Setting up perl-modules-5.38 (5.38.2-3.2ubuntu0.6) ...
+Setting up libquadmath0:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Setting up libssl-dev:amd64 (3.0.13-0ubuntu3.16) ...
+Setting up libmpc3:amd64 (1.3.1-1build1.1) ...
+Setting up libatomic1:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Setting up libjsoncpp25:amd64 (1.9.5-6build1) ...
+Setting up pkgconf-bin (1.8.1-2build1) ...
+Setting up libclang-common-18-dev:amd64 (1:18.1.3-1ubuntu1) ...
+Setting up libk5crypto3:amd64 (1.20.1-6ubuntu2.10) ...
+Setting up libgc1:amd64 (1:8.2.6-1build1) ...
+Setting up libsasl2-2:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...
+Setting up libubsan1:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Setting up libicu74:amd64 (74.2-1ubuntu3.1) ...
+Setting up libhwasan0:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Setting up librhash0:amd64 (1.4.3-3build1) ...
+Setting up libcrypt-dev:amd64 (1:4.4.36-4build1) ...
+Setting up libasan8:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Setting up git-man (1:2.43.0-1ubuntu7.4) ...
+Setting up cmake-data (3.28.3-1build7) ...
+Setting up libkrb5-3:amd64 (1.20.1-6ubuntu2.10) ...
+Setting up libperl5.38t64:amd64 (5.38.2-3.2ubuntu0.6) ...
+Setting up libtsan2:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Setting up libbinutils:amd64 (2.42-4ubuntu2.10) ...
+Setting up libisl23:amd64 (0.26-3build1.1) ...
+Setting up libc-dev-bin (2.39-0ubuntu8.9) ...
+Setting up openssl (3.0.13-0ubuntu3.16) ...
+Setting up libbsd0:amd64 (0.12.1-1build1.1) ...
+Setting up libxml2:amd64 (2.9.14+dfsg-1.3ubuntu3.10) ...
+Setting up libcc1-0:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Setting up libldap2:amd64 (2.6.10+dfsg-0ubuntu0.24.04.1) ...
+Setting up liblsan0:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Setting up libitm1:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Setting up libctf0:amd64 (2.42-4ubuntu2.10) ...
+Setting up cpp-13-x86-64-linux-gnu (13.3.0-6ubuntu2~24.04.1) ...
+Setting up libedit2:amd64 (3.1-20230828-1build1) ...
+Setting up libobjc4:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Setting up pkgconf:amd64 (1.8.1-2build1) ...
+Setting up ca-certificates (20260816ubuntu0.24.04.1) ...
+Updating certificates in /etc/ssl/certs...
+120 added, 0 removed; done.
+Setting up perl (5.38.2-3.2ubuntu0.6) ...
+Setting up libgprofng0:amd64 (2.42-4ubuntu2.10) ...
+Setting up libgssapi-krb5-2:amd64 (1.20.1-6ubuntu2.10) ...
+Setting up pkg-config:amd64 (1.8.1-2build1) ...
+Setting up libssh-4:amd64 (0.10.6-2ubuntu0.5) ...
+Setting up libgcc-13-dev:amd64 (13.3.0-6ubuntu2~24.04.1) ...
+Setting up libc6-dev:amd64 (2.39-0ubuntu8.9) ...
+Setting up libarchive13t64:amd64 (3.7.2-2ubuntu0.9) ...
+Setting up libobjc-13-dev:amd64 (13.3.0-6ubuntu2~24.04.1) ...
+Setting up libstdc++-13-dev:amd64 (13.3.0-6ubuntu2~24.04.1) ...
+Setting up libllvm18:amd64 (1:18.1.3-1ubuntu1) ...
+Setting up binutils-x86-64-linux-gnu (2.42-4ubuntu2.10) ...
+Setting up cpp-x86-64-linux-gnu (4:13.2.0-7ubuntu1) ...
+Setting up libclang1-18 (1:18.1.3-1ubuntu1) ...
+Setting up cpp-13 (13.3.0-6ubuntu2~24.04.1) ...
+Setting up libcurl4t64:amd64 (8.5.0-2ubuntu10.16) ...
+Setting up gcc-13-x86-64-linux-gnu (13.3.0-6ubuntu2~24.04.1) ...
+Setting up libcurl3t64-gnutls:amd64 (8.5.0-2ubuntu10.16) ...
+Setting up binutils (2.42-4ubuntu2.10) ...
+Setting up liberror-perl (0.17029-2) ...
+Setting up libcurl4-openssl-dev:amd64 (8.5.0-2ubuntu10.16) ...
+Setting up gcc-13 (13.3.0-6ubuntu2~24.04.1) ...
+Setting up git (1:2.43.0-1ubuntu7.4) ...
+Setting up llvm-18-linker-tools (1:18.1.3-1ubuntu1) ...
+Setting up zlib1g-dev:amd64 (1:1.3.dfsg-3.1ubuntu2.3) ...
+Setting up cpp (4:13.2.0-7ubuntu1) ...
+Setting up cmake (3.28.3-1build7) ...
+Setting up curl (8.5.0-2ubuntu10.16) ...
+Setting up libclang-cpp18 (1:18.1.3-1ubuntu1) ...
+Setting up g++-13-x86-64-linux-gnu (13.3.0-6ubuntu2~24.04.1) ...
+Setting up gcc-x86-64-linux-gnu (4:13.2.0-7ubuntu1) ...
+Setting up clang-18 (1:18.1.3-1ubuntu1) ...
+Setting up gcc (4:13.2.0-7ubuntu1) ...
+Setting up g++-x86-64-linux-gnu (4:13.2.0-7ubuntu1) ...
+Setting up g++-13 (13.3.0-6ubuntu2~24.04.1) ...
+Setting up g++ (4:13.2.0-7ubuntu1) ...
+update-alternatives: using /usr/bin/g++ to provide /usr/bin/c++ (c++) in auto mode
+update-alternatives: warning: skip creation of /usr/share/man/man1/c++.1.gz because associated file /usr/share/man/man1/g++.1.gz (of link group c++) doesn't exist
+Processing triggers for libc-bin (2.39-0ubuntu8.9) ...
+Processing triggers for ca-certificates (20260816ubuntu0.24.04.1) ...
+Updating certificates in /etc/ssl/certs...
+0 added, 0 removed; done.
+Running hooks in /etc/ca-certificates/update.d...
+done.
+Reading package lists...
+Building dependency tree...
+Reading state information...
+The following additional packages will be installed:
+  libprotobuf-lite32t64 libprotobuf32t64 libprotoc32t64
+Suggested packages:
+  protobuf-mode-el
+The following NEW packages will be installed:
+  libprotobuf-dev libprotobuf-lite32t64 libprotobuf32t64 libprotoc32t64
+  protobuf-compiler
+0 upgraded, 5 newly installed, 0 to remove and 0 not upgraded.
+Need to get 3287 kB of archives.
+After this operation, 18.7 MB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libprotobuf-lite32t64 amd64 3.21.12-8.2ubuntu0.4 [239 kB]
+Get:2 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libprotobuf32t64 amd64 3.21.12-8.2ubuntu0.4 [923 kB]
+Get:3 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libprotoc32t64 amd64 3.21.12-8.2ubuntu0.4 [683 kB]
+Get:4 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libprotobuf-dev amd64 3.21.12-8.2ubuntu0.4 [1413 kB]
+Get:5 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 protobuf-compiler amd64 3.21.12-8.2ubuntu0.4 [29.0 kB]
+debconf: delaying package configuration, since apt-utils is not installed
+Fetched 3287 kB in 0s (13.7 MB/s)
+Selecting previously unselected package libprotobuf-lite32t64:amd64.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 15285 files and directories currently installed.)
+Preparing to unpack .../libprotobuf-lite32t64_3.21.12-8.2ubuntu0.4_amd64.deb ...
+Unpacking libprotobuf-lite32t64:amd64 (3.21.12-8.2ubuntu0.4) ...
+Selecting previously unselected package libprotobuf32t64:amd64.
+Preparing to unpack .../libprotobuf32t64_3.21.12-8.2ubuntu0.4_amd64.deb ...
+Unpacking libprotobuf32t64:amd64 (3.21.12-8.2ubuntu0.4) ...
+Selecting previously unselected package libprotoc32t64:amd64.
+Preparing to unpack .../libprotoc32t64_3.21.12-8.2ubuntu0.4_amd64.deb ...
+Unpacking libprotoc32t64:amd64 (3.21.12-8.2ubuntu0.4) ...
+Selecting previously unselected package libprotobuf-dev:amd64.
+Preparing to unpack .../libprotobuf-dev_3.21.12-8.2ubuntu0.4_amd64.deb ...
+Unpacking libprotobuf-dev:amd64 (3.21.12-8.2ubuntu0.4) ...
+Selecting previously unselected package protobuf-compiler.
+Preparing to unpack .../protobuf-compiler_3.21.12-8.2ubuntu0.4_amd64.deb ...
+Unpacking protobuf-compiler (3.21.12-8.2ubuntu0.4) ...
+Setting up libprotobuf-lite32t64:amd64 (3.21.12-8.2ubuntu0.4) ...
+Setting up libprotobuf32t64:amd64 (3.21.12-8.2ubuntu0.4) ...
+Setting up libprotobuf-dev:amd64 (3.21.12-8.2ubuntu0.4) ...
+Setting up libprotoc32t64:amd64 (3.21.12-8.2ubuntu0.4) ...
+Setting up protobuf-compiler (3.21.12-8.2ubuntu0.4) ...
+Processing triggers for libc-bin (2.39-0ubuntu8.9) ...
+--> f11d204f912c
+[1/5] STEP 6/6: ENV BENCH_CXXFLAGS="-O2 -g -fno-omit-frame-pointer"
+--> d9ec911f9ffd
+[2/5] STEP 1/6: FROM d9ec911f9ffd89dcdc0c88ab05966c44dece6afd5dfb943b9afb30c8d35815c1 AS protobuf-build
+[2/5] STEP 2/6: ARG PROTOBUF_TAG
+--> 5c621538a4fd
+[2/5] STEP 3/6: ARG SDK_CC
+--> b2da510ec904
+[2/5] STEP 4/6: ARG SDK_CXX
+--> 3e14f65f5975
+[2/5] STEP 5/6: ARG EXTRA_FLAGS
+--> 0ce1be8ebbcf
+[2/5] STEP 6/6: RUN mkdir -p /opt/protobuf/lib     && if [ -n "$PROTOBUF_TAG" ]; then         git clone --depth 1 --branch "$PROTOBUF_TAG"             https://github.com/protocolbuffers/protobuf.git /src/protobuf         && cmake -S /src/protobuf -B /build/protobuf -G Ninja             -DCMAKE_BUILD_TYPE=Release             -DCMAKE_C_COMPILER="$SDK_CC" -DCMAKE_CXX_COMPILER="$SDK_CXX"             -DCMAKE_C_FLAGS="${BENCH_CXXFLAGS} ${EXTRA_FLAGS}"             -DCMAKE_CXX_FLAGS="${BENCH_CXXFLAGS} ${EXTRA_FLAGS}"             -DCMAKE_INSTALL_PREFIX=/opt/protobuf             -DCMAKE_INSTALL_LIBDIR=lib             -Dprotobuf_BUILD_TESTS=OFF             -Dprotobuf_BUILD_SHARED_LIBS=ON         && cmake --build /build/protobuf         && cmake --install /build/protobuf;     fi
+--> c79e8727c371
+[3/5] STEP 1/9: FROM c79e8727c3719af9206b37bae56409e2641c9fcfc819d58cc300ad520b17ccde AS otelcpp-build
+[3/5] STEP 2/9: ARG OTELCPP_VERSION
+--> 7153607d173d
+[3/5] STEP 3/9: ARG EXPORTER
+--> 019ac87efa5f
+[3/5] STEP 4/9: ARG SDK_CC
+--> 90ca394bce9c
+[3/5] STEP 5/9: ARG SDK_CXX
+--> 2a0c9a297084
+[3/5] STEP 6/9: ARG EXTRA_FLAGS
+--> 95b66594b916
+[3/5] STEP 7/9: ARG CXX_STD
+--> 4227fc37431e
+[3/5] STEP 8/9: RUN git clone --depth 1 --branch ${OTELCPP_VERSION}         https://github.com/open-telemetry/opentelemetry-cpp.git         /src/opentelemetry-cpp
+Cloning into '/src/opentelemetry-cpp'...
+Note: switching to 'c7b64ec660c1b6c65dff0932b3d1c3483bc6db64'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
+--> 0c0c11531e2a
+[3/5] STEP 9/9: RUN GRPC=OFF; HTTP=ON;     if [ "$EXPORTER" = "grpc" ]; then GRPC=ON; HTTP=OFF; fi;     cmake -S /src/opentelemetry-cpp -B /build/otelcpp         -G Ninja         -DCMAKE_BUILD_TYPE=Release         -DCMAKE_C_COMPILER="$SDK_CC" -DCMAKE_CXX_COMPILER="$SDK_CXX"         -DCMAKE_C_FLAGS="${BENCH_CXXFLAGS} ${EXTRA_FLAGS}"         -DCMAKE_CXX_FLAGS="${BENCH_CXXFLAGS} ${EXTRA_FLAGS}"         -DCMAKE_CXX_STANDARD="$CXX_STD"         -DCMAKE_CXX_SCAN_FOR_MODULES=OFF         -DCMAKE_PREFIX_PATH=/opt/protobuf         -DCMAKE_INSTALL_PREFIX=/opt/otelcpp         -DBUILD_TESTING=OFF -DOTELCPP_BUILD_TESTING=OFF         -DWITH_BENCHMARK=OFF -DOTELCPP_WITH_BENCHMARK=OFF         -DWITH_EXAMPLES=OFF -DOTELCPP_WITH_EXAMPLES=OFF         -DWITH_OTLP_GRPC=$GRPC -DOTELCPP_WITH_OTLP_GRPC=$GRPC         -DWITH_OTLP_HTTP=$HTTP -DOTELCPP_WITH_OTLP_HTTP=$HTTP         -DWITH_ABSEIL=OFF         -DOPENTELEMETRY_BUILD_SHARED_LIBS=OFF     && cmake --build /build/otelcpp     && cmake --install /build/otelcpp
+-- The CXX compiler identification is Clang 18.1.3
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/clang++-18 - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Performing Test check_cxx_compiler_flag_-Wno-type-limits
+-- Performing Test check_cxx_compiler_flag_-Wno-type-limits - Success
+-- Performing Test check_cxx_compiler_flag_-Wno-deprecated-declarations
+-- Performing Test check_cxx_compiler_flag_-Wno-deprecated-declarations - Success
+-- Performing Test check_cxx_compiler_flag_-Wno-unused-parameter
+-- Performing Test check_cxx_compiler_flag_-Wno-unused-parameter - Success
+CMake Deprecation Warning at cmake/tools.cmake:395 (message):
+  CMake option WITH_OTLP_GRPC is deprecated.  Use OTELCPP_WITH_OTLP_GRPC
+  instead.
+Call Stack (most recent call first):
+  cmake/tools.cmake:459 (_otelcpp_get_option_default)
+  CMakeLists.txt:177 (otelcpp_option_flag)
+
+
+CMake Deprecation Warning at cmake/tools.cmake:395 (message):
+  CMake option WITH_OTLP_HTTP is deprecated.  Use OTELCPP_WITH_OTLP_HTTP
+  instead.
+Call Stack (most recent call first):
+  cmake/tools.cmake:459 (_otelcpp_get_option_default)
+  CMakeLists.txt:180 (otelcpp_option_flag)
+
+
+CMake Deprecation Warning at cmake/tools.cmake:395 (message):
+  CMake option WITH_BENCHMARK is deprecated.  Use OTELCPP_WITH_BENCHMARK
+  instead.
+Call Stack (most recent call first):
+  cmake/tools.cmake:459 (_otelcpp_get_option_default)
+  CMakeLists.txt:219 (otelcpp_option_flag)
+
+
+CMake Deprecation Warning at cmake/tools.cmake:395 (message):
+  CMake option WITH_EXAMPLES is deprecated.  Use OTELCPP_WITH_EXAMPLES
+  instead.
+Call Stack (most recent call first):
+  cmake/tools.cmake:459 (_otelcpp_get_option_default)
+  CMakeLists.txt:271 (otelcpp_option_flag)
+
+
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE  
+-- PROTOBUF_PROTOC_EXECUTABLE=$<TARGET_FILE:protobuf::protoc>
+CMake Warning at cmake/protobuf.cmake:103 (message):
+  Target (utf8_range::utf8_validity) was not found.  We will not validate
+  UTF-8 strings in the OTLP exporter.Which may lead to record drops when
+  sending non UTF-8 data as string.
+Call Stack (most recent call first):
+  CMakeLists.txt:417 (include)
+
+
+-- Using the single-header code from /build/otelcpp/_deps/nlohmann_json-src/single_include/
+-- ---------------------------------------------
+-- build settings
+-- ---------------------------------------------
+-- OpenTelemetry VERSION: 1.30.0
+-- OpenTelemetry ABI: 1
+-- CMAKE_SYSTEM_PROCESSOR: x86_64
+-- CXX: Clang 18.1.3
+-- CMAKE_BUILD_TYPE: Release
+-- CXXFLAGS: -O2 -g -fno-omit-frame-pointer
+-- CMAKE_CXX_STANDARD: 17
+-- CMAKE_TOOLCHAIN_FILE: 
+-- BUILD_SHARED_LIBS: 
+-- ---------------------------------------------
+-- opentelemetry-cpp build options
+-- ---------------------------------------------
+-- OTELCPP_WITH_API_ONLY: OFF
+-- OTELCPP_WITH_NO_DEPRECATED_CODE: OFF
+-- OTELCPP_WITH_ABI_VERSION_1: ON
+-- OTELCPP_WITH_ABI_VERSION_2: OFF
+-- OTELCPP_VERSIONED_LIBS: OFF
+-- OTELCPP_BUILD_PACKAGE: OFF
+-- OTELCPP_EXTERNAL_COMPONENT_PATH: 
+-- OTELCPP_MAINTAINER_MODE: OFF
+-- OTELCPP_WITH_STL: OFF
+-- OTELCPP_WITH_GSL: OFF
+-- OTELCPP_WITH_NO_GETENV: OFF
+-- OTELCPP_INSTALL: ON
+-- ---------------------------------------------
+-- opentelemetry-cpp cmake component options
+-- ---------------------------------------------
+-- OTELCPP_WITH_OTLP_GRPC: OFF
+-- OTELCPP_WITH_OTLP_HTTP: ON
+-- OTELCPP_WITH_OTLP_FILE: OFF
+-- OTELCPP_WITH_HTTP_CLIENT_CURL: ON
+-- OTELCPP_WITH_ZIPKIN: OFF
+-- OTELCPP_WITH_PROMETHEUS: OFF
+-- OTELCPP_WITH_ELASTICSEARCH: OFF
+-- OTELCPP_WITH_OPENTRACING: OFF
+-- OTELCPP_WITH_ETW: 
+-- OTELCPP_BUILD_DLL: OFF
+-- OTELCPP_WITH_CONFIGURATION: OFF
+-- ---------------------------------------------
+-- feature preview options
+-- ---------------------------------------------
+-- OTELCPP_WITH_ASYNC_EXPORT_PREVIEW: OFF
+-- OTELCPP_WITH_THREAD_INSTRUMENTATION_PREVIEW: OFF
+-- OTELCPP_WITH_METRICS_EXEMPLAR_PREVIEW: OFF
+-- OTELCPP_WITH_OTLP_GRPC_CREDENTIAL_PREVIEW: OFF
+-- OTELCPP_WITH_METRICS_BOUND_INSTRUMENTS_PREVIEW: OFF
+-- ---------------------------------------------
+-- third-party options
+-- ---------------------------------------------
+-- WITH_NLOHMANN_JSON: ON
+-- OTELCPP_WITH_CURL_LOGGING: OFF
+-- OTELCPP_WITH_OTLP_HTTP_COMPRESSION: OFF
+-- ---------------------------------------------
+-- examples and test options
+-- ---------------------------------------------
+-- OTELCPP_WITH_BENCHMARK: OFF
+-- OTELCPP_WITH_EXAMPLES: OFF
+-- OTELCPP_WITH_EXAMPLES_HTTP: OFF
+-- OTELCPP_WITH_FUNC_TESTS: ON
+-- OTELCPP_BUILD_W3CTRACECONTEXT_TEST: OFF
+-- OTELCPP_BUILD_TESTING: OFF
+-- ---------------------------------------------
+-- versions
+-- ---------------------------------------------
+-- CMake: 3.28.3
+-- GTest:  ()
+-- benchmark:  ()
+-- opentelemetry-proto: 1.11.0 (fetch_repository)
+-- Protobuf: 3.21.12 (find_package - UNKNOWN_LIBRARY)
+-- CURL: 8.5.0 (find_package)
+-- nlohmann-json: 3.12.0 (fetch_repository)
+-- ---------------------------------------------
+-- Building OTELCPP_WITH_STL=OFF
+-- Installing components:
+-- Install COMPONENT api
+--   TARGETS: opentelemetry_api
+--   TARGETS_ALIAS: opentelemetry-cpp::api
+--   COMPONENT_DEPENDS: 
+--   THIRDPARTY_DEPENDS: 
+--   FILES_DIRECTORY: /src/opentelemetry-cpp/api/include/opentelemetry
+--   FILES_DESTINATION: include
+--   FILES_MATCHING: PATTERN;*.h
+-- Install COMPONENT sdk
+--   TARGETS: opentelemetry_sdk;opentelemetry_common;opentelemetry_resources;opentelemetry_version;opentelemetry_instrumentation_scope;opentelemetry_logs;opentelemetry_trace;opentelemetry_metrics;opentelemetry_configuration_core;opentelemetry_configuration_trace_builders;opentelemetry_configuration_metrics_builders;opentelemetry_configuration_logs_builders;opentelemetry_configuration_registry_factory
+--   TARGETS_ALIAS: opentelemetry-cpp::sdk;opentelemetry-cpp::common;opentelemetry-cpp::resources;opentelemetry-cpp::version;opentelemetry-cpp::instrumentation_scope;opentelemetry-cpp::logs;opentelemetry-cpp::trace;opentelemetry-cpp::metrics;opentelemetry-cpp::configuration_core;opentelemetry-cpp::configuration_trace_builders;opentelemetry-cpp::configuration_metrics_builders;opentelemetry-cpp::configuration_logs_builders;opentelemetry-cpp::configuration_registry_factory
+--   COMPONENT_DEPENDS: api
+--   THIRDPARTY_DEPENDS: Threads
+--   FILES_DIRECTORY: /src/opentelemetry-cpp/sdk/include/opentelemetry/
+--   FILES_DESTINATION: include/opentelemetry
+--   FILES_MATCHING: PATTERN;*.h;PATTERN;sdk/configuration/configuration_parser.h;EXCLUDE;PATTERN;sdk/configuration/yaml_configuration_parser.h;EXCLUDE;PATTERN;sdk/configuration/ryml_document.h;EXCLUDE;PATTERN;sdk/configuration/ryml_document_node.h;EXCLUDE
+-- Install COMPONENT ext_common
+--   TARGETS: opentelemetry_ext
+--   TARGETS_ALIAS: opentelemetry-cpp::ext
+--   COMPONENT_DEPENDS: api
+--   THIRDPARTY_DEPENDS: 
+--   FILES_DIRECTORY: /src/opentelemetry-cpp/ext/include/opentelemetry/ext
+--   FILES_DESTINATION: include/opentelemetry
+--   FILES_MATCHING: PATTERN;http_client.h;PATTERN;http_client_factory.h;PATTERN;http_client_factory_curl.h;PATTERN;url_parser.h;PATTERN;detail;EXCLUDE;PATTERN;server;EXCLUDE
+-- Install COMPONENT ext_http_curl
+--   TARGETS: opentelemetry_http_client_curl
+--   TARGETS_ALIAS: opentelemetry-cpp::http_client_curl
+--   COMPONENT_DEPENDS: api;sdk;ext_common
+--   THIRDPARTY_DEPENDS: CURL
+--   FILES_DIRECTORY: 
+--   FILES_DESTINATION: 
+--   FILES_MATCHING: 
+-- Install COMPONENT ext_http
+--   TARGETS: opentelemetry_http_client
+--   TARGETS_ALIAS: opentelemetry-cpp::http_client
+--   COMPONENT_DEPENDS: api;ext_common;sdk;ext_http_curl
+--   THIRDPARTY_DEPENDS: 
+--   FILES_DIRECTORY: 
+--   FILES_DESTINATION: 
+--   FILES_MATCHING: 
+-- Install COMPONENT exporters_otlp_common
+--   TARGETS: opentelemetry_otlp_common;opentelemetry_otlp_recordable;opentelemetry_proto;opentelemetry_exporter_otlp_builder_utils
+--   TARGETS_ALIAS: opentelemetry-cpp::otlp_common;opentelemetry-cpp::otlp_recordable;opentelemetry-cpp::proto;opentelemetry-cpp::otlp_builder_utils
+--   COMPONENT_DEPENDS: api;sdk
+--   THIRDPARTY_DEPENDS: Protobuf
+--   FILES_DIRECTORY: /src/opentelemetry-cpp/exporters/otlp/include/opentelemetry/exporters/otlp
+--   FILES_DESTINATION: include/opentelemetry/exporters
+--   FILES_MATCHING: PATTERN;*.h;PATTERN;otlp_http*.h;EXCLUDE;PATTERN;otlp_grpc*.h;EXCLUDE;PATTERN;otlp_file*.h;EXCLUDE
+-- Install COMPONENT exporters_otlp_http
+--   TARGETS: opentelemetry_exporter_otlp_http_client;opentelemetry_exporter_otlp_http;opentelemetry_exporter_otlp_http_log;opentelemetry_exporter_otlp_http_metric;opentelemetry_exporter_otlp_http_builder;opentelemetry_exporter_otlp_http_log_builder;opentelemetry_exporter_otlp_http_metric_builder
+--   TARGETS_ALIAS: opentelemetry-cpp::otlp_http_client;opentelemetry-cpp::otlp_http_exporter;opentelemetry-cpp::otlp_http_log_record_exporter;opentelemetry-cpp::otlp_http_metric_exporter;opentelemetry-cpp::otlp_http_exporter_builder;opentelemetry-cpp::otlp_http_log_record_exporter_builder;opentelemetry-cpp::otlp_http_metric_exporter_builder
+--   COMPONENT_DEPENDS: api;ext_common;sdk;exporters_otlp_common;ext_http_curl;ext_http
+--   THIRDPARTY_DEPENDS: 
+--   FILES_DIRECTORY: /src/opentelemetry-cpp/exporters/otlp/include/opentelemetry/exporters/otlp
+--   FILES_DESTINATION: include/opentelemetry/exporters
+--   FILES_MATCHING: PATTERN;otlp_http*.h
+-- Install COMPONENT exporters_ostream
+--   TARGETS: opentelemetry_exporter_ostream_span;opentelemetry_exporter_ostream_metrics;opentelemetry_exporter_ostream_logs;opentelemetry_exporter_ostream_span_builder;opentelemetry_exporter_ostream_metrics_builder;opentelemetry_exporter_ostream_logs_builder
+--   TARGETS_ALIAS: opentelemetry-cpp::ostream_span_exporter;opentelemetry-cpp::ostream_metrics_exporter;opentelemetry-cpp::ostream_log_record_exporter;opentelemetry-cpp::ostream_span_exporter_builder;opentelemetry-cpp::ostream_metrics_exporter_builder;opentelemetry-cpp::ostream_log_record_exporter_builder
+--   COMPONENT_DEPENDS: api;sdk
+--   THIRDPARTY_DEPENDS: 
+--   FILES_DIRECTORY: /src/opentelemetry-cpp/exporters/ostream/include/opentelemetry/exporters/ostream
+--   FILES_DESTINATION: include/opentelemetry/exporters
+--   FILES_MATCHING: PATTERN;*.h
+-- Install COMPONENT exporters_in_memory
+--   TARGETS: opentelemetry_exporter_in_memory;opentelemetry_exporter_in_memory_metric
+--   TARGETS_ALIAS: opentelemetry-cpp::in_memory_span_exporter;opentelemetry-cpp::in_memory_metric_exporter
+--   COMPONENT_DEPENDS: api;sdk
+--   THIRDPARTY_DEPENDS: 
+--   FILES_DIRECTORY: /src/opentelemetry-cpp/exporters/memory/include/opentelemetry/exporters/memory
+--   FILES_DESTINATION: include/opentelemetry/exporters
+--   FILES_MATCHING: PATTERN;*.h
+-- Install DEPRECATED COMPONENT definitions:
+--   Deprecated COMPONENT exporters_otlp_builder_utils
+--     Replacement: exporters_otlp_common
+--   Deprecated COMPONENT exporters_otlp_http_builder
+--     Replacement: exporters_otlp_http
+--   Deprecated COMPONENT exporters_ostream_builder
+--     Replacement: exporters_ostream
+-- Configuring done (21.3s)
+-- Generating done (0.0s)
+CMake Warning:
+  Manually-specified variables were not used by the project:
+
+    CMAKE_C_COMPILER
+    CMAKE_C_FLAGS
+    OPENTELEMETRY_BUILD_SHARED_LIBS
+    WITH_ABSEIL
+
+
+-- Build files have been written to: /build/otelcpp
+[1/198] [Run]: "/usr/bin/protoc" "--proto_path=/build/otelcpp/_deps/opentelemetry-proto-src" "--cpp_out=dllexport_decl=OPENTELEMETRY_PROTO_API:/build/otelcpp/generated/third_party/opentelemetry-proto" "/build/otelcpp/_deps/opentelemetry-proto-src/opentelemetry/proto/common/v1/common.proto" "/build/otelcpp/_deps/opentelemetry-proto-src/opentelemetry/proto/resource/v1/resource.proto" "/build/otelcpp/_deps/opentelemetry-proto-src/opentelemetry/proto/trace/v1/trace.proto" "/build/otelcpp/_deps/opentelemetry-proto-src/opentelemetry/proto/logs/v1/logs.proto" "/build/otelcpp/_deps/opentelemetry-proto-src/opentelemetry/proto/metrics/v1/metrics.proto" "/build/otelcpp/_deps/opentelemetry-proto-src/opentelemetry/proto/profiles/v1development/profiles.proto" "/build/otelcpp/_deps/opentelemetry-proto-src/opentelemetry/proto/collector/trace/v1/trace_service.proto" "/build/otelcpp/_deps/opentelemetry-proto-src/opentelemetry/proto/collector/logs/v1/logs_service.proto" "/build/otelcpp/_deps/opentelemetry-proto-src/opentelemetry/proto/collector/metrics/v1/metrics_service.proto" "/build/otelcpp/_deps/opentelemetry-proto-src/opentelemetry/proto/collector/profiles/v1development/profiles_service.proto"
+[2/198] Building CXX object sdk/src/common/CMakeFiles/opentelemetry_common.dir/platform/fork_unix.cc.o
+[3/198] Building CXX object sdk/src/common/CMakeFiles/opentelemetry_common.dir/disabled.cc.o
+[4/198] Building CXX object sdk/src/common/CMakeFiles/opentelemetry_common.dir/base64.cc.o
+[5/198] Building CXX object sdk/src/common/CMakeFiles/opentelemetry_common.dir/random.cc.o
+[6/198] Building CXX object sdk/src/common/CMakeFiles/opentelemetry_common.dir/empty_attributes.cc.o
+[7/198] Building CXX object CMakeFiles/opentelemetry_proto.dir/generated/third_party/opentelemetry-proto/opentelemetry/proto/resource/v1/resource.pb.cc.o
+[8/198] Building CXX object CMakeFiles/opentelemetry_proto.dir/generated/third_party/opentelemetry-proto/opentelemetry/proto/logs/v1/logs.pb.cc.o
+[9/198] Building CXX object CMakeFiles/opentelemetry_proto.dir/generated/third_party/opentelemetry-proto/opentelemetry/proto/common/v1/common.pb.cc.o
+[10/198] Building CXX object sdk/src/common/CMakeFiles/opentelemetry_common.dir/global_log_handler.cc.o
+[11/198] Building CXX object sdk/src/trace/CMakeFiles/opentelemetry_trace.dir/tracer_context_factory.cc.o
+[12/198] Building CXX object sdk/src/common/CMakeFiles/opentelemetry_common.dir/env_variables.cc.o
+[13/198] Building CXX object CMakeFiles/opentelemetry_proto.dir/generated/third_party/opentelemetry-proto/opentelemetry/proto/trace/v1/trace.pb.cc.o
+[14/198] Linking CXX static library sdk/src/common/libopentelemetry_common.a
+[15/198] Building CXX object CMakeFiles/opentelemetry_proto.dir/generated/third_party/opentelemetry-proto/opentelemetry/proto/collector/trace/v1/trace_service.pb.cc.o
+[16/198] Building CXX object sdk/src/trace/CMakeFiles/opentelemetry_trace.dir/batch_span_processor_options.cc.o
+[17/198] Building CXX object sdk/src/trace/CMakeFiles/opentelemetry_trace.dir/tracer_provider_factory.cc.o
+[18/198] Building CXX object sdk/src/trace/CMakeFiles/opentelemetry_trace.dir/tracer_context.cc.o
+[19/198] Building CXX object sdk/src/trace/CMakeFiles/opentelemetry_trace.dir/span_limits.cc.o
+[20/198] Building CXX object CMakeFiles/opentelemetry_proto.dir/generated/third_party/opentelemetry-proto/opentelemetry/proto/collector/logs/v1/logs_service.pb.cc.o
+[21/198] Building CXX object sdk/src/trace/CMakeFiles/opentelemetry_trace.dir/provider.cc.o
+[22/198] Building CXX object sdk/src/trace/CMakeFiles/opentelemetry_trace.dir/tracer.cc.o
+[23/198] Building CXX object sdk/src/instrumentationscope/CMakeFiles/opentelemetry_instrumentation_scope.dir/instrumentation_scope.cc.o
+[24/198] Building CXX object CMakeFiles/opentelemetry_proto.dir/generated/third_party/opentelemetry-proto/opentelemetry/proto/collector/metrics/v1/metrics_service.pb.cc.o
+[25/198] Building CXX object CMakeFiles/opentelemetry_proto.dir/generated/third_party/opentelemetry-proto/opentelemetry/proto/metrics/v1/metrics.pb.cc.o
+[26/198] Linking CXX static library sdk/src/instrumentationscope/libopentelemetry_instrumentation_scope.a
+[27/198] Building CXX object sdk/src/trace/CMakeFiles/opentelemetry_trace.dir/tracer_provider.cc.o
+[28/198] Building CXX object sdk/src/trace/CMakeFiles/opentelemetry_trace.dir/samplers/always_on_factory.cc.o
+[29/198] Building CXX object sdk/src/trace/CMakeFiles/opentelemetry_trace.dir/exporter.cc.o
+[30/198] Linking CXX shared library libopentelemetry_proto.so
+[31/198] Building CXX object sdk/src/trace/CMakeFiles/opentelemetry_trace.dir/samplers/always_off_factory.cc.o
+[32/198] Building CXX object sdk/src/trace/CMakeFiles/opentelemetry_trace.dir/batch_span_processor_factory.cc.o
+[33/198] Building CXX object sdk/src/trace/CMakeFiles/opentelemetry_trace.dir/samplers/parent.cc.o
+[34/198] Building CXX object sdk/src/trace/CMakeFiles/opentelemetry_trace.dir/samplers/parent_factory.cc.o
+[35/198] Building CXX object sdk/src/trace/CMakeFiles/opentelemetry_trace.dir/samplers/probability_factory.cc.o
+[36/198] Building CXX object sdk/src/trace/CMakeFiles/opentelemetry_trace.dir/samplers/trace_id_ratio_factory.cc.o
+[37/198] Building CXX object sdk/src/trace/CMakeFiles/opentelemetry_trace.dir/span.cc.o
+[38/198] Building CXX object sdk/src/trace/CMakeFiles/opentelemetry_trace.dir/simple_processor_factory.cc.o
+[39/198] Building CXX object sdk/src/trace/CMakeFiles/opentelemetry_trace.dir/samplers/trace_id_ratio.cc.o
+[40/198] Building CXX object sdk/src/trace/CMakeFiles/opentelemetry_trace.dir/batch_span_processor.cc.o
+[41/198] Building CXX object sdk/src/trace/CMakeFiles/opentelemetry_trace.dir/tracer_config.cc.o
+[42/198] Building CXX object sdk/src/trace/CMakeFiles/opentelemetry_trace.dir/random_id_generator.cc.o
+[43/198] Building CXX object sdk/src/trace/CMakeFiles/opentelemetry_trace.dir/samplers/composite_sampler_factory.cc.o
+[44/198] Building CXX object sdk/src/trace/CMakeFiles/opentelemetry_trace.dir/samplers/composite_sampler.cc.o
+[45/198] Building CXX object sdk/src/trace/CMakeFiles/opentelemetry_trace.dir/random_id_generator_factory.cc.o
+[46/198] Building CXX object sdk/src/trace/CMakeFiles/opentelemetry_trace.dir/samplers/composable_rule_based.cc.o
+[47/198] Building CXX object sdk/src/trace/CMakeFiles/opentelemetry_trace.dir/samplers/composable_probability.cc.o
+[48/198] Building CXX object sdk/src/trace/CMakeFiles/opentelemetry_trace.dir/samplers/composable_parent_threshold.cc.o
+[49/198] Building CXX object sdk/src/metrics/CMakeFiles/opentelemetry_metrics.dir/meter_config.cc.o
+[50/198] Building CXX object sdk/src/metrics/CMakeFiles/opentelemetry_metrics.dir/provider.cc.o
+[51/198] Building CXX object sdk/src/trace/CMakeFiles/opentelemetry_trace.dir/samplers/probability.cc.o
+[52/198] Building CXX object sdk/src/trace/CMakeFiles/opentelemetry_trace.dir/samplers/ot_trace_state.cc.o
+[53/198] Building CXX object sdk/src/trace/CMakeFiles/opentelemetry_trace.dir/span_data.cc.o
+[54/198] Building CXX object sdk/src/metrics/CMakeFiles/opentelemetry_metrics.dir/instrument_metadata_validator.cc.o
+[55/198] Building CXX object sdk/src/trace/CMakeFiles/opentelemetry_trace.dir/multi_recordable.cc.o
+[56/198] Building CXX object sdk/src/metrics/CMakeFiles/opentelemetry_metrics.dir/export/periodic_exporting_metric_reader_options.cc.o
+[57/198] Building CXX object sdk/src/trace/CMakeFiles/opentelemetry_trace.dir/samplers/rule_based_predicate.cc.o
+[58/198] Building CXX object sdk/src/metrics/CMakeFiles/opentelemetry_metrics.dir/async_instruments.cc.o
+[59/198] Building CXX object sdk/src/metrics/CMakeFiles/opentelemetry_metrics.dir/metric_reader.cc.o
+[60/198] Building CXX object sdk/src/metrics/CMakeFiles/opentelemetry_metrics.dir/meter_provider_factory.cc.o
+[61/198] Building CXX object sdk/src/metrics/CMakeFiles/opentelemetry_metrics.dir/export/periodic_exporting_metric_reader_factory.cc.o
+[62/198] Building CXX object sdk/src/metrics/CMakeFiles/opentelemetry_metrics.dir/meter_context_factory.cc.o
+[63/198] Building CXX object sdk/src/metrics/CMakeFiles/opentelemetry_metrics.dir/aggregation/base2_exponential_histogram_indexer.cc.o
+[64/198] Building CXX object sdk/src/metrics/CMakeFiles/opentelemetry_metrics.dir/multi_observer_result.cc.o
+[65/198] Building CXX object sdk/src/metrics/CMakeFiles/opentelemetry_metrics.dir/meter_context.cc.o
+[66/198] Building CXX object sdk/src/metrics/CMakeFiles/opentelemetry_metrics.dir/export/periodic_exporting_metric_reader.cc.o
+[67/198] Building CXX object sdk/src/metrics/CMakeFiles/opentelemetry_metrics.dir/exemplar/reservoir.cc.o
+[68/198] Building CXX object sdk/src/metrics/CMakeFiles/opentelemetry_metrics.dir/meter_provider.cc.o
+[69/198] Building CXX object sdk/src/metrics/CMakeFiles/opentelemetry_metrics.dir/state/filtered_ordered_attribute_map.cc.o
+[70/198] Building CXX object sdk/src/metrics/CMakeFiles/opentelemetry_metrics.dir/state/observable_registry.cc.o
+[71/198] Building CXX object sdk/src/metrics/CMakeFiles/opentelemetry_metrics.dir/aggregation/drop_aggregation.cc.o
+[72/198] Building CXX object sdk/src/metrics/CMakeFiles/opentelemetry_metrics.dir/view/meter_selector_factory.cc.o
+[73/198] Building CXX object sdk/src/metrics/CMakeFiles/opentelemetry_metrics.dir/data/circular_buffer.cc.o
+[74/198] Building CXX object sdk/src/metrics/CMakeFiles/opentelemetry_metrics.dir/state/metric_collector.cc.o
+[75/198] Building CXX object sdk/src/metrics/CMakeFiles/opentelemetry_metrics.dir/aggregation/histogram_aggregation.cc.o
+[76/198] Building CXX object sdk/src/metrics/CMakeFiles/opentelemetry_metrics.dir/meter.cc.o
+[77/198] Building CXX object sdk/src/metrics/CMakeFiles/opentelemetry_metrics.dir/aggregation/lastvalue_aggregation.cc.o
+[78/198] Building CXX object sdk/src/metrics/CMakeFiles/opentelemetry_metrics.dir/aggregation/base2_exponential_histogram_aggregation.cc.o
+[79/198] Building CXX object sdk/src/metrics/CMakeFiles/opentelemetry_metrics.dir/view/instrument_selector_factory.cc.o
+[80/198] Building CXX object sdk/src/metrics/CMakeFiles/opentelemetry_metrics.dir/view/predicate_factory.cc.o
+[81/198] Building CXX object sdk/src/metrics/CMakeFiles/opentelemetry_metrics.dir/state/sync_metric_storage.cc.o
+[82/198] Building CXX object sdk/src/metrics/CMakeFiles/opentelemetry_metrics.dir/aggregation/sum_aggregation.cc.o
+[83/198] Building CXX object sdk/src/logs/CMakeFiles/opentelemetry_logs.dir/exporter.cc.o
+[84/198] Building CXX object sdk/src/logs/CMakeFiles/opentelemetry_logs.dir/event_logger_provider_factory.cc.o
+[85/198] Building CXX object sdk/src/metrics/CMakeFiles/opentelemetry_metrics.dir/view/attributes_processor.cc.o
+[86/198] Building CXX object sdk/src/metrics/CMakeFiles/opentelemetry_metrics.dir/view/view_factory.cc.o
+[87/198] Building CXX object sdk/src/logs/CMakeFiles/opentelemetry_logs.dir/provider.cc.o
+[88/198] Building CXX object sdk/src/metrics/CMakeFiles/opentelemetry_metrics.dir/state/temporal_metric_storage.cc.o
+[89/198] Building CXX object sdk/src/logs/CMakeFiles/opentelemetry_logs.dir/simple_log_record_processor.cc.o
+[90/198] Building CXX object sdk/src/metrics/CMakeFiles/opentelemetry_metrics.dir/view/view_registry_factory.cc.o
+[91/198] Building CXX object sdk/src/logs/CMakeFiles/opentelemetry_logs.dir/event_logger.cc.o
+[92/198] Building CXX object sdk/src/logs/CMakeFiles/opentelemetry_logs.dir/batch_log_record_processor_options.cc.o
+[93/198] Building CXX object sdk/src/metrics/CMakeFiles/opentelemetry_metrics.dir/view/view_registry.cc.o
+[94/198] Building CXX object sdk/src/logs/CMakeFiles/opentelemetry_logs.dir/logger_config.cc.o
+[95/198] Building CXX object sdk/src/logs/CMakeFiles/opentelemetry_logs.dir/simple_log_record_processor_factory.cc.o
+[96/198] Building CXX object sdk/src/logs/CMakeFiles/opentelemetry_logs.dir/batch_log_record_processor_factory.cc.o
+[97/198] Building CXX object sdk/src/logs/CMakeFiles/opentelemetry_logs.dir/event_logger_provider.cc.o
+[98/198] Building CXX object sdk/src/version/CMakeFiles/opentelemetry_version.dir/version.cc.o
+[99/198] Linking CXX static library sdk/src/version/libopentelemetry_version.a
+[100/198] Building CXX object sdk/src/metrics/CMakeFiles/opentelemetry_metrics.dir/sync_instruments.cc.o
+[101/198] Building CXX object sdk/src/logs/CMakeFiles/opentelemetry_logs.dir/multi_log_record_processor_factory.cc.o
+[102/198] Building CXX object sdk/src/metrics/CMakeFiles/opentelemetry_metrics.dir/view/predicate.cc.o
+[103/198] Building CXX object sdk/src/logs/CMakeFiles/opentelemetry_logs.dir/batch_log_record_processor.cc.o
+[104/198] Building CXX object sdk/src/logs/CMakeFiles/opentelemetry_logs.dir/logger.cc.o
+[105/198] Building CXX object sdk/src/logs/CMakeFiles/opentelemetry_logs.dir/logger_provider_factory.cc.o
+[106/198] Building CXX object sdk/src/resource/CMakeFiles/opentelemetry_resources.dir/detail/percent_decode.cc.o
+[107/198] Building CXX object sdk/src/configuration/CMakeFiles/opentelemetry_configuration_core.dir/composable_always_off_sampler_configuration.cc.o
+[108/198] Building CXX object sdk/src/configuration/CMakeFiles/opentelemetry_configuration_core.dir/composable_always_on_sampler_configuration.cc.o
+[109/198] Building CXX object sdk/src/configuration/CMakeFiles/opentelemetry_configuration_core.dir/composable_probability_sampler_configuration.cc.o
+[110/198] Building CXX object sdk/src/configuration/CMakeFiles/opentelemetry_configuration_core.dir/document_node.cc.o
+[111/198] Building CXX object sdk/src/configuration/CMakeFiles/opentelemetry_configuration_core.dir/composable_parent_threshold_sampler_configuration.cc.o
+[112/198] Building CXX object sdk/src/logs/CMakeFiles/opentelemetry_logs.dir/logger_provider.cc.o
+[113/198] Building CXX object sdk/src/configuration/CMakeFiles/opentelemetry_configuration_core.dir/composable_rule_based_sampler_configuration.cc.o
+[114/198] Building CXX object sdk/src/logs/CMakeFiles/opentelemetry_logs.dir/logger_context_factory.cc.o
+[115/198] Building CXX object sdk/src/logs/CMakeFiles/opentelemetry_logs.dir/multi_recordable.cc.o
+[116/198] Building CXX object sdk/src/logs/CMakeFiles/opentelemetry_logs.dir/multi_log_record_processor.cc.o
+[117/198] Building CXX object sdk/src/logs/CMakeFiles/opentelemetry_logs.dir/readable_log_record.cc.o
+[118/198] Building CXX object sdk/src/logs/CMakeFiles/opentelemetry_logs.dir/logger_context.cc.o
+[119/198] Building CXX object sdk/src/logs/CMakeFiles/opentelemetry_logs.dir/read_write_log_record.cc.o
+[120/198] Building CXX object sdk/src/resource/CMakeFiles/opentelemetry_resources.dir/resource_detector.cc.o
+[121/198] Building CXX object sdk/src/configuration/CMakeFiles/opentelemetry_configuration_registry_factory.dir/registry_factory.cc.o
+[122/198] Building CXX object sdk/src/resource/CMakeFiles/opentelemetry_resources.dir/resource.cc.o
+[123/198] Building CXX object ext/src/http/client/curl/CMakeFiles/opentelemetry_http_client_curl.dir/http_client_factory_curl.cc.o
+[124/198] Linking CXX static library sdk/src/resource/libopentelemetry_resources.a
+[125/198] Linking CXX static library sdk/src/trace/libopentelemetry_trace.a
+[126/198] Building CXX object ext/src/http/client/curl/CMakeFiles/opentelemetry_http_client_curl.dir/http_time_util.cc.o
+[127/198] Linking CXX static library sdk/src/metrics/libopentelemetry_metrics.a
+[128/198] Linking CXX static library sdk/src/logs/libopentelemetry_logs.a
+[129/198] Building CXX object sdk/src/configuration/CMakeFiles/opentelemetry_configuration_logs_builders.dir/logs_builder_utils.cc.o
+[130/198] Building CXX object sdk/src/configuration/CMakeFiles/opentelemetry_configuration_logs_builders.dir/logs_builders.cc.o
+[131/198] Building CXX object sdk/src/configuration/CMakeFiles/opentelemetry_configuration_trace_builders.dir/trace_builder_utils.cc.o
+[132/198] Building CXX object exporters/otlp/CMakeFiles/opentelemetry_otlp_common.dir/src/otlp_environment.cc.o
+[133/198] Linking CXX static library exporters/otlp/libopentelemetry_otlp_common.a
+[134/198] Building CXX object sdk/src/configuration/CMakeFiles/opentelemetry_configuration_core.dir/registry.cc.o
+[135/198] Building CXX object sdk/src/configuration/CMakeFiles/opentelemetry_configuration_metrics_builders.dir/metrics_builder_utils.cc.o
+[136/198] Building CXX object sdk/src/configuration/CMakeFiles/opentelemetry_configuration_trace_builders.dir/trace_builders.cc.o
+[137/198] Building CXX object sdk/src/configuration/CMakeFiles/opentelemetry_configuration_metrics_builders.dir/metrics_builders.cc.o
+[138/198] Building CXX object sdk/src/configuration/CMakeFiles/opentelemetry_configuration_core.dir/configured_sdk.cc.o
+[139/198] Building CXX object sdk/src/configuration/CMakeFiles/opentelemetry_configuration_core.dir/sdk_builder.cc.o
+[140/198] Linking CXX static library sdk/src/configuration/libopentelemetry_configuration_core.a
+[141/198] Building CXX object exporters/otlp/CMakeFiles/opentelemetry_exporter_otlp_http_client.dir/src/otlp_http.cc.o
+[142/198] Linking CXX static library sdk/src/configuration/libopentelemetry_configuration_trace_builders.a
+[143/198] Linking CXX static library sdk/src/configuration/libopentelemetry_configuration_logs_builders.a
+[144/198] Linking CXX static library sdk/src/configuration/libopentelemetry_configuration_metrics_builders.a
+[145/198] Linking CXX static library sdk/src/configuration/libopentelemetry_configuration_registry_factory.a
+[146/198] Building CXX object exporters/otlp/CMakeFiles/opentelemetry_otlp_recordable.dir/src/otlp_log_recordable.cc.o
+[147/198] Building CXX object ext/src/http/client/curl/CMakeFiles/opentelemetry_http_client_curl.dir/http_client_curl.cc.o
+[148/198] Building CXX object exporters/otlp/CMakeFiles/opentelemetry_otlp_recordable.dir/src/otlp_recordable.cc.o
+[149/198] Building CXX object exporters/otlp/CMakeFiles/opentelemetry_exporter_otlp_http.dir/src/otlp_http_exporter_options.cc.o
+[150/198] Building CXX object ext/src/http/client/curl/CMakeFiles/opentelemetry_http_client_curl.dir/http_operation_curl.cc.o
+[151/198] Linking CXX static library ext/src/http/client/curl/libopentelemetry_http_client_curl.a
+[152/198] Building CXX object exporters/otlp/CMakeFiles/opentelemetry_exporter_otlp_builder_utils.dir/src/otlp_builder_utils.cc.o
+[153/198] Linking CXX static library exporters/otlp/libopentelemetry_exporter_otlp_builder_utils.a
+[154/198] Building CXX object exporters/otlp/CMakeFiles/opentelemetry_exporter_otlp_http_log.dir/src/otlp_http_log_record_exporter_options.cc.o
+[155/198] Building CXX object exporters/otlp/CMakeFiles/opentelemetry_exporter_otlp_http_log.dir/src/otlp_http_log_record_exporter_factory.cc.o
+[156/198] Building CXX object exporters/otlp/CMakeFiles/opentelemetry_exporter_otlp_http_metric.dir/src/otlp_http_metric_exporter_options.cc.o
+[157/198] Building CXX object exporters/otlp/CMakeFiles/opentelemetry_otlp_recordable.dir/src/otlp_recordable_utils.cc.o
+[158/198] Building CXX object exporters/otlp/CMakeFiles/opentelemetry_exporter_otlp_http_log_builder.dir/src/otlp_http_log_record_builder.cc.o
+[159/198] Building CXX object exporters/otlp/CMakeFiles/opentelemetry_otlp_recordable.dir/src/otlp_populate_attribute_utils.cc.o
+[160/198] Building CXX object exporters/otlp/CMakeFiles/opentelemetry_exporter_otlp_http.dir/src/otlp_http_exporter_factory.cc.o
+[161/198] Building CXX object exporters/otlp/CMakeFiles/opentelemetry_otlp_recordable.dir/src/otlp_metric_utils.cc.o
+[162/198] Linking CXX static library exporters/otlp/libopentelemetry_otlp_recordable.a
+[163/198] Building CXX object exporters/otlp/CMakeFiles/opentelemetry_exporter_otlp_http.dir/src/otlp_http_exporter.cc.o
+[164/198] Building CXX object exporters/otlp/CMakeFiles/opentelemetry_exporter_otlp_http_builder.dir/src/otlp_http_span_builder.cc.o
+[165/198] Building CXX object exporters/otlp/CMakeFiles/opentelemetry_exporter_otlp_http_metric.dir/src/otlp_http_metric_exporter_factory.cc.o
+[166/198] Building CXX object exporters/ostream/CMakeFiles/opentelemetry_exporter_ostream_span.dir/src/span_exporter_factory.cc.o
+[167/198] Building CXX object exporters/otlp/CMakeFiles/opentelemetry_exporter_otlp_http_log.dir/src/otlp_http_log_record_exporter.cc.o
+[168/198] Building CXX object exporters/otlp/CMakeFiles/opentelemetry_exporter_otlp_http_metric.dir/src/otlp_http_metric_exporter.cc.o
+[169/198] Building CXX object exporters/otlp/CMakeFiles/opentelemetry_exporter_otlp_http_metric_builder.dir/src/otlp_http_push_metric_builder.cc.o
+[170/198] Building CXX object exporters/ostream/CMakeFiles/opentelemetry_exporter_ostream_span.dir/src/span_exporter.cc.o
+[171/198] Building CXX object exporters/ostream/CMakeFiles/opentelemetry_exporter_ostream_metrics.dir/src/metric_exporter_factory.cc.o
+[172/198] Linking CXX static library exporters/ostream/libopentelemetry_exporter_ostream_span.a
+[173/198] Building CXX object exporters/ostream/CMakeFiles/opentelemetry_exporter_ostream_logs_builder.dir/src/console_log_record_builder.cc.o
+[174/198] Building CXX object exporters/ostream/CMakeFiles/opentelemetry_exporter_ostream_span_builder.dir/src/console_span_builder.cc.o
+[175/198] Linking CXX static library exporters/ostream/libopentelemetry_exporter_ostream_span_builder.a
+[176/198] Building CXX object exporters/ostream/CMakeFiles/opentelemetry_exporter_ostream_metrics_builder.dir/src/console_push_metric_builder.cc.o
+[177/198] Building CXX object exporters/ostream/CMakeFiles/opentelemetry_exporter_ostream_logs.dir/src/log_record_exporter_factory.cc.o
+[178/198] Building CXX object exporters/ostream/CMakeFiles/opentelemetry_exporter_ostream_metrics.dir/src/metric_exporter.cc.o
+[179/198] Building CXX object exporters/memory/CMakeFiles/opentelemetry_exporter_in_memory.dir/src/in_memory_span_exporter_factory.cc.o
+[180/198] Linking CXX static library exporters/ostream/libopentelemetry_exporter_ostream_metrics.a
+[181/198] Linking CXX static library exporters/memory/libopentelemetry_exporter_in_memory.a
+[182/198] Building CXX object exporters/otlp/CMakeFiles/opentelemetry_exporter_otlp_http_client.dir/src/otlp_http_client.cc.o
+[183/198] Linking CXX static library exporters/ostream/libopentelemetry_exporter_ostream_metrics_builder.a
+[184/198] Linking CXX static library exporters/otlp/libopentelemetry_exporter_otlp_http_client.a
+[185/198] Linking CXX static library exporters/otlp/libopentelemetry_exporter_otlp_http.a
+[186/198] Linking CXX static library exporters/otlp/libopentelemetry_exporter_otlp_http_log.a
+[187/198] Linking CXX static library exporters/otlp/libopentelemetry_exporter_otlp_http_metric.a
+[188/198] Linking CXX static library exporters/otlp/libopentelemetry_exporter_otlp_http_log_builder.a
+[189/198] Linking CXX static library exporters/otlp/libopentelemetry_exporter_otlp_http_builder.a
+[190/198] Linking CXX static library exporters/otlp/libopentelemetry_exporter_otlp_http_metric_builder.a
+[191/198] Building CXX object exporters/ostream/CMakeFiles/opentelemetry_exporter_ostream_logs.dir/src/log_record_exporter.cc.o
+[192/198] Linking CXX static library exporters/ostream/libopentelemetry_exporter_ostream_logs.a
+[193/198] Linking CXX static library exporters/ostream/libopentelemetry_exporter_ostream_logs_builder.a
+[194/198] Building CXX object exporters/memory/CMakeFiles/opentelemetry_exporter_in_memory_metric.dir/src/in_memory_metric_exporter_factory.cc.o
+[195/198] Building CXX object exporters/memory/CMakeFiles/opentelemetry_exporter_in_memory_metric.dir/src/in_memory_metric_data.cc.o
+[196/198] Linking CXX static library exporters/memory/libopentelemetry_exporter_in_memory_metric.a
+[197/198] Building CXX object functional/otlp/CMakeFiles/func_otlp_http.dir/func_http_main.cc.o
+[198/198] Linking CXX executable functional/otlp/func_otlp_http
+-- Install configuration: "Release"
+-- Installing: /opt/otelcpp/include/opentelemetry
+-- Installing: /opt/otelcpp/include/opentelemetry/proto
+-- Installing: /opt/otelcpp/include/opentelemetry/proto/common
+-- Installing: /opt/otelcpp/include/opentelemetry/proto/common/v1
+-- Installing: /opt/otelcpp/include/opentelemetry/proto/common/v1/common.pb.h
+-- Installing: /opt/otelcpp/include/opentelemetry/proto/resource
+-- Installing: /opt/otelcpp/include/opentelemetry/proto/resource/v1
+-- Installing: /opt/otelcpp/include/opentelemetry/proto/resource/v1/resource.pb.h
+-- Installing: /opt/otelcpp/include/opentelemetry/proto/trace
+-- Installing: /opt/otelcpp/include/opentelemetry/proto/trace/v1
+-- Installing: /opt/otelcpp/include/opentelemetry/proto/trace/v1/trace.pb.h
+-- Installing: /opt/otelcpp/include/opentelemetry/proto/logs
+-- Installing: /opt/otelcpp/include/opentelemetry/proto/logs/v1
+-- Installing: /opt/otelcpp/include/opentelemetry/proto/logs/v1/logs.pb.h
+-- Installing: /opt/otelcpp/include/opentelemetry/proto/metrics
+-- Installing: /opt/otelcpp/include/opentelemetry/proto/metrics/v1
+-- Installing: /opt/otelcpp/include/opentelemetry/proto/metrics/v1/metrics.pb.h
+-- Installing: /opt/otelcpp/include/opentelemetry/proto/profiles
+-- Installing: /opt/otelcpp/include/opentelemetry/proto/profiles/v1development
+-- Installing: /opt/otelcpp/include/opentelemetry/proto/profiles/v1development/profiles.pb.h
+-- Installing: /opt/otelcpp/include/opentelemetry/proto/collector
+-- Installing: /opt/otelcpp/include/opentelemetry/proto/collector/trace
+-- Installing: /opt/otelcpp/include/opentelemetry/proto/collector/trace/v1
+-- Installing: /opt/otelcpp/include/opentelemetry/proto/collector/trace/v1/trace_service.pb.h
+-- Installing: /opt/otelcpp/include/opentelemetry/proto/collector/logs
+-- Installing: /opt/otelcpp/include/opentelemetry/proto/collector/logs/v1
+-- Installing: /opt/otelcpp/include/opentelemetry/proto/collector/logs/v1/logs_service.pb.h
+-- Installing: /opt/otelcpp/include/opentelemetry/proto/collector/metrics
+-- Installing: /opt/otelcpp/include/opentelemetry/proto/collector/metrics/v1
+-- Installing: /opt/otelcpp/include/opentelemetry/proto/collector/metrics/v1/metrics_service.pb.h
+-- Installing: /opt/otelcpp/include/opentelemetry/proto/collector/profiles
+-- Installing: /opt/otelcpp/include/opentelemetry/proto/collector/profiles/v1development
+-- Installing: /opt/otelcpp/include/opentelemetry/proto/collector/profiles/v1development/profiles_service.pb.h
+-- Installing: /opt/otelcpp/lib/pkgconfig/opentelemetry_proto.pc
+-- Up-to-date: /opt/otelcpp/include
+-- Installing: /opt/otelcpp/include/nlohmann
+-- Installing: /opt/otelcpp/include/nlohmann/json.hpp
+-- Installing: /opt/otelcpp/include/nlohmann/json_fwd.hpp
+-- Installing: /opt/otelcpp/share/cmake/nlohmann_json/nlohmann_jsonConfig.cmake
+-- Installing: /opt/otelcpp/share/cmake/nlohmann_json/nlohmann_jsonConfigVersion.cmake
+-- Installing: /opt/otelcpp/share/cmake/nlohmann_json/nlohmann_jsonTargets.cmake
+-- Installing: /opt/otelcpp/share/pkgconfig/nlohmann_json.pc
+-- Installing: /opt/otelcpp/lib/pkgconfig/opentelemetry_api.pc
+-- Installing: /opt/otelcpp/lib/pkgconfig/opentelemetry_common.pc
+-- Installing: /opt/otelcpp/lib/pkgconfig/opentelemetry_instrumentation_scope.pc
+-- Installing: /opt/otelcpp/lib/pkgconfig/opentelemetry_trace.pc
+-- Installing: /opt/otelcpp/lib/pkgconfig/opentelemetry_metrics.pc
+-- Installing: /opt/otelcpp/lib/pkgconfig/opentelemetry_logs.pc
+-- Installing: /opt/otelcpp/lib/pkgconfig/opentelemetry_version.pc
+-- Installing: /opt/otelcpp/lib/pkgconfig/opentelemetry_resources.pc
+-- Installing: /opt/otelcpp/lib/pkgconfig/opentelemetry_configuration_core.pc
+-- Installing: /opt/otelcpp/lib/pkgconfig/opentelemetry_configuration_trace_builders.pc
+-- Installing: /opt/otelcpp/lib/pkgconfig/opentelemetry_configuration_logs_builders.pc
+-- Installing: /opt/otelcpp/lib/pkgconfig/opentelemetry_configuration_metrics_builders.pc
+-- Installing: /opt/otelcpp/lib/pkgconfig/opentelemetry_configuration_registry_factory.pc
+-- Installing: /opt/otelcpp/lib/pkgconfig/opentelemetry_http_client_curl.pc
+-- Installing: /opt/otelcpp/lib/pkgconfig/opentelemetry_otlp_common.pc
+-- Installing: /opt/otelcpp/lib/pkgconfig/opentelemetry_otlp_recordable.pc
+-- Installing: /opt/otelcpp/lib/pkgconfig/opentelemetry_exporter_otlp_builder_utils.pc
+-- Installing: /opt/otelcpp/lib/pkgconfig/opentelemetry_exporter_otlp_http_client.pc
+-- Installing: /opt/otelcpp/lib/pkgconfig/opentelemetry_exporter_otlp_http.pc
+-- Installing: /opt/otelcpp/lib/pkgconfig/opentelemetry_exporter_otlp_http_builder.pc
+-- Installing: /opt/otelcpp/lib/pkgconfig/opentelemetry_exporter_otlp_http_log.pc
+-- Installing: /opt/otelcpp/lib/pkgconfig/opentelemetry_exporter_otlp_http_log_builder.pc
+-- Installing: /opt/otelcpp/lib/pkgconfig/opentelemetry_exporter_otlp_http_metric.pc
+-- Installing: /opt/otelcpp/lib/pkgconfig/opentelemetry_exporter_otlp_http_metric_builder.pc
+-- Installing: /opt/otelcpp/lib/pkgconfig/opentelemetry_exporter_ostream_span.pc
+-- Installing: /opt/otelcpp/lib/pkgconfig/opentelemetry_exporter_ostream_span_builder.pc
+-- Installing: /opt/otelcpp/lib/pkgconfig/opentelemetry_exporter_ostream_metrics.pc
+-- Installing: /opt/otelcpp/lib/pkgconfig/opentelemetry_exporter_ostream_metrics_builder.pc
+-- Installing: /opt/otelcpp/lib/pkgconfig/opentelemetry_exporter_ostream_logs.pc
+-- Installing: /opt/otelcpp/lib/pkgconfig/opentelemetry_exporter_ostream_logs_builder.pc
+-- Installing: /opt/otelcpp/lib/pkgconfig/opentelemetry_exporter_in_memory.pc
+-- Installing: /opt/otelcpp/lib/pkgconfig/opentelemetry_exporter_in_memory_metric.pc
+-- Installing: /opt/otelcpp/lib/cmake/opentelemetry-cpp/opentelemetry-cpp-config.cmake
+-- Installing: /opt/otelcpp/lib/cmake/opentelemetry-cpp/opentelemetry-cpp-config-version.cmake
+-- Installing: /opt/otelcpp/lib/cmake/opentelemetry-cpp/find-package-support-functions.cmake
+-- Installing: /opt/otelcpp/lib/cmake/opentelemetry-cpp/opentelemetry-cpp-api-target.cmake
+-- Up-to-date: /opt/otelcpp/include/opentelemetry
+-- Installing: /opt/otelcpp/include/opentelemetry/baggage
+-- Installing: /opt/otelcpp/include/opentelemetry/baggage/baggage.h
+-- Installing: /opt/otelcpp/include/opentelemetry/baggage/baggage_context.h
+-- Installing: /opt/otelcpp/include/opentelemetry/baggage/propagation
+-- Installing: /opt/otelcpp/include/opentelemetry/baggage/propagation/baggage_propagator.h
+-- Installing: /opt/otelcpp/include/opentelemetry/common
+-- Installing: /opt/otelcpp/include/opentelemetry/common/attribute_value.h
+-- Installing: /opt/otelcpp/include/opentelemetry/common/detail
+-- Installing: /opt/otelcpp/include/opentelemetry/common/detail/ascii.h
+-- Installing: /opt/otelcpp/include/opentelemetry/common/key_value_iterable.h
+-- Installing: /opt/otelcpp/include/opentelemetry/common/key_value_iterable_view.h
+-- Installing: /opt/otelcpp/include/opentelemetry/common/kv_properties.h
+-- Installing: /opt/otelcpp/include/opentelemetry/common/macros.h
+-- Installing: /opt/otelcpp/include/opentelemetry/common/spin_lock_mutex.h
+-- Installing: /opt/otelcpp/include/opentelemetry/common/string_util.h
+-- Installing: /opt/otelcpp/include/opentelemetry/common/timestamp.h
+-- Installing: /opt/otelcpp/include/opentelemetry/config.h
+-- Installing: /opt/otelcpp/include/opentelemetry/context
+-- Installing: /opt/otelcpp/include/opentelemetry/context/context.h
+-- Installing: /opt/otelcpp/include/opentelemetry/context/context_value.h
+-- Installing: /opt/otelcpp/include/opentelemetry/context/propagation
+-- Installing: /opt/otelcpp/include/opentelemetry/context/propagation/composite_propagator.h
+-- Installing: /opt/otelcpp/include/opentelemetry/context/propagation/environment_carrier.h
+-- Installing: /opt/otelcpp/include/opentelemetry/context/propagation/global_propagator.h
+-- Installing: /opt/otelcpp/include/opentelemetry/context/propagation/noop_propagator.h
+-- Installing: /opt/otelcpp/include/opentelemetry/context/propagation/text_map_propagator.h
+-- Installing: /opt/otelcpp/include/opentelemetry/context/runtime_context.h
+-- Installing: /opt/otelcpp/include/opentelemetry/detail
+-- Installing: /opt/otelcpp/include/opentelemetry/detail/preprocessor.h
+-- Installing: /opt/otelcpp/include/opentelemetry/logs
+-- Installing: /opt/otelcpp/include/opentelemetry/logs/event_id.h
+-- Installing: /opt/otelcpp/include/opentelemetry/logs/event_logger.h
+-- Installing: /opt/otelcpp/include/opentelemetry/logs/event_logger_provider.h
+-- Installing: /opt/otelcpp/include/opentelemetry/logs/log_record.h
+-- Installing: /opt/otelcpp/include/opentelemetry/logs/logger.h
+-- Installing: /opt/otelcpp/include/opentelemetry/logs/logger_provider.h
+-- Installing: /opt/otelcpp/include/opentelemetry/logs/logger_type_traits.h
+-- Installing: /opt/otelcpp/include/opentelemetry/logs/noop.h
+-- Installing: /opt/otelcpp/include/opentelemetry/logs/provider.h
+-- Installing: /opt/otelcpp/include/opentelemetry/logs/severity.h
+-- Installing: /opt/otelcpp/include/opentelemetry/metrics
+-- Installing: /opt/otelcpp/include/opentelemetry/metrics/async_instruments.h
+-- Installing: /opt/otelcpp/include/opentelemetry/metrics/meter.h
+-- Installing: /opt/otelcpp/include/opentelemetry/metrics/meter_provider.h
+-- Installing: /opt/otelcpp/include/opentelemetry/metrics/multi_observer_result.h
+-- Installing: /opt/otelcpp/include/opentelemetry/metrics/noop.h
+-- Installing: /opt/otelcpp/include/opentelemetry/metrics/observer_result.h
+-- Installing: /opt/otelcpp/include/opentelemetry/metrics/provider.h
+-- Installing: /opt/otelcpp/include/opentelemetry/metrics/sync_instruments.h
+-- Installing: /opt/otelcpp/include/opentelemetry/nostd
+-- Installing: /opt/otelcpp/include/opentelemetry/nostd/detail
+-- Installing: /opt/otelcpp/include/opentelemetry/nostd/detail/all.h
+-- Installing: /opt/otelcpp/include/opentelemetry/nostd/detail/decay.h
+-- Installing: /opt/otelcpp/include/opentelemetry/nostd/detail/dependent_type.h
+-- Installing: /opt/otelcpp/include/opentelemetry/nostd/detail/functional.h
+-- Installing: /opt/otelcpp/include/opentelemetry/nostd/detail/invoke.h
+-- Installing: /opt/otelcpp/include/opentelemetry/nostd/detail/trait.h
+-- Installing: /opt/otelcpp/include/opentelemetry/nostd/detail/type_pack_element.h
+-- Installing: /opt/otelcpp/include/opentelemetry/nostd/detail/valueless.h
+-- Installing: /opt/otelcpp/include/opentelemetry/nostd/detail/variant_alternative.h
+-- Installing: /opt/otelcpp/include/opentelemetry/nostd/detail/variant_fwd.h
+-- Installing: /opt/otelcpp/include/opentelemetry/nostd/detail/variant_size.h
+-- Installing: /opt/otelcpp/include/opentelemetry/nostd/detail/void.h
+-- Installing: /opt/otelcpp/include/opentelemetry/nostd/function_ref.h
+-- Installing: /opt/otelcpp/include/opentelemetry/nostd/internal
+-- Installing: /opt/otelcpp/include/opentelemetry/nostd/internal/absl
+-- Installing: /opt/otelcpp/include/opentelemetry/nostd/internal/absl/base
+-- Installing: /opt/otelcpp/include/opentelemetry/nostd/internal/absl/base/attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/nostd/internal/absl/base/config.h
+-- Installing: /opt/otelcpp/include/opentelemetry/nostd/internal/absl/base/internal
+-- Installing: /opt/otelcpp/include/opentelemetry/nostd/internal/absl/base/internal/identity.h
+-- Installing: /opt/otelcpp/include/opentelemetry/nostd/internal/absl/base/internal/inline_variable.h
+-- Installing: /opt/otelcpp/include/opentelemetry/nostd/internal/absl/base/internal/invoke.h
+-- Installing: /opt/otelcpp/include/opentelemetry/nostd/internal/absl/base/macros.h
+-- Installing: /opt/otelcpp/include/opentelemetry/nostd/internal/absl/base/optimization.h
+-- Installing: /opt/otelcpp/include/opentelemetry/nostd/internal/absl/base/options.h
+-- Installing: /opt/otelcpp/include/opentelemetry/nostd/internal/absl/base/policy_checks.h
+-- Installing: /opt/otelcpp/include/opentelemetry/nostd/internal/absl/base/port.h
+-- Installing: /opt/otelcpp/include/opentelemetry/nostd/internal/absl/meta
+-- Installing: /opt/otelcpp/include/opentelemetry/nostd/internal/absl/meta/type_traits.h
+-- Installing: /opt/otelcpp/include/opentelemetry/nostd/internal/absl/types
+-- Installing: /opt/otelcpp/include/opentelemetry/nostd/internal/absl/types/bad_variant_access.h
+-- Installing: /opt/otelcpp/include/opentelemetry/nostd/internal/absl/types/internal
+-- Installing: /opt/otelcpp/include/opentelemetry/nostd/internal/absl/types/internal/variant.h
+-- Installing: /opt/otelcpp/include/opentelemetry/nostd/internal/absl/types/variant.h
+-- Installing: /opt/otelcpp/include/opentelemetry/nostd/internal/absl/utility
+-- Installing: /opt/otelcpp/include/opentelemetry/nostd/internal/absl/utility/utility.h
+-- Installing: /opt/otelcpp/include/opentelemetry/nostd/shared_ptr.h
+-- Installing: /opt/otelcpp/include/opentelemetry/nostd/span.h
+-- Installing: /opt/otelcpp/include/opentelemetry/nostd/string_view.h
+-- Installing: /opt/otelcpp/include/opentelemetry/nostd/type_traits.h
+-- Installing: /opt/otelcpp/include/opentelemetry/nostd/unique_ptr.h
+-- Installing: /opt/otelcpp/include/opentelemetry/nostd/utility.h
+-- Installing: /opt/otelcpp/include/opentelemetry/nostd/variant.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/client_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/code_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/container_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/db_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/db_metrics.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/deployment_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/error_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/exception_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/exception_events.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/http_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/http_metrics.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/app_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/app_events.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/artifact_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/aws_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/az_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/az_events.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/azure_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/azure_events.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/azure_metrics.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/browser_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/browser_events.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/cassandra_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/cicd_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/cicd_metrics.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/client_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/cloud_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/cloudevents_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/cloudfoundry_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/code_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/container_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/container_metrics.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/cpu_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/cpu_metrics.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/cpython_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/cpython_metrics.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/db_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/db_events.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/db_metrics.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/deployment_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/destination_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/device_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/device_events.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/disk_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/dns_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/dns_metrics.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/elasticsearch_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/enduser_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/error_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/event_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/exception_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/exception_events.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/faas_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/faas_events.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/faas_metrics.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/feature_flag_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/feature_flag_events.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/file_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/gcp_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/gen_ai_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/gen_ai_events.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/gen_ai_metrics.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/geo_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/graphql_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/heroku_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/host_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/http_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/http_events.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/http_metrics.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/hw_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/hw_metrics.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/jsonrpc_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/k8s_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/k8s_metrics.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/linux_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/log_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/mainframe_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/mcp_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/mcp_metrics.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/message_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/messaging_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/messaging_events.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/messaging_metrics.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/net_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/network_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/nfs_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/nfs_metrics.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/oci_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/onc_rpc_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/openai_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/openshift_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/openshift_metrics.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/opentracing_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/oracle_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/oracle_cloud_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/os_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/otel_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/otel_metrics.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/other_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/peer_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/pool_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/pprof_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/process_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/process_metrics.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/profile_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/rpc_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/rpc_events.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/rpc_metrics.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/security_rule_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/server_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/service_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/session_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/session_events.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/source_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/system_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/system_metrics.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/telemetry_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/test_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/thread_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/tls_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/url_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/user_agent_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/user_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/vcs_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/vcs_metrics.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/webengine_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/incubating/zos_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/k8s_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/network_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/otel_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/schema_url.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/server_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/service_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/telemetry_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/url_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/semconv/user_agent_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/std
+-- Installing: /opt/otelcpp/include/opentelemetry/std/shared_ptr.h
+-- Installing: /opt/otelcpp/include/opentelemetry/std/span.h
+-- Installing: /opt/otelcpp/include/opentelemetry/std/string_view.h
+-- Installing: /opt/otelcpp/include/opentelemetry/std/type_traits.h
+-- Installing: /opt/otelcpp/include/opentelemetry/std/unique_ptr.h
+-- Installing: /opt/otelcpp/include/opentelemetry/std/utility.h
+-- Installing: /opt/otelcpp/include/opentelemetry/std/variant.h
+-- Installing: /opt/otelcpp/include/opentelemetry/trace
+-- Installing: /opt/otelcpp/include/opentelemetry/trace/context.h
+-- Installing: /opt/otelcpp/include/opentelemetry/trace/default_span.h
+-- Installing: /opt/otelcpp/include/opentelemetry/trace/noop.h
+-- Installing: /opt/otelcpp/include/opentelemetry/trace/propagation
+-- Installing: /opt/otelcpp/include/opentelemetry/trace/propagation/b3_propagator.h
+-- Installing: /opt/otelcpp/include/opentelemetry/trace/propagation/detail
+-- Installing: /opt/otelcpp/include/opentelemetry/trace/propagation/detail/hex.h
+-- Installing: /opt/otelcpp/include/opentelemetry/trace/propagation/detail/string.h
+-- Installing: /opt/otelcpp/include/opentelemetry/trace/propagation/http_trace_context.h
+-- Installing: /opt/otelcpp/include/opentelemetry/trace/propagation/jaeger.h
+-- Installing: /opt/otelcpp/include/opentelemetry/trace/provider.h
+-- Installing: /opt/otelcpp/include/opentelemetry/trace/scope.h
+-- Installing: /opt/otelcpp/include/opentelemetry/trace/span.h
+-- Installing: /opt/otelcpp/include/opentelemetry/trace/span_context.h
+-- Installing: /opt/otelcpp/include/opentelemetry/trace/span_context_kv_iterable.h
+-- Installing: /opt/otelcpp/include/opentelemetry/trace/span_context_kv_iterable_view.h
+-- Installing: /opt/otelcpp/include/opentelemetry/trace/span_id.h
+-- Installing: /opt/otelcpp/include/opentelemetry/trace/span_metadata.h
+-- Installing: /opt/otelcpp/include/opentelemetry/trace/span_startoptions.h
+-- Installing: /opt/otelcpp/include/opentelemetry/trace/trace_flags.h
+-- Installing: /opt/otelcpp/include/opentelemetry/trace/trace_id.h
+-- Installing: /opt/otelcpp/include/opentelemetry/trace/trace_state.h
+-- Installing: /opt/otelcpp/include/opentelemetry/trace/tracer.h
+-- Installing: /opt/otelcpp/include/opentelemetry/trace/tracer_provider.h
+-- Installing: /opt/otelcpp/include/opentelemetry/version.h
+-- Installing: /opt/otelcpp/lib/libopentelemetry_common.a
+-- Installing: /opt/otelcpp/lib/libopentelemetry_resources.a
+-- Installing: /opt/otelcpp/lib/libopentelemetry_version.a
+-- Installing: /opt/otelcpp/lib/libopentelemetry_instrumentation_scope.a
+-- Installing: /opt/otelcpp/lib/libopentelemetry_logs.a
+-- Installing: /opt/otelcpp/lib/libopentelemetry_trace.a
+-- Installing: /opt/otelcpp/lib/libopentelemetry_metrics.a
+-- Installing: /opt/otelcpp/lib/libopentelemetry_configuration_core.a
+-- Installing: /opt/otelcpp/lib/libopentelemetry_configuration_trace_builders.a
+-- Installing: /opt/otelcpp/lib/libopentelemetry_configuration_metrics_builders.a
+-- Installing: /opt/otelcpp/lib/libopentelemetry_configuration_logs_builders.a
+-- Installing: /opt/otelcpp/lib/libopentelemetry_configuration_registry_factory.a
+-- Installing: /opt/otelcpp/lib/cmake/opentelemetry-cpp/opentelemetry-cpp-sdk-target.cmake
+-- Installing: /opt/otelcpp/lib/cmake/opentelemetry-cpp/opentelemetry-cpp-sdk-target-release.cmake
+-- Up-to-date: /opt/otelcpp/include/opentelemetry
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/common
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/common/atomic_shared_ptr.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/common/atomic_unique_ptr.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/common/attribute_utils.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/common/attributemap_hash.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/common/base64.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/common/circular_buffer.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/common/circular_buffer_range.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/common/custom_hash_equality.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/common/disabled.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/common/empty_attributes.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/common/env_variables.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/common/exporter_utils.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/common/global_log_handler.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/common/thread_instrumentation.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/aggregation_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/aggregation_configuration_visitor.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/always_off_sampler_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/always_off_sampler_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/always_on_sampler_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/always_on_sampler_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/attribute_limits_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/attribute_value_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/attribute_value_configuration_visitor.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/attributes_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/base2_exponential_bucket_histogram_aggregation_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/batch_log_record_processor_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/batch_log_record_processor_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/batch_span_processor_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/batch_span_processor_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/boolean_array_attribute_value_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/boolean_attribute_value_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/cardinality_limits_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/composable_always_off_sampler_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/composable_always_off_sampler_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/composable_always_on_sampler_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/composable_always_on_sampler_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/composable_parent_threshold_sampler_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/composable_parent_threshold_sampler_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/composable_probability_sampler_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/composable_probability_sampler_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/composable_rule_based_sampler_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/composable_rule_based_sampler_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/composable_rule_based_sampler_rule_attribute_patterns_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/composable_rule_based_sampler_rule_attribute_values_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/composable_rule_based_sampler_rule_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/composable_sampler_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/composable_sampler_configuration_visitor.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/composite_sampler_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/composite_sampler_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/configured_sdk.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/console_log_record_exporter_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/console_log_record_exporter_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/console_push_metric_exporter_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/console_push_metric_exporter_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/console_span_exporter_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/console_span_exporter_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/container_resource_detector_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/container_resource_detector_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/default_aggregation_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/default_histogram_aggregation.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/distribution_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/distribution_entry_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/document.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/document_node.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/double_array_attribute_value_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/double_attribute_value_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/drop_aggregation_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/exemplar_filter.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/explicit_bucket_histogram_aggregation_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/extension_composable_sampler_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/extension_composable_sampler_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/extension_log_record_exporter_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/extension_log_record_exporter_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/extension_log_record_processor_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/extension_log_record_processor_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/extension_metric_producer_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/extension_metric_producer_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/extension_pull_metric_exporter_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/extension_pull_metric_exporter_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/extension_push_metric_exporter_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/extension_push_metric_exporter_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/extension_resource_detector_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/extension_resource_detector_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/extension_sampler_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/extension_sampler_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/extension_span_exporter_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/extension_span_exporter_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/extension_span_processor_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/extension_span_processor_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/grpc_tls_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/headers_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/host_resource_detector_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/host_resource_detector_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/http_tls_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/include_exclude_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/instrument_type.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/integer_array_attribute_value_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/integer_attribute_value_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/invalid_schema_exception.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/jaeger_remote_sampler_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/jaeger_remote_sampler_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/last_value_aggregation_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/log_record_exporter_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/log_record_exporter_configuration_visitor.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/log_record_limits_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/log_record_processor_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/log_record_processor_configuration_visitor.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/logger_config_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/logger_configurator_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/logger_configurator_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/logger_matcher_and_config_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/logger_provider_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/logger_provider_builder_context.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/logger_provider_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/logs_builder_utils.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/logs_builders.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/meter_config_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/meter_configurator_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/meter_configurator_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/meter_matcher_and_config_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/meter_provider_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/meter_provider_builder_context.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/meter_provider_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/metric_producer_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/metric_producer_configuration_visitor.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/metric_reader_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/metric_reader_configuration_visitor.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/metrics_builder_utils.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/metrics_builders.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/open_census_metric_producer_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/open_census_metric_producer_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/optional_value.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/otlp_file_log_record_exporter_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/otlp_file_log_record_exporter_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/otlp_file_push_metric_exporter_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/otlp_file_push_metric_exporter_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/otlp_file_span_exporter_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/otlp_file_span_exporter_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/otlp_grpc_log_record_exporter_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/otlp_grpc_log_record_exporter_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/otlp_grpc_push_metric_exporter_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/otlp_grpc_push_metric_exporter_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/otlp_grpc_span_exporter_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/otlp_grpc_span_exporter_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/otlp_http_encoding.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/otlp_http_log_record_exporter_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/otlp_http_log_record_exporter_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/otlp_http_push_metric_exporter_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/otlp_http_push_metric_exporter_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/otlp_http_span_exporter_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/otlp_http_span_exporter_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/parent_based_sampler_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/parent_based_sampler_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/periodic_metric_reader_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/periodic_metric_reader_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/probability_sampler_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/probability_sampler_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/process_resource_detector_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/process_resource_detector_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/prometheus_pull_metric_exporter_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/prometheus_pull_metric_exporter_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/propagator_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/pull_metric_exporter_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/pull_metric_exporter_configuration_visitor.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/pull_metric_reader_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/pull_metric_reader_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/push_metric_exporter_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/push_metric_exporter_configuration_visitor.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/registry.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/registry_factory.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/resource_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/resource_detection_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/resource_detector_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/resource_detector_configuration_visitor.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/sampler_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/sampler_configuration_visitor.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/sdk_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/service_resource_detector_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/service_resource_detector_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/severity_number.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/simple_log_record_processor_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/simple_log_record_processor_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/simple_span_processor_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/simple_span_processor_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/span_exporter_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/span_exporter_configuration_visitor.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/span_limits_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/span_processor_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/span_processor_configuration_visitor.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/string_array_attribute_value_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/string_array_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/string_attribute_value_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/sum_aggregation_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/temporality_preference.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/text_map_propagator_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/trace_builder_utils.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/trace_builders.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/trace_id_ratio_based_sampler_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/trace_id_ratio_based_sampler_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/tracer_config_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/tracer_configurator_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/tracer_configurator_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/tracer_matcher_and_config_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/tracer_provider_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/tracer_provider_builder_context.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/tracer_provider_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/translation_strategy.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/unsupported_exception.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/view_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/view_selector_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/configuration/view_stream_configuration.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/instrumentationlibrary
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/instrumentationlibrary/instrumentation_library.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/instrumentationscope
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/instrumentationscope/instrumentation_scope.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/instrumentationscope/scope_configurator.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/logs
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/logs/batch_log_record_processor.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/logs/batch_log_record_processor_factory.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/logs/batch_log_record_processor_options.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/logs/batch_log_record_processor_runtime_options.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/logs/event_logger.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/logs/event_logger_provider.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/logs/event_logger_provider_factory.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/logs/exporter.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/logs/log_record_limits.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/logs/logger.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/logs/logger_config.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/logs/logger_context.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/logs/logger_context_factory.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/logs/logger_provider.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/logs/logger_provider_factory.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/logs/multi_log_record_processor.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/logs/multi_log_record_processor_factory.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/logs/multi_recordable.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/logs/processor.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/logs/provider.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/logs/read_write_log_record.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/logs/readable_log_record.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/logs/recordable.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/logs/simple_log_record_processor.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/logs/simple_log_record_processor_factory.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/aggregation
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/aggregation/aggregation.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/aggregation/aggregation_config.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/aggregation/base2_exponential_histogram_aggregation.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/aggregation/base2_exponential_histogram_indexer.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/aggregation/default_aggregation.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/aggregation/drop_aggregation.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/aggregation/histogram_aggregation.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/aggregation/lastvalue_aggregation.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/aggregation/sum_aggregation.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/async_instruments.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/cardinality_limits.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/data
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/data/circular_buffer.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/data/exemplar_data.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/data/metric_data.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/data/point_data.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/exemplar
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/exemplar/aligned_histogram_bucket_exemplar_reservoir.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/exemplar/filter_predicate.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/exemplar/filter_type.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/exemplar/fixed_size_exemplar_reservoir.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/exemplar/no_exemplar_reservoir.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/exemplar/reservoir.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/exemplar/reservoir_cell.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/exemplar/reservoir_cell_selector.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/exemplar/reservoir_utils.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/exemplar/simple_fixed_size_exemplar_reservoir.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/export
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/export/metric_filter.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/export/metric_producer.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/export/periodic_exporting_metric_reader.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/export/periodic_exporting_metric_reader_factory.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/export/periodic_exporting_metric_reader_options.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/export/periodic_exporting_metric_reader_runtime_options.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/instrument_metadata_validator.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/instruments.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/meter.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/meter_config.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/meter_context.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/meter_context_factory.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/meter_enabled_state.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/meter_provider.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/meter_provider_factory.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/metric_reader.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/multi_observer_result.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/observer_result.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/provider.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/push_metric_exporter.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/state
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/state/async_metric_storage.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/state/attributes_hashmap.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/state/filtered_ordered_attribute_map.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/state/metric_collector.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/state/metric_storage.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/state/multi_metric_storage.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/state/observable_registry.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/state/sync_metric_storage.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/state/temporal_metric_storage.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/sync_instruments.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/view
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/view/attributes_processor.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/view/instrument_selector.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/view/instrument_selector_factory.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/view/meter_selector.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/view/meter_selector_factory.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/view/predicate.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/view/predicate_factory.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/view/view.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/view/view_factory.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/view/view_registry.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/metrics/view/view_registry_factory.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/resource
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/resource/resource.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/resource/resource_detector.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/trace
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/trace/batch_span_processor.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/trace/batch_span_processor_factory.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/trace/batch_span_processor_options.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/trace/batch_span_processor_runtime_options.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/trace/exporter.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/trace/id_generator.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/trace/multi_recordable.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/trace/multi_span_processor.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/trace/processor.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/trace/provider.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/trace/random_id_generator.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/trace/random_id_generator_factory.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/trace/recordable.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/trace/sampler.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/trace/samplers
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/trace/samplers/always_off.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/trace/samplers/always_off_factory.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/trace/samplers/always_on.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/trace/samplers/always_on_factory.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/trace/samplers/composable_always_off.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/trace/samplers/composable_always_on.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/trace/samplers/composable_parent_threshold.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/trace/samplers/composable_probability.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/trace/samplers/composable_rule_based.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/trace/samplers/composable_sampler.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/trace/samplers/composite_sampler.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/trace/samplers/composite_sampler_factory.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/trace/samplers/parent.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/trace/samplers/parent_factory.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/trace/samplers/predicate.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/trace/samplers/probability.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/trace/samplers/probability_factory.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/trace/samplers/rule_based_predicate.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/trace/samplers/trace_id_ratio.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/trace/samplers/trace_id_ratio_factory.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/trace/simple_processor.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/trace/simple_processor_factory.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/trace/span_data.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/trace/span_limits.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/trace/span_status.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/trace/tracer.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/trace/tracer_config.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/trace/tracer_context.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/trace/tracer_context_factory.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/trace/tracer_provider.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/trace/tracer_provider_factory.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/version
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk/version/version.h
+-- Installing: /opt/otelcpp/include/opentelemetry/sdk_config.h
+-- Installing: /opt/otelcpp/lib/cmake/opentelemetry-cpp/opentelemetry-cpp-ext_common-target.cmake
+-- Installing: /opt/otelcpp/include/opentelemetry/ext
+-- Installing: /opt/otelcpp/include/opentelemetry/ext/http
+-- Installing: /opt/otelcpp/include/opentelemetry/ext/http/client
+-- Installing: /opt/otelcpp/include/opentelemetry/ext/http/client/curl
+-- Installing: /opt/otelcpp/include/opentelemetry/ext/http/client/curl/http_client_factory_curl.h
+-- Installing: /opt/otelcpp/include/opentelemetry/ext/http/client/http_client.h
+-- Installing: /opt/otelcpp/include/opentelemetry/ext/http/client/http_client_factory.h
+-- Installing: /opt/otelcpp/include/opentelemetry/ext/http/common
+-- Installing: /opt/otelcpp/include/opentelemetry/ext/http/common/url_parser.h
+-- Installing: /opt/otelcpp/lib/libopentelemetry_http_client_curl.a
+-- Installing: /opt/otelcpp/lib/cmake/opentelemetry-cpp/opentelemetry-cpp-ext_http_curl-target.cmake
+-- Installing: /opt/otelcpp/lib/cmake/opentelemetry-cpp/opentelemetry-cpp-ext_http_curl-target-release.cmake
+-- Installing: /opt/otelcpp/lib/cmake/opentelemetry-cpp/opentelemetry-cpp-ext_http-target.cmake
+-- Installing: /opt/otelcpp/lib/libopentelemetry_otlp_common.a
+-- Installing: /opt/otelcpp/lib/libopentelemetry_otlp_recordable.a
+-- Installing: /opt/otelcpp/lib/libopentelemetry_proto.so
+-- Installing: /opt/otelcpp/lib/libopentelemetry_exporter_otlp_builder_utils.a
+-- Installing: /opt/otelcpp/lib/cmake/opentelemetry-cpp/opentelemetry-cpp-exporters_otlp_common-target.cmake
+-- Installing: /opt/otelcpp/lib/cmake/opentelemetry-cpp/opentelemetry-cpp-exporters_otlp_common-target-release.cmake
+-- Installing: /opt/otelcpp/include/opentelemetry/exporters/otlp
+-- Installing: /opt/otelcpp/include/opentelemetry/exporters/otlp/otlp_builder_utils.h
+-- Installing: /opt/otelcpp/include/opentelemetry/exporters/otlp/otlp_environment.h
+-- Installing: /opt/otelcpp/include/opentelemetry/exporters/otlp/otlp_log_recordable.h
+-- Installing: /opt/otelcpp/include/opentelemetry/exporters/otlp/otlp_metric_utils.h
+-- Installing: /opt/otelcpp/include/opentelemetry/exporters/otlp/otlp_populate_attribute_utils.h
+-- Installing: /opt/otelcpp/include/opentelemetry/exporters/otlp/otlp_preferred_temporality.h
+-- Installing: /opt/otelcpp/include/opentelemetry/exporters/otlp/otlp_recordable.h
+-- Installing: /opt/otelcpp/include/opentelemetry/exporters/otlp/otlp_recordable_utils.h
+-- Installing: /opt/otelcpp/include/opentelemetry/exporters/otlp/protobuf_include_prefix.h
+-- Installing: /opt/otelcpp/include/opentelemetry/exporters/otlp/protobuf_include_suffix.h
+-- Installing: /opt/otelcpp/lib/libopentelemetry_exporter_otlp_http_client.a
+-- Installing: /opt/otelcpp/lib/libopentelemetry_exporter_otlp_http.a
+-- Installing: /opt/otelcpp/lib/libopentelemetry_exporter_otlp_http_log.a
+-- Installing: /opt/otelcpp/lib/libopentelemetry_exporter_otlp_http_metric.a
+-- Installing: /opt/otelcpp/lib/libopentelemetry_exporter_otlp_http_builder.a
+-- Installing: /opt/otelcpp/lib/libopentelemetry_exporter_otlp_http_log_builder.a
+-- Installing: /opt/otelcpp/lib/libopentelemetry_exporter_otlp_http_metric_builder.a
+-- Installing: /opt/otelcpp/lib/cmake/opentelemetry-cpp/opentelemetry-cpp-exporters_otlp_http-target.cmake
+-- Installing: /opt/otelcpp/lib/cmake/opentelemetry-cpp/opentelemetry-cpp-exporters_otlp_http-target-release.cmake
+-- Up-to-date: /opt/otelcpp/include/opentelemetry/exporters/otlp
+-- Installing: /opt/otelcpp/include/opentelemetry/exporters/otlp/otlp_http.h
+-- Installing: /opt/otelcpp/include/opentelemetry/exporters/otlp/otlp_http_builder_utils.h
+-- Installing: /opt/otelcpp/include/opentelemetry/exporters/otlp/otlp_http_client.h
+-- Installing: /opt/otelcpp/include/opentelemetry/exporters/otlp/otlp_http_exporter.h
+-- Installing: /opt/otelcpp/include/opentelemetry/exporters/otlp/otlp_http_exporter_factory.h
+-- Installing: /opt/otelcpp/include/opentelemetry/exporters/otlp/otlp_http_exporter_options.h
+-- Installing: /opt/otelcpp/include/opentelemetry/exporters/otlp/otlp_http_exporter_runtime_options.h
+-- Installing: /opt/otelcpp/include/opentelemetry/exporters/otlp/otlp_http_log_record_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/exporters/otlp/otlp_http_log_record_exporter.h
+-- Installing: /opt/otelcpp/include/opentelemetry/exporters/otlp/otlp_http_log_record_exporter_factory.h
+-- Installing: /opt/otelcpp/include/opentelemetry/exporters/otlp/otlp_http_log_record_exporter_options.h
+-- Installing: /opt/otelcpp/include/opentelemetry/exporters/otlp/otlp_http_log_record_exporter_runtime_options.h
+-- Installing: /opt/otelcpp/include/opentelemetry/exporters/otlp/otlp_http_metric_exporter.h
+-- Installing: /opt/otelcpp/include/opentelemetry/exporters/otlp/otlp_http_metric_exporter_factory.h
+-- Installing: /opt/otelcpp/include/opentelemetry/exporters/otlp/otlp_http_metric_exporter_options.h
+-- Installing: /opt/otelcpp/include/opentelemetry/exporters/otlp/otlp_http_metric_exporter_runtime_options.h
+-- Installing: /opt/otelcpp/include/opentelemetry/exporters/otlp/otlp_http_push_metric_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/exporters/otlp/otlp_http_span_builder.h
+-- Installing: /opt/otelcpp/lib/libopentelemetry_exporter_ostream_span.a
+-- Installing: /opt/otelcpp/lib/libopentelemetry_exporter_ostream_metrics.a
+-- Installing: /opt/otelcpp/lib/libopentelemetry_exporter_ostream_logs.a
+-- Installing: /opt/otelcpp/lib/libopentelemetry_exporter_ostream_span_builder.a
+-- Installing: /opt/otelcpp/lib/libopentelemetry_exporter_ostream_metrics_builder.a
+-- Installing: /opt/otelcpp/lib/libopentelemetry_exporter_ostream_logs_builder.a
+-- Installing: /opt/otelcpp/lib/cmake/opentelemetry-cpp/opentelemetry-cpp-exporters_ostream-target.cmake
+-- Installing: /opt/otelcpp/lib/cmake/opentelemetry-cpp/opentelemetry-cpp-exporters_ostream-target-release.cmake
+-- Installing: /opt/otelcpp/include/opentelemetry/exporters/ostream
+-- Installing: /opt/otelcpp/include/opentelemetry/exporters/ostream/common_utils.h
+-- Installing: /opt/otelcpp/include/opentelemetry/exporters/ostream/console_log_record_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/exporters/ostream/console_push_metric_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/exporters/ostream/console_span_builder.h
+-- Installing: /opt/otelcpp/include/opentelemetry/exporters/ostream/log_record_exporter.h
+-- Installing: /opt/otelcpp/include/opentelemetry/exporters/ostream/log_record_exporter_factory.h
+-- Installing: /opt/otelcpp/include/opentelemetry/exporters/ostream/metric_exporter.h
+-- Installing: /opt/otelcpp/include/opentelemetry/exporters/ostream/metric_exporter_factory.h
+-- Installing: /opt/otelcpp/include/opentelemetry/exporters/ostream/span_exporter.h
+-- Installing: /opt/otelcpp/include/opentelemetry/exporters/ostream/span_exporter_factory.h
+-- Installing: /opt/otelcpp/lib/libopentelemetry_exporter_in_memory.a
+-- Installing: /opt/otelcpp/lib/libopentelemetry_exporter_in_memory_metric.a
+-- Installing: /opt/otelcpp/lib/cmake/opentelemetry-cpp/opentelemetry-cpp-exporters_in_memory-target.cmake
+-- Installing: /opt/otelcpp/lib/cmake/opentelemetry-cpp/opentelemetry-cpp-exporters_in_memory-target-release.cmake
+-- Installing: /opt/otelcpp/include/opentelemetry/exporters/memory
+-- Installing: /opt/otelcpp/include/opentelemetry/exporters/memory/in_memory_data.h
+-- Installing: /opt/otelcpp/include/opentelemetry/exporters/memory/in_memory_metric_data.h
+-- Installing: /opt/otelcpp/include/opentelemetry/exporters/memory/in_memory_metric_exporter_factory.h
+-- Installing: /opt/otelcpp/include/opentelemetry/exporters/memory/in_memory_span_data.h
+-- Installing: /opt/otelcpp/include/opentelemetry/exporters/memory/in_memory_span_exporter.h
+-- Installing: /opt/otelcpp/include/opentelemetry/exporters/memory/in_memory_span_exporter_factory.h
+-- Installing: /opt/otelcpp/lib/cmake/opentelemetry-cpp/component-definitions.cmake
+-- Installing: /opt/otelcpp/lib/cmake/opentelemetry-cpp/thirdparty-dependency-definitions.cmake
+--> 1f0f32d57851
+[4/5] STEP 1/12: FROM 1f0f32d578518d014c841e851e31be2137cbee2644decac048836cef276fade3 AS emit-build
+[4/5] STEP 2/12: ARG EXPORTER
+--> 3d91ce82de9e
+[4/5] STEP 3/12: ARG SDK_CC
+--> d501615b498a
+[4/5] STEP 4/12: ARG SDK_CXX
+--> 12d14cf0783f
+[4/5] STEP 5/12: ARG EMIT_CC
+--> 12c3f1a5a43c
+[4/5] STEP 6/12: ARG EMIT_CXX
+--> 110b9077c840
+[4/5] STEP 7/12: ARG EXTRA_FLAGS
+--> 3511360bb105
+[4/5] STEP 8/12: ARG CXX_STD
+--> f069e267bbbe
+[4/5] STEP 9/12: ARG INMEMORY
+--> 9adca74d2a55
+[4/5] STEP 10/12: ARG ALL_COMPONENTS
+--> f6dbdccf1fd5
+[4/5] STEP 11/12: COPY bench/emit-app /src/emit-app
+--> 4ffdd1c9ab2e
+[4/5] STEP 12/12: RUN BACKEND=OTELCPP_HTTP;     if [ "$EXPORTER" = "grpc" ]; then BACKEND=OTELCPP_GRPC; fi;     cmake -S /src/emit-app -B /build/emit-app         -G Ninja         -DCMAKE_BUILD_TYPE=Release         -DCMAKE_C_COMPILER="${EMIT_CC:-$SDK_CC}" -DCMAKE_CXX_COMPILER="${EMIT_CXX:-$SDK_CXX}"         -DCMAKE_C_FLAGS="${BENCH_CXXFLAGS} ${EXTRA_FLAGS}"         -DCMAKE_CXX_FLAGS="${BENCH_CXXFLAGS} ${EXTRA_FLAGS}"         -DCMAKE_CXX_STANDARD="$CXX_STD"         -DCMAKE_CXX_SCAN_FOR_MODULES=OFF         -DBENCH_BACKEND=$BACKEND         -DBENCH_OTELCPP_INMEMORY_SPANS=$INMEMORY         -DBENCH_OTELCPP_ALL_COMPONENTS=$ALL_COMPONENTS         -DCMAKE_PREFIX_PATH="/opt/otelcpp;/opt/protobuf"     && cmake --build /build/emit-app
+-- The CXX compiler identification is Clang 18.1.3
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/clang++-18 - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found CURL: /usr/lib/x86_64-linux-gnu/libcurl.so (found version "8.5.0")  
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE  
+-- Found Protobuf: /usr/lib/x86_64-linux-gnu/libprotobuf.so (found version "3.21.12") 
+-- Found opentelemetry-cpp: /opt/otelcpp/lib/cmake/opentelemetry-cpp/opentelemetry-cpp-config.cmake (found version "1.30.0") 
+-- Configuring done (0.5s)
+-- Generating done (0.0s)
+CMake Warning:
+  Manually-specified variables were not used by the project:
+
+    CMAKE_C_COMPILER
+    CMAKE_C_FLAGS
+
+
+-- Build files have been written to: /build/emit-app
+[1/6] Building CXX object CMakeFiles/emit_app.dir/src/histogram.cpp.o
+[2/6] Building CXX object CMakeFiles/emit_app.dir/src/workload.cpp.o
+[3/6] Building CXX object CMakeFiles/emit_app.dir/src/main.cpp.o
+[4/6] Building CXX object CMakeFiles/emit_app.dir/src/control_socket.cpp.o
+[5/6] Building CXX object CMakeFiles/emit_app.dir/src/backend_otelcpp.cpp.o
+[6/6] Linking CXX executable emit_app
+--> 33a0793bd8eb
+[5/5] STEP 1/11: FROM ubuntu:24.04 AS runtime
+[5/5] STEP 2/11: ARG EXPORTER
+--> cd6d1f89157e
+[5/5] STEP 3/11: ARG PROTOBUF_TAG
+--> a07969337a7b
+[5/5] STEP 4/11: ARG INSTALL_PERF
+--> ce2186c1fd3e
+[5/5] STEP 5/11: COPY --from=emit-build /opt/otelcpp/lib/ /tmp/otelcpp-lib/
+--> 462f4b4a8248
+[5/5] STEP 6/11: COPY --from=emit-build /opt/protobuf/lib/ /tmp/protobuf-lib/
+--> 92a952be2f87
+[5/5] STEP 7/11: RUN cp -a /tmp/otelcpp-lib/*.so* /usr/local/lib/ 2>/dev/null;     cp -a /tmp/protobuf-lib/*.so* /usr/local/lib/ 2>/dev/null;     rm -rf /tmp/otelcpp-lib /tmp/protobuf-lib;     apt-get update     && apt-get install -y --no-install-recommends libssl3 libcurl4     && if [ -z "$PROTOBUF_TAG" ]; then         apt-get install -y --no-install-recommends libprotobuf32t64;     fi     && if [ "$EXPORTER" = "grpc" ]; then         apt-get install -y --no-install-recommends             libgrpc++1.51t64 libprotobuf32t64 libcares2 libre2-10 libabsl20220623t64;     fi     && if [ "$INSTALL_PERF" = "true" ]; then         apt-get install -y --no-install-recommends linux-tools-generic         && PERF_BIN=$(find /usr/lib/linux-tools -name perf | head -1)         && ln -sf "$PERF_BIN" /usr/local/bin/perf;     fi     && ldconfig     && rm -rf /var/lib/apt/lists/*
+Get:1 http://archive.ubuntu.com/ubuntu noble InRelease [256 kB]
+Get:2 http://security.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+Get:3 http://security.ubuntu.com/ubuntu noble-security/main amd64 Packages [1420 kB]
+Get:4 http://archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+Get:5 http://archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
+Get:6 http://archive.ubuntu.com/ubuntu noble/multiverse amd64 Packages [331 kB]
+Get:7 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages [1808 kB]
+Get:8 http://security.ubuntu.com/ubuntu noble-security/multiverse amd64 Packages [55.6 kB]
+Get:9 http://security.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1551 kB]
+Get:10 http://security.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [2132 kB]
+Get:11 http://archive.ubuntu.com/ubuntu noble/universe amd64 Packages [19.3 MB]
+Get:12 http://archive.ubuntu.com/ubuntu noble/restricted amd64 Packages [117 kB]
+Get:13 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1741 kB]
+Get:14 http://archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Packages [61.7 kB]
+Get:15 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [2172 kB]
+Get:16 http://archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [2240 kB]
+Get:17 http://archive.ubuntu.com/ubuntu noble-backports/multiverse amd64 Packages [669 B]
+Get:18 http://archive.ubuntu.com/ubuntu noble-backports/main amd64 Packages [49.0 kB]
+Get:19 http://archive.ubuntu.com/ubuntu noble-backports/universe amd64 Packages [36.0 kB]
+Fetched 33.7 MB in 3s (13.0 MB/s)
+Reading package lists...
+Reading package lists...
+Building dependency tree...
+Reading state information...
+libssl3t64 is already the newest version (3.0.13-0ubuntu3.16).
+The following additional packages will be installed:
+  libbrotli1 libgssapi-krb5-2 libk5crypto3 libkeyutils1 libkrb5-3
+  libkrb5support0 libldap2 libnghttp2-14 libpsl5t64 librtmp1 libsasl2-2
+  libsasl2-modules-db libssh-4
+Suggested packages:
+  krb5-doc krb5-user
+Recommended packages:
+  ca-certificates krb5-locales libldap-common publicsuffix libsasl2-modules
+The following NEW packages will be installed:
+  libbrotli1 libcurl4t64 libgssapi-krb5-2 libk5crypto3 libkeyutils1 libkrb5-3
+  libkrb5support0 libldap2 libnghttp2-14 libpsl5t64 librtmp1 libsasl2-2
+  libsasl2-modules-db libssh-4
+0 upgraded, 14 newly installed, 0 to remove and 0 not upgraded.
+Need to get 1943 kB of archives.
+After this operation, 5474 kB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libkrb5support0 amd64 1.20.1-6ubuntu2.10 [34.9 kB]
+Get:2 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libk5crypto3 amd64 1.20.1-6ubuntu2.10 [81.9 kB]
+Get:3 http://archive.ubuntu.com/ubuntu noble/main amd64 libkeyutils1 amd64 1.6.3-3build1 [9490 B]
+Get:4 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libkrb5-3 amd64 1.20.1-6ubuntu2.10 [348 kB]
+Get:5 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libgssapi-krb5-2 amd64 1.20.1-6ubuntu2.10 [143 kB]
+Get:6 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libnghttp2-14 amd64 1.59.0-1ubuntu0.4 [74.6 kB]
+Get:7 http://archive.ubuntu.com/ubuntu noble/main amd64 libpsl5t64 amd64 0.21.2-1.1build1 [57.1 kB]
+Get:8 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libbrotli1 amd64 1.1.0-2ubuntu0.1 [331 kB]
+Get:9 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libsasl2-modules-db amd64 2.1.28+dfsg1-5ubuntu3.1 [20.4 kB]
+Get:10 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libsasl2-2 amd64 2.1.28+dfsg1-5ubuntu3.1 [53.2 kB]
+Get:11 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libldap2 amd64 2.6.10+dfsg-0ubuntu0.24.04.1 [198 kB]
+Get:12 http://archive.ubuntu.com/ubuntu noble/main amd64 librtmp1 amd64 2.4+20151223.gitfa8646d.1-2build7 [56.3 kB]
+Get:13 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libssh-4 amd64 0.10.6-2ubuntu0.5 [191 kB]
+Get:14 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libcurl4t64 amd64 8.5.0-2ubuntu10.16 [344 kB]
+debconf: delaying package configuration, since apt-utils is not installed
+Fetched 1943 kB in 1s (2119 kB/s)
+Selecting previously unselected package libkrb5support0:amd64.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 4381 files and directories currently installed.)
+Preparing to unpack .../00-libkrb5support0_1.20.1-6ubuntu2.10_amd64.deb ...
+Unpacking libkrb5support0:amd64 (1.20.1-6ubuntu2.10) ...
+Selecting previously unselected package libk5crypto3:amd64.
+Preparing to unpack .../01-libk5crypto3_1.20.1-6ubuntu2.10_amd64.deb ...
+Unpacking libk5crypto3:amd64 (1.20.1-6ubuntu2.10) ...
+Selecting previously unselected package libkeyutils1:amd64.
+Preparing to unpack .../02-libkeyutils1_1.6.3-3build1_amd64.deb ...
+Unpacking libkeyutils1:amd64 (1.6.3-3build1) ...
+Selecting previously unselected package libkrb5-3:amd64.
+Preparing to unpack .../03-libkrb5-3_1.20.1-6ubuntu2.10_amd64.deb ...
+Unpacking libkrb5-3:amd64 (1.20.1-6ubuntu2.10) ...
+Selecting previously unselected package libgssapi-krb5-2:amd64.
+Preparing to unpack .../04-libgssapi-krb5-2_1.20.1-6ubuntu2.10_amd64.deb ...
+Unpacking libgssapi-krb5-2:amd64 (1.20.1-6ubuntu2.10) ...
+Selecting previously unselected package libnghttp2-14:amd64.
+Preparing to unpack .../05-libnghttp2-14_1.59.0-1ubuntu0.4_amd64.deb ...
+Unpacking libnghttp2-14:amd64 (1.59.0-1ubuntu0.4) ...
+Selecting previously unselected package libpsl5t64:amd64.
+Preparing to unpack .../06-libpsl5t64_0.21.2-1.1build1_amd64.deb ...
+Unpacking libpsl5t64:amd64 (0.21.2-1.1build1) ...
+Selecting previously unselected package libbrotli1:amd64.
+Preparing to unpack .../07-libbrotli1_1.1.0-2ubuntu0.1_amd64.deb ...
+Unpacking libbrotli1:amd64 (1.1.0-2ubuntu0.1) ...
+Selecting previously unselected package libsasl2-modules-db:amd64.
+Preparing to unpack .../08-libsasl2-modules-db_2.1.28+dfsg1-5ubuntu3.1_amd64.deb ...
+Unpacking libsasl2-modules-db:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...
+Selecting previously unselected package libsasl2-2:amd64.
+Preparing to unpack .../09-libsasl2-2_2.1.28+dfsg1-5ubuntu3.1_amd64.deb ...
+Unpacking libsasl2-2:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...
+Selecting previously unselected package libldap2:amd64.
+Preparing to unpack .../10-libldap2_2.6.10+dfsg-0ubuntu0.24.04.1_amd64.deb ...
+Unpacking libldap2:amd64 (2.6.10+dfsg-0ubuntu0.24.04.1) ...
+Selecting previously unselected package librtmp1:amd64.
+Preparing to unpack .../11-librtmp1_2.4+20151223.gitfa8646d.1-2build7_amd64.deb ...
+Unpacking librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2build7) ...
+Selecting previously unselected package libssh-4:amd64.
+Preparing to unpack .../12-libssh-4_0.10.6-2ubuntu0.5_amd64.deb ...
+Unpacking libssh-4:amd64 (0.10.6-2ubuntu0.5) ...
+Selecting previously unselected package libcurl4t64:amd64.
+Preparing to unpack .../13-libcurl4t64_8.5.0-2ubuntu10.16_amd64.deb ...
+Unpacking libcurl4t64:amd64 (8.5.0-2ubuntu10.16) ...
+Setting up libkeyutils1:amd64 (1.6.3-3build1) ...
+Setting up libbrotli1:amd64 (1.1.0-2ubuntu0.1) ...
+Setting up libpsl5t64:amd64 (0.21.2-1.1build1) ...
+Setting up libnghttp2-14:amd64 (1.59.0-1ubuntu0.4) ...
+Setting up libkrb5support0:amd64 (1.20.1-6ubuntu2.10) ...
+Setting up libsasl2-modules-db:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...
+Setting up librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2build7) ...
+Setting up libk5crypto3:amd64 (1.20.1-6ubuntu2.10) ...
+Setting up libsasl2-2:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...
+Setting up libkrb5-3:amd64 (1.20.1-6ubuntu2.10) ...
+Setting up libldap2:amd64 (2.6.10+dfsg-0ubuntu0.24.04.1) ...
+Setting up libgssapi-krb5-2:amd64 (1.20.1-6ubuntu2.10) ...
+Setting up libssh-4:amd64 (0.10.6-2ubuntu0.5) ...
+Setting up libcurl4t64:amd64 (8.5.0-2ubuntu10.16) ...
+Processing triggers for libc-bin (2.39-0ubuntu8.9) ...
+Reading package lists...
+Building dependency tree...
+Reading state information...
+The following NEW packages will be installed:
+  libprotobuf32t64
+0 upgraded, 1 newly installed, 0 to remove and 0 not upgraded.
+Need to get 923 kB of archives.
+After this operation, 3083 kB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libprotobuf32t64 amd64 3.21.12-8.2ubuntu0.4 [923 kB]
+debconf: delaying package configuration, since apt-utils is not installed
+Fetched 923 kB in 0s (4780 kB/s)
+Selecting previously unselected package libprotobuf32t64:amd64.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 4481 files and directories currently installed.)
+Preparing to unpack .../libprotobuf32t64_3.21.12-8.2ubuntu0.4_amd64.deb ...
+Unpacking libprotobuf32t64:amd64 (3.21.12-8.2ubuntu0.4) ...
+Setting up libprotobuf32t64:amd64 (3.21.12-8.2ubuntu0.4) ...
+Processing triggers for libc-bin (2.39-0ubuntu8.9) ...
+--> 54e8617a9567
+[5/5] STEP 8/11: COPY --from=emit-build /build/emit-app/emit_app /emit_app
+--> 256850dc29b4
+[5/5] STEP 9/11: EXPOSE 9090
+--> 6ad352ed65ae
+[5/5] STEP 10/11: ENTRYPOINT ["/emit_app"]
+--> 6b158698903b
+[5/5] STEP 11/11: LABEL "parity.commit"="4bf0d37"
+[5/5] COMMIT bench-sut-parity-otelcpp130-http-clang:check
+--> 5f91ba2b5702
+Successfully tagged localhost/bench-sut-parity-otelcpp130-http-clang:check
+5f91ba2b5702103bc0dc65cb0ed338130c1f471c68ec2b8deede10c4232c4e71

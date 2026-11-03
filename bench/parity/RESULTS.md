@@ -1,15 +1,17 @@
 # microtel vs opentelemetry-cpp: where the span-cost gap comes from
 
 **Status: preliminary investigation, 2026-11-02/03. One host (single memory channel, boost off); see [Host and conditions](#host-and-conditions). Not part of microtel's published benchmark results.**
-Measured 2026-11-02; revised after review the same day (queue rerun, CPU per span, `SetIdentity` detail), then extended with opentelemetry-cpp main and #4580 ([section 4](#4-opentelemetry-cpp-main-and-pr-4580)). Data in [`results/2026-11-02/`](results/2026-11-02/).
+Measured 2026-11-02; revised after review the same day (queue rerun, CPU per span, `SetIdentity` detail), then extended with opentelemetry-cpp main and #4580 ([section 4](#4-opentelemetry-cpp-main-and-pr-4580)) and v1.30.0 ([section 5](#5-opentelemetry-cpp-v1300)) on 2026-11-03. Data in [`results/2026-11-02/`](results/2026-11-02/).
 
 ## Summary
 
-1. **Toolchain vs design: almost all design** (high confidence for OTLP/HTTP). Both binaries are Clang 18.1.3 with identical flags and no hardening (checked from `DW_AT_producer` and the binaries). opentelemetry-cpp still takes 3.66× microtel's span time (793 vs 216 ns p50), the same ratio as the published snapshot, and 3.58× (776 vs 216 ns) when its queue is large enough not to drop spans. The only hardened code in either path is Ubuntu's `libprotobuf.so.32`, which is 4.5% of opentelemetry-cpp's span time. The GCC and hardening variants were not run this time.
-2. **Protobuf on the calling thread: 46–65% of the gap** (medium-high). Building the protobuf span in `OtlpRecordable` is 266 ns of opentelemetry-cpp's span time in the perf profile, which is 46% of the 577 ns gap. Swapping in the SDK's own SpanData recordable removes 366 of the 560 ns gap (65%), with both variants at a 16,384-span queue and confirmed drop-free. The swap uses the same `BatchSpanProcessor` and options and changes only the exporter. It also takes away export-thread work, so 65% is an upper bound.
-3. **Most of that protobuf cost is malloc** (high). opentelemetry-cpp makes 14.2 heap allocations per span on the calling thread, against microtel's 2.0, and 47.6 against 11.0 with 5 attributes. Its biggest single cost is `OtlpRecordable::SetIdentity`, at 26% of span time (21 points of it allocation), and it makes 5 allocations per root span. Across all threads, opentelemetry-cpp uses **1.8× microtel's CPU per span** (1,420 vs 780 ns, user + kernel, with the profiling harness included in both).
+1. **Toolchain vs design: almost all design** (high confidence for OTLP/HTTP). Both binaries are Clang 18.1.3 with identical flags and no hardening (checked from `DW_AT_producer` and the binaries). opentelemetry-cpp (v1.19.0, protobuf 3.21.12 (Ubuntu)) still takes 3.66× microtel's span time (793 vs 216 ns p50), the same ratio as the published snapshot, and 3.58× (776 vs 216 ns) when its queue is large enough not to drop spans. The only hardened code in either path is Ubuntu's `libprotobuf.so.32`, which is 4.5% of opentelemetry-cpp's span time. The GCC and hardening variants were not run this time. v1.30.0 (protobuf 3.21.12, Ubuntu; same compiler and flags) takes 3.30× (722 vs 219 ns) in a later 10-round run where v1.19.0 took 3.51× ([section 5](#5-opentelemetry-cpp-v1300)).
+2. **Protobuf on the calling thread: 46–65% of the gap** (medium-high). Building the protobuf span in `OtlpRecordable` is 266 ns of opentelemetry-cpp's (v1.19.0, protobuf 3.21.12 (Ubuntu)) span time in the perf profile, which is 46% of the 577 ns gap. Swapping in the SDK's own SpanData recordable removes 366 of the 560 ns gap (65%), with both variants at a 16,384-span queue and confirmed drop-free. The swap uses the same `BatchSpanProcessor` and options and changes only the exporter. It also takes away export-thread work, so 65% is an upper bound.
+3. **Most of that protobuf cost is malloc** (high). opentelemetry-cpp (v1.19.0, protobuf 3.21.12 (Ubuntu)) makes 14.2 heap allocations per span on the calling thread, against microtel's 2.0, and 47.6 against 11.0 with 5 attributes; exactly 14 and 47 when nothing is dropped. v1.30.0 (protobuf 3.21.12, Ubuntu) makes 10 and 43, but many more on background threads (5.3 and 31.3 per span, against 1.1). Its biggest single cost is `OtlpRecordable::SetIdentity`, at 26% of span time (21 points of it allocation), and it makes 5 allocations per root span. Across all threads, opentelemetry-cpp uses **1.8× microtel's CPU per span** (1,420 vs 780 ns, user + kernel, with the profiling harness included in both).
 4. **Footprint, gRPC vs protobuf: not measured in this run.** Part 5 was skipped by request.
-5. **What could change in opentelemetry-cpp under C++14:** the design, inside its own SDK and exporter. That means recording into its existing SpanData-style recordable and building the protobuf message on the export thread (medium confidence). Smaller fixes in `OtlpRecordable` come first. Two small `SetIdentity` changes take a root span from 5 to 3 allocations on v1.19.0 (measured, high confidence), but only from 4 to 3 on current main, and nothing on top of open PR #4580. That PR implements the arena option of upstream issue open-telemetry/opentelemetry-cpp#4558 and takes a minimal span from 9 to 5 calling-thread allocations ([section 4](#4-opentelemetry-cpp-main-and-pr-4580)). Porting microtel's own exporter is a separate, larger option; see the [appendix](#appendix-porting-microtels-exporter-to-c14).
+5. **What could change in opentelemetry-cpp under C++14:** the design, inside its own SDK and exporter. That means recording into its existing SpanData-style recordable and building the protobuf message on the export thread (medium confidence). Smaller fixes in `OtlpRecordable` come first. Two small `SetIdentity` changes take a root span from 5 to 3 allocations on v1.19.0 with protobuf 3.21.12 (Ubuntu) (measured, high confidence), but only from 4 to 3 on current main with protobuf 35.1.0 (bundled), and nothing on top of open PR #4580 (same protobuf). That PR implements the arena option of upstream issue open-telemetry/opentelemetry-cpp#4558 and takes a minimal span from 9 to 5 calling-thread allocations ([section 4](#4-opentelemetry-cpp-main-and-pr-4580)). Porting microtel's own exporter is a separate, larger option; see the [appendix](#appendix-porting-microtels-exporter-to-c14).
+
+The main and #4580 numbers (section 4) used a newer compiler (clang 22.1.8) and protobuf (35.1.0, bundled from upstream's `third_party_release`) than the v1.19.0 and v1.30.0 numbers (clang 18.1.3, protobuf 3.21.12 from Ubuntu), so they are compared with each other, not with microtel.
 
 ## Host and conditions
 
@@ -35,11 +37,13 @@ The ratio held, at 3.66× here against 3.65× published (813 / 223 ns).
 
 ## SUTs
 
-| Name | What | Compiler (`DW_AT_producer`, all CUs) | Flags | Hardening scan of `/emit_app` |
-|---|---|---|---|---|
-| microtel-http | microtel master (`src/`, `include/` identical to 82aa378), OTLP/HTTP | Ubuntu clang 18.1.3 (76 CUs) | `-O2 -g -fno-omit-frame-pointer` + Release (`-O3 -DNDEBUG`), C++20 | 0 `__stack_chk_fail` calls, 6 `endbr64`, 0 `_chk` imports |
-| otelcpp-http | opentelemetry-cpp v1.19.0 (`ced79860`) from source, OTLP/HTTP, published-snapshot config | Ubuntu clang 18.1.3 (66 CUs) | same, C++17 | same |
-| otelcpp-http, in-memory | as above, but `InMemorySpanExporter`, so the SDK's SpanData recordable replaces `OtlpRecordable` | Ubuntu clang 18.1.3 (64 CUs) | same, C++17 | same |
+| Name | What | Compiler (`DW_AT_producer`, all CUs) | Protobuf (as linked) | Flags | Hardening scan of `/emit_app` |
+|---|---|---|---|---|---|
+| microtel-http | microtel master (`src/`, `include/` identical to 82aa378), OTLP/HTTP | Ubuntu clang 18.1.3 (76 CUs) | none: vendored upb (`microtel_upb_*`), not libprotobuf | `-O2 -g -fno-omit-frame-pointer` + Release (`-O3 -DNDEBUG`), C++20 | 0 `__stack_chk_fail` calls, 6 `endbr64`, 0 `_chk` imports |
+| otelcpp-http | opentelemetry-cpp v1.19.0 (`ced79860`) from source, OTLP/HTTP, published-snapshot config | Ubuntu clang 18.1.3 (66 CUs) | 3.21.12, Ubuntu `libprotobuf32t64` 3.21.12-8.2ubuntu0.4 (`libprotobuf.so.32.0.12`) | same, C++17 | same |
+| otelcpp-http, in-memory | as above, but `InMemorySpanExporter`, so the SDK's SpanData recordable replaces `OtlpRecordable` | Ubuntu clang 18.1.3 (64 CUs) | 3.21.12, Ubuntu (as above) | same, C++17 | same |
+| otelcpp130-http (section 5) | opentelemetry-cpp v1.30.0 (`c7b64ec`) from source, OTLP/HTTP, otherwise as otelcpp-http | Ubuntu clang 18.1.3 (83 CUs) | 3.21.12, Ubuntu (same package and library) | same, C++17 | not scanned |
+| otelcpp-main-a…d (section 4) | opentelemetry-cpp main `0a5bb0b`, and with #4580 | clang 22.1.8, upstream dev container | 35.1.0, bundled (`third_party_release`), static | same, C++17 | not scanned |
 
 All three images use the same emit-app harness and the `ubuntu:24.04` packages. opentelemetry-cpp's HTTP exporter links Ubuntu's `libprotobuf32t64` 3.21.12 and `libcurl4`. The Dockerfiles are [`../sut/parity/`](../sut/parity/), and the builds use [`build.sh`](build.sh) with `PARITY_DOUBLE=1`.
 
@@ -58,13 +62,13 @@ When the queue is full, `Enqueue` → `MakeRoomFor` discards the incoming record
 
 ## 1. Span emit time
 
-The `hot-loop-traces` profile ran 10 samples × 10,000 spans per SUT per round against the blackhole sink. There were 5 rounds, each starting with a different SUT and starting only when the 1-minute load average was below 0.5 ([`run_rounds.sh`](run_rounds.sh)). [`merge.py`](merge.py) takes the median of the 50 per-sample p50 values. No SUT failed and no round was dropped.
+The `hot-loop-traces` profile ran 10 samples × 10,000 spans per SUT per round against the blackhole sink. There were 5 rounds, each starting with a different SUT and starting only when the 1-minute load average was below 0.5 ([`run_rounds.sh`](run_rounds.sh)). [`merge.py`](merge.py) takes the median of the 50 per-sample p50 values. No SUT failed and no round was dropped. opentelemetry-cpp in this section and in 1b is v1.19.0 with protobuf 3.21.12 (Ubuntu).
 
 | SUT | Samples | Span emit p50, ns (IQR) | p95, ns | p50 ÷ microtel |
 |---|---:|---:|---:|---:|
 | microtel-http | 50 (5 rounds) | **216** (210–230) | 478 | 1.00× |
-| otelcpp-http, SpanData recordable | 50 (5 rounds) | **411** (407–415) | 1,789 | 1.90× |
-| otelcpp-http, published config | 50 (5 rounds) | **793** (777–811) | 2,786 | 3.66× |
+| otelcpp-http (v1.19.0, protobuf 3.21.12, Ubuntu), SpanData recordable | 50 (5 rounds) | **411** (407–415) | 1,789 | 1.90× |
+| otelcpp-http (v1.19.0, protobuf 3.21.12, Ubuntu), published config | 50 (5 rounds) | **793** (777–811) | 2,786 | 3.66× |
 
 The gap is 577 ns. Removing the protobuf recordable closes 382 ns of it. In this run, the published-config SUT dropped spans when its queue filled (see below), and the in-memory variant did not. The rerun below removes that difference.
 
@@ -77,8 +81,8 @@ Drops are now counted. opentelemetry-cpp has no drop counter, so the bench insta
 | SUT | Samples | Span emit p50, ns (IQR) | p95, ns | p50 ÷ microtel | Drops | Delivered |
 |---|---:|---:|---:|---:|---:|---|
 | microtel-http | 50 (5 rounds) | **216** (210–227) | 477 | 1.00× | 0 | 500,000 / 500,000 (100%) at the sink |
-| otelcpp-http, SpanData recordable, queue 16,384 | 50 (5 rounds) | **410** (408–414) | 1,805 | 1.89× | 0 | no sink traffic by design; 0 counted drops |
-| otelcpp-http, published config, queue 16,384 | 50 (5 rounds) | **776** (752–788) | 1,848 | 3.58× | 0 | 500,000 / 500,000 (100%) at the sink |
+| otelcpp-http (v1.19.0, protobuf 3.21.12, Ubuntu), SpanData recordable, queue 16,384 | 50 (5 rounds) | **410** (408–414) | 1,805 | 1.89× | 0 | no sink traffic by design; 0 counted drops |
+| otelcpp-http (v1.19.0, protobuf 3.21.12, Ubuntu), published config, queue 16,384 | 50 (5 rounds) | **776** (752–788) | 1,848 | 3.58× | 0 | 500,000 / 500,000 (100%) at the sink |
 
 With no drops on either side, the gap is 560 ns, and the SpanData recordable closes 366 ns of it (65%). The larger queue barely moves the p50 (793 → 776 ns) but **cuts opentelemetry-cpp's p95 by a third (2,786 → 1,848 ns)**. In the default configuration, the drop path's per-span log `write()` makes up much of the tail. The published snapshot uses that default configuration, so its opentelemetry-cpp p95 includes the cost.
 
@@ -95,7 +99,7 @@ Profiling method:
 - **libprotobuf:** any frame in libprotobuf, `OtlpRecordable` or other OTLP exporter code. Allocation done by the recordable counts here.
 - **Otherwise:** the innermost frame below `EmitSpan` that matches a bucket's function-name rule.
 
-The ns columns are percentages times the step 1 p50, so they are approximate.
+The ns columns are percentages times the step 1 p50, so they are approximate. opentelemetry-cpp here is v1.19.0 with protobuf 3.21.12 (Ubuntu).
 
 | Bucket | microtel % | ≈ ns | otelcpp % | ≈ ns | Gap, ns |
 |---|---:|---:|---:|---:|---:|
@@ -138,7 +142,7 @@ This is the SUT process's `utime` and `stime` (`/proc/1/stat` in the container),
 | SUT | Spans | User, ns/span | Kernel, ns/span | Total, ns/span | Wall, ns/span |
 |---|---:|---:|---:|---:|---:|
 | microtel-http | 30,000,000 | 568 | 212 | **780** | 731 |
-| otelcpp-http | 20,000,000 | 1,200 | 220 | **1,420** | 1,065 |
+| otelcpp-http (v1.19.0, protobuf 3.21.12, Ubuntu) | 20,000,000 | 1,200 | 220 | **1,420** | 1,065 |
 | ratio | | 2.1× | 1.0× | **1.82×** | 1.46× |
 
 opentelemetry-cpp uses about 1.8× the CPU per span across all threads. The ratio is smaller than the 3.6× calling-thread ratio because the harness adds the same fixed cost to both, and because microtel spends more of its total in the kernel, likely the network writes of its exporter's transport. Total CPU exceeds wall time because the export threads run in parallel with the calling thread.
@@ -152,18 +156,18 @@ opentelemetry-cpp uses about 1.8× the CPU per span across all threads. The rati
 | Calling thread, allocations per span | 0 attributes | 5 attributes (12-char keys, 24-byte values) | Per added attribute |
 |---|---:|---:|---:|
 | microtel-http | **2.000** (2 runs: 20,001 / 20,001 total) | **11.000** (110,001 / 110,002) | 1.8 |
-| otelcpp-http | **14.25** (14.24 / 14.25) | **47.57** (47.59 / 47.54) | 6.7 |
+| otelcpp-http (v1.19.0, protobuf 3.21.12, Ubuntu) | **14.25** (14.24 / 14.25) | **47.57** (47.59 / 47.54) | 6.7 |
 
 | Background threads, allocations per span | 0 attributes | 5 attributes |
 |---|---:|---:|
 | microtel-http | 0.09 | 0.11 |
-| otelcpp-http | 1.05 | 0.97 |
+| otelcpp-http (v1.19.0, protobuf 3.21.12, Ubuntu) | 1.05 | 0.97 |
 
 microtel's counts match a reading of its source exactly:
 - **The benchmark span:** the `SdkSpan` object (`sdk_tracer.cpp:156`) and one deque node (`batch_span_processor.cpp:167`). Issues #531 and #530 respectively.
 - **Each of 5 attributes:** a copy of the 24-byte value (`span.hpp:78`, taken by value). The attribute vector also regrows 4 times in total (`sdk_span.cpp:204`, #532).
 
-opentelemetry-cpp's count is not a whole number, most likely because each dropped span's warning formats a message, which allocates.
+opentelemetry-cpp's count is not a whole number because each dropped span's warning formats a message, which allocates. With a 16,384 queue and no drops it is exactly 14 and 47 ([section 5](#5-opentelemetry-cpp-v1300)).
 
 ### `OtlpRecordable::SetIdentity`, field by field
 
@@ -207,6 +211,8 @@ A follow-up on 2026-11-02 measured the `SetIdentity` changes against current ope
 | c | `5e5b283` | a merged with the #4580 head `5aa9922` (conflicts with #4734 resolved) |
 | d | `3012c13` | c + both `SetIdentity` changes |
 
+Every opentelemetry-cpp number in this section is with protobuf 35.1.0, bundled (upstream's `third_party_release`), and clang 22.1.8. They are compared with each other only.
+
 **Build.** Upstream's own dev container (`.devcontainer/Dockerfile.dev` at `0a5bb0b`), so the dependencies are the versions in its `third_party_release`:
 - clang 22.1.8;
 - protobuf 35.1.0 and abseil 20250512.1, both static.
@@ -230,6 +236,24 @@ Each ratio is the median of the per-round ratios against a in the same round, wi
 - **Wire output is unchanged.** The serialized `Span` bytes after `SetIdentity` are identical in a, b, c and d, for root and child spans, with empty and non-empty trace state.
 - **Caveat on b's p50.** a's per-sample p50s were unusually spread out (424–708 ns), and its fastest samples match the other variants. b's 0.82 is more than one allocation should cost, and it was not profiled.
 - **Not measured:** memory per recordable (#4580 reports 216 → 752 bytes) and export-thread CPU.
+
+## 5. opentelemetry-cpp v1.30.0
+
+v1.30.0 (`c7b64ec`) built exactly like the v1.19.0 SUT: `ubuntu:24.04`, Ubuntu clang 18.1.3 (all 83 CUs), the same flags, and Ubuntu's protobuf 3.21.12. `/emit_app` resolves `libprotobuf.so.32` to `libprotobuf.so.32.0.12` from `libprotobuf32t64` 3.21.12-8.2ubuntu0.4, the same library as v1.19.0. Its two builds are identical in all 48 compared sections. The emit-app needed one build option for v1.30.0, because v1.30.0 renamed the CMake package components while keeping the target names. The source was unchanged.
+
+Method: 10 interleaved rounds on 2026-11-03, microtel and both opentelemetry-cpp versions. Both opentelemetry-cpp SUTs had a queue of 16,384 and microtel its default 8,192. All three had 0 drops and delivered 1,000,000 of 1,000,000 spans to the sink. Allocations: two runs each, identical. Ratios are the median of the ten per-round ratios, with the range.
+
+| SUT | Compiler | Protobuf | p50, ns (IQR) | p95, ns | p50 ÷ microtel | Calling-thread allocations per span, 0 / 5 attributes |
+|---|---|---|---:|---:|---|---:|
+| microtel-http | clang 18.1.3 | none (vendored upb) | 219 (210–232) | 480 | 1 | 2 / 11 |
+| otelcpp-http v1.19.0 | clang 18.1.3 | 3.21.12, Ubuntu | 772 (758–792) | 1,846 | 3.51 (3.34–3.67) | 14 / 47 |
+| otelcpp-http v1.30.0 | clang 18.1.3 | 3.21.12, Ubuntu | 722 (684–749) | 1,838 | 3.30 (3.02–3.43) | 10 / 43 |
+
+- **v1.30.0 is a little faster than v1.19.0 on the calling thread.** v1.30.0 ÷ v1.19.0 is 0.94 for p50 (range 0.89–0.97), and the same for p95: 0.99 (0.97–1.02). It makes 4 fewer allocations per span there. The gap to microtel stays above 3×.
+- **v1.30.0 allocates much more on background threads.** It makes 5.3 per span against v1.19.0's 1.1 with no attributes, and 31.3 against 1.1 with 5. Its median flush also takes 5.3 ms against 1.9 ms. This was observed, not profiled.
+- **v1.19.0's counts are whole numbers when nothing drops.** In step 3 they were 14.25 and 47.57; with no drops they are exactly 14 and 47.
+
+Data: [`results/2026-11-03/v130/`](results/2026-11-03/v130/).
 
 ## Design difference, with source citations
 
@@ -261,9 +285,9 @@ v1.30.0 has the same design: `otlp_recordable.h:119`, `otlp_recordable.cc:148` a
 
 In order of size, smallest first:
 
-1. **Two `SetIdentity` changes**: skip an empty `trace_state`, and fill `trace_id` in place. That takes a root span from 5 to 3 allocations on v1.19.0, and from 4 to 3 on main ([details above](#otlprecordablesetidentity-field-by-field)). With #4580 applied, it saves nothing ([section 4](#4-opentelemetry-cpp-main-and-pr-4580)).
-2. **Fewer allocations in the rest of `OtlpRecordable`.** That means an arena-backed recordable message, or adopting the message into the export request instead of deep-copying it. This is the subject of upstream open-telemetry/opentelemetry-cpp#4558, and of open PR #4580 (arena): 9 → 5 calling-thread allocations for a minimal span and p50 0.74× on main (10 rounds) ([section 4](#4-opentelemetry-cpp-main-and-pr-4580)). With 5 attributes, the recordable is the biggest part of opentelemetry-cpp's 47.6 allocations per span.
-3. **The design change: no protobuf on the calling thread.** Record into a plain, SpanData-style recordable, which opentelemetry-cpp already has, and build the protobuf message on the export thread when a batch is serialized. Here, swapping the recordable alone removed 65% of the span-time gap, an upper bound (step 1b). It needs a recordable-to-protobuf conversion at export time inside the OTLP exporter, and no new dependency.
+1. **Two `SetIdentity` changes**: skip an empty `trace_state`, and fill `trace_id` in place. That takes a root span from 5 to 3 allocations on v1.19.0 (protobuf 3.21.12, Ubuntu), and from 4 to 3 on main (protobuf 35.1.0, bundled) ([details above](#otlprecordablesetidentity-field-by-field)). With #4580 applied, it saves nothing ([section 4](#4-opentelemetry-cpp-main-and-pr-4580)).
+2. **Fewer allocations in the rest of `OtlpRecordable`.** That means an arena-backed recordable message, or adopting the message into the export request instead of deep-copying it. This is the subject of upstream open-telemetry/opentelemetry-cpp#4558, and of open PR #4580 (arena): 9 → 5 calling-thread allocations for a minimal span and p50 0.74× on main (10 rounds; protobuf 35.1.0, bundled) ([section 4](#4-opentelemetry-cpp-main-and-pr-4580)). With 5 attributes, the recordable is the biggest part of opentelemetry-cpp's 47.6 allocations per span (v1.19.0, protobuf 3.21.12, Ubuntu).
+3. **The design change: no protobuf on the calling thread.** Record into a plain, SpanData-style recordable, which opentelemetry-cpp already has, and build the protobuf message on the export thread when a batch is serialized. Here, swapping the recordable alone removed 65% of the span-time gap (v1.19.0, protobuf 3.21.12, Ubuntu), an upper bound (step 1b). It needs a recordable-to-protobuf conversion at export time inside the OTLP exporter, and no new dependency.
 
 All three are ordinary C++14 inside opentelemetry-cpp's SDK and OTLP exporter. They need no C++17 or C++20 features and nothing from microtel.
 
@@ -271,11 +295,11 @@ Porting microtel's own upb + nghttp2 exporter is a separate and much larger opti
 
 ## Not measured
 
-- **The rest of part 1:** the GCC 13 and hardening variants, opentelemetry-cpp v1.30.0, and both libraries over OTLP/gRPC. Skipped by request. For the gRPC pair, the published snapshot already shows GCC-and-hardened (812 ns) and Clang-unhardened (813 ns) opentelemetry-cpp at the same p50.
+- **The rest of part 1:** the GCC 13 and hardening variants, and both libraries over OTLP/gRPC. (v1.30.0 over OTLP/HTTP is in section 5.) Skipped by request. For the gRPC pair, the published snapshot already shows GCC-and-hardened (812 ns) and Clang-unhardened (813 ns) opentelemetry-cpp at the same p50.
 - **Part 5:** the footprint split between gRPC and protobuf.
 - **Kernel time on the calling thread** (`perf_event_paranoid=2`).
 - **Virtual dispatch.** An indirect call's cost lands in its caller, so sampling cannot separate it.
-- **Which call sites make opentelemetry-cpp's 14 allocations.** The counter is per thread, not per caller.
+- **Which call sites make opentelemetry-cpp's 14 allocations (v1.19.0, protobuf 3.21.12, Ubuntu).** The counter is per thread, not per caller.
 - **opentelemetry-cpp's drop count in steps 1–3.** The SDK exposes none. Steps 1–3 ran before the bench counted drops, so their only signal is the sink's delivery rate (95–99%). The queue rerun counts drops through the SDK's log, a counter that was checked against the sink.
 
 ## Reproducing
@@ -298,6 +322,9 @@ python3 -I bench/parity/count_mallocs.py bench-sut-parity-<variant> malloc_count
 podman build -f .devcontainer/Dockerfile.dev -t otelcpp-dev:0a5bb0b <opentelemetry-cpp clone>
 bench/parity/build_otelcpp_dev.sh <log-dir> localhost/otelcpp-dev:0a5bb0b <clone> a=<commit> b=<commit> c=<commit> d=<commit>
 bench/parity/run_rounds.sh <out> 5 parity-otelcpp-main-a parity-otelcpp-main-b parity-otelcpp-main-c parity-otelcpp-main-d
+# Section 5: v1.30.0
+PARITY_DOUBLE=1 bench/parity/build.sh <log-dir> otelcpp130-http-clang
+bench/parity/run_rounds.sh <out> 10 parity-microtel-http-clang parity-otelcpp-http-clang-q16k parity-otelcpp130-http-clang-q16k
 python3 -I bench/parity/count_mallocs.py bench-sut-parity-otelcpp-main-<v> malloc_count.so <attrs> <out.json> --env EMIT_OTELCPP_BSP_MAX_QUEUE_SIZE=16384
 podman run --rm --entrypoint /setidentity_allocs bench-sut-parity-otelcpp-main-<v> --dump
 ```

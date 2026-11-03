@@ -1,0 +1,247 @@
+{
+  "rows": {
+    "parity-microtel-http-clang": {
+      "n": 100,
+      "rounds": 10,
+      "p50": [
+        210.0,
+        219.0,
+        232.25
+      ],
+      "p95": [
+        463.0,
+        479.5,
+        490.0
+      ],
+      "spans_per_sec": 1433903.5057072965,
+      "dropped": 0,
+      "image_id": "f44e904139e72ec5bd526c496b8b5ee867b5bcb10314fbf1401b9b0754d52b1a",
+      "image_tag": "bench-sut-parity-microtel-http-clang"
+    },
+    "parity-otelcpp-http-clang-q16k": {
+      "n": 100,
+      "rounds": 10,
+      "p50": [
+        757.5,
+        772.5,
+        792.5
+      ],
+      "p95": [
+        1820.75,
+        1846.5,
+        1879.75
+      ],
+      "spans_per_sec": 974657.5230813996,
+      "dropped": 0,
+      "image_id": "aa7f8bd5bae0ab0af6709008492193f3bde6ca317f4117e6d355d2c18d1f76b9",
+      "image_tag": "bench-sut-parity-otelcpp-http-clang"
+    },
+    "parity-otelcpp130-http-clang-q16k": {
+      "n": 100,
+      "rounds": 10,
+      "p50": [
+        684.25,
+        721.5,
+        749.0
+      ],
+      "p95": [
+        1768.5,
+        1838.5,
+        1889.25
+      ],
+      "spans_per_sec": 735113.263096927,
+      "dropped": 0,
+      "image_id": "b30e2dde15b2cb0777d85c7f1a7b527f220f1fa0f33ecae7dacd3976f5dcade0",
+      "image_tag": "bench-sut-parity-otelcpp130-http-clang"
+    }
+  },
+  "rounds": {
+    "parity-microtel-http-clang": [
+      {
+        "round": "round1",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T12:57:40.445755+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round10",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T13:02:13.638941+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round2",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T12:59:00.064530+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round3",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T12:59:13.627927+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round4",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T12:59:27.122330+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round5",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T13:00:00.969590+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round6",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T13:00:14.468125+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round7",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T13:00:27.911748+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round8",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T13:01:01.692644+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round9",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T13:02:00.211879+00:00",
+        "load_avg_1m": null
+      }
+    ],
+    "parity-otelcpp-http-clang-q16k": [
+      {
+        "round": "round1",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T12:58:02.774962+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round10",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T13:02:20.323601+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round2",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T12:58:16.495903+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round3",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T12:59:20.332396+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round4",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T12:59:33.873999+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round5",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T12:59:47.409098+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round6",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T13:00:21.173238+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round7",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T13:00:34.610371+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round8",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T13:00:48.158511+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round9",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T13:02:06.930191+00:00",
+        "load_avg_1m": null
+      }
+    ],
+    "parity-otelcpp130-http-clang-q16k": [
+      {
+        "round": "round1",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T12:58:09.615537+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round10",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T13:02:27.092547+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round2",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T12:58:23.282320+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round3",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T12:59:06.800554+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round4",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T12:59:40.627103+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round5",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T12:59:54.175081+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round6",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T13:00:07.689573+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round7",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T13:00:41.359141+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round8",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T13:00:54.898997+00:00",
+        "load_avg_1m": null
+      },
+      {
+        "round": "round9",
+        "samples": 10,
+        "bench_started_at": "2026-11-03T13:01:53.403836+00:00",
+        "load_avg_1m": null
+      }
+    ]
+  },
+  "dropped_rounds": []
+}
