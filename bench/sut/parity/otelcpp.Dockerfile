@@ -20,6 +20,8 @@
 #   PROTOBUF_TAG     empty: Ubuntu's libprotobuf32t64. A protobuf tag (v21.12 is
 #                    3.21.12, Ubuntu's version): built here with BENCH flags.
 #   INMEMORY         ON: spans go to the SDK's in-memory exporter (EXPORTER=http).
+#   ALL_COMPONENTS   ON: the emit-app finds opentelemetry-cpp without naming
+#                    components (v1.30.0 renamed them; the targets are unchanged).
 
 ARG OTELCPP_VERSION=v1.19.0
 ARG EXPORTER=http
@@ -31,6 +33,7 @@ ARG EXTRA_FLAGS=
 ARG CXX_STD=17
 ARG PROTOBUF_TAG=
 ARG INMEMORY=OFF
+ARG ALL_COMPONENTS=OFF
 ARG INSTALL_PERF=false
 
 FROM ubuntu:24.04 AS base
@@ -127,6 +130,7 @@ ARG EMIT_CXX
 ARG EXTRA_FLAGS
 ARG CXX_STD
 ARG INMEMORY
+ARG ALL_COMPONENTS
 
 COPY bench/emit-app /src/emit-app
 
@@ -142,6 +146,7 @@ RUN BACKEND=OTELCPP_HTTP; \
         -DCMAKE_CXX_SCAN_FOR_MODULES=OFF \
         -DBENCH_BACKEND=$BACKEND \
         -DBENCH_OTELCPP_INMEMORY_SPANS=$INMEMORY \
+        -DBENCH_OTELCPP_ALL_COMPONENTS=$ALL_COMPONENTS \
         -DCMAKE_PREFIX_PATH="/opt/otelcpp;/opt/protobuf" \
     && cmake --build /build/emit-app
 

@@ -41,7 +41,7 @@ add otelcpp-http-gcc-nohard   $OTEL "EXPORTER=http SDK_CC=gcc SDK_CXX=g++" "$NOH
 add otelcpp-grpc-gcc-nohard   $OTEL "EXPORTER=grpc SDK_CC=gcc SDK_CXX=g++" "$NOHARD"
 add otelcpp-http-clang-pbsrc  $OTEL "EXPORTER=http SDK_CC=clang-18 SDK_CXX=clang++-18 PROTOBUF_TAG=v21.12"
 add otelcpp-http-clang-inmem  $OTEL "EXPORTER=http SDK_CC=clang-18 SDK_CXX=clang++-18 INMEMORY=ON"
-add otelcpp130-http-clang     $OTEL "OTELCPP_VERSION=v1.30.0 EXPORTER=http SDK_CC=clang-18 SDK_CXX=clang++-18"
+add otelcpp130-http-clang     $OTEL "OTELCPP_VERSION=v1.30.0 EXPORTER=http SDK_CC=clang-18 SDK_CXX=clang++-18 ALL_COMPONENTS=ON"
 add otelcpp130-grpc-clang     $OTEL "OTELCPP_VERSION=v1.30.0 EXPORTER=grpc SDK_CC=clang-18 SDK_CXX=clang++-18"
 add microtel-http-clang       $MT   "CC_BIN=clang-18 CXX_BIN=clang++-18 GRPC=OFF"
 add microtel-grpc-clang       $MT   "CC_BIN=clang-18 CXX_BIN=clang++-18 GRPC=ON"
