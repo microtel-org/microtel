@@ -57,4 +57,21 @@ private:
     Clock::time_point m_start;
 };
 
+/// Where thread @p index of @p threads starts pacing, when each runs at
+/// @p rate_hz_per_thread from a common @p start: start + index * interval /
+/// threads, so the threads' iterations interleave evenly instead of all
+/// waking at the same instant. Unpaced (rate 0) or one thread: @p start.
+[[nodiscard]] inline Pacer::Clock::time_point StaggeredStart(Pacer::Clock::time_point start,
+                                                             uint64_t rate_hz_per_thread,
+                                                             uint64_t threads,
+                                                             uint64_t index) noexcept
+{
+    if (rate_hz_per_thread == 0 || threads == 0)
+    {
+        return start;
+    }
+    return start +
+           std::chrono::nanoseconds(index * Pacer::kNsPerSec / (rate_hz_per_thread * threads));
+}
+
 }  // namespace bench

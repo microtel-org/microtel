@@ -49,6 +49,25 @@ void TestUnpacedAndPastDeadlinesDoNotSleep()
     assert(Clock::now() - t0 < std::chrono::milliseconds(100));
 }
 
+void TestStaggeredStartsInterleaveEvenly()
+{
+    // 4 threads at 83 Hz each: the per-thread interval is 1e9 / 83 ns, and
+    // thread i starts i quarters of it later.
+    const Clock::time_point start{};
+    assert(bench::StaggeredStart(start, 83, 4, 0) == start);
+    assert(bench::StaggeredStart(start, 83, 4, 1) == start + nanoseconds(1'000'000'000ULL / 332));
+    assert(bench::StaggeredStart(start, 83, 4, 3) == start + nanoseconds(3'000'000'000ULL / 332));
+    // Every offset is inside one interval, so no thread loses an iteration.
+    assert(bench::StaggeredStart(start, 83, 4, 3) < bench::Pacer(83, start).Deadline(1));
+}
+
+void TestStaggeredStartUnpaced()
+{
+    const Clock::time_point start{};
+    assert(bench::StaggeredStart(start, 0, 4, 3) == start);
+    assert(bench::StaggeredStart(start, 100, 0, 0) == start);
+}
+
 void TestThreadCpuCountsWorkNotSleep()
 {
     const bench::ThreadCpu c0 = bench::ReadThreadCpu();
@@ -77,6 +96,8 @@ int main()
     TestDeadlinesAreAbsolute();
     TestDeadlinesDoNotAccumulateRounding();
     TestUnpacedAndPastDeadlinesDoNotSleep();
+    TestStaggeredStartsInterleaveEvenly();
+    TestStaggeredStartUnpaced();
     TestThreadCpuCountsWorkNotSleep();
     std::puts("pacing_selftest: OK");
     return 0;
