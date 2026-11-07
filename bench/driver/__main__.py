@@ -505,6 +505,8 @@ def _run_sut(
                         "latency_histogram": result.get("latency_histogram", []),
                         "flush_ns":          flush_ns,
                         "export_requests":   export_requests,
+                        **_pacing_fields(result, rate_hz, spans_per_iter),
+                        "emit_cpu": {k: result[k] for k in _EMIT_CPU_KEYS if k in result},
                         "sink": {
                             "mode":                   sink_snap["mode"],
                             "spans_received":         sink_snap["spans_received"],
@@ -552,6 +554,44 @@ def _reply_timeout_s(spans_per_sample: int, rate_hz: int) -> float:
     return max(_MIN_REPLY_TIMEOUT_S, _PACED_RUN_TIMEOUT_FACTOR * spans_per_sample / rate_hz)
 
 
+# The run reply's own CPU reading of its workload threads (thread_cpu.hpp).
+_EMIT_CPU_KEYS = ("emit_cpu_ns", "emit_user_ns", "emit_sys_ns")
+
+
+def _pacing_fields(result: dict, rate_hz: int, spans_per_iter: int) -> dict:
+    """Target and achieved rates of one sample, in iterations/s and spans/s.
+
+    The target is the profile's rate after the emit-app splits it evenly
+    across its threads (``rate_hz_effective``); empty for an unpaced run.
+    """
+    if rate_hz <= 0:
+        return {}
+    target = result.get("rate_hz_effective", rate_hz)
+    dur_ns = result.get("duration_ns", 0)
+    achieved = result["spans_emitted"] * 1e9 / dur_ns if dur_ns > 0 else None
+    return {
+        "rate_target_hz": target,
+        "rate_achieved_hz": achieved,
+        "span_rate_target": target * spans_per_iter,
+        "span_rate_achieved": achieved * spans_per_iter if achieved is not None else None,
+    }
+
+
+def _emit_self(samples: list[dict], spans: int) -> Optional[dict]:
+    """The workload threads' self-reported CPU, summed over @p samples, per span."""
+    if not samples or any(_EMIT_CPU_KEYS[0] not in s.get("emit_cpu", {}) for s in samples):
+        return None  # an emit-app too old to report it
+    tot = {k: sum(s["emit_cpu"].get(k, 0) for s in samples) for k in _EMIT_CPU_KEYS}
+    return {
+        "cpu_ns": tot["emit_cpu_ns"],
+        "user_ns": tot["emit_user_ns"],
+        "system_ns": tot["emit_sys_ns"],
+        "per_span_ns": {k: (v / spans if spans > 0 else None) for k, v in
+                        (("total", tot["emit_cpu_ns"]), ("user", tot["emit_user_ns"]),
+                         ("system", tot["emit_sys_ns"]))},
+    }
+
+
 def _cpu_start(engine: str, container_name: str) -> tuple[Optional[Any], Optional[Any]]:
     """Reader and first snapshot for the container, or (None, None) if unreadable."""
     try:
@@ -579,10 +619,13 @@ def _cpu_end(reader: Optional[Any], start: Optional[Any], samples: list[dict],
     out = cpu_acct.window(start, end, spans, basis)
     out["source"] = reader.source
     out["thread_source"] = reader.thread_source
+    out["emit_self"] = _emit_self(samples, spans)
     per = out["per_span_ns"]
     if per["total"] is not None:
+        own = out["emit_self"]["per_span_ns"]["total"] if out["emit_self"] else None
+        own_s = f", emit self-reported {own:.0f}" if own is not None else ""
         _log(f"  cpu ({reader.source.split()[0]}): {per['total']:.0f} ns/span "
-             f"(emit {per['emit']:.0f}, other {per['other']:.0f}), "
+             f"(emit {per['emit']:.0f}{own_s}, other {per['other']:.0f}), "
              f"{out['cores']:.3f} cores")
     return out
 

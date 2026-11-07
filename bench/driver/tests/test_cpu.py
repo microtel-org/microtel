@@ -11,7 +11,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from driver.__main__ import _cpu_end, _reply_timeout_s
+from driver.__main__ import _cpu_end, _emit_self, _pacing_fields, _reply_timeout_s
 from driver.cpu import (
     CpuReader,
     CpuSnapshot,
@@ -298,3 +298,85 @@ def test_markdown_has_cpu_rows_source_and_label():
     assert "| CPU cores used | 0.010 (1.00×) | 0.018 (1.80×) | 0.002 (0.20×) |" in md
     assert "| CPU source | cgroup | cgroup | cgroup |" in md
     assert "from the end of warm-up to after the last sample's flush" in md
+
+
+# ---------------------------------------------------------------------------
+# The run reply's own CPU reading and pacing rates
+# ---------------------------------------------------------------------------
+
+def _own(cpu_ns, user_ns, sys_ns):
+    return {"emit_cpu_ns": cpu_ns, "emit_user_ns": user_ns, "emit_sys_ns": sys_ns}
+
+
+def test_emit_self_sums_samples_per_span():
+    samples = [{"emit_cpu": _own(3_000, 2_000, 1_000)}, {"emit_cpu": _own(1_000, 600, 400)}]
+    own = _emit_self(samples, 10)
+    assert (own["cpu_ns"], own["user_ns"], own["system_ns"]) == (4_000, 2_600, 1_400)
+    assert own["per_span_ns"] == {"total": 400, "user": 260, "system": 140}
+
+
+def test_emit_self_is_none_for_an_emit_app_that_does_not_report_it():
+    assert _emit_self([{"emit_cpu": {}}], 10) is None
+    assert _emit_self([], 10) is None
+
+
+def test_cpu_end_carries_emit_self():
+    samples = [{"items_received": 10, "spans_expected": 10, "emit_cpu": _own(5_000, 4_000, 1_000)}]
+    c = _cpu_end(_FakeReader(), S0, samples, "microtel")
+    assert c["emit_self"]["per_span_ns"]["total"] == 500
+
+
+def test_pacing_fields_target_and_achieved():
+    # 332 req/s asked of 4 threads is 83 each: 332 effective. 1,000 requests
+    # of 3 spans each in 3.125 s is 320 req/s.
+    result = {"spans_emitted": 1_000, "duration_ns": 3_125_000_000, "rate_hz_effective": 332}
+    f = _pacing_fields(result, 332, 3)
+    assert (f["rate_target_hz"], f["span_rate_target"]) == (332, 996)
+    assert f["rate_achieved_hz"] == pytest.approx(320.0)
+    assert f["span_rate_achieved"] == pytest.approx(960.0)
+
+
+def test_pacing_fields_empty_when_unpaced():
+    assert _pacing_fields({"spans_emitted": 1, "duration_ns": 1}, 0, 1) == {}
+
+
+def test_pacing_fields_fall_back_to_the_requested_rate():
+    f = _pacing_fields({"spans_emitted": 10, "duration_ns": 1_000_000_000}, 12, 1)
+    assert f["rate_target_hz"] == 12
+
+
+def _with_own(suts, own_ns):
+    for s, ns in zip(suts, own_ns):
+        s["cpu"]["emit_self"] = {"per_span_ns": {"total": ns, "user": ns, "system": 0}}
+    return suts
+
+
+def test_emit_self_ratio_and_baseline_subtraction():
+    suts = _with_own(_suts(), [500, 1_100, 100])
+    add_cpu_comparisons(suts)
+    assert suts[1]["cpu"]["ratio_to_microtel"]["emit_self"] == pytest.approx(2.2)
+    assert suts[1]["cpu"]["baseline_subtracted"]["emit_self_ns_per_span"] == pytest.approx(1_000)
+    # (1,100 − 100) / (500 − 100)
+    assert suts[1]["cpu"]["ratio_to_microtel"]["baseline_subtracted_emit_self"] == pytest.approx(2.5)
+
+
+def test_emit_self_absent_leaves_its_rows_empty():
+    suts = _suts()
+    add_cpu_comparisons(suts)
+    assert suts[1]["cpu"]["baseline_subtracted"]["emit_self_ns_per_span"] is None
+    assert suts[1]["cpu"]["ratio_to_microtel"]["emit_self"] is None
+
+
+def test_markdown_has_emit_self_and_rate_rows():
+    suts = _with_own(_suts(), [500, 1_100, 100])
+    add_cpu_comparisons(suts)
+    for s in suts:
+        s["summary"] = {}
+        s["samples"] = [{"span_rate_target": 996, "span_rate_achieved": 990.0},
+                        {"span_rate_target": 996, "span_rate_achieved": 994.0}]
+    md = _render_md({"suts": suts, "environment": {}, "profile": {}})
+    assert ("| CPU ns/span, emitting threads, self-reported | 500 (1.00×) | 1,100 (2.20×) "
+            "| 100 (0.20×) |") in md
+    assert ("| CPU ns/span, emitting threads self-reported − baseline | 400 (1.00×) "
+            "| 1,000 (2.50×) | — |") in md
+    assert "| Spans/s, target → achieved | 996 → 992 (99.6%) |" in md

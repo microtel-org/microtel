@@ -27,6 +27,7 @@ add_executable(emit_app
     src/main.cpp
     src/histogram.cpp
     src/control_socket.cpp
+    src/thread_cpu.cpp
     src/workload.cpp
 )
 
@@ -119,4 +120,11 @@ if(MICROTEL_BUILD_BENCH)
     )
     target_include_directories(workload_selftest PRIVATE include)
     add_test(NAME bench_workload_selftest COMMAND workload_selftest)
+
+    add_executable(pacing_selftest
+        test/pacing_selftest.cpp
+        src/thread_cpu.cpp
+    )
+    target_include_directories(pacing_selftest PRIVATE include)
+    add_test(NAME bench_pacing_selftest COMMAND pacing_selftest)
 endif()
