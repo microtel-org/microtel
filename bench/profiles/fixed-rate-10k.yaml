@@ -1,0 +1,43 @@
+# fixed-rate-10k — CPU at about 10,000 spans/s (bench/docs/methodology.md, "CPU")
+#
+# The realistic-request workload (one parent and two child spans per request,
+# 4 worker threads) paced to 3,332 requests/s: 833 per thread, since the emit-app
+# divides the rate by the thread count, so 9,996 spans/s nominal. One 60 s run
+# after warmup. The pacing loop sleeps between requests and undershoots the
+# nominal rate slightly; the report's spans/sec row is the rate achieved.
+#
+# Read the CPU rows: cores used and CPU ns per span, raw and with the
+# baseline-noop SUT (the same loop with no SDK) subtracted.
+
+profile: fixed-rate-10k
+description: "Realistic requests paced to ~10,000 spans/s for 60 s — CPU at a fixed rate"
+
+workload:
+  mode: realistic_request
+  threads: 4
+  target_rate_hz: 3332      # requests/s across all threads (3 spans each)
+  spans_per_sample: 199920  # requests: 60 s at 3,332/s
+  samples: 1
+  warmup_spans: 3332        # warmup requests, about 1 s
+
+sink:
+  mode: blackhole
+  protocol: auto
+
+env:
+  EMIT_WORKLOAD: realistic_request
+
+suts:
+  - microtel
+  - otelcpp-http
+  - baseline-noop
+
+metrics:
+  - spans_emitted
+  - spans_dropped
+  - duration_ns
+  - latency_p50_ns
+  - latency_p95_ns
+  - latency_p99_ns
+  - latency_min_ns
+  - latency_max_ns

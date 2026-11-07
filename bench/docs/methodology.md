@@ -75,3 +75,118 @@ returns to immediately after, measured with `std::chrono::steady_clock`.  This
 captures SDK hot-path overhead (span creation, attribute encoding, queue push)
 but excludes network RTT and batch flush latency.  It is **not** end-to-end
 export latency.
+
+## CPU
+
+The driver records the CPU each SUT container uses ([`driver/cpu.py`](../driver/cpu.py)).
+The figures are added to `results.json` (each SUT's `cpu`) and to the Results
+table in `results.md`. Nothing gates on them.
+
+### Window
+
+There is one window per SUT. It starts after the warm-up's flush and sink reset,
+and ends after the last sample's flush. Export work is therefore included,
+along with the driver's 0.5 s wait after each flush, when the SUT is idle
+apart from its background threads' wake-ups. Snapshots are taken at both ends,
+and every figure is the difference between them.
+
+### Sources
+
+- **Process total.** This is the container's cgroup v2 `cpu.stat`:
+  `usage_usec`, `user_usec` and `system_usec`. The cgroup comes from podman's
+  `State.CgroupPath`, or for docker from the SUT process's
+  `/proc/<pid>/cgroup`. It covers everything in the container, which is only
+  the emit-app, PID 1. It works rootless.
+  - If `cpu.stat` can't be read, the driver falls back to the process's
+    `/proc/<pid>/stat` `utime` and `stime`. These are in clock ticks, 10 ms
+    at `USER_HZ` 100.
+  - The fallback is not the sum of `/proc/<pid>/task/*/stat`. That sum
+    misses threads that have exited, and the emitting threads have.
+  - The `CPU source` row and `cpu.source` say which source was used.
+- **Per thread.** For every live thread, the name comes from
+  `/proc/<pid>/task/<tid>/stat`, and the run time in ns from `schedstat`.
+  When `schedstat` is missing, the run time is `utime + stime` in ticks
+  instead (`cpu.thread_source`).
+
+### Emitting threads and the rest
+
+The emit-app names its workload threads `emit` (`pthread_setname_np`). It
+creates them for each `run` command and joins them before it replies, so they
+have exited by the time either snapshot is taken.
+
+So the emitting threads' CPU is the process total minus the other threads'.
+The other threads are the SDK's exporter and I/O threads, the HTTP client's,
+and the emit-app's main thread, which runs the control socket and computes
+the percentiles.
+
+Anything else that starts and exits inside the window is counted as emitting.
+`cpu.threads_exited` lists the threads alive at the first snapshot and gone at
+the second; their CPU after the first snapshot is counted as emitting too.
+
+The split works only for emit-app SUTs. `go-otel` and `rust-otel` have no
+`emit` threads. Their work runs on long-lived runtime threads and shows up
+under "other".
+
+### Per span, cores, ratios
+
+- **Per span.** CPU is divided by the spans delivered at the sink, summed over
+  the samples. Dropped spans still cost the SUT CPU, so a SUT that drops is
+  charged that cost per delivered span. Read it together with the delivery
+  rate.
+- **Cores.** Total CPU divided by the window's wall time.
+- **÷ microtel.** Each figure divided by the `microtel` SUT's in the same run.
+  The ratio is absent when microtel didn't run.
+
+### Baseline
+
+`baseline-noop` is the emit-app built with `BENCH_BACKEND=NOOP`. It has the
+same control socket, workload threads, pacing loop, clock reads and histogram
+as the other SUTs, but no SDK, and it exports nothing. So its CPU is divided
+by the spans it emitted.
+
+When it is in the same run, each SUT also gets two baseline-subtracted
+figures:
+- `total − baseline`: the SUT's ns per span minus the baseline's;
+- `cores − baseline`: the SUT's cores minus the baseline's.
+
+Cores subtraction assumes both ran at the same rate, so it means something
+only at a fixed rate. In hot-loop profiles the baseline loop runs much faster
+than any SDK.
+
+### Fixed-rate profiles
+
+`fixed-rate-1k` and `fixed-rate-10k` run the realistic-request workload: a
+parent and two children per request, on 4 threads. Each is one 60 s run after
+a warm-up of about 1 s.
+
+| Profile | Requests/s | Per thread | Spans/s, nominal |
+|---|---:|---:|---:|
+| `fixed-rate-1k` | 332 | 83 | 996 |
+| `fixed-rate-10k` | 3,332 | 833 | 9,996 |
+
+The emit-app divides the rate by the thread count, rounding down.
+
+The pacing loop sets its next deadline from the time it woke, not from the
+previous deadline. Each oversleep (wake-up latency, plus up to the 50 µs
+default timer slack) therefore adds up, and the achieved rate falls below nominal. The `Spans/sec`
+row gives the achieved rate.
+
+### Caveats
+
+- **Accounting granularity.** `usage_usec` comes from the scheduler's
+  ns-resolution run time. The kernel splits it into user and system by tick
+  sampling, then scales the split to the total, so the user/system split is
+  approximate over short windows. The `/proc` fallback is 10 ms ticks.
+- **SMT.** CPU time is time on a logical CPU. When the sibling hyperthread is
+  busy (the sink, the driver or another SUT thread), the same work takes more
+  ns. Nothing is pinned.
+- **The pacing loop's own cost.** At a fixed rate, each request costs clock
+  reads, a `nanosleep` and a timer wake-up. For a cheap SDK these are a large
+  part of the total, which is why the baseline is subtracted. The subtraction
+  assumes the two costs simply add.
+- **Not counted.** The sink, which runs in its own container. The container
+  engine (`conmon`, rootless networking). Kernel network work done outside
+  the SUT's own threads, for example softirqs that run while another task is
+  scheduled.
+- **Single run.** Each SUT gets one window, with no spread. Comparisons need
+  repeated, interleaved runs, as in "Run order and host noise".

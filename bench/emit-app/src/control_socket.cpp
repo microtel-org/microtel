@@ -14,6 +14,7 @@
 
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <pthread.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
@@ -154,6 +155,9 @@ private:
 void WorkerThread(uint64_t span_count, uint64_t rate_hz_per_thread,
                   WorkloadMode mode, IBackend& backend, Histogram& hist)
 {
+    // The driver's CPU accounting (bench/driver/cpu.py) tells these threads
+    // from the SDK's own by this name.
+    ::pthread_setname_np(::pthread_self(), "emit");
     TokenBucket tb(rate_hz_per_thread);
     for (uint64_t i = 0; i < span_count; ++i)
     {

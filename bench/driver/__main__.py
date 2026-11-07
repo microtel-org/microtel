@@ -23,6 +23,7 @@ from .container import (
     wait_tcp,
 )
 from .control import ControlClient
+from . import cpu as cpu_acct
 from .env_fingerprint import capture as capture_env
 from .env_fingerprint import warnings as env_warnings
 from .flamegraph import (
@@ -62,7 +63,8 @@ def _parse_args(argv=None) -> argparse.Namespace:
     p.add_argument("--profile", default="hot-loop-traces",
                    help="Profile name (default: hot-loop-traces)")
     p.add_argument("--sut", default=None,
-                   help="Run only this SUT (default: all B0 SUTs in profile)")
+                   help="Run only these SUTs, comma-separated, in that order "
+                        "(default: all B0 SUTs in profile)")
     p.add_argument("--reps", type=int, default=None,
                    help="Override number of samples (default: from profile)")
     p.add_argument("--out", default=str(_BENCH_DIR / "results"),
@@ -83,6 +85,9 @@ def _parse_args(argv=None) -> argparse.Namespace:
                    help="Regression threshold as a fraction (default: 0.05 = 5%%)")
     p.add_argument("--allow-smt", action="store_true",
                    help="Suppress hyperthreading/SMT warning")
+    p.add_argument("--label", default=None,
+                   help="Text shown at the top of results.md and stored as "
+                        "results.json 'label' (e.g. UNOFFICIAL: why)")
     p.add_argument("--verbose", action="store_true",
                    help="Show container build and run output")
     p.add_argument("--flamegraph", action="store_true",
@@ -366,8 +371,12 @@ def _run_sut(
     verbose: bool,
     flamegraph_dir: Optional[Path] = None,
     out_dir: Optional[Path] = None,
-) -> tuple[list[dict], Optional[Path]]:
-    """Start a SUT container, run warmup + N timed samples, return (samples, svg_path).
+) -> tuple[list[dict], Optional[Path], Optional[dict]]:
+    """Start a SUT container, run warmup + N timed samples, return (samples, svg_path, cpu).
+
+    cpu is the container's CPU from the end of warmup to after the last
+    sample's flush (cpu.window), per span delivered at the sink; for the no-op
+    baseline (library "none"), which delivers nothing, per span emitted.
 
     When flamegraph_dir is provided the container is started with the :perf image
     and --cap-add=PERFMON.  After all measurement samples, one dedicated profiling
@@ -375,6 +384,7 @@ def _run_sut(
     """
     samples: list[dict] = []
     svg_path: Optional[Path] = None
+    cpu: Optional[dict] = None
 
     image = perf_image_name(sut.image_name) if flamegraph_dir else sut.image_name
     cap_add = ["PERFMON"] if flamegraph_dir else None
@@ -418,12 +428,14 @@ def _run_sut(
         _wait_ready_line(c, "ready on control port", timeout=60.0)
 
         try:
-            with ControlClient("127.0.0.1", sut.ports.control) as ctrl:
+            with ControlClient("127.0.0.1", sut.ports.control,
+                               reply_timeout_s=_reply_timeout_s(spans_per_sample, rate_hz)) as ctrl:
                 _log(f"  warmup ({warmup_spans} spans) ...")
                 ctrl.run(warmup_spans, threads=threads, rate_hz=rate_hz)
                 ctrl.flush()   # drain both BSP and exporter queues before resetting
                 time.sleep(0.1)
                 sink_client.reset()
+                cpu_reader, cpu_start = _cpu_start(engine, container_name)
 
                 for i in range(n_samples):
                     sink_client.reset()
@@ -448,7 +460,9 @@ def _run_sut(
                             f"  WARNING: sink errors={sink_errors} "
                             f"last_error={sink_snap.get('last_error', '')!r}"
                         )
-                    elif _received_count(sink_snap, signal) == 0 and sink_http_req == 0 and sink_grpc_req == 0:
+                    elif (sut.library != "none"  # the no-op baseline exports nothing
+                          and _received_count(sink_snap, signal) == 0
+                          and sink_http_req == 0 and sink_grpc_req == 0):
                         _log(
                             "  WARNING: sink received 0 requests — "
                             "check endpoint URL, port, and container network"
@@ -503,6 +517,8 @@ def _run_sut(
                         },
                     })
 
+                cpu = _cpu_end(cpu_reader, cpu_start, samples, sut.library)
+
                 if flamegraph_dir and out_dir is not None:
                     _log(f"  flamegraph: recording dedicated profiling sample ...")
                     recorder = FlameGraphRecorder(engine, container_name)
@@ -520,7 +536,55 @@ def _run_sut(
             _dump_container_logs(c, f"SUT {sut.name}")
             raise
 
-    return samples, svg_path
+    return samples, svg_path, cpu
+
+
+# A run command's reply comes when the run ends: at a fixed rate, after
+# spans / rate seconds.  The margin covers a pacing loop slower than nominal.
+_MIN_REPLY_TIMEOUT_S = 60.0
+_PACED_RUN_TIMEOUT_FACTOR = 2.0
+
+
+def _reply_timeout_s(spans_per_sample: int, rate_hz: int) -> float:
+    """Control-socket reply timeout: 60 s, or twice a paced run's nominal length."""
+    if rate_hz <= 0:
+        return _MIN_REPLY_TIMEOUT_S
+    return max(_MIN_REPLY_TIMEOUT_S, _PACED_RUN_TIMEOUT_FACTOR * spans_per_sample / rate_hz)
+
+
+def _cpu_start(engine: str, container_name: str) -> tuple[Optional[Any], Optional[Any]]:
+    """Reader and first snapshot for the container, or (None, None) if unreadable."""
+    try:
+        reader = cpu_acct.container_reader(engine, container_name)
+        return reader, reader.snapshot()
+    except (OSError, ValueError, subprocess.CalledProcessError) as exc:
+        _log(f"  WARNING: CPU accounting unavailable: {exc}")
+        return None, None
+
+
+def _cpu_end(reader: Optional[Any], start: Optional[Any], samples: list[dict],
+             library: str) -> Optional[dict]:
+    """The CPU window from @p start to now, per span delivered (emitted for library "none")."""
+    if reader is None or start is None:
+        return None
+    try:
+        end = reader.snapshot()
+    except OSError as exc:
+        _log(f"  WARNING: CPU accounting failed at the end of the window: {exc}")
+        return None
+    if library == "none":
+        spans, basis = sum(s["spans_expected"] for s in samples), "emitted"
+    else:
+        spans, basis = sum(s["items_received"] for s in samples), "delivered"
+    out = cpu_acct.window(start, end, spans, basis)
+    out["source"] = reader.source
+    out["thread_source"] = reader.thread_source
+    per = out["per_span_ns"]
+    if per["total"] is not None:
+        _log(f"  cpu ({reader.source.split()[0]}): {per['total']:.0f} ns/span "
+             f"(emit {per['emit']:.0f}, other {per['other']:.0f}), "
+             f"{out['cores']:.3f} cores")
+    return out
 
 
 def _collect_sut_results(
@@ -538,7 +602,7 @@ def _collect_sut_results(
     for sut in active_suts:
         _log(f"--- SUT: {sut.name} ---")
         try:
-            samples, svg_path = _run_sut(
+            samples, svg_path, cpu = _run_sut(
                 engine=engine,
                 sut=sut,
                 sink_client=sink_client,
@@ -555,7 +619,7 @@ def _collect_sut_results(
             )
         except Exception as exc:
             _log(f"ERROR running {sut.name}: {exc}")
-            samples, svg_path = [], None
+            samples, svg_path, cpu = [], None, None
 
         image_tag = (
             perf_image_name(sut.image_name) if flamegraph_dir else sut.image_name
@@ -569,6 +633,7 @@ def _collect_sut_results(
             "image_tag":           image_tag,
             "image_id":            sut_image_ids.get(sut.name, ""),
             "samples":             samples,
+            "cpu":                 cpu,
             "flamegraph_svg":      str(svg_path) if svg_path else None,
         })
     return sut_results
@@ -584,11 +649,13 @@ def main(argv=None) -> int:
     b0_suts = filter_b0(all_suts)
 
     if args.sut:
-        sut = get_sut(all_suts, args.sut)
-        if sut is None:
-            _log(f"ERROR: SUT {args.sut!r} not found in registry")
-            return 1
-        active_suts = [sut]
+        active_suts = []
+        for name in args.sut.split(","):
+            sut = get_sut(all_suts, name.strip())
+            if sut is None:
+                _log(f"ERROR: SUT {name.strip()!r} not found in registry")
+                return 1
+            active_suts.append(sut)
     else:
         active_suts = [s for s in b0_suts if s.name in profile.suts]
 
@@ -716,6 +783,8 @@ def main(argv=None) -> int:
     env_data = dataclasses.asdict(fp)
     profile_data = dataclasses.asdict(profile)
     doc = build_results(profile_data, env_data, sut_results, warns)
+    if args.label:
+        doc["label"] = args.label
 
     json_path = write_json(doc, out_dir)
     md_path = write_markdown(doc, out_dir)
