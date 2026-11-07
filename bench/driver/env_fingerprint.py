@@ -27,6 +27,12 @@ class EnvFingerprint:
     container_engine_version: str
     host_load_avg_1m: float
     bench_started_at: str       # ISO-8601
+    # CPU idle states (cpu0's cpuidle; low-rate CPU figures depend on them):
+    # the cpuidle driver, each state's name and whether it is disabled, and
+    # the kernel command line's idle options (idle=, cpuidle.*, *max_cstate=).
+    cpu_idle_driver: str = "unknown"
+    cpu_idle_states: list = dataclasses.field(default_factory=list)
+    kernel_idle_options: list = dataclasses.field(default_factory=list)
 
 
 def capture(container_engine: str) -> EnvFingerprint:
@@ -41,6 +47,9 @@ def capture(container_engine: str) -> EnvFingerprint:
         container_engine_version=_engine_version(container_engine),
         host_load_avg_1m=os.getloadavg()[0],
         bench_started_at=datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        cpu_idle_driver=_read_or("/sys/devices/system/cpu/cpuidle/current_driver", "unknown"),
+        cpu_idle_states=_idle_states(),
+        kernel_idle_options=_kernel_idle_options(_read_or("/proc/cmdline", "")),
     )
 
 
@@ -62,6 +71,38 @@ def warnings(fp: EnvFingerprint, allow_smt: bool) -> list[str]:
             "hyperthreading (SMT) is enabled; pass --allow-smt to suppress this warning"
         )
     return result
+
+
+def _read_or(path, default: str) -> str:
+    try:
+        return Path(path).read_text(encoding="utf-8").strip()
+    except OSError:
+        return default
+
+
+def _idle_states(cpuidle: Path = Path("/sys/devices/system/cpu/cpu0/cpuidle")) -> list[dict]:
+    """``[{"name", "disabled"}]`` for each of cpu0's idle states, in order."""
+    states = []
+    for d in sorted(cpuidle.glob("state[0-9]*"), key=lambda p: int(p.name[len("state"):])):
+        name = _read_or(d / "name", "")
+        if name:
+            states.append({"name": name, "disabled": _read_or(d / "disable", "0") != "0"})
+    return states
+
+
+def _kernel_idle_options(cmdline: str) -> list[str]:
+    """The idle-related options on a kernel command line, as written."""
+    def is_idle(opt: str) -> bool:
+        key = opt.partition("=")[0]
+        return key == "idle" or key.startswith("cpuidle.") or key.endswith("max_cstate")
+    return [o for o in cmdline.split() if is_idle(o)]
+
+
+def format_idle_states(states: list) -> str:
+    """``"POLL, C1, C2, C3 (disabled)"``, or "unknown" when none were read."""
+    if not states:
+        return "unknown"
+    return ", ".join(s["name"] + (" (disabled)" if s["disabled"] else "") for s in states)
 
 
 def _cpu_model() -> str:

@@ -181,7 +181,10 @@ Each workload thread paces to absolute deadlines: iteration n starts no
 earlier than start + n / rate (`emit-app/include/pacer.hpp`). A late wake-up
 (wake-up latency, plus up to the 50 µs default timer slack) delays one
 iteration, and the following ones catch up, so the achieved rate matches the
-target. The `Spans/s, target → achieved` row gives both, from each sample's
+target. The threads' starts are staggered: thread i of n starts at
+start + i × interval / n (`StaggeredStart`), so their iterations interleave
+evenly instead of all waking at the same instant and contending on the SDK's
+locks together. The `Spans/s, target → achieved` row gives both, from each sample's
 `span_rate_target` and `span_rate_achieved`.
 
 ### Caveats
@@ -205,6 +208,12 @@ target. The `Spans/s, target → achieved` row gives both, from each sample's
   with about 4× the cache misses. The baseline shows the same effect. So
   ns/span at 1k is mostly a wake-up cost, not a per-span cost, and does not
   scale down to the hot-loop figure.
+  Low-rate figures therefore depend on which deep C-states are enabled: with
+  them disabled (`processor.max_cstate=1`, `idle=poll`, or a state's
+  `disable` flag) they should fall (not measured here), and two hosts compare only with the same
+  configuration. `results.json` records it (`environment.cpu_idle_driver`,
+  `cpu_idle_states` with each state's disable flag, and the kernel command
+  line's `kernel_idle_options`), and the Environment table shows it.
 - **Not counted.** The sink, which runs in its own container. The container
   engine (`conmon`, rootless networking). Kernel network work done outside
   the SUT's own threads, for example softirqs that run while another task is
@@ -237,5 +246,5 @@ python3 -m driver.rounds --profile fixed-rate-1k \
   the emitting-thread figures, the ratios and the achieved rate. Each run's
   own `results.json` is kept under `round<r>/<sut>/`.
 
-The images must already be built (a plain driver run builds them, or pass
-`--build` to let the first run do it).
+The runs never build images. Build them first (a plain driver run does), or
+pass `--build` to build every listed SUT's image before the first round.

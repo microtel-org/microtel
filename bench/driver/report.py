@@ -10,6 +10,8 @@ import statistics
 from pathlib import Path
 from typing import Any
 
+from .env_fingerprint import format_idle_states
+
 
 # ---------------------------------------------------------------------------
 # Statistics helpers
@@ -345,6 +347,9 @@ def _render_md(doc: dict) -> str:
         f"| Physical cores | {env.get('cpu_physical_cores', '?')} |",
         f"| Threads | {env.get('cpu_threads', '?')} |",
         f"| CPU governor | {env.get('cpu_governor', '?')} |",
+        f"| CPU idle states | {env.get('cpu_idle_driver', '?')}: "
+        f"{format_idle_states(env.get('cpu_idle_states', []))} |",
+        f"| Kernel idle options | {' '.join(env.get('kernel_idle_options', [])) or 'none'} |",
         f"| Hyperthreading | {env.get('hyperthreading', '?')} |",
         f"| Kernel | {env.get('kernel', '?')} |",
         f"| Container engine | {env.get('container_engine', '?')} {env.get('container_engine_version', '')} |",
