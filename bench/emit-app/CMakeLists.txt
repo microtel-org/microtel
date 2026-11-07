@@ -8,10 +8,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # MICROTEL     : microtel SDK, OTLP/HTTP-protobuf
 # OTELCPP_GRPC : opentelemetry-cpp SDK, OTLP/gRPC
 # OTELCPP_HTTP : opentelemetry-cpp SDK, OTLP/HTTP-protobuf  (B1+)
+# NOOP         : no SDK; the harness's own cost (baseline-noop SUT)
 set(BENCH_BACKEND "MICROTEL" CACHE STRING
-    "Emit-app backend: MICROTEL | OTELCPP_GRPC | OTELCPP_HTTP")
+    "Emit-app backend: MICROTEL | OTELCPP_GRPC | OTELCPP_HTTP | NOOP")
 set_property(CACHE BENCH_BACKEND PROPERTY
-    STRINGS MICROTEL OTELCPP_GRPC OTELCPP_HTTP)
+    STRINGS MICROTEL OTELCPP_GRPC OTELCPP_HTTP NOOP)
 
 # Inherit compiler flags from the base Dockerfile environment variable.
 # On a developer machine without the variable set, falls back to a sensible default.
@@ -93,9 +94,12 @@ elseif(BENCH_BACKEND STREQUAL "OTELCPP_HTTP")
         opentelemetry-cpp::otlp_http_metric_exporter
         opentelemetry-cpp::otlp_http_log_record_exporter)
 
+elseif(BENCH_BACKEND STREQUAL "NOOP")
+    target_sources(emit_app PRIVATE src/backend_noop.cpp)
+
 else()
     message(FATAL_ERROR "Unknown BENCH_BACKEND: ${BENCH_BACKEND}. "
-        "Valid values: MICROTEL | OTELCPP_GRPC | OTELCPP_HTTP")
+        "Valid values: MICROTEL | OTELCPP_GRPC | OTELCPP_HTTP | NOOP")
 endif()
 
 # Histogram self-test — in-tree builds only. The standalone SUT Dockerfile
