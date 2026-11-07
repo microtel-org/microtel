@@ -139,3 +139,19 @@ def test_render_md_has_medians_ranges_and_load_log():
     assert "| ns/span − baseline | 5,000 (4,000–6,000) | 7,000 (7,000–7,000) | — |" in md
     assert "| 1 (round 1) | microtel | 0.31 | 42 s | no |" in md
     assert "Target 996 spans/s." in md
+
+
+def test_build_all_builds_every_sut_from_the_repo_root(monkeypatch):
+    import driver.rounds as rounds
+    from types import SimpleNamespace
+    calls = []
+    monkeypatch.setattr(rounds, "build_image", lambda engine, **kw: calls.append((engine, kw)))
+    suts = [SimpleNamespace(name="microtel", dockerfile="bench/sut/microtel/Dockerfile",
+                            image_name="bench-sut-microtel"),
+            SimpleNamespace(name="baseline-noop", dockerfile="bench/sut/baseline-noop/Dockerfile",
+                            image_name="bench-sut-baseline-noop")]
+    rounds._build_all(suts, "podman")
+    assert [c[1]["image_name"] for c in calls] == ["bench-sut-microtel", "bench-sut-baseline-noop"]
+    assert all(c[0] == "podman" for c in calls)
+    assert calls[0][1]["dockerfile"].endswith("bench/sut/microtel/Dockerfile")
+    assert calls[0][1]["build_context"] == rounds._BENCH_DIR.parent
