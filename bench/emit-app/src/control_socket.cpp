@@ -119,14 +119,15 @@ constexpr int kMinThreads = 1;
 }
 
 void WorkerThread(uint64_t span_count, uint64_t rate_hz_per_thread,
-                  WorkloadMode mode, IBackend& backend, Histogram& hist, ThreadCpu& cpu)
+                  std::chrono::steady_clock::time_point pace_start, WorkloadMode mode,
+                  IBackend& backend, Histogram& hist, ThreadCpu& cpu)
 {
     // The driver's CPU accounting (bench/driver/cpu.py) tells these threads
     // from the SDK's own by this name.
     ::pthread_setname_np(::pthread_self(), "emit");
     const ThreadCpu cpu0 = ReadThreadCpu();
     using Clock = std::chrono::steady_clock;
-    const Pacer pacer(rate_hz_per_thread, Clock::now());
+    const Pacer pacer(rate_hz_per_thread, pace_start);
     for (uint64_t i = 0; i < span_count; ++i)
     {
         pacer.Wait(i);
@@ -153,14 +154,18 @@ void WorkerThread(uint64_t span_count, uint64_t rate_hz_per_thread,
     rate_hz_effective = rate_per_thread * n;
 
     std::vector<ThreadCpu> cpu(static_cast<std::size_t>(threads));
+    // One start for all threads; each is offset from it (StaggeredStart).
+    const auto start = std::chrono::steady_clock::now();
     {
         std::vector<std::jthread> workers;
         workers.reserve(static_cast<std::size_t>(threads));
         for (int t = 0; t < threads; ++t)
         {
             const uint64_t count = per_thread + (t == 0 ? remainder : 0);
-            workers.emplace_back(WorkerThread, count, rate_per_thread, mode, std::ref(backend),
-                                 std::ref(hist), std::ref(cpu[static_cast<std::size_t>(t)]));
+            const auto pace_start = StaggeredStart(start, rate_per_thread, n,
+                                                   static_cast<uint64_t>(t));
+            workers.emplace_back(WorkerThread, count, rate_per_thread, pace_start, mode,
+                                 std::ref(backend), std::ref(hist), std::ref(cpu[static_cast<std::size_t>(t)]));
         }
     }  // jthreads join here: every worker has finished and written its CPU
     ThreadCpu total;
