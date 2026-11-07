@@ -98,6 +98,16 @@ def _ratio(value, ref):
     return value / ref if value is not None and ref else None
 
 
+def _minus(a, b):
+    return a - b if a is not None and b is not None else None
+
+
+def _emit_self_total(cpu: dict):
+    """The workload threads' self-reported ns/span (cpu["emit_self"]), or None."""
+    own = cpu.get("emit_self")
+    return own["per_span_ns"]["total"] if own else None
+
+
 def add_cpu_comparisons(suts: list[dict]) -> None:
     """Add ratios to microtel and baseline-subtracted figures to each SUT's cpu.
 
@@ -120,6 +130,7 @@ def add_cpu_comparisons(suts: list[dict]) -> None:
                                       else None),
                 "cores": (c["cores"] - base["cores"]
                           if c["cores"] is not None and base["cores"] is not None else None),
+                "emit_self_ns_per_span": _minus(_emit_self_total(c), _emit_self_total(base)),
             }
     ref_sub = (ref or {}).get("baseline_subtracted", {})
     for s in with_cpu:
@@ -128,11 +139,14 @@ def add_cpu_comparisons(suts: list[dict]) -> None:
         c = s["cpu"]
         ratios = {k: _ratio(c["per_span_ns"][k], ref["per_span_ns"][k]) for k in _CPU_KEYS}
         ratios["cores"] = _ratio(c["cores"], ref["cores"])
+        ratios["emit_self"] = _ratio(_emit_self_total(c), _emit_self_total(ref))
         sub = c.get("baseline_subtracted")
         if sub is not None and ref_sub:
             ratios["baseline_subtracted_total"] = _ratio(sub["total_ns_per_span"],
                                                          ref_sub["total_ns_per_span"])
             ratios["baseline_subtracted_cores"] = _ratio(sub["cores"], ref_sub["cores"])
+            ratios["baseline_subtracted_emit_self"] = _ratio(sub["emit_self_ns_per_span"],
+                                                             ref_sub["emit_self_ns_per_span"])
         c["ratio_to_microtel"] = ratios
 
 
@@ -254,7 +268,19 @@ def _cpu_rows(suts: list[dict]) -> list[str]:
     row("CPU ns/span, total (÷ microtel)", per_span("total"))
     row("CPU ns/span, user", per_span("user"))
     row("CPU ns/span, system", per_span("system"))
-    row("CPU ns/span, emitting threads", per_span("emit"))
+    row("CPU ns/span, emitting threads, by subtraction", per_span("emit"))
+
+    def own(key, rkey=None):
+        def cell(c):
+            o = c.get("emit_self")
+            if not o:
+                return "—"
+            return _fmt_ns(o["per_span_ns"][key]) + (
+                _fmt_ratio(c.get("ratio_to_microtel", {}).get(rkey)) if rkey else "")
+        return cell
+    row("CPU ns/span, emitting threads, self-reported", own("total", "emit_self"))
+    row("CPU ns/span, emitting threads, self-reported user / system",
+        lambda c: (f"{own('user')(c)} / {own('system')(c)}" if c.get("emit_self") else "—"))
     row("CPU ns/span, other threads", per_span("other"))
     row("CPU cores used", lambda c: (f"{c['cores']:.3f}" if c["cores"] is not None else "—")
         + _fmt_ratio(c.get("ratio_to_microtel", {}).get("cores")))
@@ -269,17 +295,37 @@ def _cpu_rows(suts: list[dict]) -> list[str]:
         row("CPU ns/span, total − baseline", sub("total_ns_per_span", _fmt_ns,
                                                   "baseline_subtracted_total"))
         row("CPU cores − baseline", sub("cores", lambda v: f"{v:.3f}", "baseline_subtracted_cores"))
+        row("CPU ns/span, emitting threads self-reported − baseline",
+            sub("emit_self_ns_per_span", _fmt_ns, "baseline_subtracted_emit_self"))
+    rate_rows = _rate_rows(suts)
+    rows += rate_rows
     windows = sorted({f"{s['cpu']['window_ns'] / 1e9:.1f}" for s in suts if s.get("cpu")})
     rows += [
         "",
         "CPU: the SUT container's cgroup v2 `cpu.stat` (\"cgroup\"), or the process's "
         "`/proc/<pid>/stat` when that is unreadable (\"proc\"), over one window per SUT "
         f"({', '.join(windows)} s): from the end of warm-up to after the last sample's flush. "
-        "Per span delivered at the sink (emitted, for the no-op baseline). Emitting threads are "
-        "the process total minus the other threads' `/proc/<pid>/task/*/schedstat`. One run, "
+        "Per span delivered at the sink (emitted, for the no-op baseline). Emitting threads "
+        "\"by subtraction\" are the process total minus the other threads' "
+        "`/proc/<pid>/task/*/schedstat`; \"self-reported\" is the workload threads' own "
+        "`CLOCK_THREAD_CPUTIME_ID` (user / system from `getrusage(RUSAGE_THREAD)`). One run, "
         "no spread. See `bench/docs/methodology.md`.",
     ]
     return rows
+
+
+def _rate_rows(suts: list[dict]) -> list[str]:
+    """A paced run's target and achieved span rate, averaged over its samples."""
+    def cell(s):
+        paced = [x for x in s.get("samples", []) if x.get("span_rate_achieved") is not None]
+        if not paced:
+            return "—"
+        target = paced[0]["span_rate_target"]
+        achieved = sum(x["span_rate_achieved"] for x in paced) / len(paced)
+        return f"{target:,} → {achieved:,.0f} ({achieved / target * 100:.1f}%)"
+    if not any(cell(s) != "—" for s in suts):
+        return []
+    return ["| Spans/s, target → achieved | " + " | ".join(cell(s) for s in suts) + " |"]
 
 
 def _render_md(doc: dict) -> str:
