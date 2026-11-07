@@ -208,6 +208,10 @@ locks together. The `Spans/s, target → achieved` row gives both, from each sam
   with about 4× the cache misses. The baseline shows the same effect. So
   ns/span at 1k is mostly a wake-up cost, not a per-span cost, and does not
   scale down to the hot-loop figure.
+  Before the threads' starts were staggered they woke in lockstep and
+  contended on the SDK's locks: on this host that added about 1.8 µs/span to
+  microtel at 1k spans/s (5 rounds each way), and nothing measurable to
+  opentelemetry-cpp, whose span buffer is lock-free.
   Low-rate figures therefore depend on which deep C-states are enabled: with
   them disabled (`processor.max_cstate=1`, `idle=poll`, or a state's
   `disable` flag) they should fall (not measured here), and two hosts compare only with the same
