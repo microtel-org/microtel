@@ -10,6 +10,8 @@ import statistics
 from pathlib import Path
 from typing import Any
 
+from .env_fingerprint import format_idle_states
+
 
 # ---------------------------------------------------------------------------
 # Statistics helpers
@@ -75,8 +77,10 @@ def build_results(
             "image_id":            sr["image_id"],
             "samples":             samples,
             "summary":             _summarize(samples),
+            "cpu":                 sr.get("cpu"),
             "flamegraph_svg":      sr.get("flamegraph_svg"),
         })
+    add_cpu_comparisons(suts_out)
 
     return {
         "schema_version": "1.0",
@@ -86,6 +90,66 @@ def build_results(
         "environment":    env_data,
         "suts":           suts_out,
     }
+
+
+_CPU_KEYS = ("total", "user", "system", "emit", "other")
+_REFERENCE_SUT = "microtel"
+
+
+def _ratio(value, ref):
+    return value / ref if value is not None and ref else None
+
+
+def _minus(a, b):
+    return a - b if a is not None and b is not None else None
+
+
+def _emit_self_total(cpu: dict):
+    """The workload threads' self-reported ns/span (cpu["emit_self"]), or None."""
+    own = cpu.get("emit_self")
+    return own["per_span_ns"]["total"] if own else None
+
+
+def add_cpu_comparisons(suts: list[dict]) -> None:
+    """Add ratios to microtel and baseline-subtracted figures to each SUT's cpu.
+
+    ratio_to_microtel divides each per-span figure and cores by the SUT named
+    "microtel" in the same document. baseline_subtracted takes away the no-op
+    baseline SUT's (library "none") total per span and cores, the cost of the
+    harness's own loop; it is absent when either SUT is missing.
+    """
+    with_cpu = [s for s in suts if s.get("cpu") and s["cpu"].get("per_span_ns")]
+    ref = next((s["cpu"] for s in with_cpu if s["name"] == _REFERENCE_SUT), None)
+    base = next((s["cpu"] for s in with_cpu if s["library"] == "none"), None)
+    for s in with_cpu:
+        c = s["cpu"]
+        if base is not None and s["library"] != "none":
+            total = c["per_span_ns"]["total"]
+            c["baseline_subtracted"] = {
+                "baseline_sut": next(x["name"] for x in with_cpu if x["library"] == "none"),
+                "total_ns_per_span": (total - base["per_span_ns"]["total"]
+                                      if total is not None and base["per_span_ns"]["total"] is not None
+                                      else None),
+                "cores": (c["cores"] - base["cores"]
+                          if c["cores"] is not None and base["cores"] is not None else None),
+                "emit_self_ns_per_span": _minus(_emit_self_total(c), _emit_self_total(base)),
+            }
+    ref_sub = (ref or {}).get("baseline_subtracted", {})
+    for s in with_cpu:
+        if ref is None:
+            break
+        c = s["cpu"]
+        ratios = {k: _ratio(c["per_span_ns"][k], ref["per_span_ns"][k]) for k in _CPU_KEYS}
+        ratios["cores"] = _ratio(c["cores"], ref["cores"])
+        ratios["emit_self"] = _ratio(_emit_self_total(c), _emit_self_total(ref))
+        sub = c.get("baseline_subtracted")
+        if sub is not None and ref_sub:
+            ratios["baseline_subtracted_total"] = _ratio(sub["total_ns_per_span"],
+                                                         ref_sub["total_ns_per_span"])
+            ratios["baseline_subtracted_cores"] = _ratio(sub["cores"], ref_sub["cores"])
+            ratios["baseline_subtracted_emit_self"] = _ratio(sub["emit_self_ns_per_span"],
+                                                             ref_sub["emit_self_ns_per_span"])
+        c["ratio_to_microtel"] = ratios
 
 
 def _summarize(samples: list[dict]) -> dict[str, Any]:
@@ -179,14 +243,102 @@ def write_markdown(doc: dict, out_dir: Path, filename: str = "results.md") -> Pa
     return path
 
 
+def _fmt_ns(v) -> str:
+    return f"{v:,.0f}" if v is not None else "—"
+
+
+def _fmt_ratio(v) -> str:
+    return f" ({v:.2f}×)" if v is not None else ""
+
+
+def _cpu_rows(suts: list[dict]) -> list[str]:
+    """Results-table rows for the CPU window, plus a note on source and window."""
+    if not any(s.get("cpu") for s in suts):
+        return []
+    rows = []
+
+    def row(label, cell):
+        rows.append(f"| {label} | " + " | ".join(
+            cell(s["cpu"]) if s.get("cpu") else "—" for s in suts) + " |")
+
+    def per_span(key):
+        return lambda c: (_fmt_ns(c["per_span_ns"][key])
+                          + _fmt_ratio(c.get("ratio_to_microtel", {}).get(key)))
+
+    row("CPU source", lambda c: c["source"].split()[0])
+    row("CPU per span basis", lambda c: f"{c['per_span_basis']} ({c['spans']:,})")
+    row("CPU ns/span, total (÷ microtel)", per_span("total"))
+    row("CPU ns/span, user", per_span("user"))
+    row("CPU ns/span, system", per_span("system"))
+    row("CPU ns/span, emitting threads, by subtraction", per_span("emit"))
+
+    def own(key, rkey=None):
+        def cell(c):
+            o = c.get("emit_self")
+            if not o:
+                return "—"
+            return _fmt_ns(o["per_span_ns"][key]) + (
+                _fmt_ratio(c.get("ratio_to_microtel", {}).get(rkey)) if rkey else "")
+        return cell
+    row("CPU ns/span, emitting threads, self-reported", own("total", "emit_self"))
+    row("CPU ns/span, emitting threads, self-reported user / system",
+        lambda c: (f"{own('user')(c)} / {own('system')(c)}" if c.get("emit_self") else "—"))
+    row("CPU ns/span, other threads", per_span("other"))
+    row("CPU cores used", lambda c: (f"{c['cores']:.3f}" if c["cores"] is not None else "—")
+        + _fmt_ratio(c.get("ratio_to_microtel", {}).get("cores")))
+    if any(s.get("cpu") and s["cpu"].get("baseline_subtracted") for s in suts):
+        def sub(key, fmt, rkey):
+            def cell(c):
+                b = c.get("baseline_subtracted")
+                if not b or b[key] is None:
+                    return "—"
+                return fmt(b[key]) + _fmt_ratio(c.get("ratio_to_microtel", {}).get(rkey))
+            return cell
+        row("CPU ns/span, total − baseline", sub("total_ns_per_span", _fmt_ns,
+                                                  "baseline_subtracted_total"))
+        row("CPU cores − baseline", sub("cores", lambda v: f"{v:.3f}", "baseline_subtracted_cores"))
+        row("CPU ns/span, emitting threads self-reported − baseline",
+            sub("emit_self_ns_per_span", _fmt_ns, "baseline_subtracted_emit_self"))
+    rate_rows = _rate_rows(suts)
+    rows += rate_rows
+    windows = sorted({f"{s['cpu']['window_ns'] / 1e9:.1f}" for s in suts if s.get("cpu")})
+    rows += [
+        "",
+        "CPU: the SUT container's cgroup v2 `cpu.stat` (\"cgroup\"), or the process's "
+        "`/proc/<pid>/stat` when that is unreadable (\"proc\"), over one window per SUT "
+        f"({', '.join(windows)} s): from the end of warm-up to after the last sample's flush. "
+        "Per span delivered at the sink (emitted, for the no-op baseline). Emitting threads "
+        "\"by subtraction\" are the process total minus the other threads' "
+        "`/proc/<pid>/task/*/schedstat`; \"self-reported\" is the workload threads' own "
+        "`CLOCK_THREAD_CPUTIME_ID` (user / system from `getrusage(RUSAGE_THREAD)`). One run, "
+        "no spread. See `bench/docs/methodology.md`.",
+    ]
+    return rows
+
+
+def _rate_rows(suts: list[dict]) -> list[str]:
+    """A paced run's target and achieved span rate, averaged over its samples."""
+    def cell(s):
+        paced = [x for x in s.get("samples", []) if x.get("span_rate_achieved") is not None]
+        if not paced:
+            return "—"
+        target = paced[0]["span_rate_target"]
+        achieved = sum(x["span_rate_achieved"] for x in paced) / len(paced)
+        return f"{target:,} → {achieved:,.0f} ({achieved / target * 100:.1f}%)"
+    if not any(cell(s) != "—" for s in suts):
+        return []
+    return ["| Spans/s, target → achieved | " + " | ".join(cell(s) for s in suts) + " |"]
+
+
 def _render_md(doc: dict) -> str:
     lines = []
     env = doc.get("environment", {})
     profile = doc.get("profile", {})
 
+    lines += ["# Benchmark Results", ""]
+    if doc.get("label"):
+        lines += [f"**{doc['label']}**", ""]
     lines += [
-        "# Benchmark Results",
-        "",
         "## Environment",
         "",
         f"| Field | Value |",
@@ -195,6 +347,9 @@ def _render_md(doc: dict) -> str:
         f"| Physical cores | {env.get('cpu_physical_cores', '?')} |",
         f"| Threads | {env.get('cpu_threads', '?')} |",
         f"| CPU governor | {env.get('cpu_governor', '?')} |",
+        f"| CPU idle states | {env.get('cpu_idle_driver', '?')}: "
+        f"{format_idle_states(env.get('cpu_idle_states', []))} |",
+        f"| Kernel idle options | {' '.join(env.get('kernel_idle_options', [])) or 'none'} |",
         f"| Hyperthreading | {env.get('hyperthreading', '?')} |",
         f"| Kernel | {env.get('kernel', '?')} |",
         f"| Container engine | {env.get('container_engine', '?')} {env.get('container_engine_version', '')} |",
@@ -272,6 +427,8 @@ def _render_md(doc: dict) -> str:
                             for ss in suts) + " |"
             )
             break  # one row covers all
+
+        lines += _cpu_rows(suts)
 
     # Flamegraph links — only rendered when --flamegraph produced SVGs.
     svg_suts = [s for s in suts if s.get("flamegraph_svg")]

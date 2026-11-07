@@ -8,10 +8,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # MICROTEL     : microtel SDK, OTLP/HTTP-protobuf
 # OTELCPP_GRPC : opentelemetry-cpp SDK, OTLP/gRPC
 # OTELCPP_HTTP : opentelemetry-cpp SDK, OTLP/HTTP-protobuf  (B1+)
+# NOOP         : no SDK; the harness's own cost (baseline-noop SUT)
 set(BENCH_BACKEND "MICROTEL" CACHE STRING
-    "Emit-app backend: MICROTEL | OTELCPP_GRPC | OTELCPP_HTTP")
+    "Emit-app backend: MICROTEL | OTELCPP_GRPC | OTELCPP_HTTP | NOOP")
 set_property(CACHE BENCH_BACKEND PROPERTY
-    STRINGS MICROTEL OTELCPP_GRPC OTELCPP_HTTP)
+    STRINGS MICROTEL OTELCPP_GRPC OTELCPP_HTTP NOOP)
 
 # Inherit compiler flags from the base Dockerfile environment variable.
 # On a developer machine without the variable set, falls back to a sensible default.
@@ -26,6 +27,7 @@ add_executable(emit_app
     src/main.cpp
     src/histogram.cpp
     src/control_socket.cpp
+    src/thread_cpu.cpp
     src/workload.cpp
 )
 
@@ -93,9 +95,12 @@ elseif(BENCH_BACKEND STREQUAL "OTELCPP_HTTP")
         opentelemetry-cpp::otlp_http_metric_exporter
         opentelemetry-cpp::otlp_http_log_record_exporter)
 
+elseif(BENCH_BACKEND STREQUAL "NOOP")
+    target_sources(emit_app PRIVATE src/backend_noop.cpp)
+
 else()
     message(FATAL_ERROR "Unknown BENCH_BACKEND: ${BENCH_BACKEND}. "
-        "Valid values: MICROTEL | OTELCPP_GRPC | OTELCPP_HTTP")
+        "Valid values: MICROTEL | OTELCPP_GRPC | OTELCPP_HTTP | NOOP")
 endif()
 
 # Histogram self-test — in-tree builds only. The standalone SUT Dockerfile
@@ -115,4 +120,11 @@ if(MICROTEL_BUILD_BENCH)
     )
     target_include_directories(workload_selftest PRIVATE include)
     add_test(NAME bench_workload_selftest COMMAND workload_selftest)
+
+    add_executable(pacing_selftest
+        test/pacing_selftest.cpp
+        src/thread_cpu.cpp
+    )
+    target_include_directories(pacing_selftest PRIVATE include)
+    add_test(NAME bench_pacing_selftest COMMAND pacing_selftest)
 endif()

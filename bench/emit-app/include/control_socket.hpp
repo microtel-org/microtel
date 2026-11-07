@@ -30,6 +30,12 @@ struct RunResult
     uint64_t latency_max_ns{0};
     /// Raw bucket counts — bucket i covers [2^i, 2^(i+1)) ns.
     std::array<uint64_t, 64> latency_histogram{};
+    /// The requested rate after splitting it evenly across the threads.
+    uint64_t rate_hz_effective{0};
+    /// The workload threads' own CPU over their run, summed (thread_cpu.hpp).
+    uint64_t emit_cpu_ns{0};
+    uint64_t emit_user_ns{0};
+    uint64_t emit_sys_ns{0};
 };
 
 /// Listen on TCP port 19090, accept one connection, then loop:

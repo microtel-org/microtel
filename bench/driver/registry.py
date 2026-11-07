@@ -23,7 +23,7 @@ class Sut:
     dockerfile: str
     image_name: str
     protocol: str          # "http" | "grpc"
-    library: str           # "microtel" | "otelcpp"  (derived from name)
+    library: str           # "microtel" | "otelcpp" | "none" (baseline-*)  (derived from name)
     transport: str         # "http" | "grpc"          (same as protocol)
     ports: SutPorts
     env: Dict[str, str]
@@ -40,6 +40,8 @@ def _derive_library(name: str) -> str:
         return "microtel"
     if name.startswith("otelcpp"):
         return "otelcpp"
+    if name.startswith("baseline"):
+        return "none"   # the no-op emit-app: no SDK
     return name
 
 

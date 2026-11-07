@@ -96,6 +96,18 @@ suts:
       OTEL_EXPORTER_OTLP_ENDPOINT: ""  # driver sets to http://sink:4318
     b0: true
 
+  # The emit-app with no SDK (BENCH_BACKEND=NOOP): the harness's own CPU,
+  # which the report subtracts from the other SUTs' (bench/docs/methodology.md).
+  # Exports nothing; protocol is a placeholder.
+  - name: baseline-noop
+    description: "emit-app with tracing disabled — no SDK, same workload and pacing loop"
+    dockerfile: bench/sut/baseline-noop/Dockerfile
+    image_name: bench-sut-baseline-noop
+    protocol: http
+    ports:
+      control: 19090
+    b0: true
+
   - name: go-otel
     description: "go.opentelemetry.io/otel v1.28.0 — OTLP/HTTP exporter"
     dockerfile: bench/sut/go-otel/Dockerfile
