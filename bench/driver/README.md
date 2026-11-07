@@ -42,6 +42,11 @@ python3 -m driver [options]
 
 `python3 -m driver -h` prints the full help text.
 
+`python3 -m driver.rounds --profile P --sut A,B,C --rounds 5 --out DIR` runs
+interleaved rounds of one profile, one driver run per SUT per round, behind a
+load-average gate, and writes the median and range of the CPU figures to
+`DIR/summary.md` (`bench/docs/methodology.md`, "Interleaved rounds").
+
 ## Module layout
 
 | File | Purpose |
@@ -55,6 +60,7 @@ python3 -m driver [options]
 | `sink_client.py` | Client for the sink's stats: the blackhole sink's `/stats` and `/reset`, or the collector's receiver metrics |
 | `report.py` | Statistics, `build_results()`, `write_json()`, `write_markdown()` |
 | `cpu.py` | CPU per SUT container over the measurement window: cgroup `cpu.stat` or `/proc`, split by thread |
+| `rounds.py` | `python3 -m driver.rounds`: interleaved CPU rounds, load gate, median and range |
 | `regression.py` | `--regression-check`: compares a run against a baseline document |
 | `plots.py` | Optional Plotly HTML charts |
 | `flamegraph.py` | `--flamegraph`: `perf record` inside the SUT container, rendered to SVG on the host |
