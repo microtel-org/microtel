@@ -26,6 +26,7 @@ import time
 from pathlib import Path
 from typing import Callable, Optional
 
+from .container import build_image, detect_engine
 from .registry import get as get_sut
 from .registry import load as load_registry
 
@@ -190,6 +191,14 @@ def render_md(doc: dict) -> str:
     return "\n".join(lines) + "\n"
 
 
+def _build_all(suts: list, engine: str) -> None:
+    """Build each SUT's image, so every run of every round uses the same build."""
+    for sut in suts:
+        print(f"[rounds] building {sut.name} image ...", flush=True)
+        build_image(engine, dockerfile=str(_BENCH_DIR.parent / sut.dockerfile),
+                    image_name=sut.image_name, build_context=_BENCH_DIR.parent, verbose=False)
+
+
 def _parse_args(argv=None) -> argparse.Namespace:
     p = argparse.ArgumentParser(prog="python3 -m driver.rounds",
                                 description="Interleaved CPU rounds of one profile.")
@@ -202,7 +211,8 @@ def _parse_args(argv=None) -> argparse.Namespace:
     p.add_argument("--load-timeout", type=float, default=300.0)
     p.add_argument("--allow-smt", action="store_true")
     p.add_argument("--build", action="store_true",
-                   help="Let the first run build the images (later runs never do).")
+                   help="Build every listed SUT's image before the first round "
+                        "(the runs themselves never build).")
     return p.parse_args(argv)
 
 
@@ -211,10 +221,11 @@ def main(argv=None) -> int:
     suts = [s.strip() for s in args.sut.split(",") if s.strip()]
     registry = load_registry(_REGISTRY_PATH)
     libraries = {s: get_sut(registry, s).library for s in suts}
+    if args.build:
+        _build_all([get_sut(registry, s) for s in suts], detect_engine("auto"))
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     runs, rounds = [], []
-    first = True
     for r, order in enumerate(run_order(suts, args.rounds), 1):
         results: dict[str, Optional[dict]] = {}
         for sut in order:
@@ -226,8 +237,7 @@ def main(argv=None) -> int:
                    "--out", str(run_dir)]
             cmd += ["--label", args.label] if args.label else []
             cmd += ["--allow-smt"] if args.allow_smt else []
-            cmd += [] if (args.build and first) else ["--no-build"]
-            first = False
+            cmd += ["--no-build"]
             rc = subprocess.run(cmd, cwd=_BENCH_DIR, check=False).returncode
             runs.append({"round": r, "sut": sut, "rc": rc, **w})
             results[sut] = _cpu_of(run_dir / "results.json") if rc == 0 else None
