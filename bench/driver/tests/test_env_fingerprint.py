@@ -123,3 +123,62 @@ def test_physical_cores_distinguishes_packages(tmp_path):
 
 def test_physical_cores_unknown_without_topology(tmp_path):
     assert _physical_cores(tmp_path) is None
+
+
+# ---------------------------------------------------------------------------
+# CPU idle states
+# ---------------------------------------------------------------------------
+
+from driver.env_fingerprint import _idle_states, _kernel_idle_options, format_idle_states
+
+
+def _state(root, i, name, disable):
+    d = root / f"state{i}"
+    d.mkdir()
+    (d / "name").write_text(name + "\n")
+    (d / "disable").write_text(f"{disable}\n")
+
+
+def test_idle_states_in_numeric_order_with_disable_flags(tmp_path):
+    for i, (name, dis) in enumerate([("POLL", 0), ("C1", 0), ("C2", 0), ("C3", 1)]):
+        _state(tmp_path, i, name, dis)
+    _state(tmp_path, 10, "C10", 0)  # sorts after state3, not after state1
+    assert _idle_states(tmp_path) == [
+        {"name": "POLL", "disabled": False}, {"name": "C1", "disabled": False},
+        {"name": "C2", "disabled": False}, {"name": "C3", "disabled": True},
+        {"name": "C10", "disabled": False}]
+
+
+def test_idle_states_missing_dir_is_empty(tmp_path):
+    assert _idle_states(tmp_path / "nope") == []
+
+
+def test_kernel_idle_options():
+    cmdline = ("BOOT_IMAGE=/vmlinuz root=UUID=x ro mem_sleep_default=s2idle idle=nomwait "
+               "processor.max_cstate=1 intel_idle.max_cstate=0 cpuidle.off=1 quiet")
+    assert _kernel_idle_options(cmdline) == [
+        "idle=nomwait", "processor.max_cstate=1", "intel_idle.max_cstate=0", "cpuidle.off=1"]
+    assert _kernel_idle_options("ro quiet") == []
+
+
+def test_format_idle_states():
+    assert format_idle_states([{"name": "C1", "disabled": False},
+                               {"name": "C3", "disabled": True}]) == "C1, C3 (disabled)"
+    assert format_idle_states([]) == "unknown"
+
+
+def test_capture_records_idle_states():
+    fp = capture("podman")
+    assert isinstance(fp.cpu_idle_states, list)
+    assert isinstance(fp.kernel_idle_options, list)
+    assert isinstance(fp.cpu_idle_driver, str)
+
+
+def test_environment_table_has_idle_rows():
+    from driver.report import _render_md
+    env = {"cpu_idle_driver": "acpi_idle",
+           "cpu_idle_states": [{"name": "C1", "disabled": False}, {"name": "C3", "disabled": True}],
+           "kernel_idle_options": ["processor.max_cstate=1"]}
+    md = _render_md({"suts": [], "environment": env, "profile": {}})
+    assert "| CPU idle states | acpi_idle: C1, C3 (disabled) |" in md
+    assert "| Kernel idle options | processor.max_cstate=1 |" in md
