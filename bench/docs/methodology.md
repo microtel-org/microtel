@@ -112,16 +112,27 @@ and every figure is the difference between them.
 
 The emit-app names its workload threads `emit` (`pthread_setname_np`). It
 creates them for each `run` command and joins them before it replies, so they
-have exited by the time either snapshot is taken.
+have exited by the time either snapshot is taken. Their CPU is measured two
+ways, and the report gives both:
 
-So the emitting threads' CPU is the process total minus the other threads'.
-The other threads are the SDK's exporter and I/O threads, the HTTP client's,
-and the emit-app's main thread, which runs the control socket and computes
-the percentiles.
+- **Self-reported** (`cpu.emit_self`). Each workload thread reads its own
+  `CLOCK_THREAD_CPUTIME_ID` (ns) and `getrusage(RUSAGE_THREAD)` (user and
+  system, µs) when it starts and when it finishes, and the run reply carries
+  the sum over threads (`emit_cpu_ns`, `emit_user_ns`, `emit_sys_ns`). This
+  is the emitting-thread figure. It leaves out thread creation and exit,
+  which run before the first reading and after the last.
+- **By subtraction** (`cpu.per_span_ns.emit`), the cross-check. The process
+  total minus the other threads'. The other threads are the SDK's exporter
+  and I/O threads, the HTTP client's, and the emit-app's main thread, which
+  runs the control socket and computes the percentiles. Anything else that
+  starts and exits inside the window is counted as emitting, and so are
+  thread creation and exit. `cpu.threads_exited` lists the threads alive at
+  the first snapshot and gone at the second; their CPU after the first
+  snapshot is counted as emitting too.
 
-Anything else that starts and exits inside the window is counted as emitting.
-`cpu.threads_exited` lists the threads alive at the first snapshot and gone at
-the second; their CPU after the first snapshot is counted as emitting too.
+The two should agree to within the thread start and exit cost and the
+accounting granularity. A larger gap means something unnamed ran and exited
+inside the window.
 
 The split works only for emit-app SUTs. `go-otel` and `rust-otel` have no
 `emit` threads. Their work runs on long-lived runtime threads and shows up
@@ -166,10 +177,12 @@ a warm-up of about 1 s.
 
 The emit-app divides the rate by the thread count, rounding down.
 
-The pacing loop sets its next deadline from the time it woke, not from the
-previous deadline. Each oversleep (wake-up latency, plus up to the 50 µs
-default timer slack) therefore adds up, and the achieved rate falls below nominal. The `Spans/sec`
-row gives the achieved rate.
+Each workload thread paces to absolute deadlines: iteration n starts no
+earlier than start + n / rate (`emit-app/include/pacer.hpp`). A late wake-up
+(wake-up latency, plus up to the 50 µs default timer slack) delays one
+iteration, and the following ones catch up, so the achieved rate matches the
+target. The `Spans/s, target → achieved` row gives both, from each sample's
+`span_rate_target` and `span_rate_achieved`.
 
 ### Caveats
 
@@ -184,9 +197,45 @@ row gives the achieved rate.
   reads, a `nanosleep` and a timer wake-up. For a cheap SDK these are a large
   part of the total, which is why the baseline is subtracted. The subtraction
   assumes the two costs simply add.
+- **Low rates cost more per span.** At a fixed rate each workload thread
+  sleeps between requests (12 ms per thread at `fixed-rate-1k`), and the core
+  may idle in a deep C-state that loses its L1/L2 contents. Each request then
+  starts cold: on one run the microtel SUT executed the same user-space
+  instructions per span at 1k and 10k spans/s but took about 3.9× the cycles,
+  with about 4× the cache misses. The baseline shows the same effect. So
+  ns/span at 1k is mostly a wake-up cost, not a per-span cost, and does not
+  scale down to the hot-loop figure.
 - **Not counted.** The sink, which runs in its own container. The container
   engine (`conmon`, rootless networking). Kernel network work done outside
   the SUT's own threads, for example softirqs that run while another task is
   scheduled.
-- **Single run.** Each SUT gets one window, with no spread. Comparisons need
-  repeated, interleaved runs, as in "Run order and host noise".
+- **Single run.** A driver run gives each SUT one window, with no spread.
+  Comparisons need repeated, interleaved runs: see "Interleaved rounds".
+
+### Interleaved rounds
+
+`python3 -m driver.rounds` ([`driver/rounds.py`](../driver/rounds.py)) runs
+one profile for several SUTs in rounds, one driver run per SUT per round:
+
+```bash
+cd bench
+python3 -m driver.rounds --profile fixed-rate-1k \
+    --sut microtel,otelcpp-http,baseline-noop --rounds 5 --out results/<dir>
+```
+
+- **Order.** Every round runs every SUT, the order rotated by one each round,
+  so no SUT always runs first or after the same neighbour.
+- **Load gate.** Before each run it waits until the 1-minute load average is
+  below `--max-load` (0.5). After `--load-timeout` (300 s) it records the
+  load and runs anyway. `summary.md` lists the load and the wait before every
+  run.
+- **Per round.** The baseline is subtracted from the other SUTs of the same
+  round, and the ratio to microtel is taken within the round, so a round
+  where the whole host ran slow moves both sides of the ratio.
+- **Summary.** `summary.json` and `summary.md` give the median and range
+  (min–max) over rounds for ns/span and cores, raw and minus the baseline,
+  the emitting-thread figures, the ratios and the achieved rate. Each run's
+  own `results.json` is kept under `round<r>/<sut>/`.
+
+The images must already be built (a plain driver run builds them, or pass
+`--build` to let the first run do it).
