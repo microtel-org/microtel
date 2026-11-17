@@ -183,7 +183,7 @@ CLANG_FORMAT=clang-format ci/scripts/format-check.sh
 
 If it reports violations, run `clang-format -i <file>` to fix them. The `.clang-format` config sets `AlignConsecutiveDeclarations: None` and `AlignConsecutiveAssignments: None` — **never use manual column alignment**; the formatter removes it and CI fails.
 
-**Match CI's patch version.** CI installs `clang-format-18` from Ubuntu's apt, which is **18.1.3**; Fedora ships **18.1.8**. They disagree on real code — notably where a `<<` chain breaks between two adjacent string literals — so a clean local run is not proof, and that divergence is what turned #288 red. The check that actually matches CI:
+**Required version: clang-format 18.1.3, exactly.** CI's runners are pinned to `ubuntu-24.04`, whose apt `clang-format-18` is **18.1.3**, and the format job fails with a clear error if it finds any other version (Ubuntu 26.04's apt and Fedora both ship **18.1.8**). They disagree on real code — notably where a `<<` chain breaks between two adjacent string literals — so a clean local run is not proof, and that divergence is what turned #288 red. The check that actually matches CI:
 
 ```bash
 python3 -m venv /tmp/cf && /tmp/cf/bin/pip install -q clang-format==18.1.3
