@@ -27,11 +27,12 @@ finishing and stabilizing that code, not writing it.
 | v1.2.2 Patch | Done | Static request headers validated at `Build()`, and the auth callback's value on each export ([ICP 0038](icps/0038-reject-reserved-request-headers.md), #412); OTel key=value env lists trimmed and percent-decoded (#413); a Meter, its instruments and a Logger may outlive the Provider (#259, #417) |
 | v1.2.3 Patch | Done | Install story: vcpkg port, Conan 2 recipe, use as a FetchContent/CPM subproject, `find_package(microtel COMPONENTS leaf concentrator)`, and a source archive with its SHA-512 on each release (#432) |
 | v1.2.4 Patch | Done (#462) | Exponential histograms encoded (#447); metric data points carry time and start time ([ICP 0039](icps/0039-metric-start-timestamps.md), #449); observable sums report deltas under delta temporality (#453); span and link `trace_state` and flags encoded (#452); metrics conformance against the collector on both protocols, and a known-limitations section in the README (#459) |
-| v1.3 Metrics | Mostly done, experimental | Async-callback deadline (#237); View aggregation override; per-instrument temporality; OTel exemplar reservoirs and `OTEL_METRICS_EXEMPLAR_FILTER`; exemplar export (#454); per-kind Delta/LowMemory presets (#455); `Timer`/`Counter` sugar; collector conformance for the cardinality-overflow series (#302) |
+| v1.3 Metrics | Mostly done, experimental | Async-callback deadline (#237); per-kind Delta/LowMemory presets (#455); `schema_url` export (#456); `DataPointFlags` (#457); histogram sum omitted for negative recordings (#458); collector conformance for the cardinality-overflow series (#302); exemplars: export them (#454) or declare them unsupported, decision pending, with OTel reservoirs and `OTEL_METRICS_EXEMPLAR_FILTER` (#300) following that decision |
+| Metrics: additive features (after v1.3) | Not started | View aggregation override (#298); per-instrument or per-View temporality (#299); `Timer`/`Counter` sugar (#301). Unnumbered: each ships in the next minor release after it is done |
 | v1.4 Control plane | Not started | Unix-socket server, `microtelctl`, threat model, operator guide (ICP 0024); mTLS rotation (#296, #297) |
 | Tier 3 otel-cpp shim | Done for all three signals, experimental | Beta gates in §10 (real-world app testing, frozen API, deprecation policy) |
 | v1.5 Conformance push | Not started | Custom samplers are reachable through `SamplerHandle` but not a documented extension point; histogram buckets can be set per instrument but not through Views |
-| v1.6 Performance & footprint | Partial | Static-archive install and `find_package` exist (ICP 0020); measured size targets and compile-time feature selection are proposed in ICP 0030; coroutines, pooling, HTTP/3 not started |
+| v1.6 Performance & footprint | Partial | Static-archive install and `find_package` exist (ICP 0020); measured size targets and compile-time feature selection are proposed in ICP 0030; coroutines, pooling, HTTP/3 not started; also on the milestone: BSP ring buffer (#530), smaller `Http1Transport` (#521), transport header leak (#474), public transport stats (#515), shared-library support (#476) |
 | v2.x, v3.0 | Not started | v2.0 now stabilises the leaf and receiver APIs rather than introducing them |
 
 Status markers in §4 and §5 use the same words: *done*, *partial* (with what
@@ -179,7 +180,7 @@ Python bindings are **not** part of v1.0. They ship post-v1.0 as **M18**, coveri
 
 **Theme:** Second signal lands.
 
-**Status:** mostly done and shipping as experimental. The work left is finishing the gaps marked below. Collector conformance tests landed in v1.2.4, over both protocols, except for the cardinality-overflow series (#302). Open issues are on the v1.3 milestone. The control plane that ICP 0024 moved into this release is now its own release, v1.4 ([ICP 0032](icps/0032-release-reorder-v1.1.1.md)).
+**Status:** mostly done and shipping as experimental. The work left is finishing the gaps marked below. Collector conformance tests landed in v1.2.4, over both protocols, except for the cardinality-overflow series (#302). Open issues are on the v1.3 milestone. v1.3 keeps the work that changes existing behaviour or fixes what is exported. Purely additive features (View aggregation override, per-instrument temporality, `Timer`/`Counter` sugar) moved to the unnumbered "Metrics: additive features (after v1.3)" milestone, so the compatibility promise doesn't wait for them. The control plane that ICP 0024 moved into this release is now its own release, v1.4 ([ICP 0032](icps/0032-release-reorder-v1.1.1.md)).
 
 **Prerequisite milestone (M11 from spec):** `docs/metrics-design.md` lands first, with reviewer sign-off. Covers the semantic decisions that v1.0 deliberately deferred: aggregation temporality (delta vs cumulative), cardinality limits, histogram bucket configuration, async-instrument callback semantics, reader/exporter interaction, views, exemplars roadmap. *(Done.)*
 
@@ -188,11 +189,11 @@ Then implementation:
 - **Sync instruments:** Counter, UpDownCounter, Gauge, Histogram. *(Done, plus an `ExponentialHistogram` instrument.)*
 - **Async instruments:** ObservableCounter, ObservableUpDownCounter, ObservableGauge with callback semantics defined in the design doc. *(Partial: the per-collection callback deadline is not enforced, #237.)*
 - **MetricReader / MetricExporter pipeline** sharing the existing OTLP encoder and transport infrastructure. *(Done over both protocols, with retry since v1.1.1, #222.)*
-- **Aggregation temporality** with delta and cumulative paths; per-metric configuration. *(Partial: delta and cumulative work, but temporality is set once per provider; no per-instrument or per-View override.)*
+- **Aggregation temporality** with delta and cumulative paths; per-metric configuration. *(Partial: delta and cumulative work, but temporality is set once per provider. The per-kind `LowMemory` mapping stays in v1.3 (#455); the per-instrument or per-View override moved to after v1.3 (#299).)*
 - **Cardinality limits** with explicit overflow attribute (per OTel spec) and drop accounting. *(Done.)*
-- **Views API** (basic — rename, attribute filter, aggregation override). Full views deferred to v1.5. *(Partial: rename, attribute allowlist and drop work; aggregation override is missing.)*
-- **Exemplars** linked to active span context where present. *(Partial: one exemplar per attribute set rather than OTel reservoirs; `OTEL_METRICS_EXEMPLAR_FILTER` is not read.)*
-- **`mt::Timer` sugar wired into histograms** — completes the sugar layer's deferred-during-v1.1 piece. *(Not started.)*
+- **Views API** (basic — rename, attribute filter, aggregation override). Full views deferred to v1.5. *(Partial: rename, attribute allowlist and drop work; aggregation override moved to after v1.3, #298.)*
+- **Exemplars** linked to active span context where present. *(Partial: captured, one per attribute set, but never exported. A decision is pending (#454): export them in v1.3, or declare them unsupported in v1.3 and stop capturing them. OTel reservoirs and `OTEL_METRICS_EXEMPLAR_FILTER` (#300) follow that decision.)*
+- **`mt::Timer` sugar wired into histograms** — completes the sugar layer's deferred-during-v1.1 piece. *(Not started; moved to after v1.3, #301.)*
 
 **Compatibility tier:** Tier 1 and Tier 2 advance to include metrics. Tier 3 shim adds metric instruments, still experimental. *(The shim's metric instruments are already done.)*
 
@@ -332,6 +333,7 @@ The shipped names are in `microtel::sugar` ([ICP 0028](icps/0028-sugar-surface.m
 - Python: `@mt.trace_function` decorator, `mt.span(...)` context manager, `mt.traced(name, callable)`, `mt.record_exception(span, e)`. *(Not started, moved to M18.)*
 
 ### v1.3 (metrics arrive)
+*(The C++ helpers moved to the "Metrics: additive features (after v1.3)" milestone, #301.)*
 - `mt::Timer("histogram_name")` — RAII timer recording duration to a histogram on destruction. Was deferred from v1.1 because histograms didn't exist yet. *(Not started. Histograms now exist, so nothing blocks it.)*
 - `mt::Counter<T>(...)` — pre-bound counter helper for hot paths. *(Not started.)*
 - Python: `@mt.timed("histogram_name")` decorator, `mt.counter("name", ...)`. *(Not started.)*
@@ -490,6 +492,7 @@ Brief notes on decisions whose rationale spans multiple releases and influences 
 | Metrics, logs and the otel-cpp shim built ahead of their themes, shipped as experimental | M12–M17 | The code was ready before the release themes that name it. Shipping it marked experimental lets people use it now, while the v1.2 and v1.3 themes keep the job of stabilizing it: closing the gaps, adding conformance tests, and making the compatibility promise. | v1.2, v1.3, Tier 3 |
 | Leaf / concentrator in v1.3 as experimental, with upb **and** nanopb leaf backends | [ICP 0031](icps/0031-leaf-concentrator-in-v1.3.md) | Reverses the v1.0 design's release target for the leaf (v2.0) and the "upb first, nanopb later" row above. The leaf is the strongest pitch for IoT fleets, and most of those devices are Cortex-M, which only nanopb reaches. Nothing in the design needed a major version: the receiver and enrichment hooks never existed as internal interfaces, so they arrive as new API. v2.0 becomes the release where that API goes stable. | v1.3, v2.0, v2.1 |
 | v1.1.1 patch for the concentrator's prerequisites; release order becomes v1.2 logs + leaf, v1.3 metrics, v1.4 control plane, v1.5 conformance push, v1.6 performance | [ICP 0032](icps/0032-release-reorder-v1.1.1.md) | Only #257 and #222 block the concentrator, so they ship first as a patch. Metrics and the control plane share no code and have very different amounts of work left, so they no longer share a release. Earlier rows keep the numbers they were decided under. | v1.1.1–v1.6 |
+| v1.3 keeps only metrics work that changes existing behaviour or fixes exported data; additive metrics features move to an unnumbered milestone | Milestone change, 2026-11-17 (no ICP: no release is renumbered) | v1.3 is the release that makes metrics supported. Additive features don't affect that promise, so they no longer hold it up. They ship in whichever minor release follows once each is done. Unrelated transport, packaging and docs issues left the v1.3 milestone for v1.6 and v1.2.7. | v1.3 |
 
 This log is appended to, never rewritten. When a decision is reversed, the original entry stays and a new entry records the reversal with rationale — the control-plane deferral is the first.
 
