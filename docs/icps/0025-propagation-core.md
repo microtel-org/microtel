@@ -310,6 +310,11 @@ That activates the exemplar machinery in `SumStorage`, `GaugeStorage`,
 `HistogramStorage`, and `ExponentialHistogramStorage`, all of which already
 have the `if (m_span_source != nullptr)` branch and the tests behind it.
 
+> **See [ICP 0043](0043-exemplar-capture-off-in-v1.3.md).** In v1.3 `SdkProvider`
+> passes a null span source to `SdkMeter`, so exemplar capture is off. The wiring
+> above is kept and reached through a test-only hook, until export lands (#454).
+> Log trace-correlation is unaffected.
+
 ### 4. `W3CBaggagePropagator` — surface only
 
 `include/microtel/propagator.hpp` gains a sibling of
