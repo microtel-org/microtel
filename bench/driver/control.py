@@ -12,15 +12,16 @@ from typing import Any
 class ControlClient:
     """Client for the emit-app TCP ndjson control socket on port 19090."""
 
-    def __init__(self, host: str, port: int):
+    def __init__(self, host: str, port: int, reply_timeout_s: float = 60.0):
         self._host = host
         self._port = port
+        self._reply_timeout_s = reply_timeout_s
         self._sock: socket.socket | None = None
         self._buf = b""
 
     def connect(self) -> None:
         self._sock = socket.create_connection((self._host, self._port), timeout=10.0)
-        self._sock.settimeout(60.0)
+        self._sock.settimeout(self._reply_timeout_s)
 
     def close(self) -> None:
         if self._sock:

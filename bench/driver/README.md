@@ -19,8 +19,8 @@ python3 -m driver [options]
 
 ```
 --profile NAME            Workload profile (default: hot-loop-traces)
---sut NAME                Run only this SUT; default: every SUT in the profile
-                          whose registry entry has b0: true
+--sut NAME[,NAME...]      Run only these SUTs, in that order; default: every SUT
+                          in the profile whose registry entry has b0: true
 --reps N                  Override sample count from the profile
 --out DIR                 Output directory (default: bench/results)
 --no-build                Skip image builds; use cached images
@@ -30,6 +30,7 @@ python3 -m driver [options]
 --regression-check FILE   Compare against a baseline results.json; exit 2 on regression
 --threshold F             Regression threshold as a fraction (default: 0.05)
 --allow-smt               Suppress the hyperthreading/SMT env-guard warning
+--label TEXT              Shown at the top of results.md, stored as results.json "label"
 --verbose                 Show container build and run output
 --flamegraph              Also build :perf images and write one SVG flamegraph per SUT
 --flamegraph-dir DIR      FlameGraph scripts directory (overrides FLAMEGRAPH_DIR)
@@ -40,6 +41,11 @@ python3 -m driver [options]
 ```
 
 `python3 -m driver -h` prints the full help text.
+
+`python3 -m driver.rounds --profile P --sut A,B,C --rounds 5 --out DIR` runs
+interleaved rounds of one profile, one driver run per SUT per round, behind a
+load-average gate, and writes the median and range of the CPU figures to
+`DIR/summary.md` (`bench/docs/methodology.md`, "Interleaved rounds").
 
 ## Module layout
 
@@ -53,6 +59,8 @@ python3 -m driver [options]
 | `control.py` | TCP ndjson client for the emit-app control socket |
 | `sink_client.py` | Client for the sink's stats: the blackhole sink's `/stats` and `/reset`, or the collector's receiver metrics |
 | `report.py` | Statistics, `build_results()`, `write_json()`, `write_markdown()` |
+| `cpu.py` | CPU per SUT container over the measurement window: cgroup `cpu.stat` or `/proc`, split by thread |
+| `rounds.py` | `python3 -m driver.rounds`: interleaved CPU rounds, load gate, median and range |
 | `regression.py` | `--regression-check`: compares a run against a baseline document |
 | `plots.py` | Optional Plotly HTML charts |
 | `flamegraph.py` | `--flamegraph`: `perf record` inside the SUT container, rendered to SVG on the host |

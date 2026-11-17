@@ -5,6 +5,8 @@
 
 #include "backend.hpp"
 #include "histogram.hpp"
+#include "pacer.hpp"
+#include "thread_cpu.hpp"
 #include "workload.hpp"
 
 #include <chrono>
@@ -14,6 +16,7 @@
 
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <pthread.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
@@ -33,7 +36,6 @@ namespace
 constexpr int kBacklog = 1;
 constexpr int kBufSize = 4096;
 constexpr int kMinThreads = 1;
-constexpr uint64_t kNsPerSec = 1'000'000'000ULL;
 
 [[nodiscard]] int CreateListenSocket(int port)
 {
@@ -116,49 +118,19 @@ constexpr uint64_t kNsPerSec = 1'000'000'000ULL;
     return static_cast<uint64_t>(std::stoull(json.substr(val_pos)));
 }
 
-/// Fixed-interval token bucket for per-thread rate limiting.
-/// rate_hz == 0 means unlimited (Consume() is a no-op).
-class TokenBucket
-{
-public:
-    explicit TokenBucket(uint64_t rate_hz) noexcept
-        : m_interval_ns(rate_hz > 0 ? kNsPerSec / rate_hz : 0)
-    {
-    }
-
-    TokenBucket(const TokenBucket&) = delete;
-    TokenBucket& operator=(const TokenBucket&) = delete;
-    TokenBucket(TokenBucket&&) = delete;
-    TokenBucket& operator=(TokenBucket&&) = delete;
-    ~TokenBucket() = default;
-
-    void Consume() noexcept
-    {
-        if (m_interval_ns == 0)
-        {
-            return;
-        }
-        const auto now = std::chrono::steady_clock::now();
-        if (m_next > now)
-        {
-            std::this_thread::sleep_until(m_next);
-        }
-        m_next = std::chrono::steady_clock::now() + std::chrono::nanoseconds(m_interval_ns);
-    }
-
-private:
-    uint64_t m_interval_ns{0};
-    std::chrono::steady_clock::time_point m_next;  // default-init to epoch
-};
-
 void WorkerThread(uint64_t span_count, uint64_t rate_hz_per_thread,
-                  WorkloadMode mode, IBackend& backend, Histogram& hist)
+                  std::chrono::steady_clock::time_point pace_start, WorkloadMode mode,
+                  IBackend& backend, Histogram& hist, ThreadCpu& cpu)
 {
-    TokenBucket tb(rate_hz_per_thread);
+    // The driver's CPU accounting (bench/driver/cpu.py) tells these threads
+    // from the SDK's own by this name.
+    ::pthread_setname_np(::pthread_self(), "emit");
+    const ThreadCpu cpu0 = ReadThreadCpu();
+    using Clock = std::chrono::steady_clock;
+    const Pacer pacer(rate_hz_per_thread, pace_start);
     for (uint64_t i = 0; i < span_count; ++i)
     {
-        tb.Consume();
-        using Clock = std::chrono::steady_clock;
+        pacer.Wait(i);
         const auto t0 = Clock::now();
         EmitOnce(backend, mode);
         const auto t1 = Clock::now();
@@ -166,25 +138,42 @@ void WorkerThread(uint64_t span_count, uint64_t rate_hz_per_thread,
             std::chrono::duration_cast<std::chrono::nanoseconds>(t1 - t0).count());
         hist.Record(ns);
     }
+    cpu = ReadThreadCpu() - cpu0;
 }
 
-void RunWorkload(uint64_t spans, int threads, uint64_t rate_hz,
-                 WorkloadMode mode, IBackend& backend, Histogram& hist)
+/// Runs the workload on @p threads threads and returns their CPU, summed.
+/// @p rate_hz is split evenly; *rate_hz_effective gets what the split leaves.
+[[nodiscard]] ThreadCpu RunWorkload(uint64_t spans, int threads, uint64_t rate_hz,
+                                    WorkloadMode mode, IBackend& backend, Histogram& hist,
+                                    uint64_t& rate_hz_effective)
 {
     const auto n = static_cast<uint64_t>(threads);
     const uint64_t per_thread = spans / n;
     const uint64_t remainder = spans % n;
     const uint64_t rate_per_thread = rate_hz > 0 ? rate_hz / n : 0;
+    rate_hz_effective = rate_per_thread * n;
 
-    std::vector<std::jthread> workers;
-    workers.reserve(static_cast<std::size_t>(threads));
-    for (int t = 0; t < threads; ++t)
+    std::vector<ThreadCpu> cpu(static_cast<std::size_t>(threads));
+    // One start for all threads; each is offset from it (StaggeredStart).
+    const auto start = std::chrono::steady_clock::now();
     {
-        const uint64_t count = per_thread + (t == 0 ? remainder : 0);
-        workers.emplace_back(WorkerThread, count, rate_per_thread, mode,
-                             std::ref(backend), std::ref(hist));
+        std::vector<std::jthread> workers;
+        workers.reserve(static_cast<std::size_t>(threads));
+        for (int t = 0; t < threads; ++t)
+        {
+            const uint64_t count = per_thread + (t == 0 ? remainder : 0);
+            const auto pace_start = StaggeredStart(start, rate_per_thread, n,
+                                                   static_cast<uint64_t>(t));
+            workers.emplace_back(WorkerThread, count, rate_per_thread, pace_start, mode,
+                                 std::ref(backend), std::ref(hist), std::ref(cpu[static_cast<std::size_t>(t)]));
+        }
+    }  // jthreads join here: every worker has finished and written its CPU
+    ThreadCpu total;
+    for (const auto& c : cpu)
+    {
+        total += c;
     }
-    // jthreads auto-join on destruction — all workers complete before return
+    return total;
 }
 
 [[nodiscard]] RunResult HandleRunCommand(const std::string& line,
@@ -199,7 +188,9 @@ void RunWorkload(uint64_t spans, int threads, uint64_t rate_hz,
     Histogram run_hist;
     using Clock = std::chrono::steady_clock;
     const auto t0 = Clock::now();
-    RunWorkload(spans, threads, rate_hz, mode, backend, run_hist);
+    uint64_t rate_hz_effective = 0;
+    const ThreadCpu cpu =
+        RunWorkload(spans, threads, rate_hz, mode, backend, run_hist, rate_hz_effective);
     const auto t1 = Clock::now();
 
     const auto stats = backend.Stats();
@@ -217,6 +208,10 @@ void RunWorkload(uint64_t spans, int threads, uint64_t rate_hz,
         .latency_min_ns    = run_hist.Min(),
         .latency_max_ns    = run_hist.Max(),
         .latency_histogram = run_hist.Buckets(),
+        .rate_hz_effective = rate_hz_effective,
+        .emit_cpu_ns       = cpu.cpu_ns,
+        .emit_user_ns      = cpu.user_ns,
+        .emit_sys_ns       = cpu.sys_ns,
     };
 }
 
@@ -289,7 +284,10 @@ std::string SerializeRunResult(const RunResult& r)
         }
         os << r.latency_histogram[i];
     }
-    os << "]}";
+    os << "],\"rate_hz_effective\":" << r.rate_hz_effective
+       << ",\"emit_cpu_ns\":" << r.emit_cpu_ns
+       << ",\"emit_user_ns\":" << r.emit_user_ns
+       << ",\"emit_sys_ns\":" << r.emit_sys_ns << "}";
     return os.str();
 }
 

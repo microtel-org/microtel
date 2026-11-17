@@ -171,8 +171,11 @@ Per SUT, per run, per profile:
 
 | Metric | Source | Units |
 |---|---|---|
-| Caller-thread CPU time on emit | `getrusage(RUSAGE_THREAD)` deltas, integrated over the measurement window | μs / 1k spans |
-| Process CPU time | `getrusage(RUSAGE_SELF)` | seconds |
+| CPU per span: total, user, system | SUT container's cgroup v2 `cpu.stat` (`usage_usec`, `user_usec`, `system_usec`); `/proc/<pid>/stat` `utime`/`stime` when that is unreadable | ns / span |
+| Caller-thread CPU per span | workload threads' own `CLOCK_THREAD_CPUTIME_ID` (user / system from `getrusage(RUSAGE_THREAD)`), summed in the run reply; cross-checked as the process total minus the other threads | ns / span |
+| Other-thread CPU per span | `/proc/<pid>/task/<tid>/schedstat` deltas of the threads not named `emit` | ns / span |
+| CPU cores used | total CPU ÷ window wall time | cores |
+| CPU minus baseline | the above minus the `baseline-noop` SUT's (no SDK) in the same run or round | ns / span, cores |
 | Peak RSS | `/proc/self/status` `VmHWM`, polled every 100 ms | MB |
 | Steady-state RSS (median) | same, median over window | MB |
 | Throughput (sink-observed) | sink counters | items/sec |
@@ -192,6 +195,15 @@ Per SUT, per run, per profile:
 | Dep closure size | `ldd` + file sizes | bytes |
 
 All histograms ship as raw HDR-histogram data alongside the summary, so users can re-derive any percentile.
+
+The CPU rows cover one window per SUT, from after the warm-up's flush to after
+the last sample's flush, so export work is included. Per-span figures divide
+by the spans delivered at the sink (emitted, for `baseline-noop`, which
+exports nothing). The fixed-rate profiles (`fixed-rate-1k`, `fixed-rate-10k`)
+pace to absolute deadlines and report target and achieved rates; for them,
+`python3 -m driver.rounds` runs interleaved rounds behind a load-average gate
+and reports median and range. Method and caveats:
+[`bench/docs/methodology.md`](../bench/docs/methodology.md) "CPU".
 
 ---
 
@@ -427,7 +439,7 @@ status and the footprint trajectory across releases.
 |---|---|
 | Span creation p50/p95/p99 (§14.1) | §5 "StartSpan overhead". The §4 profiles do not set a sampler, so the sampled / unsampled and parent-sampled splits have no row |
 | Attributes before vs after sampling, allocations and bytes per span (§14.1) | no §5 row |
-| Caller-thread CPU per span (§14.1, §14.5) | §5 "Caller-thread CPU time on emit" (CPU time, not cycles) |
+| Caller-thread CPU per span (§14.1, §14.5) | §5 "Caller-thread CPU per span" (CPU time, not cycles) |
 | Queue push contention, 1 / 4 / 16 threads (§14.1) | `concurrent-emitters` with `--sweep-threads 1,4,16`; contention itself has no row |
 | Spans/sec (§14.2) | §5 "Throughput (sink-observed)" |
 | Batches/sec, transport CPU, queue depth under outage, reconnect behaviour (§14.2) | no §5 row |
