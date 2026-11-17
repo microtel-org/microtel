@@ -59,6 +59,7 @@ from `CLAUDE.md`, `CMakeLists.txt`, `ci/header_check.cpp` and the headers.
 | [0041](0041-flush-and-shutdown-deadlines.md) | Flush and shutdown: an exporter's `ForceFlush` waits for the batches queued before the call, not an empty queue; Provider `ForceFlush`/`Shutdown` share one deadline, run every stage and return the worst status; `Shutdown` cancels the in-flight send at the deadline (#484, #486). Amendment: a flush's range starts where the last completed flush's range ended; the HTTP/2 shutdown cancel moves to v1.3 (#492) | Accepted | — |
 | [0042](0042-http1-fallback-for-otlp-http.md) | HTTP/1.1 fallback for OTLP/HTTP (v1.2.6): automatic on the plaintext HTTP/1.1-preface signal or a TLS ALPN `http/1.1`/empty answer, remembered per transport; `Http1Transport` with serial requests on one keep-alive connection; hand-written response parser with a fuzz target; gRPC never falls back; at most one I/O thread at a time; CR/LF/NUL header validation in the codecs' `BuildHeaders` (#166, roadmap §12 q6). Amended: the auth-token claim corrected (#412 already checks it); stale-connection retry, once, counted | Accepted | #503 (v1.2.6) |
 | [0043](0043-exemplar-capture-off-in-v1.3.md) | Exemplar capture off in v1.3: `SdkProvider` passes a null span source to `SdkMeter`; an internal test-only `SdkProviderArgs` hook keeps the capture path tested; no public option until export (#454); `trace_based` deferred, not removed; exemplars outside the v1.3 compatibility promise | Accepted | #544 (v1.3) |
+| [0044](0044-claude-md-ci-sync.md) | clang-format 18.1.3 pin and `ubuntu-24.04` runners recorded (retroactive for #539); CLAUDE.md edits that only sync it with what CI already enforces need a PR note, not an ICP | Draft | #539 |
 
 [ICP 0024](0024-v1.1-rescope.md) reserved number 0027 for an amendment to
 `docs/control-plane-design.md` §9 (the fourth thread role). That amendment is
@@ -147,6 +148,7 @@ After M0 closes, an ICP is required for:
 - Documentation polish that doesn't change a normative claim.
 - Test additions, formatting, comment-only changes.
 - New methods on an interface that's still being drafted (M0 in progress).
+- Edits to `CLAUDE.md` that only bring it in line with what CI already enforces: a tool version, a check's name, a script's invocation. The PR description must say so and link the CI change. A CLAUDE.md edit that adds, removes or relaxes a rule still needs an ICP ([ICP 0044](0044-claude-md-ci-sync.md)).
 
 ## Pre-M0-close ICPs
 
