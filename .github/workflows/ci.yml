@@ -35,7 +35,7 @@ jobs:
   # nothing equals 'false', and every job runs in full. Pushes to master
   # always run everything.
   changes:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     name: changes
     outputs:
       code: ${{ steps.classify.outputs.code }}
@@ -54,7 +54,7 @@ jobs:
             ci/scripts/classify-change.sh
           fi
   format-check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     needs: changes
     if: ${{ !cancelled() && needs.changes.outputs.code != 'false' }}
@@ -72,11 +72,26 @@ jobs:
         run: |
           sudo update-alternatives --install /usr/bin/clang-format \
             clang-format /usr/bin/clang-format-18 100
+      # The format gate is pinned to one clang-format patch release: 18.1.3
+      # and 18.1.8 format the same code differently. See the pre-PR checklist
+      # in CLAUDE.md and docs/development.md.
+      - name: Check clang-format version
+        env:
+          REQUIRED_CLANG_FORMAT: 18.1.3
+        run: |
+          clang-format --version
+          found="$(clang-format --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -n1)"
+          if [ "$found" != "$REQUIRED_CLANG_FORMAT" ]; then
+            echo "::error::clang-format is $found, but the format gate requires $REQUIRED_CLANG_FORMAT." \
+              "The runner image's apt package changed. Pin the runner, or choose a new" \
+              "clang-format and reformat the tree deliberately."
+            exit 1
+          fi
       - name: Run format-check
         run: ci/scripts/format-check.sh
 
   tidy-check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 120
     needs: changes
     if: ${{ !cancelled() && needs.changes.outputs.code != 'false' }}
@@ -137,7 +152,7 @@ jobs:
         run: ci/scripts/tidy-check.sh build
 
   compile:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     needs: changes
     if: ${{ !cancelled() }}
@@ -212,7 +227,7 @@ jobs:
         run: ctest --test-dir build --output-on-failure
 
   sanitizers:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     needs: changes
     if: ${{ !cancelled() }}
@@ -264,7 +279,7 @@ jobs:
         run: ctest --test-dir build --output-on-failure
 
   regen-check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     needs: changes
     if: ${{ !cancelled() && needs.changes.outputs.code != 'false' }}
@@ -327,7 +342,7 @@ jobs:
           fi
 
   symbol-scan:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     needs: changes
     if: ${{ !cancelled() && needs.changes.outputs.code != 'false' }}
@@ -369,7 +384,7 @@ jobs:
   # either backend. The installed archives then go through the same
   # symbol-scan gate, leaf pass included (for nanopb, the no-heap check).
   leaf-standalone:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     needs: changes
     if: ${{ !cancelled() }}
@@ -421,7 +436,7 @@ jobs:
   # targets are not gates in v1.2: the job fails only if the build, the link,
   # the stack analysis or the closure scan (target nm; nanopb: no heap) fails.
   leaf-footprint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     needs: changes
     if: ${{ !cancelled() }}
@@ -457,7 +472,7 @@ jobs:
   # qemu-aarch64 and as a 32-bit i686 process. The runner also reports the
   # stack each public entry point used, to the job summary.
   leaf-target:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     needs: changes
     if: ${{ !cancelled() }}
@@ -485,7 +500,7 @@ jobs:
         run: ci/scripts/leaf-target.sh ${{ matrix.target }}
 
   consumer-smoke:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     needs: changes
     if: ${{ !cancelled() && needs.changes.outputs.code != 'false' }}
@@ -528,7 +543,7 @@ jobs:
   # tests/consumer_toml too: an application that links compiled toml++ and
   # microtel (which compiles toml++ header-only) in one process.
   system-deps:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     needs: changes
     if: ${{ !cancelled() && needs.changes.outputs.code != 'false' }}
@@ -614,7 +629,7 @@ jobs:
         run: VCPKG_ROOT="$RUNNER_TEMP/vcpkg" ci/scripts/consumer-package.sh vcpkg
 
   corpus-check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     needs: changes
     if: ${{ !cancelled() && needs.changes.outputs.code != 'false' }}
@@ -649,7 +664,7 @@ jobs:
         run: ci/scripts/corpus-check.sh build-fuzz
 
   otelcpp-shim:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     needs: changes
     if: ${{ !cancelled() && needs.changes.outputs.code != 'false' }}
@@ -692,7 +707,7 @@ jobs:
   # a target that includes a dependency's header without linking it (#473).
   # Not a required check.
   conan-clean:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     container: ubuntu:24.04
     timeout-minutes: 60
     needs: changes
@@ -727,7 +742,7 @@ jobs:
         run: ci/scripts/conan-clean.sh
 
   conformance:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: changes
     if: ${{ !cancelled() && needs.changes.outputs.code != 'false' }}
     name: conformance
@@ -768,7 +783,7 @@ jobs:
         run: ci/scripts/conformance.sh build
 
   coverage:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     needs: changes
     if: ${{ !cancelled() && needs.changes.outputs.code != 'false' }}
@@ -886,7 +901,7 @@ jobs:
   #
   # Not a required status check yet.
   test-presence:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     name: test-presence
     if: github.event_name == 'pull_request'
     timeout-minutes: 5
@@ -908,7 +923,7 @@ jobs:
   #
   # Needs no toolchain: it reads source text, so it answers in seconds.
   version-drift-check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     name: version-drift-check
     timeout-minutes: 5
     steps:
@@ -929,7 +944,7 @@ jobs:
   # The self-test runs first: it proves the gate can fail (stale symbol, missing
   # file, uncited marker) before its PASS on the real tree means anything.
   citation-check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     name: citation-check
     timeout-minutes: 5
     steps:

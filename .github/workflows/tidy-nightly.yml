@@ -29,7 +29,7 @@ permissions:
 
 jobs:
   tidy-full:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 120
     name: clang-tidy (full)
     steps:

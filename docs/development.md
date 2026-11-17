@@ -249,6 +249,13 @@ When you (or an AI agent) start a session intending to do non-trivial work:
 
 For trivial work (typo fix, comment update, single-line bug fix in one file), skip directly to the change. The checklist exists for substantive work.
 
+**Formatter version.** The format gate requires **clang-format 18.1.3** exactly. CI's runners are pinned to `ubuntu-24.04`, whose apt `clang-format-18` is that version, and the `clang-format` job fails if it finds any other. Other 18.x releases format some code differently: Fedora's and Ubuntu 26.04's 18.1.8 break `<<` chains differently, for example. So check locally with the pinned version:
+
+```bash
+python3 -m venv /tmp/cf && /tmp/cf/bin/pip install -q clang-format==18.1.3
+CLANG_FORMAT=/tmp/cf/bin/clang-format ci/scripts/format-check.sh
+```
+
 ---
 
 ## 11. CODEOWNERS
