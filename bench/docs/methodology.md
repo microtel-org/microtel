@@ -212,6 +212,8 @@ locks together. The `Spans/s, target → achieved` row gives both, from each sam
   contended on the SDK's locks: on this host that added about 1.8 µs/span to
   microtel at 1k spans/s (5 rounds each way), and nothing measurable to
   opentelemetry-cpp, whose span buffer is lock-free.
+  These figures are UNOFFICIAL: one host running on a single memory channel,
+  against opentelemetry-cpp v1.19.0. The results are not committed.
   Low-rate figures therefore depend on which deep C-states are enabled: with
   them disabled (`processor.max_cstate=1`, `idle=poll`, or a state's
   `disable` flag) they should fall (not measured here), and two hosts compare only with the same
