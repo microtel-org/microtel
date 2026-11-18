@@ -106,6 +106,14 @@ struct SdkProviderArgs
     microtel::TemporalityPreference metric_temporality{microtel::TemporalityPreference::Cumulative};
     /// @brief Per-instrument cardinality cap forwarded to every SdkMeter.
     std::size_t metric_max_cardinality{kDefaultMaxCardinality};
+    /// @brief Test-only: lend the meters a current-span source so they capture
+    ///        exemplars.
+    ///
+    /// Exemplars are not supported in v1.3 (ICP 0043): nothing exports them,
+    /// so capture is off and every `SdkMeter` gets a null span source.
+    /// `SdkBuilder` never sets this. Tests that build `SdkProvider` directly
+    /// set it to keep the capture path exercised until export lands (#454).
+    bool exemplar_capture_for_testing{false};
     /// @brief View configurations registered via `SdkBuilder::WithView()`.
     ViewRegistry view_registry;
     /// @brief Optional wire codec for the logs endpoint. Must outlive
@@ -238,6 +246,15 @@ public:
         return m_profile_name;
     }
 
+    /// @brief Whether this provider's meters capture exemplars.
+    ///
+    /// False unless `SdkProviderArgs::exemplar_capture_for_testing` was set,
+    /// which `SdkBuilder` never does (ICP 0043). Immutable after construction.
+    [[nodiscard]] bool ExemplarCaptureEnabled() const noexcept
+    {
+        return m_exemplar_capture;
+    }
+
     /// @brief Borrow the provider-owned diagnostics sink.
     ///
     /// Non-owning reference, valid for the provider's lifetime. The seam
@@ -361,6 +378,8 @@ private:
     std::chrono::milliseconds m_metric_interval;
     microtel::TemporalityPreference m_metric_temporality;
     std::size_t m_metric_max_cardinality;
+    // Immutable: whether GetMeter lends the meters a span source (ICP 0043).
+    bool m_exemplar_capture;
     // Guarded by m_logger_mu: the seed a later GetLogger builds the processor
     // from, and the value SetBatchOptions writes.
     BatchOptions m_log_batch_opts;

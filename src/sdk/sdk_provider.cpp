@@ -108,6 +108,7 @@ SdkProvider::SdkProvider(SdkProviderArgs args) noexcept
       m_metric_interval(args.metric_interval),
       m_metric_temporality(args.metric_temporality),
       m_metric_max_cardinality(args.metric_max_cardinality),
+      m_exemplar_capture(args.exemplar_capture_for_testing),
       m_log_batch_opts(args.log_batch_opts),
       m_batch_span_processor(args.batch_span_processor),
       m_resource(std::move(args.resource)),
@@ -466,7 +467,8 @@ std::shared_ptr<microtel::Meter> SdkProvider::GetMeter(std::string_view name,
             m_metric_max_cardinality,
             m_metric_producer->Diagnostics(),
             m_view_registry,
-            m_metric_producer->SpanSource());
+            // Null turns exemplar capture off (ICP 0043).
+            m_exemplar_capture ? m_metric_producer->SpanSource() : nullptr);
     }
     return entry;
 }
