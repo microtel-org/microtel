@@ -76,9 +76,11 @@ Traces:
 - `internal::ICurrentSpanSource` as `CurrentSpanSource` in
   [`current_span_source.hpp`](current_span_source.hpp). It reads the API's
   thread-local context slot and applies the `trace_based` filter (valid and
-  sampled, otherwise an invalid context). The `MetricProducer` owns one and
-  lends it to every `SdkMeter` (as `StorageOptions::span_source`, which turns
-  on the exemplar reservoirs); the provider's `LogPipeline` owns another for
+  sampled, otherwise an invalid context). The `MetricProducer` owns one, and
+  `SdkProvider::GetMeter` lends it to each `SdkMeter` (as
+  `StorageOptions::span_source`, which turns on exemplar capture) only when
+  the test-only `SdkProviderArgs::exemplar_capture_for_testing` is set:
+  capture is off in v1.3 ([ICP 0043](../../docs/icps/0043-exemplar-capture-off-in-v1.3.md)); the provider's `LogPipeline` owns another for
   every `SdkLogger` (log/trace correlation). See issue #221 and
   [ICP 0025](../../docs/icps/0025-propagation-core.md) §3.
 
