@@ -6,52 +6,64 @@ doesn't produce them. A local `cd bench && ./bench.sh` writes to
 `bench/results/`, which is gitignored, so the README used to link a path that
 only existed for people who had run the harness themselves.
 
-The snapshot was refreshed on 2026-10-28 for the v1.2.5 tag, `16b39fb`
-(`source_commit` and `images_built_from` in `results.json`). It ran on the
-same machine as the v1.2.4 snapshot (Ryzen 5 5600G, 6 cores / 12 threads,
-`performance` governor, SMT on), and the environment block matches it field
-for field: the same kernel, 7.2.11-200.fc44, and the same podman, 5.8.9, as
-[`docs/releasing.md`](../releasing.md) §5 requires. The two snapshots are a
-like-for-like comparison.
+The snapshot was measured on 2026-11-22: microtel **v1.2.6** against
+opentelemetry-cpp **v1.30.0**. All four images were built from the v1.2.6 tag,
+`59e5415` (`source_commit` and `images_built_from` in `results.json`), with
+the opentelemetry-cpp SUTs moved from v1.19.0 to v1.30.0 (`OTELCPP_VERSION`
+in `bench/sut/otelcpp-*/Dockerfile`; v1.30.0 renamed its CMake options and
+package components, which `bench/emit-app/CMakeLists.txt` follows). Each image
+was built twice, the second time with `--no-cache`, and the two builds were
+identical section by section.
 
-**Not re-run for v1.2.6.** v1.2.6 leaves the span hot path unchanged (no
-change in `src/api`, `src/wire/encoder` or the SDK's span, processor and
-exporter code), so these timings stand for it. Only the sizes were
-re-measured, in [`sizes/library-sizes.md`](sizes/library-sizes.md).
+**This is a new baseline, not a like-for-like refresh.** It ran on the same
+Ryzen 5 5600G as the v1.2.5 snapshot, but
+[`docs/releasing.md`](../releasing.md) §5's same-environment rule does not
+hold, for three reasons:
+- **Memory:** a faulty DIMM was found and replaced after the v1.2.5 snapshot.
+  The new DIMM passed memtest86+, and the host passed a 30-minute
+  `stress-ng --vm --verify` screen before these builds.
+- **Kernel:** 7.2.9-201.fc44, against 7.2.11-200.fc44. podman is the same, 5.8.9.
+- **CPU frequency boost:** off (`/sys/devices/system/cpu/cpufreq/boost` = 0),
+  with the `performance` governor. The environment block records the governor
+  but not boost, so the v1.2.5 snapshot's boost state is unknown.
 
-**The snapshot merges five interleaved runs.** Each run is the full
-`hot-loop-traces` profile (four SUTs, 10 samples each). Each run of the v1.2.5
-images was preceded by a run of the v1.2.4 images, alternating old, new, old,
-new… five times, so host drift falls on both alike. Only the microtel images
-were rebuilt; both sets use the v1.2.4 otelcpp images, whose code did not
-change. `results.json` holds the 50 samples per SUT from the five v1.2.5 runs,
-with each run's start time, load and sample counts in `interleaved_runs`.
+**The snapshot merges five runs.** Each run is the full `hot-loop-traces`
+profile: four SUTs, 10 samples each. `results.json` holds the 50 samples per
+SUT, with each run's start time, load and sample counts in `interleaved_runs`.
 `results.md` and `plots.html` are rendered from it by the driver's own
 writers. Every run started below host load 0.5.
 
-Three rounds were run again in full, both halves, because an SUT container
-logged nothing and didn't report ready within the driver's 60 s. That
-happened in five of 16 runs, to a different SUT each time, otelcpp ones
-included, so it's the harness, not microtel
-([#499](https://github.com/microtel-org/microtel/issues/499)). Every kept run
-has all four SUTs.
+**Only runs with all four SUTs are kept.** In 9 of the 14 runs started, an SUT
+container logged nothing and didn't report ready within the driver's 60 s
+([#499](https://github.com/microtel-org/microtel/issues/499)). It hit
+microtel (HTTP) five times and otelcpp-http six times, and two runs lost both.
+The five complete runs are kept whole.
 
 ## Summary
 
 This is the table the root README's performance claims are read off.
 Hot-loop traces, 10 000 spans per sample, 50 samples per SUT from five
-interleaved runs, each SDK exporting to a local
+runs, each SDK exporting to a local
 blackhole sink over a container network, one host (Podman; AMD Ryzen 5 5600G,
 `performance` governor, SMT on). Medians:
 
 | Metric | microtel (HTTP) | microtel (gRPC) | otelcpp (gRPC) | otelcpp (HTTP) |
 |---|---|---|---|---|
-| Span emit p50 | **223 ns** | **220 ns** | 812 ns | 813 ns |
-| Span emit p95 | **485 ns** | **472 ns** | 3 394 ns | 3 222 ns |
-| Spans / sec | **1 424 706** | 1 024 210 | 738 912 | 771 072 |
-| Flush p50 | 3.0 ms | 6.1 ms | 2.0 ms | 2.0 ms |
-| Delivery rate | **100%** | **100%** | 93.7% | 94.8% |
-| Wire bytes / span | 68.2 | 68.2 | 68.1 | 68.1 |
+| Span emit p50 | **215 ns** | **210 ns** | 588 ns | 634 ns |
+| Span emit p95 | **474 ns** | **447 ns** | 3 380 ns | 3 356 ns |
+| Spans / sec | **1 439 519** | 1 038 099 | 688 475 | 718 739 |
+| Flush p50 | 3.1 ms | 6.0 ms | 2.1 ms | 2.2 ms |
+| Delivery rate | **100%** | **100%** | 88.1% | 87.7% |
+| Wire bytes / span | 68.2 | 68.2 | 68.4 | 68.3 |
+
+opentelemetry-cpp takes **about 3×** microtel's span emit time: 2.95× over
+OTLP/HTTP (634 against 215 ns) and 2.80× over OTLP/gRPC (588 against 210 ns).
+Per run, the HTTP ratio ranged 2.80–3.13× and the gRPC ratio 2.64–3.03×.
+
+**Delivery rate** is what the sink received. opentelemetry-cpp runs with its
+default `BatchSpanProcessor` queue of 2,048 spans, which overflows during a
+10,000-span sample, and it drops the overflow. The harness has no drop counter
+for opentelemetry-cpp, so `results.md`'s "Spans dropped" row reads 0 for it.
 
 **Span emit** times one whole `EmitSpan()` call of the benchmark app
 ([`control_socket.cpp`](../../bench/emit-app/src/control_socket.cpp), the
@@ -64,7 +76,7 @@ the row "StartSpan".
 **Size** is measured separately, in [`sizes/library-sizes.md`](sizes/library-sizes.md):
 the stripped benchmark executable plus every shared library it loads, Ubuntu
 24.04 packages, split per library with bloaty. The telemetry stack is
-**13.4 MB** for opentelemetry-cpp with its OTLP/gRPC exporter (gRPC, protobuf,
+**13.5 MB** for opentelemetry-cpp v1.30.0 with its OTLP/gRPC exporter (gRPC, protobuf,
 Abseil, c-ares, re2 and the OTLP proto libraries) against **1.3 MB** for
 microtel (measured on v1.2.6) (with nghttp2, upb and toml++), on top of the same **12.0 MB** shared
 base of OpenSSL, zlib and the C/C++ runtime that both load.
@@ -85,23 +97,23 @@ The leaf's flash, RAM and stack on Cortex-M0+, Cortex-M4 and aarch64 are in
 
 ## Changes since the previous snapshot
 
-**No change: the span-emit ratio is 3.6×.** Span emit p50 is 223 ns for
-microtel against 812 ns for otelcpp-gRPC, 3.64×; the v1.2.4 snapshot measured
-3.63×. In the same five interleaved rounds the v1.2.4 images measured 3.69×
-(p50 222 ns against 820 ns). Medians of 50 samples, v1.2.4 code against
-v1.2.5:
+**The span-emit ratio fell from 3.6× to about 3×.** The v1.2.5 snapshot
+measured 223 ns for microtel against 813 ns for opentelemetry-cpp v1.19.0 over
+OTLP/HTTP (3.6×), and 220 against 812 ns over OTLP/gRPC (3.7×). Most of the
+change is opentelemetry-cpp:
 
-| SUT | p50 | p95 | Spans / sec | Flush p50 |
-|---|---|---|---|---|
-| microtel (HTTP) | 222 → 223 ns (+0.5%) | 482 → 485 ns (+0.5%) | +1.8% | −6.7% |
-| microtel (gRPC) | 220 → 220 ns (0%) | 467 → 472 ns (+1.1%) | +2.6% | −4.4% |
-| otelcpp (gRPC) | 820 → 812 ns (−1.0%) | 3 361 → 3 394 ns (+1.0%) | −2.1% | −1.1% |
-| otelcpp (HTTP) | 792 → 813 ns (+2.6%) | 2 561 → 3 222 ns (+25.8%) | −9.2% | +5.3% |
+- **opentelemetry-cpp v1.30.0 is faster than v1.19.0 on this path.** In
+  separate interleaved rounds on this host the same day (OTLP/HTTP, both built
+  with clang 18.1.3 against Ubuntu's protobuf 3.21.12, queues large enough not
+  to drop), v1.30.0 took 0.81× v1.19.0's span time (per round 0.76–0.89×).
+- **microtel moved little.** v1.2.6 leaves the span hot path of v1.2.5
+  unchanged; its p50 went from 223 to 215 ns over HTTP and 220 to 210 ns over
+  gRPC, which is the host change.
+- **opentelemetry-cpp v1.30.0 drops more at its default queue:** 88% delivery,
+  against 94–95% for v1.19.0.
 
-The otelcpp rows are the noise floor: both sides ran the same image. Every
-microtel change is well inside it. v1.2.5's exporter worker counts each batch
-for flush tracking (#484), off the application thread; it doesn't show up in
-emit time or in flush time.
+Because the host changed too, no row here is a like-for-like delta against the
+v1.2.5 snapshot.
 
 **The benchmark binary size row is withdrawn.** It compared the benchmark
 executables' file sizes, which were over 92% debug info and left out the
@@ -109,7 +121,7 @@ shared libraries each executable loads. [`sizes/library-sizes.md`](sizes/library
 and #445 tracks the driver fix. The leaf's footprint is in
 [`leaf-footprint.md`](leaf-footprint.md).
 
-`realistic-request` and `compression` were not rerun for v1.2.4 or v1.2.5. Their last
+`realistic-request` and `compression` were not rerun for v1.2.4, v1.2.5 or this snapshot. Their last
 figures, from 2026-09-27: `realistic-request` 100% delivery for both SUTs, and
 `compression` 342.2 B/span uncompressed against 39.1 gzip'd (8.7×).
 
@@ -126,10 +138,11 @@ figures, from 2026-09-27: `realistic-request` 100% delivery for both SUTs, and
 
 | Field | Value |
 |---|---|
-| Profile | `hot-loop-traces` — 10 000 spans/sample, 10 samples per run × 5 interleaved runs, 1 000 warmup spans, blackhole sink |
+| Profile | `hot-loop-traces` — 10 000 spans/sample, 10 samples per run × 5 runs, 1 000 warmup spans, blackhole sink |
 | SUTs | `microtel`, `microtel-grpc`, `otelcpp-grpc`, `otelcpp-http` |
-| Generated | 2026-10-28 (v1.2.5 tag, `16b39fb`; microtel images built from it, otelcpp images from v1.2.4) |
-| Host | AMD Ryzen 5 5600G, 6 physical cores / 12 threads, Fedora, kernel 7.2.11-200.fc44, podman 5.8.9 |
+| Generated | 2026-11-22 (v1.2.6 tag, `59e5415`, with the opentelemetry-cpp SUTs at v1.30.0; all images built from it) |
+| Versions | microtel v1.2.6; opentelemetry-cpp v1.30.0, built with clang 18.1.3 for the HTTP SUT and GCC 13.3 for the gRPC SUT (emit-app: clang 18.1.3 in all four) |
+| Host | AMD Ryzen 5 5600G, 6 physical cores / 12 threads, Fedora, kernel 7.2.9-201.fc44, podman 5.8.9, `performance` governor, boost off |
 
 The snapshot carries one warning, left in `results.md` and `results.json`:
 SMT was enabled, which widens the spread.
@@ -147,10 +160,11 @@ Then update the [Summary](#summary) table above, and the ratio claims in the
 root `README.md`, so they agree with the new run.
 
 For v1.2.4 and v1.2.5 the five runs were made with `./bench.sh --no-build --out <dir>`,
-retagging the `bench-sut-*` images between the old and new sets, and merged
-by concatenating each SUT's samples in run order and rendering with
-`driver.report.build_results`, `write_json`, `write_markdown` and
-`driver.plots.write_plots`.
+retagging the `bench-sut-*` images between the old and new sets. For this
+snapshot they were made the same way from the v1.2.6 tree, all with one image
+set. Each time the runs were merged by concatenating each SUT's samples in run
+order and rendering with `driver.report.build_results`, `write_json`,
+`write_markdown` and `driver.plots.write_plots`.
 
 **Diff the `environment` block against the outgoing snapshot before you
 commit** ([`docs/releasing.md`](../releasing.md) §5). A run from a different

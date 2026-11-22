@@ -1,11 +1,11 @@
 # Library sizes: otelcpp-grpc vs microtel (stripped emit_app + loaded shared libraries)
 
-> Note (2026-11-01): these size figures were measured on a build host later found to have faulty RAM. They will be re-confirmed on a fixed host, and this note updated.
+> Re-measured 2026-11-22 on the repaired host (the faulty DIMM was replaced, and a stress-ng screen passed). The microtel figures are unchanged: the rebuilt image matches the 2026-10-30 one section by section, and every bloaty CSV and library is byte for byte the same. The otelcpp-grpc rows are new, for opentelemetry-cpp v1.30.0.
 
 | | |
 |---|---|
-| **Build** | `bench-sut-microtel` built 2026-10-30 from the v1.2.6 release branch (`d495c51`; its `src/`, `include/`, `bench/` and CMake files are those of the v1.2.6 tag). Measured 2026-10-30. Only sizes were re-measured: the span hot path is unchanged since v1.2.5, so the [v1.2.5 benchmark run](../README.md) stands. `bench-sut-otelcpp-grpc` is the image built 2026-10-26 23:30 UTC for v1.2.4 (its code did not change), so its rows are the v1.2.4 measurement. The microtel image's packages are those of the v1.2.5 measurement, and every library `/emit_app` loads is byte for byte the v1.2.5 one. |
-| **Packages** | Ubuntu 24.04 (`ubuntu:24.04`) runtime packages in each image; versions [below](#versions). opentelemetry-cpp v1.19.0, built from source. |
+| **Build** | Both images built 2026-11-22 from the v1.2.6 tag (`59e5415`) with the opentelemetry-cpp v1.30.0 change to `bench/sut/otelcpp-*/Dockerfile` and `bench/emit-app/CMakeLists.txt` applied (the same change master carries), each built twice (the second with `--no-cache`) and compared section by section. Measured 2026-11-22. These are the images of the [benchmark snapshot](../README.md). |
+| **Packages** | Ubuntu 24.04 (`ubuntu:24.04`) runtime packages in each image; versions [below](#versions). opentelemetry-cpp v1.30.0, built from source. |
 | **Method** | Each `/emit_app`, stripped (GNU strip 2.42), split by compile unit with [bloaty](https://github.com/google/bloaty) (upstream `f1a83e6`), using the unstripped binary as `--debug-file`. Plus every shared library `ldd` resolves in the image, sized from the file on disk; two that ship unstripped are counted stripped. [Commands](#commands). |
 
 **v1.2.6 against v1.2.5:** the stripped microtel `/emit_app` grew by 81,968 B
@@ -38,26 +38,26 @@ loader (`ld-linux-x86-64.so.2`) and `linux-vdso.so.1` are excluded.
 | Library | Where | Bytes | MB | % of total |
 |---|---|---:|---:|---:|
 | gRPC (libgrpc++, libgrpc, libgpr, libupb.so.29) | shared library | 6,683,680 | 6.7 | 26.3% |
-| OpenSSL (libssl + libcrypto) | shared library | 6,005,912 | 6.0 | 23.7% |
-| C/C++ runtime (libstdc++, libgcc_s, libc, libm) | shared library | 5,857,288 | 5.9 | 23.1% |
+| OpenSSL (libssl + libcrypto) | shared library | 6,005,912 | 6.0 | 23.6% |
+| C/C++ runtime (libstdc++, libgcc_s, libc, libm) | shared library | 5,857,288 | 5.9 | 23.0% |
 | protobuf | shared library | 3,056,272 | 3.1 | 12.0% |
 | Abseil (45 libabsl_*.so files) | shared library | 1,378,840 | 1.4 | 5.4% |
-| opentelemetry-cpp (static) | in binary | 853,160 | 0.9 | 3.4% |
-| libopentelemetry_proto*.so (2 files, stripped copy; 9,165,400 B as shipped) | shared library | 651,096 | 0.7 | 2.6% |
+| opentelemetry-cpp (static) | in binary | 911,022 | 0.9 | 3.6% |
+| libopentelemetry_proto*.so (2 files, stripped copy; 9,275,688 B as shipped) | shared library | 638,712 | 0.6 | 2.5% |
 | re2 | shared library | 400,480 | 0.4 | 1.6% |
 | c-ares | shared library | 157,792 | 0.2 | 0.6% |
 | zlib | shared library | 113,000 | 0.1 | 0.4% |
-| emit-app | in binary | 45,026 | 0.0 | 0.2% |
+| emit-app | in binary | 48,682 | 0.0 | 0.2% |
 | libaddress_sorting.so.29 (gRPC package, not in the listed gRPC set) | shared library | 14,648 | 0.0 | 0.1% |
-| header-inlined third-party (protobuf/gRPC headers) | in binary | 7,812 | 0.0 | 0.0% |
-| unattributed (bloaty [section]/[Unmapped]/ELF rows, see below) | in binary | 162,410 | 0.2 | 0.6% |
-| **Total, incl. C/C++ runtime** | | **25,387,416** | **25.4** | 100.0% |
-| **Total, excl. C/C++ runtime** | | **19,530,128** | **19.5** | |
+| header-inlined third-party (protobuf/gRPC headers) | in binary | 8,149 | 0.0 | 0.0% |
+| unattributed (bloaty [section]/[Unmapped]/ELF rows, see below) | in binary | 164,931 | 0.2 | 0.6% |
+| **Total, incl. C/C++ runtime** | | **25,439,408** | **25.4** | 100.0% |
+| **Total, excl. C/C++ runtime** | | **19,582,120** | **19.6** | |
 
 **`libopentelemetry_proto*.so` are counted stripped.** The Dockerfile copies them unstripped
-from the `-g` build (on disk: 5,003,816 + 4,161,584 = 9,165,400 B, with `.debug_*` sections).
+from the `-g` build (on disk: 5,114,112 + 4,161,576 = 9,275,688 B, with `.debug_*` sections).
 They were stripped as a copy, without modifying the image, using the same GNU strip 2.42 (ubuntu:24.04) used for
-`/emit_app`; the copy's sha256 matches the image file: 439,400 + 211,696 = **651,096 B**, no
+`/emit_app`; the copy's sha256 matches the image file: 427,016 + 211,696 = **638,712 B**, no
 `.debug_*` sections left. Every other library in both images already has no `.debug_*`
 sections, so both footprints are now debug-free and comparable.
 
@@ -80,15 +80,15 @@ sections, so both footprints are now debug-free and comparable.
 ## Subtotals
 
 Computed from exact bytes, not from the rounded rows above. The shared base is the same
-files in both images, byte for byte (one zlib package revision differs; see [Versions](#versions)).
+files in both images, byte for byte, from the same package versions (see [Versions](#versions)).
 
 | Subtotal | otelcpp-grpc bytes | MB | microtel bytes | MB |
 |---|---:|---:|---:|---:|
 | Shared base (OpenSSL + zlib + C/C++ runtime) | 11,976,200 | 12.0 | 11,976,200 | 12.0 |
-| Telemetry stack (everything else) | 13,411,216 | 13.4 | 1,261,128 | 1.3 |
-| **Total** | 25,387,416 | 25.4 | 13,237,328 | 13.2 |
+| Telemetry stack (everything else) | 13,463,208 | 13.5 | 1,261,128 | 1.3 |
+| **Total** | 25,439,408 | 25.4 | 13,237,328 | 13.2 |
 
-Telemetry-stack ratio, otelcpp-grpc / microtel: 13,411,216 / 1,261,128 = **10.6×** (unrounded 10.6343).
+Telemetry-stack ratio, otelcpp-grpc / microtel: 13,463,208 / 1,261,128 = **10.7×** (unrounded 10.6755).
 
 ## Inside the stripped /emit_app
 
@@ -97,50 +97,49 @@ toml++ and upb headers, and protobuf/gRPC/Abseil headers. Inlined libstdc++ temp
 **not** carved out — it stays with the compile unit that instantiated it; the last column
 shows how much of each bucket it is.
 
-### otelcpp-grpc (1,068,408 B stripped)
+### otelcpp-grpc (1,132,784 B stripped)
 
 | Bucket | Bytes | % of stripped binary | of which inlined libstdc++ template code |
 |---|---:|---:|---:|
-| opentelemetry-cpp (static) | 853,160 | 79.9% | 542,110 |
-| emit-app | 45,026 | 4.2% | 22,183 |
-| header-inlined third-party (protobuf/gRPC headers) | 7,812 | 0.7% | 0 |
-| unattributed | 162,410 | 15.2% | 0 |
-| **Total = stripped /emit_app** | **1,068,408** | 100.0% | |
+| opentelemetry-cpp (static) | 911,022 | 80.4% | 536,925 |
+| emit-app | 48,682 | 4.3% | 25,095 |
+| header-inlined third-party (protobuf/gRPC headers) | 8,149 | 0.7% | 0 |
+| unattributed | 164,931 | 14.6% | 0 |
+| **Total = stripped /emit_app** | **1,132,784** | 100.0% | |
 
 bloaty `[section]` / `[Unmapped]` / ELF rows (bytes no compile unit claims), all in "unattributed":
 
 | bloaty row | Bytes |
 |---|---:|
-| `[section .rela.dyn]` | 43,056 |
-| `[section .rodata]` | 40,664 |
-| `[section .gcc_except_table]` | 19,326 |
-| `[section .dynstr]` | 16,083 |
-| `[section .data.rel.ro]` | 14,392 |
-| `[Unmapped]` | 9,802 |
-| `[section .rela.plt]` | 5,472 |
-| `[section .plt]` | 3,664 |
-| `[section .data]` | 2,232 |
+| `[section .rela.dyn]` | 47,136 |
+| `[section .rodata]` | 44,304 |
+| `[section .gcc_except_table]` | 20,226 |
+| `[section .data.rel.ro]` | 15,784 |
+| `[section .dynstr]` | 14,165 |
+| `[Unmapped]` | 5,438 |
+| `[section .rela.plt]` | 4,920 |
+| `[section .plt]` | 3,296 |
+| `[section .data]` | 2,264 |
 | `[ELF Section Headers]` | 2,048 |
-| `[section .got.plt]` | 1,848 |
+| `[section .got.plt]` | 1,664 |
 | `[section .dynamic]` | 1,472 |
-| `[section .gnu.version]` | 614 |
-| `[section .gnu.version_r]` | 496 |
+| `[section .gnu.version]` | 536 |
+| `[section .gnu.version_r]` | 528 |
 | `[section .shstrtab]` | 303 |
 | `[section .text]` | 293 |
 | `[section .eh_frame]` | 196 |
-| `[section .got]` | 152 |
-| `[section .init_array]` | 96 |
+| `[section .got]` | 112 |
 | `[section .comment]` | 84 |
+| `[LOAD #5 [RW]]` | 40 |
 | `[section .eh_frame_hdr]` | 28 |
 | `[section .init]` | 27 |
-| `[LOAD #5 [RW]]` | 16 |
+| `[section .init_array]` | 24 |
 | `[LOAD #3 [RX]]` | 13 |
 | `[section .fini]` | 13 |
 | `[section .fini_array]` | 8 |
 | `[section .plt.got]` | 8 |
-| `[LOAD #4 [R]]` | 3 |
 | `[LOAD #2 [R]]` | 1 |
-| **Sum (= unattributed)** | **162,410** |
+| **Sum (= unattributed)** | **164,931** |
 
 ### microtel (1,090,776 B stripped)
 
@@ -198,7 +197,7 @@ bloaty `[section]` / `[Unmapped]` / ELF rows, all in "unattributed". These are n
 
 ## Reconciliation
 
-- Bucket sums equal the stripped file size exactly for both SUTs (1,090,776 and 1,068,408 B);
+- Bucket sums equal the stripped file size exactly for both SUTs (1,090,776 and 1,132,784 B);
   bloaty's own `compileunits` total equals the file size too. Gap: 0 B.
 - These totals do **not** reconcile with the withdrawn 43.1 / 17.5 MB, and are not meant to:
   those were unstripped `/emit_app` file sizes with no shared libraries. Of the withdrawn
@@ -216,15 +215,15 @@ bloaty `[section]` / `[Unmapped]` / ELF rows, all in "unattributed". These are n
   (2,587 B inlined) are left in **microtel**, per ICP 0020's "not upb runtime symbols".
 - **toml++** is header-only; all 55,949 B are code inlined from
   `_deps/tomlplusplus-src/include/toml++/impl/*` into `src/common/config/toml_loader.cpp`.
-- **"absl" in otelcpp-grpc is not Abseil.** The 28,715 B of inlined code under `.../absl/` paths
-  comes from opentelemetry-cpp's own copy (`opentelemetry/nostd/internal/absl`, the build
-  has `WITH_ABSEIL=OFF`) and is counted as opentelemetry-cpp. No code is inlined from
-  `/usr/include/absl`. The header-inlined row is 7,715 B from `/usr/include/google/protobuf`
-  plus 97 B from `/usr/include/grpcpp`.
+- **"absl" in otelcpp-grpc is not Abseil.** The 31,757 B of inlined code under `.../absl/` paths
+  comes from opentelemetry-cpp's own copy (`opentelemetry/nostd/internal/absl`) and is
+  counted as opentelemetry-cpp. No code is inlined from `/usr/include/absl`. The
+  header-inlined row is 8,037 B from `/usr/include/google/protobuf` plus 112 B from
+  `/usr/include/grpcpp`.
 - **Other third-party headers left inside their compile unit's bucket** (no bucket was asked
   for): libstdc++ (last column above), tl-expected in microtel (5,581 B),
   opentelemetry-cpp's generated `.pb.h` code in otelcpp-grpc (`/build/otelcpp/generated`,
-  3,660 B), `/usr/include/x86_64-linux-gnu/c++` (1,459 B).
+  3,562 B), `/usr/include/x86_64-linux-gnu/c++` in otelcpp-grpc (2,116 B).
 - **emit-app** rows include microtel / opentelemetry-cpp API header code inlined into the
   emit-app's own compile units (CU rule).
 - **libaddress_sorting.so.29** ships in the `libgrpc29t64` package but was not in the listed
@@ -242,7 +241,7 @@ The diagram's protobuf → Abseil edge is not true for this build; gRPC → Abse
 
 ## Versions
 
-opentelemetry-cpp **v1.19.0** (`OTELCPP_VERSION` in the Dockerfile; `bench/versions.lock`
+opentelemetry-cpp **v1.30.0** (`OTELCPP_VERSION` in the Dockerfile; `bench/versions.lock`
 agrees), built from source with GCC; emit-app built with clang-18. Packages, `dpkg-query -W`
 in the runtime images:
 
@@ -256,8 +255,7 @@ in the runtime images:
 | libre2-10 | 20230301-3build1 | otelcpp-grpc |
 | libnghttp2-14 | 1.59.0-1ubuntu0.4 | microtel |
 | libssl3t64 | 3.0.13-0ubuntu3.16 | both |
-| zlib1g | 1:1.3.dfsg-3.1ubuntu2.2 | otelcpp-grpc |
-| zlib1g | 1:1.3.dfsg-3.1ubuntu2.3 | microtel (same `libz.so.1.3`, 113,000 B, byte for byte) |
+| zlib1g | 1:1.3.dfsg-3.1ubuntu2.3 | both |
 | libstdc++6 / libgcc-s1 | 14.2.0-4ubuntu2~24.04.1 | both |
 | libc6 | 2.39-0ubuntu8.9 | both |
 
@@ -341,7 +339,7 @@ soname, ldd path, real path, bytes as on disk, package), `otelcpp-grpc-stripped.
 | Group | File (real path basename) | Bytes |
 |---|---|---:|
 | libopentelemetry_proto*.so | `libopentelemetry_proto_grpc.so` | 211,696 |
-| libopentelemetry_proto*.so | `libopentelemetry_proto.so` | 439,400 |
+| libopentelemetry_proto*.so | `libopentelemetry_proto.so` | 427,016 |
 | gRPC | `libgrpc++.so.1.51.1` | 759,088 |
 | gRPC | `libgrpc.so.29.0.0` | 5,680,744 |
 | gRPC | `libupb.so.29.0.0` | 183,184 |
@@ -387,11 +385,11 @@ soname, ldd path, real path, bytes as on disk, package), `otelcpp-grpc-stripped.
 | Abseil | `libabsl_malloc_internal.so.20220623.0.0` | 18,760 |
 | Abseil | `libabsl_time.so.20220623.0.0` | 72,248 |
 | Abseil | `libabsl_strings.so.20220623.0.0` | 121,080 |
-| Abseil | `libabsl_strings_internal.so.20220623.0.0` | 18,672 |
 | Abseil | `libabsl_throw_delegate.so.20220623.0.0` | 22,704 |
+| Abseil | `libabsl_int128.so.20220623.0.0` | 22,776 |
+| Abseil | `libabsl_strings_internal.so.20220623.0.0` | 18,672 |
 | Abseil | `libabsl_base.so.20220623.0.0` | 18,696 |
 | Abseil | `libabsl_spinlock_wait.so.20220623.0.0` | 14,424 |
-| Abseil | `libabsl_int128.so.20220623.0.0` | 22,776 |
 | Abseil | `libabsl_raw_logging_internal.so.20220623.0.0` | 14,552 |
 | Abseil | `libabsl_log_severity.so.20220623.0.0` | 14,496 |
 | Abseil | `libabsl_civil_time.so.20220623.0.0` | 26,872 |

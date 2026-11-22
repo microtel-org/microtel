@@ -1,95 +1,110 @@
 compileunits,vmsize,filesize
-/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,101536,101408
-/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,64926,64654
-/src/opentelemetry-cpp/sdk/src/metrics/sync_instruments.cc,53210,53178
-/src/opentelemetry-cpp/sdk/src/metrics/state/temporal_metric_storage.cc,43469,43429
-[section .rela.dyn],43056,43056
-/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,42714,42714
-[section .rodata],40664,40664
-/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,34131,34131
-/src/opentelemetry-cpp/sdk/src/metrics/meter_provider.cc,30506,30474
-/src/opentelemetry-cpp/sdk/src/metrics/state/sync_metric_storage.cc,29557,29485
-/src/opentelemetry-cpp/sdk/src/logs/logger_provider.cc,28235,28235
-/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,28229,28157
-/src/emit-app/src/backend_otelcpp.cpp,28163,28163
-/src/opentelemetry-cpp/sdk/src/trace/tracer_context.cc,25554,25530
-/src/opentelemetry-cpp/sdk/src/resource/resource.cc,25092,24804
-/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_client.cc,24450,24450
-/src/opentelemetry-cpp/sdk/src/metrics/meter_context.cc,23114,23082
-/src/opentelemetry-cpp/sdk/src/metrics/state/observable_registry.cc,22818,22786
-/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_exporter.cc,19900,19900
-[section .gcc_except_table],19326,19326
-/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_metric_exporter.cc,18390,18390
-/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_log_record_exporter.cc,18278,18278
-/src/opentelemetry-cpp/sdk/src/metrics/aggregation/histogram_aggregation.cc,17448,17448
-/src/opentelemetry-cpp/sdk/src/metrics/export/periodic_exporting_metric_reader.cc,17309,17309
-[section .dynstr],16083,16083
-/src/opentelemetry-cpp/sdk/src/common/env_variables.cc,15072,15072
-[section .data.rel.ro],14392,14392
-/src/opentelemetry-cpp/sdk/src/metrics/state/metric_collector.cc,12904,12872
-/src/opentelemetry-cpp/sdk/src/logs/multi_recordable.cc,12578,12570
-/src/opentelemetry-cpp/sdk/src/metrics/metric_reader.cc,12090,12090
+/src/opentelemetry-cpp/sdk/src/metrics/meter.cc,86903,86759
+/src/opentelemetry-cpp/sdk/src/metrics/sync_instruments.cc,69232,69232
+/src/opentelemetry-cpp/sdk/src/trace/tracer_provider.cc,56251,56163
+[section .rela.dyn],47136,47136
+[section .rodata],44304,44304
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_environment.cc,42728,42728
+/src/opentelemetry-cpp/sdk/src/metrics/aggregation/base2_exponential_histogram_aggregation.cc,34420,34420
+/src/opentelemetry-cpp/sdk/src/metrics/state/temporal_metric_storage.cc,32167,32167
+/src/opentelemetry-cpp/sdk/src/metrics/meter_provider.cc,32121,32121
+/src/emit-app/src/backend_otelcpp.cpp,31819,31819
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_client.cc,30740,30724
+/src/opentelemetry-cpp/sdk/src/resource/resource.cc,24930,24650
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_exporter.cc,24126,24126
+/src/opentelemetry-cpp/sdk/src/metrics/aggregation/sum_aggregation.cc,23884,23884
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_log_record_exporter.cc,22438,22438
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_metric_exporter.cc,22342,22342
+/src/opentelemetry-cpp/sdk/src/instrumentationscope/instrumentation_scope.cc,22096,22096
+/src/opentelemetry-cpp/sdk/src/trace/tracer_context.cc,20486,20486
+/src/opentelemetry-cpp/sdk/src/metrics/state/sync_metric_storage.cc,20274,20146
+[section .gcc_except_table],20226,20226
+/src/opentelemetry-cpp/sdk/src/metrics/meter_context.cc,19568,19568
+/src/opentelemetry-cpp/sdk/src/logs/logger_provider.cc,18206,18206
+/src/opentelemetry-cpp/sdk/src/metrics/aggregation/histogram_aggregation.cc,17647,17623
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_populate_attribute_utils.cc,17264,17264
+/src/opentelemetry-cpp/sdk/src/trace/tracer.cc,16742,16742
+/src/opentelemetry-cpp/sdk/src/metrics/state/metric_collector.cc,16008,16008
+[section .data.rel.ro],15752,15784
+/src/opentelemetry-cpp/sdk/src/common/env_variables.cc,15066,15066
+/src/opentelemetry-cpp/sdk/src/metrics/state/observable_registry.cc,14542,14542
+[section .dynstr],14165,14165
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_metric_utils.cc,13960,13960
+/src/opentelemetry-cpp/sdk/src/trace/multi_recordable.cc,13528,13512
+/src/opentelemetry-cpp/sdk/src/metrics/data/circular_buffer.cc,13072,13072
+/src/opentelemetry-cpp/sdk/src/logs/multi_recordable.cc,12730,12722
+/src/opentelemetry-cpp/sdk/src/metrics/metric_reader.cc,11956,11956
 /src/emit-app/src/control_socket.cpp,11838,11838
-/src/opentelemetry-cpp/exporters/otlp/src/otlp_metric_utils.cc,11136,11136
-/src/opentelemetry-cpp/exporters/otlp/src/otlp_recordable_utils.cc,10644,10644
-/src/opentelemetry-cpp/sdk/src/trace/batch_span_processor.cc,10390,10390
-[Unmapped],0,9802
-/src/opentelemetry-cpp/sdk/src/metrics/aggregation/sum_aggregation.cc,9356,9356
-/src/opentelemetry-cpp/exporters/otlp/src/otlp_populate_attribute_utils.cc,9000,9000
-/src/opentelemetry-cpp/sdk/src/logs/batch_log_record_processor.cc,8794,8794
-/src/opentelemetry-cpp/exporters/otlp/src/otlp_recordable.cc,7710,7710
-/src/opentelemetry-cpp/sdk/src/logs/logger.cc,7628,7628
-/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,7262,7246
-/src/opentelemetry-cpp/sdk/src/metrics/async_instruments.cc,5672,5632
-[section .rela.plt],5472,5472
-/src/opentelemetry-cpp/exporters/otlp/src/otlp_log_recordable.cc,4794,4794
-/src/opentelemetry-cpp/sdk/src/common/global_log_handler.cc,4418,4370
-/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_exporter_options.cc,4324,4324
-/src/opentelemetry-cpp/sdk/src/trace/span.cc,4289,4265
-/src/opentelemetry-cpp/sdk/src/logs/multi_log_record_processor.cc,4184,4184
-/src/opentelemetry-cpp/sdk/src/metrics/aggregation/lastvalue_aggregation.cc,4076,4076
-/src/opentelemetry-cpp/sdk/src/metrics/state/filtered_ordered_attribute_map.cc,4056,4056
-/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_log_record_exporter_options.cc,3948,3948
-/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_metric_exporter_options.cc,3948,3948
-[section .plt],3664,3664
+/src/opentelemetry-cpp/sdk/src/resource/resource_detector.cc,11137,11137
+/src/opentelemetry-cpp/sdk/src/logs/logger.cc,10254,10254
+/src/opentelemetry-cpp/sdk/src/metrics/export/periodic_exporting_metric_reader.cc,10232,10232
+/src/opentelemetry-cpp/sdk/src/trace/batch_span_processor.cc,10056,10056
+/src/opentelemetry-cpp/sdk/src/logs/batch_log_record_processor.cc,9162,9162
+/src/opentelemetry-cpp/sdk/src/metrics/multi_observer_result.cc,8656,8504
+/src/opentelemetry-cpp/sdk/src/metrics/state/filtered_ordered_attribute_map.cc,8190,8190
+/src/opentelemetry-cpp/sdk/src/metrics/view/view_registry.cc,8102,7990
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_exporter_options.cc,7476,7476
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_recordable.cc,6446,6446
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_metric_exporter_options.cc,6380,6380
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_log_record_exporter_options.cc,6364,6364
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_recordable_utils.cc,6052,6052
+[Unmapped],0,5438
+/src/opentelemetry-cpp/sdk/src/logs/logger_context.cc,5400,5400
+/src/opentelemetry-cpp/exporters/otlp/src/otlp_log_recordable.cc,5368,5368
+[section .rela.plt],4920,4920
+/src/opentelemetry-cpp/sdk/src/metrics/aggregation/lastvalue_aggregation.cc,4841,4841
+/src/opentelemetry-cpp/sdk/src/common/global_log_handler.cc,4387,4346
+/src/opentelemetry-cpp/sdk/src/trace/span.cc,4240,4240
+/src/opentelemetry-cpp/sdk/src/logs/multi_log_record_processor.cc,4182,4182
+[section .plt],3296,3296
 /src/emit-app/src/main.cpp,3264,3264
-/src/opentelemetry-cpp/sdk/src/logs/readable_log_record.cc,3174,2646
-/src/opentelemetry-cpp/sdk/src/logs/logger_context.cc,3170,3170
 /src/opentelemetry-cpp/sdk/src/common/random.cc,2358,2357
-[section .data],2232,2232
+[section .data],2264,2264
+/src/opentelemetry-cpp/sdk/src/logs/readable_log_record.cc,2214,1710
 [ELF Section Headers],0,2048
-[section .got.plt],1848,1848
+[section .got.plt],1664,1664
+/src/opentelemetry-cpp/sdk/src/metrics/async_instruments.cc,1656,1656
 [section .dynamic],1472,1472
 /src/emit-app/src/histogram.cpp,1357,1357
-[section .bss],1319,0
-/src/opentelemetry-cpp/sdk/src/metrics/export/periodic_exporting_metric_reader_factory.cc,1276,1276
+[section .bss],1142,0
 /src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_client_factory.cc,1037,1037
+/src/opentelemetry-cpp/sdk/src/metrics/export/periodic_exporting_metric_reader_factory.cc,832,832
+/src/opentelemetry-cpp/sdk/src/logs/logger_config.cc,824,792
+/src/opentelemetry-cpp/sdk/src/logs/batch_log_record_processor_factory.cc,718,718
 /src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_exporter_factory.cc,710,710
 /src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_log_record_exporter_factory.cc,710,710
 /src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_metric_exporter_factory.cc,710,710
-/src/opentelemetry-cpp/sdk/src/logs/batch_log_record_processor_factory.cc,670,670
 /src/opentelemetry-cpp/sdk/src/trace/batch_span_processor_factory.cc,670,670
-[section .gnu.version],614,614
-[section .gnu.version_r],496,496
+/src/opentelemetry-cpp/sdk/src/trace/tracer_config.cc,659,627
+/src/opentelemetry-cpp/sdk/src/metrics/meter_config.cc,634,602
+/src/opentelemetry-cpp/sdk/src/logs/batch_log_record_processor_options.cc,624,624
+/src/opentelemetry-cpp/sdk/src/trace/batch_span_processor_options.cc,624,624
+[section .gnu.version],536,536
+[section .gnu.version_r],528,528
+/src/opentelemetry-cpp/sdk/src/resource/detail/percent_decode.cc,505,505
+/src/opentelemetry-cpp/sdk/src/metrics/aggregation/base2_exponential_histogram_indexer.cc,489,489
+/src/opentelemetry-cpp/sdk/src/metrics/instrument_metadata_validator.cc,405,405
 /src/emit-app/src/workload.cpp,404,404
+/src/opentelemetry-cpp/sdk/src/common/empty_attributes.cc,396,380
+/src/opentelemetry-cpp/sdk/src/metrics/aggregation/drop_aggregation.cc,360,360
 /src/opentelemetry-cpp/exporters/otlp/src/otlp_grpc_utils.cc,336,336
 /src/opentelemetry-cpp/sdk/src/trace/random_id_generator.cc,328,328
 [section .shstrtab],0,303
 [section .text],293,293
+/src/opentelemetry-cpp/sdk/src/metrics/export/periodic_exporting_metric_reader_options.cc,245,245
 [section .eh_frame],196,196
 /src/opentelemetry-cpp/sdk/src/logs/exporter.cc,176,176
 /src/opentelemetry-cpp/sdk/src/trace/exporter.cc,176,176
-[section .got],152,152
-[section .init_array],32,96
+[section .got],112,112
 [section .comment],0,84
+[LOAD #5 [RW]],64,40
 [section .tbss],64,0
-/src/opentelemetry-cpp/sdk/src/common/platform/fork_unix.cc,53,53
+/src/opentelemetry-cpp/sdk/src/common/platform/fork_unix.cc,49,49
 [section .eh_frame_hdr],28,28
 [section .init],27,27
-[LOAD #5 [RW]],16,16
+[section .init_array],0,24
 [LOAD #3 [RX]],13,13
 [section .fini],13,13
-[section .fini_array],8,8
+[section .fini_array],0,8
 [section .plt.got],8,8
-[LOAD #4 [R]],3,3
 [LOAD #2 [R]],1,1

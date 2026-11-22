@@ -1,7 +1,7 @@
 # microtel
 
 <p align="center">
-  <img alt="microtel: OpenTelemetry for C++ without the gRPC tax. Speaks OTLP over gRPC and HTTP with no grpc++, abseil or protobuf; about 3.6× less time per span than opentelemetry-cpp in the project's benchmark; a microcontroller client of about 9 KB flash with no heap." src="docs/assets/microtel-hero.png" width="720">
+  <img alt="microtel: OpenTelemetry for C++ without the gRPC tax. Speaks OTLP over gRPC and HTTP with no grpc++, abseil or protobuf; about 3× less time per span than opentelemetry-cpp in the project's benchmark; a microcontroller client of about 9 KB flash with no heap." src="docs/assets/microtel-hero.png" width="720">
 </p>
 
 An OpenTelemetry-compatible runtime and OTLP exporter for C++20, for traces,
@@ -27,14 +27,13 @@ single nghttp2 HTTP/2 transport, with a serial HTTP/1.1 fallback for OTLP/HTTP
 receivers that speak nothing else. The gRPC side is a small unary-RPC layer on
 that transport, so picking gRPC over HTTP costs nothing extra in binary size.
 In the project's benchmark against opentelemetry-cpp, a timed call that creates
-and ends a span takes about **a quarter of the time** at the median, and microtel
-sustains roughly **twice the throughput**;
+and ends a span takes about **a third of the time** at the median;
 [Performance](#performance) has the full comparison and its caveats.
 
 **At a glance:** no gRPC, abseil or protobuf C++ runtime ·
 OTLP/gRPC and OTLP/HTTP over one nghttp2 transport · an experimental C11
 microcontroller client at about 9.3 KB of flash (Cortex-M4), 512 bytes of
-caller-owned RAM and no heap · spans in about a quarter of opentelemetry-cpp's time
+caller-owned RAM and no heap · spans in about a third of opentelemetry-cpp's time
 ([caveats](#performance)).
 
 ```cpp
@@ -602,25 +601,27 @@ default and effect.
 
 ## Performance
 
-In the project's benchmark against opentelemetry-cpp on the same host:
+In the project's benchmark of microtel v1.2.6 against opentelemetry-cpp v1.30.0
+on the same host:
 
 - **Span emit time:** one timed call that creates and ends a span takes
-  223 ns at the median against 812 ns, about **3.6× less** (485 ns against
-  3 394 ns, about 7.0×, at p95).
+  215 ns at the median against 634 ns over OTLP/HTTP, about **3× less**
+  (474 ns against 3 356 ns, about 7×, at p95). Over OTLP/gRPC it is 210 ns
+  against 588 ns.
   The timed call is the benchmark's whole `EmitSpan()`: `StartSpan`, `End()`
   and the harness's own overhead (a virtual call, a counter increment and two
   clock reads). The profile sets no attributes.
-- **Throughput:** microtel sustains about **1.9× the span throughput**
-  (1,424,706 spans/s over OTLP/HTTP against 738,912; 1.4× over OTLP/gRPC).
 - **Size:** stripped, with Ubuntu 24.04 packages, the telemetry stack the
-  benchmark loads is **1.3 MB** with microtel (v1.2.6) against **13.4 MB** with
+  benchmark loads is **1.3 MB** with microtel against **13.5 MB** with
   opentelemetry-cpp's OTLP/gRPC exporter (gRPC, protobuf, Abseil, c-ares, re2
   and its OTLP proto libraries), on top of the same **12.0 MB** of OpenSSL,
   zlib and the C/C++ runtime that both load.
   [docs/bench-results/sizes/](docs/bench-results/sizes/library-sizes.md) has
   the per-library breakdown and how it was measured.
-- **Flush:** opentelemetry-cpp flushes faster: 2.0 ms per 10,000 spans,
-  against 3.2 ms for microtel over OTLP/HTTP and 6.1 ms over OTLP/gRPC.
+- **Flush:** opentelemetry-cpp flushes faster: 2.2 ms per 10,000 spans over
+  OTLP/HTTP and 2.1 ms over OTLP/gRPC, against 3.1 ms and 6.0 ms for microtel.
+  At its default queue size opentelemetry-cpp also drops about 12% of the
+  spans in each sample; microtel delivers all of them.
 
 Those figures come from hot-loop traces exporting to a local blackhole sink
 over a container network, on one host. [docs/bench-results/](docs/bench-results/README.md) has the summary
