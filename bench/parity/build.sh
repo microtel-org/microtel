@@ -56,7 +56,7 @@ ORDER=(microtel-http-clang microtel-grpc-clang microtel-http-gcc microtel-grpc-g
        otelcppmain-http-clang)
 
 # Only these get a :perf image (linux-tools in the runtime stage) for part 2.
-PERF_VARIANTS=" otelcpp-http-clang otelcpp-http-clang-inmem microtel-http-clang "
+PERF_VARIANTS=" otelcpp-http-clang otelcpp-http-clang-inmem microtel-http-clang otelcpp130-http-clang otelcppmain-http-clang "
 
 VARIANTS=("$@")
 [[ ${#VARIANTS[@]} -eq 0 ]] && VARIANTS=("${ORDER[@]}")
