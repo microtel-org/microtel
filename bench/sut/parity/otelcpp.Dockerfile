@@ -10,7 +10,7 @@
 #       -t bench-sut-parity-otelcpp-http-clang .
 #
 # Arguments:
-#   OTELCPP_VERSION  opentelemetry-cpp tag.
+#   OTELCPP_VERSION  opentelemetry-cpp tag, or a full commit SHA.
 #   EXPORTER         http | grpc.
 #   SDK_CC/SDK_CXX   compiler for opentelemetry-cpp (and protobuf, if built).
 #   EMIT_CC/EMIT_CXX compiler for the emit-app; defaults to the SDK's.
@@ -97,9 +97,11 @@ ARG CXX_STD
 
 ARG OTELCPP_PATCH
 
-RUN git clone --depth 1 --branch ${OTELCPP_VERSION} \
-        https://github.com/open-telemetry/opentelemetry-cpp.git \
-        /src/opentelemetry-cpp
+# Fetch by name so OTELCPP_VERSION can be a tag or a full commit SHA.
+RUN git init -q /src/opentelemetry-cpp \
+    && git -C /src/opentelemetry-cpp fetch -q --depth 1 \
+        https://github.com/open-telemetry/opentelemetry-cpp.git ${OTELCPP_VERSION} \
+    && git -C /src/opentelemetry-cpp checkout -q FETCH_HEAD
 
 COPY bench/sut/parity/patches /src/patches
 RUN if [ -n "$OTELCPP_PATCH" ]; then \
