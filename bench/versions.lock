@@ -16,7 +16,7 @@ clang_version: "18"
 
 # opentelemetry-cpp release tag used for the otelcpp-grpc and otelcpp-http SUTs.
 # Dockerfile receives this as --build-arg OTELCPP_VERSION.
-otelcpp_version: "v1.19.0"
+otelcpp_version: "v1.30.0"
 
 # Go toolchain version for blackhole-sink (matches bench/sink/blackhole/go.mod).
 go_version: "1.25"

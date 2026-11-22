@@ -44,7 +44,7 @@ def footprint(sut):
         elif k == "libaddress_sorting.so.29":
             label = "libaddress_sorting.so.29 (gRPC package, not in the listed gRPC set)"
         elif k == "libopentelemetry_proto*.so":
-            label = "libopentelemetry_proto*.so (2 files, stripped copy; 9,165,400 B as shipped)"
+            label = "libopentelemetry_proto*.so (2 files, stripped copy; 9,275,688 B as shipped)"
         rows.append((label, "shared library", x["bytes"]))
     rows.sort(key=lambda r: -r[2])
     rows.append(("unattributed (bloaty [section]/[Unmapped]/ELF rows, see below)", "in binary", unattributed))

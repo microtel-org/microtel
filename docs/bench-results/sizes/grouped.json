@@ -100,58 +100,57 @@
  "otelcpp-grpc": {
   "binary": {
    "buckets": {
-    "opentelemetry-cpp": 853160,
-    "emit-app": 45026,
-    "header-inlined third-party": 7812,
-    "unattributed": 162410
+    "opentelemetry-cpp": 911022,
+    "emit-app": 48682,
+    "header-inlined third-party": 8149,
+    "unattributed": 164931
    },
    "sections": {
-    "[section .rela.dyn]": 43056,
-    "[section .rodata]": 40664,
-    "[section .gcc_except_table]": 19326,
-    "[section .dynstr]": 16083,
-    "[section .data.rel.ro]": 14392,
-    "[Unmapped]": 9802,
-    "[section .rela.plt]": 5472,
-    "[section .plt]": 3664,
-    "[section .data]": 2232,
+    "[section .rela.dyn]": 47136,
+    "[section .rodata]": 44304,
+    "[section .gcc_except_table]": 20226,
+    "[section .data.rel.ro]": 15784,
+    "[section .dynstr]": 14165,
+    "[Unmapped]": 5438,
+    "[section .rela.plt]": 4920,
+    "[section .plt]": 3296,
+    "[section .data]": 2264,
     "[ELF Section Headers]": 2048,
-    "[section .got.plt]": 1848,
+    "[section .got.plt]": 1664,
     "[section .dynamic]": 1472,
     "[section .bss]": 0,
-    "[section .gnu.version]": 614,
-    "[section .gnu.version_r]": 496,
+    "[section .gnu.version]": 536,
+    "[section .gnu.version_r]": 528,
     "[section .shstrtab]": 303,
     "[section .text]": 293,
     "[section .eh_frame]": 196,
-    "[section .got]": 152,
-    "[section .init_array]": 96,
+    "[section .got]": 112,
     "[section .comment]": 84,
+    "[LOAD #5 [RW]]": 40,
     "[section .tbss]": 0,
     "[section .eh_frame_hdr]": 28,
     "[section .init]": 27,
-    "[LOAD #5 [RW]]": 16,
+    "[section .init_array]": 24,
     "[LOAD #3 [RX]]": 13,
     "[section .fini]": 13,
     "[section .fini_array]": 8,
     "[section .plt.got]": 8,
-    "[LOAD #4 [R]]": 3,
     "[LOAD #2 [R]]": 1
    },
    "upb_in_sections": {},
    "stdcxx_inlined": {
-    "opentelemetry-cpp": 542110,
-    "emit-app": 22183
+    "opentelemetry-cpp": 536925,
+    "emit-app": 25095
    },
    "unknown_cu": {},
-   "bloaty_total": 1068408
+   "bloaty_total": 1132784
   },
   "shared": {
    "libopentelemetry_proto*.so": {
-    "bytes": 651096,
+    "bytes": 638712,
     "files": [
      "libopentelemetry_proto_grpc.so 211696",
-     "libopentelemetry_proto.so 439400"
+     "libopentelemetry_proto.so 427016"
     ]
    },
    "gRPC": {
@@ -232,11 +231,11 @@
      "libabsl_malloc_internal.so.20220623.0.0 18760",
      "libabsl_time.so.20220623.0.0 72248",
      "libabsl_strings.so.20220623.0.0 121080",
-     "libabsl_strings_internal.so.20220623.0.0 18672",
      "libabsl_throw_delegate.so.20220623.0.0 22704",
+     "libabsl_int128.so.20220623.0.0 22776",
+     "libabsl_strings_internal.so.20220623.0.0 18672",
      "libabsl_base.so.20220623.0.0 18696",
      "libabsl_spinlock_wait.so.20220623.0.0 14424",
-     "libabsl_int128.so.20220623.0.0 22776",
      "libabsl_raw_logging_internal.so.20220623.0.0 14552",
      "libabsl_log_severity.so.20220623.0.0 14496",
      "libabsl_civil_time.so.20220623.0.0 26872",

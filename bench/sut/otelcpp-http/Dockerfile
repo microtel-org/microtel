@@ -4,7 +4,7 @@
 # Build context must be the repo root.
 #
 #   docker build \
-#       --build-arg OTELCPP_VERSION=v1.19.0 \
+#       --build-arg OTELCPP_VERSION=v1.30.0 \
 #       -f bench/sut/otelcpp-http/Dockerfile \
 #       -t bench-sut-otelcpp-http .
 #
@@ -19,7 +19,7 @@
 # Omitting abseil, c-ares, re2, and the gRPC library shaves ~15 min off cold
 # builds compared to the otelcpp-grpc SUT.
 
-ARG OTELCPP_VERSION=v1.19.0
+ARG OTELCPP_VERSION=v1.30.0
 
 # ---------------------------------------------------------------------------
 # Stage 1: base — OS and toolchain
@@ -67,11 +67,11 @@ RUN cmake -S /src/opentelemetry-cpp -B /build/otelcpp \
         -DCMAKE_CXX_FLAGS="${BENCH_CXXFLAGS}" \
         -DCMAKE_CXX_SCAN_FOR_MODULES=OFF \
         -DCMAKE_INSTALL_PREFIX=/opt/otelcpp \
-        -DBUILD_TESTING=OFF \
-        -DWITH_BENCHMARK=OFF \
-        -DWITH_EXAMPLES=OFF \
-        -DWITH_OTLP_HTTP=ON \
-        -DWITH_OTLP_GRPC=OFF \
+        -DOTELCPP_BUILD_TESTING=OFF \
+        -DOTELCPP_WITH_BENCHMARK=OFF \
+        -DOTELCPP_WITH_EXAMPLES=OFF \
+        -DOTELCPP_WITH_OTLP_HTTP=ON \
+        -DOTELCPP_WITH_OTLP_GRPC=OFF \
         -DWITH_ABSEIL=OFF \
         -DOPENTELEMETRY_BUILD_SHARED_LIBS=OFF \
     && cmake --build /build/otelcpp \

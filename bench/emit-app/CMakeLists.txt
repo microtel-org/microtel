@@ -69,9 +69,9 @@ if(BENCH_BACKEND STREQUAL "MICROTEL")
     endif()
 
 elseif(BENCH_BACKEND STREQUAL "OTELCPP_GRPC")
-    find_package(opentelemetry-cpp REQUIRED COMPONENTS
-        trace metrics logs otlp_grpc_exporter otlp_grpc_metrics_exporter
-        otlp_grpc_log_record_exporter)
+    # opentelemetry-cpp v1.30.0 renamed the package components but kept the
+    # target names, so find every built component and link the targets.
+    find_package(opentelemetry-cpp REQUIRED)
     target_sources(emit_app PRIVATE src/backend_otelcpp.cpp)
     target_link_libraries(emit_app PRIVATE
         opentelemetry-cpp::trace
@@ -83,9 +83,9 @@ elseif(BENCH_BACKEND STREQUAL "OTELCPP_GRPC")
 
 elseif(BENCH_BACKEND STREQUAL "OTELCPP_HTTP")
     find_package(CURL REQUIRED)
-    find_package(opentelemetry-cpp REQUIRED COMPONENTS
-        trace metrics logs otlp_http_exporter otlp_http_metric_exporter
-        otlp_http_log_record_exporter)
+    # opentelemetry-cpp v1.30.0 renamed the package components but kept the
+    # target names, so find every built component and link the targets.
+    find_package(opentelemetry-cpp REQUIRED)
     target_sources(emit_app PRIVATE src/backend_otelcpp.cpp)
     target_link_libraries(emit_app PRIVATE
         opentelemetry-cpp::trace

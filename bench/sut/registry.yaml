@@ -75,7 +75,7 @@ suts:
     b0: true
 
   - name: otelcpp-grpc
-    description: "opentelemetry-cpp v1.19.0 — OTLP/gRPC exporter"
+    description: "opentelemetry-cpp v1.30.0 — OTLP/gRPC exporter"
     dockerfile: bench/sut/otelcpp-grpc/Dockerfile
     image_name: bench-sut-otelcpp-grpc
     protocol: grpc
@@ -86,7 +86,7 @@ suts:
     b0: true
 
   - name: otelcpp-http
-    description: "opentelemetry-cpp v1.19.0 — OTLP/HTTP-protobuf exporter"
+    description: "opentelemetry-cpp v1.30.0 — OTLP/HTTP-protobuf exporter"
     dockerfile: bench/sut/otelcpp-http/Dockerfile
     image_name: bench-sut-otelcpp-http
     protocol: http

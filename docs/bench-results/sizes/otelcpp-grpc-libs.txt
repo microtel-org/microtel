@@ -1,5 +1,5 @@
-libopentelemetry_proto_grpc.so /usr/local/lib/libopentelemetry_proto_grpc.so /usr/local/lib/libopentelemetry_proto_grpc.so 4161584 
-libopentelemetry_proto.so /usr/local/lib/libopentelemetry_proto.so /usr/local/lib/libopentelemetry_proto.so 5003816 
+libopentelemetry_proto_grpc.so /usr/local/lib/libopentelemetry_proto_grpc.so /usr/local/lib/libopentelemetry_proto_grpc.so 4161576 
+libopentelemetry_proto.so /usr/local/lib/libopentelemetry_proto.so /usr/local/lib/libopentelemetry_proto.so 5114112 
 libgrpc++.so.1.51 /lib/x86_64-linux-gnu/libgrpc++.so.1.51 /usr/lib/x86_64-linux-gnu/libgrpc++.so.1.51.1 759088 libgrpc++1.51t64
 libprotobuf.so.32 /lib/x86_64-linux-gnu/libprotobuf.so.32 /usr/lib/x86_64-linux-gnu/libprotobuf.so.32.0.12 3056272 libprotobuf32t64
 libgrpc.so.29 /lib/x86_64-linux-gnu/libgrpc.so.29 /usr/lib/x86_64-linux-gnu/libgrpc.so.29.0.0 5680744 libgrpc29t64
@@ -46,11 +46,11 @@ libabsl_graphcycles_internal.so.20220623 /lib/x86_64-linux-gnu/libabsl_graphcycl
 libabsl_malloc_internal.so.20220623 /lib/x86_64-linux-gnu/libabsl_malloc_internal.so.20220623 /usr/lib/x86_64-linux-gnu/libabsl_malloc_internal.so.20220623.0.0 18760 libabsl20220623t64
 libabsl_time.so.20220623 /lib/x86_64-linux-gnu/libabsl_time.so.20220623 /usr/lib/x86_64-linux-gnu/libabsl_time.so.20220623.0.0 72248 libabsl20220623t64
 libabsl_strings.so.20220623 /lib/x86_64-linux-gnu/libabsl_strings.so.20220623 /usr/lib/x86_64-linux-gnu/libabsl_strings.so.20220623.0.0 121080 libabsl20220623t64
-libabsl_strings_internal.so.20220623 /lib/x86_64-linux-gnu/libabsl_strings_internal.so.20220623 /usr/lib/x86_64-linux-gnu/libabsl_strings_internal.so.20220623.0.0 18672 libabsl20220623t64
 libabsl_throw_delegate.so.20220623 /lib/x86_64-linux-gnu/libabsl_throw_delegate.so.20220623 /usr/lib/x86_64-linux-gnu/libabsl_throw_delegate.so.20220623.0.0 22704 libabsl20220623t64
+libabsl_int128.so.20220623 /lib/x86_64-linux-gnu/libabsl_int128.so.20220623 /usr/lib/x86_64-linux-gnu/libabsl_int128.so.20220623.0.0 22776 libabsl20220623t64
+libabsl_strings_internal.so.20220623 /lib/x86_64-linux-gnu/libabsl_strings_internal.so.20220623 /usr/lib/x86_64-linux-gnu/libabsl_strings_internal.so.20220623.0.0 18672 libabsl20220623t64
 libabsl_base.so.20220623 /lib/x86_64-linux-gnu/libabsl_base.so.20220623 /usr/lib/x86_64-linux-gnu/libabsl_base.so.20220623.0.0 18696 libabsl20220623t64
 libabsl_spinlock_wait.so.20220623 /lib/x86_64-linux-gnu/libabsl_spinlock_wait.so.20220623 /usr/lib/x86_64-linux-gnu/libabsl_spinlock_wait.so.20220623.0.0 14424 libabsl20220623t64
-libabsl_int128.so.20220623 /lib/x86_64-linux-gnu/libabsl_int128.so.20220623 /usr/lib/x86_64-linux-gnu/libabsl_int128.so.20220623.0.0 22776 libabsl20220623t64
 libabsl_raw_logging_internal.so.20220623 /lib/x86_64-linux-gnu/libabsl_raw_logging_internal.so.20220623 /usr/lib/x86_64-linux-gnu/libabsl_raw_logging_internal.so.20220623.0.0 14552 libabsl20220623t64
 libabsl_log_severity.so.20220623 /lib/x86_64-linux-gnu/libabsl_log_severity.so.20220623 /usr/lib/x86_64-linux-gnu/libabsl_log_severity.so.20220623.0.0 14496 libabsl20220623t64
 libabsl_civil_time.so.20220623 /lib/x86_64-linux-gnu/libabsl_civil_time.so.20220623 /usr/lib/x86_64-linux-gnu/libabsl_civil_time.so.20220623.0.0 26872 libabsl20220623t64

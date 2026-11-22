@@ -4,7 +4,7 @@
 # Build context must be the repo root.
 #
 #   docker build \
-#       --build-arg OTELCPP_VERSION=v1.19.0 \
+#       --build-arg OTELCPP_VERSION=v1.30.0 \
 #       -f bench/sut/otelcpp-grpc/Dockerfile \
 #       -t bench-sut-otelcpp-grpc .
 #
@@ -19,9 +19,10 @@
 # image are unchanged. Only emit-build rebuilds when emit-app source changes.
 #
 # gRPC and protobuf are taken from Ubuntu 24.04 system packages rather than
-# built from source; otelcpp v1.19.0 is compatible with the shipped versions.
+# built from source; otelcpp v1.30.0 builds and runs against the shipped versions
+# (gRPC 1.51, protobuf 3.21.12).
 
-ARG OTELCPP_VERSION=v1.19.0
+ARG OTELCPP_VERSION=v1.30.0
 
 # Flamegraph variant (B3): pass --build-arg INSTALL_PERF=true to add linux-tools-generic (perf)
 # to the runtime image and tag as bench-sut-otelcpp-grpc:perf.
@@ -83,11 +84,11 @@ RUN cmake -S /src/opentelemetry-cpp -B /build/otelcpp \
         -DCMAKE_CXX_FLAGS="${BENCH_CXXFLAGS}" \
         -DCMAKE_CXX_SCAN_FOR_MODULES=OFF \
         -DCMAKE_INSTALL_PREFIX=/opt/otelcpp \
-        -DBUILD_TESTING=OFF \
-        -DWITH_BENCHMARK=OFF \
-        -DWITH_EXAMPLES=OFF \
-        -DWITH_OTLP_GRPC=ON \
-        -DWITH_OTLP_HTTP=OFF \
+        -DOTELCPP_BUILD_TESTING=OFF \
+        -DOTELCPP_WITH_BENCHMARK=OFF \
+        -DOTELCPP_WITH_EXAMPLES=OFF \
+        -DOTELCPP_WITH_OTLP_GRPC=ON \
+        -DOTELCPP_WITH_OTLP_HTTP=OFF \
         -DWITH_ABSEIL=OFF \
         -DOPENTELEMETRY_BUILD_SHARED_LIBS=OFF \
     && cmake --build /build/otelcpp \
