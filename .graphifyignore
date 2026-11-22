@@ -12,3 +12,15 @@ docs/graph-report.md
 # clean without moving these dirs out of the tree first.
 build*/
 _deps/
+
+# Untracked local files that some checkouts keep in the tree: agent instruction
+# files for other tools, a local copy of the parity study's working directory
+# (bench/parity/ is tracked only on the bench/otelcpp-parity branch), local
+# benchmark output (bench/results/ is gitignored) and session hand-off notes.
+# Without these, local-only content ends up in the committed snapshot.
+/.codex/
+/AGENTS.md
+/bench/parity/
+/bench/parity.zip
+/bench/results/
+/_handoff/
