@@ -32,6 +32,7 @@
 #include "microtel/meter.hpp"
 #include "microtel/resource.hpp"
 #include "microtel/sampler.hpp"
+#include "microtel/sdk_builder.hpp"
 #include "microtel/span.hpp"
 #include "microtel/status.hpp"
 #include "microtel/tracer.hpp"
@@ -167,13 +168,16 @@ public:
 };
 
 /// Owns the provider plus the borrowed exporter pointers the assertions read.
+///
+/// Exemplar capture is off in v1.3 (ICP 0043), so the fixture turns it on
+/// through the internal test hook unless @p exemplar_capture is false.
 struct PipelineFixture
 {
     CapturingMetricExporter* metrics = nullptr;
     mtm::FakeLogExporter* logs = nullptr;
     std::shared_ptr<mts::SdkProvider> provider;
 
-    PipelineFixture()
+    explicit PipelineFixture(bool exemplar_capture = true)
     {
         auto metric_exporter = std::make_unique<CapturingMetricExporter>();
         auto log_exporter = std::make_unique<mtm::FakeLogExporter>();
@@ -195,6 +199,7 @@ struct PipelineFixture
             .metric_codec = nullptr,
             .metric_exporter = std::move(metric_exporter),
             .metric_interval = kNoBackgroundCollect,
+            .exemplar_capture_for_testing = exemplar_capture,
             .log_codec = nullptr,
             .log_exporter = std::move(log_exporter),
         });
@@ -284,6 +289,33 @@ TEST(ExemplarWiringTest, HistogramRecordedInsideASpan_ExemplarCarriesThatSpansId
     EXPECT_EQ(exemplars[0].span_context.span_id.AsBytes(), span_ctx->span_id.AsBytes());
 }
 
+TEST(ExemplarWiringTest, CaptureOffByDefault_CounterInsideSampledSpan_HasNoExemplar)
+{
+    const PipelineFixture f{/*exemplar_capture=*/false};
+    const auto meter = f.provider->GetMeter("exemplar.lib");
+    const auto counter = meter->CreateCounter<std::int64_t>("requests", "", "1");
+    const auto tracer = f.provider->GetTracer("exemplar.lib");
+    {
+        const auto scoped = tracer->StartAsCurrentSpan("handle-request");
+        ASSERT_TRUE(mt::CurrentContext().active_span_context.trace_flags.IsSampled());
+        counter->Add(1, {});
+    }
+    f.Flush();
+
+    EXPECT_FALSE(f.provider->ExemplarCaptureEnabled());
+    EXPECT_TRUE(f.metrics->ExemplarsFor("requests").empty());
+}
+
+TEST(ExemplarWiringTest, SdkBuilderProvider_CapturesNoExemplars)
+{
+    auto built = mt::SdkBuilder().WithEndpoint("https://localhost:4318").Build();
+    ASSERT_TRUE(built.has_value());
+    const auto* const sdk_provider = dynamic_cast<const mts::SdkProvider*>(built->get());
+    ASSERT_NE(sdk_provider, nullptr);
+
+    EXPECT_FALSE(sdk_provider->ExemplarCaptureEnabled());
+}
+
 TEST(ExemplarWiringTest, CounterRecordedWithNoSpanActive_HasNoExemplar)
 {
     const PipelineFixture f;
@@ -315,6 +347,7 @@ TEST(ExemplarWiringTest, CounterRecordedUnderAnUnsampledSpan_HasNoExemplar)
         .metric_codec = nullptr,
         .metric_exporter = std::move(metric_exporter),
         .metric_interval = kNoBackgroundCollect,
+        .exemplar_capture_for_testing = true,
     });
 
     const auto meter = provider->GetMeter("exemplar.lib");

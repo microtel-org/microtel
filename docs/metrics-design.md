@@ -48,7 +48,7 @@ box (and editing any decision they want changed first).
 - [x] §4 Async-instrument callback semantics
 - [x] §5 MetricReader / MetricExporter interaction
 - [x] §6 Views — selector surface, transforms, conflict rules
-- [x] §7 Exemplars — **in for v1.2**, reservoir + span-context linkage
+- [x] §7 Exemplars — **in for v1.2**, reservoir + span-context linkage (capture off in v1.3, [ICP 0043](icps/0043-exemplar-capture-off-in-v1.3.md))
 - [x] §8 Instrument API surface (`Provider::GetMeter` + the seven instruments)
 - [x] §9 Memory & threading model
 - [x] §10 Wire mapping (OTLP metrics protobuf; encoder/transport reuse)
@@ -182,8 +182,11 @@ example trace.
 - **Default filter = `trace_based`** (OTel default): an exemplar is recorded only
   when a *sampled* span is active in the current `Context`. Honor
   `OTEL_METRICS_EXEMPLAR_FILTER` (`always_off` | `always_on` | `trace_based`).
-  **Status: planned, not built.** `OTEL_METRICS_EXEMPLAR_FILTER` is not read;
-  the filter is always `trace_based`.
+  **Status: deferred, not removed
+  ([ICP 0043](icps/0043-exemplar-capture-off-in-v1.3.md)).** Exemplars are not
+  supported in v1.3: capture is off, because nothing exports them yet.
+  `trace_based` becomes the default when export lands (#454), together with
+  `OTEL_METRICS_EXEMPLAR_FILTER` (#300), which is not read today.
 - Captured fields: `trace_id`, `span_id`, timestamp, value, and any filtered
   attributes.
 - **Dependency:** exemplars read the current span from the thread-local
@@ -191,10 +194,12 @@ example trace.
   ([ICP 0025](icps/0025-propagation-core.md) §3, issue #221):
   `sdk::CurrentSpanSource` applies the `trace_based` filter — it returns the
   current `SpanContext` only when it is valid **and** sampled — and
-  `SdkProvider` hands it to every `SdkMeter`, which sets it as
-  `StorageOptions::span_source` on every stream it registers. The seam is no
-  longer `nullptr`; `tests/integration/sdk/exemplar_wiring_test.cpp` asserts
-  exported exemplars carry the enclosing span's real trace and span ids.
+  `SdkProvider` can hand it to every `SdkMeter`, which sets it as
+  `StorageOptions::span_source` on every stream it registers. In v1.3 it
+  hands them `nullptr` instead (ICP 0043), unless the internal test-only
+  `SdkProviderArgs::exemplar_capture_for_testing` is set;
+  `tests/integration/sdk/exemplar_wiring_test.cpp` sets it, and asserts the
+  collected exemplars carry the enclosing span's real trace and span ids.
 
 ## §8 Instrument API surface
 
