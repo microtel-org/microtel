@@ -1,0 +1,91 @@
+== round 1  2026-11-22T15:19:31Z  governor=performance boost=0
+   15:23:31 parity-microtel-http-clang  load1=0.46  tctl=+38.0°C
+   15:23:38 parity-microtel-http-clang  done  tctl=+39.9°C
+   15:23:38 parity-otelcpp-http-clang-q16k  load1=0.39  tctl=+39.9°C
+   15:23:45 parity-otelcpp-http-clang-q16k  done  tctl=+40.8°C
+   15:23:45 parity-otelcpp130-http-clang-q16k  load1=0.36  tctl=+40.8°C
+   15:23:51 parity-otelcpp130-http-clang-q16k  done  tctl=+41.1°C
+   15:24:06 parity-otelcppmain-http-clang-q16k  load1=0.44  tctl=+38.8°C
+   15:24:13 parity-otelcppmain-http-clang-q16k  done  tctl=+39.9°C
+== round 2  2026-11-22T15:24:13Z  governor=performance boost=0
+   15:24:13 parity-otelcpp-http-clang-q16k  load1=0.45  tctl=+39.9°C
+   15:24:20 parity-otelcpp-http-clang-q16k  done  tctl=+40.5°C
+   15:24:20 parity-otelcpp130-http-clang-q16k  load1=0.41  tctl=+40.5°C
+   15:24:27 parity-otelcpp130-http-clang-q16k  done  tctl=+40.9°C
+   15:24:27 parity-otelcppmain-http-clang-q16k  load1=0.38  tctl=+40.9°C
+   15:24:33 parity-otelcppmain-http-clang-q16k  done  tctl=+40.9°C
+   15:24:33 parity-microtel-http-clang  load1=0.39  tctl=+40.9°C
+   15:24:40 parity-microtel-http-clang  done  tctl=+40.9°C
+== round 3  2026-11-22T15:24:40Z  governor=performance boost=0
+   15:24:40 parity-otelcpp130-http-clang-q16k  load1=0.36  tctl=+40.9°C
+   15:24:47 parity-otelcpp130-http-clang-q16k  done  tctl=+41.0°C
+   15:24:47 parity-otelcppmain-http-clang-q16k  load1=0.33  tctl=+41.0°C
+   15:24:54 parity-otelcppmain-http-clang-q16k  done  tctl=+40.9°C
+   15:24:54 parity-microtel-http-clang  load1=0.36  tctl=+40.9°C
+   15:25:00 parity-microtel-http-clang  done  tctl=+40.9°C
+   15:25:00 parity-otelcpp-http-clang-q16k  load1=0.41  tctl=+40.9°C
+   15:25:07 parity-otelcpp-http-clang-q16k  done  tctl=+40.9°C
+== round 4  2026-11-22T15:25:07Z  governor=performance boost=0
+   15:25:07 parity-otelcppmain-http-clang-q16k  load1=0.43  tctl=+40.9°C
+   15:25:14 parity-otelcppmain-http-clang-q16k  done  tctl=+41.0°C
+   15:25:14 parity-microtel-http-clang  load1=0.39  tctl=+41.0°C
+   15:25:20 parity-microtel-http-clang  done  tctl=+41.0°C
+   15:25:20 parity-otelcpp-http-clang-q16k  load1=0.36  tctl=+41.0°C
+   15:25:27 parity-otelcpp-http-clang-q16k  done  tctl=+40.9°C
+   15:25:27 parity-otelcpp130-http-clang-q16k  load1=0.38  tctl=+40.9°C
+   15:25:34 parity-otelcpp130-http-clang-q16k  done  tctl=+40.9°C
+== round 5  2026-11-22T15:25:34Z  governor=performance boost=0
+   15:25:34 parity-microtel-http-clang  load1=0.35  tctl=+40.9°C
+   15:25:41 parity-microtel-http-clang  done  tctl=+40.9°C
+   15:25:41 parity-otelcpp-http-clang-q16k  load1=0.32  tctl=+40.9°C
+   15:25:47 parity-otelcpp-http-clang-q16k  done  tctl=+40.8°C
+   15:25:47 parity-otelcpp130-http-clang-q16k  load1=0.35  tctl=+40.8°C
+   15:25:54 parity-otelcpp130-http-clang-q16k  done  tctl=+40.8°C
+   15:25:54 parity-otelcppmain-http-clang-q16k  load1=0.33  tctl=+40.8°C
+   15:26:01 parity-otelcppmain-http-clang-q16k  done  tctl=+40.8°C
+== round 6  2026-11-22T15:26:01Z  governor=performance boost=0
+   15:26:01 parity-otelcpp-http-clang-q16k  load1=0.30  tctl=+40.8°C
+   15:26:08 parity-otelcpp-http-clang-q16k  done  tctl=+40.6°C
+   15:26:08 parity-otelcpp130-http-clang-q16k  load1=0.33  tctl=+40.6°C
+   15:26:14 parity-otelcpp130-http-clang-q16k  done  tctl=+40.8°C
+   15:26:14 parity-otelcppmain-http-clang-q16k  load1=0.47  tctl=+40.8°C
+   15:26:21 parity-otelcppmain-http-clang-q16k  done  tctl=+40.8°C
+   15:26:21 parity-microtel-http-clang  load1=0.43  tctl=+40.8°C
+   15:26:28 parity-microtel-http-clang  done  tctl=+40.8°C
+== round 7  2026-11-22T15:26:28Z  governor=performance boost=0
+   15:27:13 parity-otelcpp130-http-clang-q16k  load1=0.45  tctl=+35.8°C
+   15:27:19 parity-otelcpp130-http-clang-q16k  done  tctl=+38.0°C
+   15:27:20 parity-otelcppmain-http-clang-q16k  load1=0.42  tctl=+38.0°C
+   15:27:26 parity-otelcppmain-http-clang-q16k  done  tctl=+39.1°C
+   15:27:26 parity-microtel-http-clang  load1=0.38  tctl=+39.1°C
+   15:27:33 parity-microtel-http-clang  done  tctl=+39.5°C
+   15:27:33 parity-otelcpp-http-clang-q16k  load1=0.32  tctl=+39.5°C
+   15:27:40 parity-otelcpp-http-clang-q16k  done  tctl=+39.8°C
+== round 8  2026-11-22T15:27:40Z  governor=performance boost=0
+   15:27:40 parity-otelcppmain-http-clang-q16k  load1=0.30  tctl=+39.8°C
+   15:27:46 parity-otelcppmain-http-clang-q16k  done  tctl=+39.8°C
+   15:27:46 parity-microtel-http-clang  load1=0.27  tctl=+39.8°C
+   15:27:53 parity-microtel-http-clang  done  tctl=+39.9°C
+   15:27:53 parity-otelcpp-http-clang-q16k  load1=0.45  tctl=+39.9°C
+   15:28:00 parity-otelcpp-http-clang-q16k  done  tctl=+39.9°C
+   15:28:00 parity-otelcpp130-http-clang-q16k  load1=0.42  tctl=+39.9°C
+   15:28:07 parity-otelcpp130-http-clang-q16k  done  tctl=+39.9°C
+== round 9  2026-11-22T15:28:07Z  governor=performance boost=0
+   15:28:07 parity-microtel-http-clang  load1=0.38  tctl=+39.9°C
+   15:28:13 parity-microtel-http-clang  done  tctl=+39.9°C
+   15:28:58 parity-otelcpp-http-clang-q16k  load1=0.45  tctl=+35.1°C
+   15:29:05 parity-otelcpp-http-clang-q16k  done  tctl=+37.4°C
+   15:29:05 parity-otelcpp130-http-clang-q16k  load1=0.41  tctl=+37.4°C
+   15:29:12 parity-otelcpp130-http-clang-q16k  done  tctl=+38.5°C
+   15:29:12 parity-otelcppmain-http-clang-q16k  load1=0.38  tctl=+38.5°C
+   15:29:19 parity-otelcppmain-http-clang-q16k  done  tctl=+39.0°C
+== round 10  2026-11-22T15:29:19Z  governor=performance boost=0
+   15:29:19 parity-otelcpp-http-clang-q16k  load1=0.40  tctl=+39.0°C
+   15:29:25 parity-otelcpp-http-clang-q16k  done  tctl=+39.4°C
+   15:29:25 parity-otelcpp130-http-clang-q16k  load1=0.36  tctl=+39.4°C
+   15:29:32 parity-otelcpp130-http-clang-q16k  done  tctl=+39.5°C
+   15:29:32 parity-otelcppmain-http-clang-q16k  load1=0.39  tctl=+39.5°C
+   15:29:39 parity-otelcppmain-http-clang-q16k  done  tctl=+39.4°C
+   15:29:39 parity-microtel-http-clang  load1=0.36  tctl=+39.4°C
+   15:29:45 parity-microtel-http-clang  done  tctl=+39.6°C
+== done 2026-11-22T15:29:46Z

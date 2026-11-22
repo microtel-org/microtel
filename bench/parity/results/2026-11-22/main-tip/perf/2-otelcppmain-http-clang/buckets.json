@@ -1,0 +1,222 @@
+{
+  "rows": [
+    {
+      "bucket": "libprotobuf",
+      "cycles": 18989284475,
+      "pct_span": 41.25532180043457,
+      "pct_worker": 37.4230226939118
+    },
+    {
+      "bucket": "allocation",
+      "cycles": 3740654260,
+      "pct_span": 8.126788318097828,
+      "pct_worker": 7.371872776267829
+    },
+    {
+      "bucket": "atomics and locks",
+      "cycles": 1077755965,
+      "pct_span": 2.341487338132729,
+      "pct_worker": 2.123981342730072
+    },
+    {
+      "bucket": "clock reads",
+      "cycles": 5214436006,
+      "pct_span": 11.328664632862782,
+      "pct_worker": 10.276319639394353
+    },
+    {
+      "bucket": "sampler",
+      "cycles": 353860482,
+      "pct_span": 0.7687824191894354,
+      "pct_worker": 0.6973685009458245
+    },
+    {
+      "bucket": "processor enqueue",
+      "cycles": 3783327907,
+      "pct_span": 8.219499291052124,
+      "pct_worker": 7.455971619603157
+    },
+    {
+      "bucket": "attribute storage",
+      "cycles": 270998510,
+      "pct_span": 0.5887599794614319,
+      "pct_worker": 0.5340687482510467
+    },
+    {
+      "bucket": "other",
+      "cycles": 12598373110,
+      "pct_span": 27.370696220769094,
+      "pct_worker": 24.828171036281145
+    },
+    {
+      "bucket": "harness",
+      "cycles": 4713561268,
+      "pct_span": null,
+      "pct_worker": 9.289223642614774
+    }
+  ],
+  "other_top": [
+    [
+      "opentelemetry::v1::sdk::trace::Tracer::StartSpan",
+      2028720652
+    ],
+    [
+      "opentelemetry::v1::nostd::shared_ptr<opentelemetry::v1::trace::TraceState>::shared_ptr_wrapper::~shared_ptr_wrapper",
+      1299436121
+    ],
+    [
+      "opentelemetry::v1::sdk::trace::Span::Span",
+      861214068
+    ],
+    [
+      "std::_Rb_tree_increment",
+      710552519
+    ],
+    [
+      "opentelemetry::v1::nostd::shared_ptr<opentelemetry::v1::trace::TraceState>::shared_ptr_wrapper::MoveTo",
+      622849532
+    ],
+    [
+      "opentelemetry::v1::sdk::common::Random::GenerateRandomBuffer",
+      528716661
+    ],
+    [
+      "opentelemetry::v1::context::Context::GetValue(opentelemetry::v1::nostd::string_view) const",
+      509193814
+    ],
+    [
+      "opentelemetry::v1::nostd::shared_ptr<opentelemetry::v1::trace::Span>::shared_ptr_wrapper::MoveTo",
+      396706796
+    ],
+    [
+      "opentelemetry::v1::nostd::shared_ptr<opentelemetry::v1::context::RuntimeContextStorage>::shared_ptr_wrapper::~shared_ptr_wrapper",
+      367143435
+    ],
+    [
+      "opentelemetry::v1::nostd::shared_ptr<opentelemetry::v1::trace::TraceState>::shared_ptr_wrapper::CopyTo(opentelemetry::v1::nostd::shared_ptr<opentelemetry::v1::trace::TraceState>::PlacementBuffer&) const",
+      349814763
+    ],
+    [
+      "bench::(anonymous namespace)::OtelCppBackend::EmitSpan",
+      346249218
+    ],
+    [
+      "opentelemetry::v1::sdk::trace::MultiRecordable::SetName",
+      288498392
+    ],
+    [
+      "opentelemetry::v1::context::RuntimeContext::GetCurrent",
+      276012221
+    ],
+    [
+      "opentelemetry::v1::sdk::trace::Span::~Span",
+      251245621
+    ],
+    [
+      "opentelemetry::v1::nostd::shared_ptr<opentelemetry::v1::trace::Span>::shared_ptr_wrapper::~shared_ptr_wrapper",
+      232262668
+    ],
+    [
+      "opentelemetry::v1::sdk::trace::MultiRecordable::SetIdentity",
+      221413167
+    ],
+    [
+      "opentelemetry::v1::sdk::trace::MultiRecordable::SetInstrumentationScope",
+      212837605
+    ],
+    [
+      "opentelemetry::v1::sdk::trace::RandomIdGenerator::GenerateTraceId",
+      197659568
+    ],
+    [
+      "opentelemetry::v1::sdk::trace::Span::End",
+      192064783
+    ],
+    [
+      "opentelemetry::v1::sdk::trace::MultiRecordable::SetSpanLimits",
+      177225498
+    ],
+    [
+      "opentelemetry::v1::trace::GetSpanContext",
+      172819191
+    ],
+    [
+      "opentelemetry::v1::sdk::trace::RandomIdGenerator::GenerateSpanId",
+      169236276
+    ],
+    [
+      "opentelemetry::v1::nostd::shared_ptr<opentelemetry::v1::context::Context::DataList>::shared_ptr_wrapper::Get() const",
+      165865590
+    ],
+    [
+      "opentelemetry::v1::sdk::trace::MultiRecordable::SetTraceFlags",
+      163960587
+    ],
+    [
+      "opentelemetry::v1::trace::TraceState::GetDefault",
+      157996946
+    ],
+    [
+      "opentelemetry::v1::sdk::trace::MultiRecordable::SetSpanKind",
+      147467400
+    ],
+    [
+      "opentelemetry::v1::nostd::shared_ptr<opentelemetry::v1::trace::TraceState>::shared_ptr_wrapper::Get() const",
+      134525011
+    ],
+    [
+      "opentelemetry::v1::sdk::trace::TracerContext::GetProcessor() const",
+      131850124
+    ],
+    [
+      "opentelemetry::v1::nostd::shared_ptr<opentelemetry::v1::context::RuntimeContextStorage>::shared_ptr_wrapper::CopyTo(opentelemetry::v1::nostd::shared_ptr<opentelemetry::v1::context::RuntimeContextStorage>::PlacementBuffer&) const",
+      112196854
+    ],
+    [
+      "opentelemetry::v1::context::ThreadLocalContextStorage::GetCurrent",
+      102446380
+    ],
+    [
+      "std::_Rb_tree_increment(std::_Rb_tree_node_base*)@plt",
+      99017052
+    ],
+    [
+      "opentelemetry::v1::nostd::shared_ptr<opentelemetry::v1::context::Context::DataList>::shared_ptr_wrapper::~shared_ptr_wrapper",
+      92548531
+    ],
+    [
+      "__libc_calloc",
+      83602765
+    ],
+    [
+      "opentelemetry::v1::sdk::trace::BatchSpanProcessor::MakeRecordable",
+      81235643
+    ],
+    [
+      "std::_Sp_counted_ptr_inplace<opentelemetry::v1::sdk::trace::Span, std::allocator<void>, (__gnu_cxx::_Lock_policy)2>::_M_dispose",
+      74927602
+    ],
+    [
+      "opentelemetry::v1::sdk::trace::MultiRecordable::SetDuration",
+      69974555
+    ],
+    [
+      "opentelemetry::v1::sdk::trace::MultiRecordable::SetStartTime",
+      69817287
+    ],
+    [
+      "opentelemetry::v1::sdk::trace::TracerContext::GetIdGenerator() const",
+      69309307
+    ],
+    [
+      "opentelemetry::v1::sdk::trace::MultiRecordable::SetResource",
+      62113082
+    ],
+    [
+      "std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_create",
+      61336482
+    ]
+  ],
+  "worker_cycles": 50742251983,
+  "background_cycles": 45683489396
+}
