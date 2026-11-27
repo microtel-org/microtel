@@ -133,6 +133,21 @@ TEST(MetricProducerTest, SameNameDifferentVersionYieldsSeparateHandles)
     EXPECT_EQ(producer.Collect().size(), 2U);
 }
 
+// A scope's identity includes its schema URL (ICP 0048).
+TEST(MetricProducerTest, SameNameAndVersionDifferentSchemaUrlYieldsSeparateHandles)
+{
+    mts::MetricProducer producer{MakeResource()};
+    producer.AddStream(MakeScope("lib", "1.0", "https://example.test/a"),
+                       std::make_unique<FakeMetricStream>("x"));
+    producer.AddStream(MakeScope("lib", "1.0", "https://example.test/b"),
+                       std::make_unique<FakeMetricStream>("y"));
+
+    const auto handles = producer.Collect();
+    ASSERT_EQ(handles.size(), 2U);
+    EXPECT_EQ(handles.at(0).Scope().schema_url, "https://example.test/a");
+    EXPECT_EQ(handles.at(1).Scope().schema_url, "https://example.test/b");
+}
+
 TEST(MetricProducerTest, HandleCarriesScopeIdentity)
 {
     mts::MetricProducer producer{MakeResource()};

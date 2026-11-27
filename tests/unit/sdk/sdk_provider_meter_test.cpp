@@ -88,6 +88,31 @@ std::unique_ptr<mts::SdkProvider> MakeProviderWithCardinality(std::size_t max_ca
     });
 }
 
+/// A provider whose metric exporter is a mock; `metric_exp` borrows it and is
+/// valid while the provider lives.
+std::unique_ptr<mts::SdkProvider> MakeProviderWithMetricExporter(
+    mtm::MockMetricExporter*& metric_exp)
+{
+    auto owned = std::make_unique<mtm::MockMetricExporter>();
+    metric_exp = owned.get();
+
+    return std::make_unique<mts::SdkProvider>(mts::SdkProviderArgs{
+        .diagnostics = std::make_unique<mts::DiagnosticsCounters>(),
+        .encoder = nullptr,
+        .auth = nullptr,
+        .transport = std::make_unique<mtm::MockTransport>(),
+        .codec = nullptr,
+        .exporter = std::make_unique<mtm::MockExporter>(),
+        .processor = std::make_unique<mtm::MockSpanProcessor>(),
+        .resource = std::make_shared<mt::Resource>(),
+        .sampler = mt::MakeAlwaysOnSampler(),
+        .span_limits = {},
+        .connect_opts = {},
+        .metric_exporter = std::move(owned),
+        .metric_interval = std::chrono::milliseconds{60'000},
+    });
+}
+
 }  // namespace
 
 // ── GetMeter — basic ──────────────────────────────────────────────────────────
@@ -131,13 +156,33 @@ TEST(SdkProviderMeterTest, GetMeter_EmptyVersionDistinctFromNonEmpty)
     EXPECT_NE(a.get(), b.get());
 }
 
-// schema_url is not part of the cache key (provider.hpp): the first call
-// for a (name, version) fixes the scope's schema URL.
-TEST(SdkProviderMeterTest, GetMeter_SchemaUrlDoesNotAffectCaching)
+// A meter's identity includes its schema URL (ICP 0048): two URLs for one
+// (name, version) give two meters, each exported as its own ScopeMetrics.
+TEST(SdkProviderMeterTest, GetMeter_DistinctSchemaUrlsExportDistinctScopes)
+{
+    mtm::MockMetricExporter* metric_exp = nullptr;
+    auto provider = MakeProviderWithMetricExporter(metric_exp);
+
+    const auto a = provider->GetMeter("lib", "1.0", "https://example.test/a");
+    const auto b = provider->GetMeter("lib", "1.0", "https://example.test/b");
+    ASSERT_NE(a.get(), b.get());
+    a->CreateCounter<std::int64_t>("requests")->Add(1, {});
+    b->CreateCounter<std::int64_t>("requests")->Add(1, {});
+    ASSERT_EQ(provider->ForceFlush(500ms), mt::Status::Completed);
+
+    const std::scoped_lock lk{metric_exp->scopes_mu};
+    ASSERT_EQ(metric_exp->exported_scopes.size(), 2U);
+    EXPECT_EQ(metric_exp->exported_scopes.at(0).name, "lib");
+    EXPECT_EQ(metric_exp->exported_scopes.at(0).schema_url, "https://example.test/a");
+    EXPECT_EQ(metric_exp->exported_scopes.at(1).name, "lib");
+    EXPECT_EQ(metric_exp->exported_scopes.at(1).schema_url, "https://example.test/b");
+}
+
+TEST(SdkProviderMeterTest, GetMeter_SameSchemaUrlReturnsSameInstance)
 {
     auto provider = MakeProvider();
     auto a = provider->GetMeter("lib", "1.0", "https://example.test/a");
-    auto b = provider->GetMeter("lib", "1.0", "https://example.test/b");
+    auto b = provider->GetMeter("lib", "1.0", "https://example.test/a");
     EXPECT_EQ(a.get(), b.get());
 }
 
@@ -215,24 +260,8 @@ TEST(SdkProviderMeterTest, ForceFlush_WithMetricExporter_FlushesExporter)
 // The schema URL given to GetMeter reaches the exported scope (#456).
 TEST(SdkProviderMeterTest, GetMeter_SchemaUrlReachesExportedScope)
 {
-    auto metric_exp = std::make_unique<mtm::MockMetricExporter>();
-    auto* const metric_exp_ptr = metric_exp.get();
-
-    auto provider = std::make_unique<mts::SdkProvider>(mts::SdkProviderArgs{
-        .diagnostics = std::make_unique<mts::DiagnosticsCounters>(),
-        .encoder = nullptr,
-        .auth = nullptr,
-        .transport = std::make_unique<mtm::MockTransport>(),
-        .codec = nullptr,
-        .exporter = std::make_unique<mtm::MockExporter>(),
-        .processor = std::make_unique<mtm::MockSpanProcessor>(),
-        .resource = std::make_shared<mt::Resource>(),
-        .sampler = mt::MakeAlwaysOnSampler(),
-        .span_limits = {},
-        .connect_opts = {},
-        .metric_exporter = std::move(metric_exp),
-        .metric_interval = std::chrono::milliseconds{60'000},
-    });
+    mtm::MockMetricExporter* metric_exp_ptr = nullptr;
+    auto provider = MakeProviderWithMetricExporter(metric_exp_ptr);
 
     const auto meter = provider->GetMeter("my.lib", "2.0", "https://example.test/schema");
     const auto counter = meter->CreateCounter<std::int64_t>("requests");

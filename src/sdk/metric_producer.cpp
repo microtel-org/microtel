@@ -18,7 +18,9 @@ void MetricProducer::AddStream(internal::InstrumentationScope scope,
     const std::scoped_lock lk{m_mu};
     for (ScopeEntry& entry : m_scopes)
     {
-        if (entry.scope.name == scope.name && entry.scope.version == scope.version)
+        // A scope's identity includes its schema URL (ICP 0048).
+        if (entry.scope.name == scope.name && entry.scope.version == scope.version &&
+            entry.scope.schema_url == scope.schema_url)
         {
             entry.streams.push_back(std::move(stream));
             return;

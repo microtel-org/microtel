@@ -21,7 +21,8 @@ namespace microtel::sdk
 
 /// @brief Concrete `IMetricProducer` — the pull source for `IMetricReader`.
 ///
-/// Holds one `ScopeEntry` per instrumentation scope (grouped by name+version).
+/// Holds one `ScopeEntry` per instrumentation scope (grouped by name, version
+/// and schema URL; ICP 0048).
 /// Each entry owns its `IMetricStream` instances. `Collect()` loops over scopes
 /// and streams, snapshots each stream's aggregation state, and assembles one
 /// `MetricBatchHandle` per scope.
