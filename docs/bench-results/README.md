@@ -15,6 +15,18 @@ package components, which `bench/emit-app/CMakeLists.txt` follows). Each image
 was built twice, the second time with `--no-cache`, and the two builds were
 identical section by section.
 
+**Not re-measured for v1.3.0.** The snapshot measured v1.2.6 (`59e5415`,
+2026-11-22) and is carried forward unchanged. Between v1.2.6 and the v1.3.0
+release commit, `src/` and `include/` changed in the metrics pipeline, the
+meter scope encoder and `GetMeter`'s cache key, none of which the
+`hot-loop-traces` profile exercises; in the escaping of logged values
+(#536), which runs only when microtel logs; and in the release literals. One
+change reaches the span path: `InstrumentationScope`, which each tracer, span
+and queued span holds a copy of, gained a `schema_url` string (#557), empty
+for tracers, so each span's two scope copies (at start, and into the batch
+queue at end) carry one more empty string. That cost was not measured.
+[`sizes/library-sizes.md`](sizes/library-sizes.md) was re-measured for v1.3.0.
+
 **This is a new baseline, not a like-for-like refresh.** It ran on the same
 Ryzen 5 5600G as the v1.2.5 snapshot, but
 [`docs/releasing.md`](../releasing.md) §5's same-environment rule does not
@@ -78,7 +90,7 @@ the stripped benchmark executable plus every shared library it loads, Ubuntu
 24.04 packages, split per library with bloaty. The telemetry stack is
 **13.5 MB** for opentelemetry-cpp v1.30.0 with its OTLP/gRPC exporter (gRPC, protobuf,
 Abseil, c-ares, re2 and the OTLP proto libraries) against **1.3 MB** for
-microtel (measured on v1.2.6) (with nghttp2, upb and toml++), on top of the same **12.0 MB** shared
+microtel (measured on v1.3.0) (with nghttp2, upb and toml++), on top of the same **12.0 MB** shared
 base of OpenSSL, zlib and the C/C++ runtime that both load.
 
 The methodology is in [docs/bench-spec.md](../bench-spec.md), and
