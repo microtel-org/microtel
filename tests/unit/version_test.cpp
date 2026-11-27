@@ -15,6 +15,8 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <string_view>
+#include <vector>
 
 namespace
 {
@@ -73,6 +75,32 @@ TEST(VersionTest, SecurityPolicyNamesTheCurrentRelease)
     EXPECT_NE(security.find("current release (" + std::string{microtel::kVersionString} + ")"),
               std::string::npos)
         << "SECURITY.md does not mark " << microtel::kVersionString << " as the current release";
+}
+
+// docs/releasing.md §3: only the latest minor of the latest major is supported,
+// so a bump that adds the new row must also demote the old one. Marking the new
+// release current (above) does not catch a forgotten demotion.
+TEST(VersionTest, SecurityPolicySupportsOnlyTheCurrentMinor)
+{
+    const std::string security = ReadSourceFile(MICROTEL_SECURITY_PATH);
+    ASSERT_FALSE(security.empty()) << "cannot read " << MICROTEL_SECURITY_PATH;
+    const std::string current_row = "| " + std::to_string(microtel::kVersionMajor) + "." +
+                                    std::to_string(microtel::kVersionMinor) + ".x |";
+    constexpr std::string_view kSupportedMark = "✅";  // the table's "supported" tick
+
+    std::istringstream lines{security};
+    std::string line;
+    std::vector<std::string> supported_rows;
+    while (std::getline(lines, line))
+    {
+        if (line.starts_with("| ") && line.find(kSupportedMark) != std::string::npos)
+        {
+            supported_rows.push_back(line);
+        }
+    }
+    ASSERT_EQ(supported_rows.size(), 1U) << "SECURITY.md marks more than one version supported";
+    EXPECT_TRUE(supported_rows.front().starts_with(current_row))
+        << "the supported row is not " << current_row << ": " << supported_rows.front();
 }
 
 // docs/releasing.md §5: each published benchmark snapshot is either refreshed
