@@ -48,6 +48,7 @@ inline constexpr const char* kMetricsOutputFileEnv = "MICROTEL_CONFORMANCE_METRI
 
 inline constexpr const char* kServiceName = "microtel-conformance";
 inline constexpr const char* kScopeVersion = "1.0";
+inline constexpr const char* kScopeSchemaUrl = "https://opentelemetry.io/schemas/1.26.0";
 
 inline constexpr auto kFlushTimeout = std::chrono::seconds(30);
 inline constexpr auto kCollectorPollTimeout = std::chrono::seconds(15);
@@ -303,7 +304,8 @@ inline void ExpectSyncGaugeAndHistograms(const std::string& output_file, const s
 /// @brief One of each synchronous instrument kind, cumulative: Counter,
 ///        UpDownCounter, Gauge, explicit-bucket Histogram and exponential
 ///        Histogram. Asserts each one's data point, its temporality and
-///        monotonicity, and the resource and scope it arrived under.
+///        monotonicity, and the resource and scope it arrived under,
+///        including the scope's schema URL (#456).
 inline void RunSyncInstruments(Provider& provider,
                                const std::string& output_file,
                                const std::string& scope_name)
@@ -311,7 +313,7 @@ inline void RunSyncInstruments(Provider& provider,
     const std::string marker = UniqueMarker();
     const auto attrs = MeasurementAttributes();
     {
-        const auto meter = provider.GetMeter(scope_name, kScopeVersion);
+        const auto meter = provider.GetMeter(scope_name, kScopeVersion, kScopeSchemaUrl);
         const auto counter =
             meter->CreateCounter<std::int64_t>(marker + ".counter", "a counter", "1");
         const auto updown = meter->CreateUpDownCounter<std::int64_t>(marker + ".updown");
@@ -339,6 +341,7 @@ inline void RunSyncInstruments(Provider& provider,
     const std::string scope =
         AwaitMetricObject(output_file, marker + ".counter", kScopeMetricsLevel);
     ExpectContains(scope, R"("scope":{"name":")" + scope_name + R"(","version":"1.0"})");
+    ExpectContains(scope, R"("schemaUrl":")" + std::string{kScopeSchemaUrl} + R"(")");
     const std::string resource =
         AwaitMetricObject(output_file, marker + ".counter", kResourceMetricsLevel);
     ExpectContains(resource, kServiceNameJson);

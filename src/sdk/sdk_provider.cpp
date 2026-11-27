@@ -412,7 +412,7 @@ internal::IDiagnosticsSink& SdkProvider::DiagnosticsSink() noexcept
 
 std::shared_ptr<microtel::Meter> SdkProvider::GetMeter(std::string_view name,
                                                        std::string_view version,
-                                                       std::string_view /*schema_url*/)
+                                                       std::string_view schema_url)
 {
     // Read before taking m_meter_mu, not after: in a forked child that mutex
     // may be held by a thread that no longer exists, so locking first would
@@ -462,7 +462,8 @@ std::shared_ptr<microtel::Meter> SdkProvider::GetMeter(std::string_view name,
     {
         entry = std::make_shared<SdkMeter>(
             internal::InstrumentationScope{.name = std::string{name},
-                                           .version = std::string{version}},
+                                           .version = std::string{version},
+                                           .schema_url = std::string{schema_url}},
             m_metric_producer,
             m_metric_max_cardinality,
             m_metric_producer->Diagnostics(),

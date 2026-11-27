@@ -85,12 +85,14 @@ ParsedMetrics ParseFirst(const mti::EncodedPayload& payload)
 
 mti::MetricBatchHandle MakeBatch(std::vector<mti::MetricRecord> records,
                                  const std::string& scope_name = "test.scope",
-                                 const std::string& scope_version = "1.0")
+                                 const std::string& scope_version = "1.0",
+                                 const std::string& scope_schema_url = "")
 {
     return mti::MetricBatchHandle{
         std::move(records),
         std::make_shared<mt::Resource>(),
-        mti::InstrumentationScope{.name = scope_name, .version = scope_version},
+        mti::InstrumentationScope{
+            .name = scope_name, .version = scope_version, .schema_url = scope_schema_url},
     };
 }
 
@@ -323,6 +325,44 @@ TEST(OtlpMetricEncoderTest, ScopeMetadata_RoundTrip)
     EXPECT_EQ(std::string(name_sv.data, name_sv.size), "my.lib");
     const upb_StringView ver_sv = opentelemetry_proto_common_v1_InstrumentationScope_version(sc);
     EXPECT_EQ(std::string(ver_sv.data, ver_sv.size), "2.3");
+
+    upb_Arena_Free(parsed.arena);
+}
+
+// ── Scope schema URL (#456) ───────────────────────────────────────────────────
+
+TEST(OtlpMetricEncoderTest, ScopeSchemaUrl_RoundTrip)
+{
+    const mti::MetricRecord rec{
+        .name = "dummy",
+        .data = mti::GaugeData{.points = {{.value = std::int64_t{1}}}},
+    };
+    mtw::OtlpEncoder enc;
+    const mti::EncodedPayload payload =
+        enc.Encode(MakeBatch({rec}, "my.lib", "2.3", "https://opentelemetry.io/schemas/1.26.0"));
+    ASSERT_GT(payload.Size(), 0u);
+
+    const ParsedMetrics parsed = ParseFirst(payload);
+    ASSERT_NE(parsed.sm, nullptr);
+    const upb_StringView url = opentelemetry_proto_metrics_v1_ScopeMetrics_schema_url(parsed.sm);
+    EXPECT_EQ(std::string(url.data, url.size), "https://opentelemetry.io/schemas/1.26.0");
+
+    upb_Arena_Free(parsed.arena);
+}
+
+TEST(OtlpMetricEncoderTest, ScopeSchemaUrl_EmptyStaysEmpty)
+{
+    const mti::MetricRecord rec{
+        .name = "dummy",
+        .data = mti::GaugeData{.points = {{.value = std::int64_t{1}}}},
+    };
+    mtw::OtlpEncoder enc;
+    const mti::EncodedPayload payload = enc.Encode(MakeBatch({rec}));
+    ASSERT_GT(payload.Size(), 0u);
+
+    const ParsedMetrics parsed = ParseFirst(payload);
+    ASSERT_NE(parsed.sm, nullptr);
+    EXPECT_EQ(opentelemetry_proto_metrics_v1_ScopeMetrics_schema_url(parsed.sm).size, 0U);
 
     upb_Arena_Free(parsed.arena);
 }
