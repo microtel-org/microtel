@@ -18,6 +18,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -40,6 +41,11 @@ struct StorageOptions
     /// @brief Non-owning; null disables overflow drop accounting. Lifetime:
     ///        the owning provider outlives the stream.
     internal::IDiagnosticsSink* diag = nullptr;
+    /// @brief The instrument's name, which the histogram storages put in their
+    ///        negative-value `Warn` (ICP 0047); they copy it, so it need only
+    ///        outlive the stream's construction. A View may rename the stream,
+    ///        but the caller knows the instrument by this name.
+    std::string_view instrument_name{};
 };
 
 /// @brief IMetricStream for a Sum instrument (Counter / UpDownCounter).
@@ -167,8 +173,11 @@ public:
         : m_name(std::move(name)),
           m_description(std::move(description)),
           m_unit(std::move(unit)),
-          m_storage(
-              std::move(boundaries), options.max_cardinality, options.span_source, options.diag)
+          m_storage(std::move(boundaries),
+                    options.max_cardinality,
+                    options.span_source,
+                    options.diag,
+                    options.instrument_name)
     {
     }
 
@@ -222,8 +231,12 @@ public:
         : m_name(std::move(name)),
           m_description(std::move(description)),
           m_unit(std::move(unit)),
-          m_storage(
-              max_scale, max_buckets, options.max_cardinality, options.span_source, options.diag)
+          m_storage(max_scale,
+                    max_buckets,
+                    options.max_cardinality,
+                    options.span_source,
+                    options.diag,
+                    options.instrument_name)
     {
     }
 

@@ -3,25 +3,78 @@
 
 #include "sdk/metric_histogram_storage.hpp"
 
+#include "common/internal_log.hpp"
+
 #include <algorithm>
 #include <chrono>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <exception>
 #include <mutex>
 #include <optional>
+#include <string>
+#include <string_view>
 #include <utility>
 
 namespace microtel::sdk
 {
 
+NegativeValueDrops::NegativeValueDrops(std::string_view instrument_name)
+{
+    internal::AppendEscaped(m_instrument_name, instrument_name);
+}
+
+void NegativeValueDrops::Drop(internal::IDiagnosticsSink* diag) noexcept
+{
+    if (diag != nullptr)
+    {
+        diag->RecordDrop(DropReason::NegativeHistogramValue);
+    }
+    const std::uint64_t drops = m_drops.fetch_add(1, std::memory_order_relaxed) + 1;
+    if ((drops & (drops - 1)) != 0)  // log the 1st, 2nd, 4th, 8th ... only
+    {
+        return;
+    }
+    try
+    {
+        internal::LogImpl(LogLevel::Warn,
+                          "metrics: histogram '" + m_instrument_name +
+                              "' dropped a negative value; a histogram records non-negative "
+                              "values only, so use an UpDownCounter or a Gauge for a signed "
+                              "quantity (" +
+                              std::to_string(drops) + " dropped so far, negative_histogram_value)");
+    }
+    catch (const std::exception&)
+    {
+        // Composing the line could only fail to allocate; the drop is already
+        // counted and the Warn is advisory.
+        return;
+    }
+}
+
+template <typename T>
+bool HistogramStorage<T>::DroppedBeforeAggregation(double observation) noexcept
+{
+    if (!std::isfinite(observation))
+    {
+        RecordNonFinite();
+        return true;
+    }
+    if (observation < 0.0)  // -0.0 is not below zero: it is recorded as zero
+    {
+        m_negative_drops.Drop(m_diag);
+        return true;
+    }
+    return false;
+}
+
 template <typename T>
 void HistogramStorage<T>::Record(T value, AttributeSpan attrs)
 {
     const auto observation = static_cast<double>(value);
-    if (!std::isfinite(observation))
+    if (DroppedBeforeAggregation(observation))
     {
-        RecordNonFinite();
         return;
     }
     std::optional<internal::Exemplar> exemplar;

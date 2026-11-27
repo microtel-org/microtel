@@ -9,10 +9,12 @@
 #include "microtel/internal/metric_batch.hpp"
 
 #include "sdk/metric_attribute_set.hpp"
+#include "sdk/metric_histogram_storage.hpp"  // NegativeValueDrops
 
 #include <chrono>
 #include <cstdint>
 #include <mutex>
+#include <string_view>
 #include <unordered_map>
 #include <vector>
 
@@ -49,8 +51,11 @@ struct ExpHistoPoint
 /// positive/negative bucket arrays. For value `v > 0` at scale `s` the bucket
 /// index is `ceil(log2(v) * 2^s) - 1`. When a value would push a bucket array
 /// past `max_buckets`, the point is **downscaled** (scale reduced by `k`,
-/// indices floor-divided by `2^k`, buckets merged) until it fits. Negative
-/// values go to the negative array (by magnitude); zeros to the zero count.
+/// indices floor-divided by `2^k`, buckets merged) until it fits. Zeros
+/// (`-0.0` included) go to the zero count. A negative measurement is dropped
+/// before any aggregation or exemplar work and counted as
+/// `NegativeHistogramValue` (ICP 0047); the negative bucket array stays, for
+/// a View that aggregates a signed instrument as a histogram (#298, #554).
 /// `Collect()` snapshots cumulative `internal::ExponentialHistogramData`.
 /// `T` is the measurement value type (`std::int64_t` / `double`).
 ///
@@ -68,16 +73,20 @@ public:
     /// @param diag Non-owning, borrowed diagnostics sink for overflow drop
     ///        accounting; null disables it. Lifetime: the owning provider
     ///        outlives this storage.
+    /// @param instrument_name names the instrument in the negative-value
+    ///        `Warn`; copied.
     ExponentialHistogramStorage(std::int32_t max_scale,
                                 std::int32_t max_buckets,
                                 std::size_t max_cardinality = kDefaultMaxCardinality,
                                 const internal::ICurrentSpanSource* span_source = nullptr,
-                                internal::IDiagnosticsSink* diag = nullptr)
+                                internal::IDiagnosticsSink* diag = nullptr,
+                                std::string_view instrument_name = {})
         : m_max_scale(max_scale),
           m_max_buckets(max_buckets),
           m_max_cardinality(max_cardinality),
           m_span_source(span_source),
-          m_diag(diag)
+          m_diag(diag),
+          m_negative_drops(instrument_name)
     {
     }
 
@@ -107,12 +116,19 @@ private:
         }
     }
 
+    /// @brief Whether @p observation is dropped before any aggregation or
+    ///        exemplar work, counting the drop: NaN / +-Inf, or below zero
+    ///        (ICP 0047; `-0.0` is not). One helper for both checks keeps the
+    ///        hot-path `Record` under the cognitive-complexity limit.
+    [[nodiscard]] bool DroppedBeforeAggregation(double observation) noexcept;
+
     mutable std::mutex m_mu;
     std::int32_t m_max_scale;
     std::int32_t m_max_buckets;  ///< per-sign bucket-count cap (downscale trigger)
     std::size_t m_max_cardinality;
     const internal::ICurrentSpanSource* m_span_source;  ///< non-owning; null disables exemplars
     internal::IDiagnosticsSink* m_diag;  ///< non-owning; null disables drop accounting
+    NegativeValueDrops m_negative_drops;
     std::unordered_map<AttributeSet, ExpHistoPoint, AttributeSetHash> m_points;
     std::unordered_map<AttributeSet, internal::Exemplar, AttributeSetHash> m_exemplars;
     /// The previous collect's time; the storage's creation before the first.

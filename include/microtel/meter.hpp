@@ -118,6 +118,9 @@ public:
     Histogram& operator=(Histogram&&) = delete;
 
     /// @brief Record an observation into the histogram.
+    ///
+    /// `value` must be non-negative. A negative value is dropped and counted
+    /// as `NegativeHistogramValue`.
     virtual void Record(T value, AttributeSpan attrs) noexcept = 0;
 };
 
@@ -141,6 +144,9 @@ public:
     ExponentialHistogram& operator=(ExponentialHistogram&&) = delete;
 
     /// @brief Record an observation into the exponential histogram.
+    ///
+    /// `value` must be non-negative. A negative value is dropped and counted
+    /// as `NegativeHistogramValue`.
     virtual void Record(T value, AttributeSpan attrs) noexcept = 0;
 };
 
