@@ -162,6 +162,12 @@ public:
 
     using IMetricStream::Collect;
 
+    /// @brief An observable stream runs its callback when collected.
+    [[nodiscard]] bool RunsCallback() const noexcept override
+    {
+        return true;
+    }
+
     /// @brief Run the callback and snapshot what it reported, with the
     ///        temporality @p selector gives this stream's kind. Under delta
     ///        each value is the change since the series' previous
@@ -279,6 +285,12 @@ public:
     ~MetricStreamObservableGauge() noexcept override = default;
 
     using IMetricStream::Collect;
+
+    /// @brief An observable stream runs its callback when collected.
+    [[nodiscard]] bool RunsCallback() const noexcept override
+    {
+        return true;
+    }
 
     /// @brief Run the callback and snapshot what it reported, stamped with
     ///        @p collection_time. A gauge carries no start time and no

@@ -12,6 +12,8 @@
 #include "sdk/current_span_source.hpp"
 #include "sdk/metric_stream.hpp"
 
+#include <atomic>
+#include <cstdint>
 #include <memory>
 #include <mutex>
 #include <vector>
@@ -70,6 +72,12 @@ public:
     /// @brief Snapshot all streams. Each stream resolves its own temporality
     /// from `request.selector`, by its instrument kind (ICP 0045); the default
     /// request collects every kind cumulative.
+    ///
+    /// Async streams are held to `request.callback_deadline` in collection
+    /// order — scope by scope, each scope's streams in registration order
+    /// (ICP 0046). A skipped stream is counted as `MetricCallbackTimeout` and
+    /// logged, rate-limited; a scope whose every stream was skipped yields no
+    /// handle.
     [[nodiscard]] std::vector<internal::MetricBatchHandle> Collect(
         const internal::CollectRequest& request = {}) override;
 
@@ -105,6 +113,10 @@ private:
     /// @brief Copy the scope/stream structure under `m_mu`.
     [[nodiscard]] std::vector<ScopeSnapshot> SnapshotScopes() const;
 
+    /// @brief Count one async stream skipped for the callback deadline, and
+    ///        log the 1st, 2nd, 4th, 8th ... skip with the running count.
+    void RecordCallbackSkipped() noexcept;
+
     std::shared_ptr<const Resource> m_resource;
     // Declared before m_scopes, so they outlive the streams that borrow them.
     std::shared_ptr<internal::IDiagnosticsSink> m_diagnostics;
@@ -114,6 +126,9 @@ private:
     /// that reallocates invalidates the iterators `Collect` is holding.
     mutable std::mutex m_mu;
     std::vector<ScopeEntry> m_scopes;
+    /// Async streams skipped for the callback deadline, over this producer's
+    /// life; it paces the `Warn`.
+    std::atomic<std::uint64_t> m_callback_skips{0};
 };
 
 }  // namespace microtel::sdk

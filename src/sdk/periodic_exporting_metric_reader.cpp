@@ -13,6 +13,21 @@
 namespace microtel::sdk
 {
 
+namespace
+{
+
+using SteadyClock = std::chrono::steady_clock;
+
+/// @brief The time left until @p deadline, never negative.
+[[nodiscard]] std::chrono::milliseconds Remaining(SteadyClock::time_point deadline) noexcept
+{
+    const auto left =
+        std::chrono::duration_cast<std::chrono::milliseconds>(deadline - SteadyClock::now());
+    return std::max(left, std::chrono::milliseconds{0});
+}
+
+}  // namespace
+
 PeriodicExportingMetricReader::PeriodicExportingMetricReader(
     internal::IMetricProducer& producer,
     internal::IMetricExporter& exporter,
@@ -31,14 +46,13 @@ PeriodicExportingMetricReader::~PeriodicExportingMetricReader() noexcept
     }
 }
 
-microtel::Status PeriodicExportingMetricReader::Collect(
-    std::chrono::milliseconds /*timeout*/) noexcept
+microtel::Status PeriodicExportingMetricReader::Collect(std::chrono::milliseconds timeout) noexcept
 {
     if (m_shut_down.load(std::memory_order_acquire))
     {
         return microtel::Status::AlreadyShutDown;
     }
-    return DoCollectExport();
+    return DoCollectExport(SteadyClock::now() + timeout);
 }
 
 microtel::Status PeriodicExportingMetricReader::ForceFlush(
@@ -51,12 +65,10 @@ microtel::Status PeriodicExportingMetricReader::ForceFlush(
     // One collection, then a flush that covers it: the exporter waits for the
     // batches queued before its call, which end with this collection's
     // (ICP 0041). Both share the caller's one deadline.
-    const auto deadline = std::chrono::steady_clock::now() + timeout;
-    const microtel::Status collected = DoCollectExport();
-    const auto left = std::chrono::duration_cast<std::chrono::milliseconds>(
-        deadline - std::chrono::steady_clock::now());
-    const microtel::Status flushed =
-        m_exporter.ForceFlush(std::max(left, std::chrono::milliseconds{0}));
+    // The collection's callbacks are capped by it too (ICP 0046).
+    const auto deadline = SteadyClock::now() + timeout;
+    const microtel::Status collected = DoCollectExport(deadline);
+    const microtel::Status flushed = m_exporter.ForceFlush(Remaining(deadline));
     // A collection that could not be queued is a flush that did not export
     // what it was asked to.
     return collected == microtel::Status::Failed ? microtel::Status::Failed : flushed;
@@ -68,6 +80,9 @@ microtel::Status PeriodicExportingMetricReader::Shutdown(std::chrono::millisecon
     {
         return microtel::Status::AlreadyShutDown;
     }
+    // One deadline for the final collection and the exporter's shutdown
+    // (ICP 0041); the collection's callbacks are capped by it (ICP 0046).
+    const auto deadline = SteadyClock::now() + timeout;
     {
         const std::scoped_lock lk{m_mu};
         m_wake = true;
@@ -77,7 +92,8 @@ microtel::Status PeriodicExportingMetricReader::Shutdown(std::chrono::millisecon
     {
         m_thread.join();
     }
-    return m_exporter.Shutdown(timeout);
+    (void)DoCollectExport(deadline);
+    return m_exporter.Shutdown(Remaining(deadline));
 }
 
 void PeriodicExportingMetricReader::SetInterval(std::chrono::milliseconds interval) noexcept
@@ -95,8 +111,18 @@ void PeriodicExportingMetricReader::RunLoop() noexcept
         m_cv.wait_for(lk, m_interval, [this] { return m_wake; });
         m_wake = false;
         lk.unlock();
-        (void)DoCollectExport();
+        // Woken by Shutdown, which runs the final cycle itself.
+        if (!m_shut_down.load(std::memory_order_acquire))
+        {
+            (void)DoCollectExport(SteadyClock::time_point::max());
+        }
     }
+}
+
+std::chrono::milliseconds PeriodicExportingMetricReader::Interval() noexcept
+{
+    const std::scoped_lock lk{m_mu};
+    return m_interval;
 }
 
 namespace
@@ -142,14 +168,17 @@ private:
 
 }  // namespace
 
-microtel::Status PeriodicExportingMetricReader::DoCollectExport() noexcept
+microtel::Status PeriodicExportingMetricReader::DoCollectExport(
+    SteadyClock::time_point cap) noexcept
 {
     const CollectSlot slot{m_collect_mu, m_collect_cv, m_collecting};
+    // t0 is when this cycle starts, after any cycle it waited for.
+    const auto deadline = std::min(SteadyClock::now() + Interval(), cap);
 
     std::vector<internal::MetricBatchHandle> handles;
     try
     {
-        handles = m_producer.Collect({.selector = m_selector});
+        handles = m_producer.Collect({.selector = m_selector, .callback_deadline = deadline});
     }
     catch (const std::exception&)
     {

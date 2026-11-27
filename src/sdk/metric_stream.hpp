@@ -42,6 +42,14 @@ public:
         const internal::TemporalitySelector& selector,
         std::chrono::system_clock::time_point collection_time) = 0;
 
+    /// @brief Whether collecting this stream runs a user callback: true for an
+    ///        observable (async) stream, false for a synchronous one. Only
+    ///        these are held to a collection's callback deadline (ICP 0046).
+    [[nodiscard]] virtual bool RunsCallback() const noexcept
+    {
+        return false;
+    }
+
     /// @brief `Collect(selector, now)`.
     [[nodiscard]] internal::MetricRecord Collect(const internal::TemporalitySelector& selector)
     {

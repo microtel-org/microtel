@@ -145,8 +145,20 @@ time. Threading and re-entrancy must be pinned given the strict threading model.
   exist; callbacks are given only at instrument creation.
 - Callbacks run **on the MetricReader's collection thread, never on a caller
   hot path.** They are serialized per collection cycle and bounded by a
-  per-collection deadline; a callback that exceeds it is abandoned, its
-  measurements for that cycle dropped, and a diagnostic incremented.
+  per-collection deadline ([ICP 0046](icps/0046-async-callback-deadline.md)):
+  the export interval from the collection's start, capped by the time left
+  to a `ForceFlush(timeout)`, `Shutdown(timeout)` or `Collect(timeout)` that
+  runs it. Synchronous streams are always collected, and so is the first
+  async stream in registration order. Each later async stream checks the
+  deadline before its callback; once it has passed, it and every async stream
+  after it are skipped for that collection, each counted once as
+  `metric_callback_timeout` and logged, rate-limited. A running callback is
+  never interrupted: one that returns late keeps its measurements and is not
+  counted. A skipped stream exports nothing that cycle and keeps its state —
+  its series are not forgotten, a delta window widens to cover the skipped
+  cycle, and a cumulative series resumes with its running value and start
+  time. A first callback that always overruns starves the ones after it;
+  the counter is the signal.
 - The measurement-recording API exposed to a callback is `noexcept`; an
   exception escaping user callback code is caught at the boundary and counted
   (no `catch(...)` — caught as `std::exception`, matching the existing exporter
@@ -174,7 +186,10 @@ time. Threading and re-entrancy must be pinned given the strict threading model.
   once, then waits for the batches queued before the exporter's flush, which
   end with that collection, not for the exporter's queue to empty; a
   collection the exporter refuses to queue makes it `Failed`
-  ([ICP 0041](icps/0041-flush-and-shutdown-deadlines.md)).
+  ([ICP 0041](icps/0041-flush-and-shutdown-deadlines.md)). `Shutdown` joins
+  the reader thread and then runs its final collection on the caller's
+  thread, as `ForceFlush` does, so the collection always runs and shares the
+  call's one deadline with the exporter's shutdown.
 - **The metrics pipeline is separate from the span `BatchSpanProcessor`** (its
   own collection + serialization path) but **shares the nghttp2 transport
   connection** to the endpoint. Rationale: metrics collection is pull-at-interval

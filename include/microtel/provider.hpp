@@ -87,8 +87,8 @@ enum class DropReason : std::uint8_t
     /// measurement is folded into the `otel.metric.overflow` series, not lost
     /// (ICP 0008, `docs/metrics-design.md` §2).
     CardinalityOverflow = 20,
-    /// Async instrument callback exceeded the per-collection deadline; its
-    /// measurements were dropped for that cycle (ICP 0008).
+    /// Async instrument callback skipped because the per-collection deadline
+    /// had passed; its series kept their state (ICP 0008, ICP 0046).
     MetricCallbackTimeout = 21,
     /// NaN / ±Inf measurement dropped, as the OTel spec requires (ICP 0008).
     NonFiniteValue = 22,
