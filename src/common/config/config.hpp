@@ -4,6 +4,7 @@
 #pragma once
 
 #include "microtel/attribute.hpp"
+#include "microtel/export_transport.hpp"
 #include "microtel/leaf_receiver.hpp"
 #include "microtel/log_sink.hpp"
 #include "microtel/protocol.hpp"
@@ -11,7 +12,9 @@
 
 #include "common/config/concentrator_config.hpp"
 
+#include <array>
 #include <chrono>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -62,6 +65,23 @@ enum class UnknownKeyMode : std::uint8_t
     Ignore = 2,  ///< unknown key is silently ignored
 };
 
+/// @brief How many OTLP signals there are: traces, metrics and logs.
+inline constexpr std::size_t kSignalCount = 3;
+
+/// @brief The slot of @p signal in the per-signal arrays of `Config`.
+[[nodiscard]] constexpr std::size_t SignalIndex(ExportSignal signal) noexcept
+{
+    return static_cast<std::size_t>(signal);
+}
+
+/// @brief The per-signal endpoint variables, in `SignalIndex` order
+///        (`docs/configuration.md` §3.3).
+inline constexpr std::array<std::string_view, kSignalCount> kSignalEndpointVars{
+    "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT",
+    "OTEL_EXPORTER_OTLP_METRICS_ENDPOINT",
+    "OTEL_EXPORTER_OTLP_LOGS_ENDPOINT",
+};
+
 /// @brief Parsed components of the endpoint URL.
 struct ParsedEndpoint
 {
@@ -89,9 +109,44 @@ struct Config
     /// one Warn line per entry. Empty under `Error` and `Ignore`.
     std::vector<std::string> unknown_keys_warned;
 
+    /// @brief Warn lines the config layer owes, in the order it found them.
+    ///
+    /// For the same reason as `unknown_keys_warned`: the env overlay and
+    /// `Validate()` run before `Build()` applies `logging.level`, so they
+    /// record the line here and `Build()` logs each one once. Per-signal
+    /// exporter variables that microtel does not implement, and per-signal
+    /// endpoints that are set but have no effect, land here.
+    std::vector<std::string> config_warnings;
+
     // Endpoint / transport
     std::string endpoint_url;  ///< raw URL string (validated and parsed)
-    ParsedEndpoint endpoint;   ///< parsed URL components (filled by Validate)
+
+    /// @brief Where `endpoint_url` came from, for error messages: the
+    ///        `microtel.toml` key until the environment or code sets it.
+    std::string_view endpoint_source{"exporter.endpoint"};
+
+    /// @brief The per-signal endpoint URLs from `OTEL_EXPORTER_OTLP_<SIGNAL>_ENDPOINT`,
+    ///        in `SignalIndex` order; empty when unset.
+    ///
+    /// Each overrides `endpoint_url` for its signal. All the endpoints in
+    /// effect must share one origin, because every signal is exported over
+    /// one connection (`docs/configuration.md` §3.3).
+    std::array<std::string, kSignalCount> signal_endpoint_urls;
+
+    /// @brief The parsed connection origin (`scheme`, `host`, `port`) and the
+    ///        base endpoint's path prefix (filled by Validate).
+    ///
+    /// The origin is the one every signal shares. `path` is empty when no
+    /// signal uses the base endpoint.
+    ParsedEndpoint endpoint;
+
+    /// @brief The OTLP/HTTP request path of each signal, in `SignalIndex`
+    ///        order (filled by Validate; empty for OTLP/gRPC, whose paths are
+    ///        fixed by the service).
+    ///
+    /// A per-signal endpoint's path is used as-is (`/` when it has none); a
+    /// signal on the base endpoint gets the base path plus `/v1/<signal>`.
+    std::array<std::string, kSignalCount> signal_paths;
     Protocol protocol{Protocol::Http};
 
     /// @brief True when `protocol` was named by the user rather than defaulted.

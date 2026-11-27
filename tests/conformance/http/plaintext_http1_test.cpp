@@ -35,6 +35,7 @@
 
 #include <chrono>
 #include <cstdint>
+#include <cstdlib>
 #include <memory>
 #include <string>
 #include <utility>
@@ -153,6 +154,62 @@ TEST(HttpPlaintextConformance, LogRecordRoundTrip)
     const auto provider = BuildPlaintextProvider(builder, endpoint);
     ASSERT_NE(provider, nullptr);
     logs::RunRecordRoundTrip(*provider, output_file, kLogScopeName);
+}
+
+/// Sets an environment variable for the scope's lifetime, then unsets it.
+class ScopedEnv
+{
+public:
+    ScopedEnv(const char* name, const std::string& value) : m_name(name)
+    {
+        (void)::setenv(name, value.c_str(), 1);
+    }
+    ~ScopedEnv()
+    {
+        (void)::unsetenv(m_name);
+    }
+    ScopedEnv(const ScopedEnv&) = delete;
+    ScopedEnv& operator=(const ScopedEnv&) = delete;
+    ScopedEnv(ScopedEnv&&) = delete;
+    ScopedEnv& operator=(ScopedEnv&&) = delete;
+
+private:
+    const char* m_name;
+};
+
+// The Helm / OTel Operator shape (docs/configuration.md §3.3): only
+// OTEL_EXPORTER_OTLP_TRACES_ENDPOINT is set, with the receiver's full path. The
+// URL is used as-is, so a span lands only if nothing appended a second
+// `/v1/traces`; and the log record, which has no endpoint of its own, reaches
+// `/v1/logs` on the same origin.
+TEST(HttpPlaintextConformance, LoneTracesEndpointVariable_TraceAndLogRoundTrip)
+{
+    std::string endpoint;
+    std::string output_file;
+    std::string logs_output_file;
+    if (!microtel::testing::ConformanceEnabled(kPlaintextEndpointEnv, endpoint) ||
+        !microtel::testing::ConformanceEnabled(kTraceOutputFileEnv, output_file) ||
+        !microtel::testing::ConformanceEnabled(logs::kLogsOutputFileEnv, logs_output_file))
+    {
+        GTEST_SKIP() << kSkipReason;
+    }
+    const ScopedEnv traces_endpoint{"OTEL_EXPORTER_OTLP_TRACES_ENDPOINT", endpoint + "/v1/traces"};
+    microtel::SdkBuilder builder;
+    auto result = microtel::testing::ConfigureConformanceTimeouts(builder)
+                      .WithServiceName(kServiceName)
+                      .Build();
+    ASSERT_TRUE(result.has_value()) << result.error().message;
+    const std::shared_ptr<microtel::Provider> provider = std::move(*result);
+
+    const std::string marker = microtel::testing::UniqueMarker();
+    provider->GetTracer(kScopeName, "1.0")->StartSpan(marker)->End();
+    ASSERT_EQ(provider->ForceFlush(kFlushTimeout), microtel::Status::Completed)
+        << provider->GetExporterHealth().last_error_message;
+    EXPECT_TRUE(microtel::testing::PollForLineContaining(output_file, marker, kCollectorPollTimeout)
+                    .has_value())
+        << "the collector never wrote '" << marker << "'";
+
+    logs::RunRecordRoundTrip(*provider, logs_output_file, kLogScopeName);
 }
 
 TEST(HttpPlaintextConformance, GrpcToTheHttp1OnlyReceiverStillFails)

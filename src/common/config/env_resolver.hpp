@@ -19,7 +19,10 @@ namespace microtel::config
 /// existing Config values unchanged.
 ///
 /// Supported variables:
-///   OTEL_EXPORTER_OTLP_ENDPOINT     → endpoint_url
+///   OTEL_EXPORTER_OTLP_ENDPOINT     → endpoint_url (and endpoint_source)
+///   OTEL_EXPORTER_OTLP_TRACES_ENDPOINT, OTEL_EXPORTER_OTLP_METRICS_ENDPOINT,
+///   OTEL_EXPORTER_OTLP_LOGS_ENDPOINT → signal_endpoint_urls (resolved by
+///                                      Validate, `docs/configuration.md` §3.3)
 ///   OTEL_EXPORTER_OTLP_PROTOCOL     → protocol ("grpc" | "http/protobuf")
 ///   OTEL_EXPORTER_OTLP_HEADERS      → headers ("k=v,k2=v2")
 ///   OTEL_EXPORTER_OTLP_TIMEOUT      → timeouts.per_export (integer ms)
@@ -32,6 +35,13 @@ namespace microtel::config
 /// §3.14 (`ENABLED`, `MAX_PAYLOAD_BYTES`, `MAX_LEAVES`, `UNKNOWN_LEAF`,
 /// `DEFAULT_TIME_MODE`, and `RESOURCE_ATTRIBUTES`, merged per key into
 /// `concentrator.leaf_defaults_resource`).
+///
+/// Every other per-signal exporter variable
+/// (`OTEL_EXPORTER_OTLP_{TRACES,METRICS,LOGS}_{HEADERS,PROTOCOL,TIMEOUT,
+/// COMPRESSION,CERTIFICATE,CLIENT_KEY,CLIENT_CERTIFICATE,INSECURE}`) is not
+/// implemented: each one set adds a line to `cfg.config_warnings` and changes
+/// nothing else. (`OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE` is a
+/// metrics setting, not a per-signal exporter override, and is read.)
 ///
 /// @param cfg Config to overlay (mutated in place).
 /// @return ConfigError::Kind::EnvParseFailure if any set variable has an

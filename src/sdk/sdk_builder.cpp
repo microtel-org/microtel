@@ -356,6 +356,21 @@ void WarnOnUnknownKeys(const config::Config& cfg)
     }
 }
 
+/// @brief Log the Warn lines the config layer recorded
+///        (`Config::config_warnings`): per-signal exporter variables that are
+///        not implemented or not in effect (docs/configuration.md §3.3).
+///
+/// Deferred to here for the reason `WarnOnUnknownKeys` is.
+///
+/// @param cfg Borrowed; read only.
+void WarnOnConfigLayer(const config::Config& cfg)
+{
+    for (const std::string& line : cfg.config_warnings)
+    {
+        internal::LogImpl(LogLevel::Warn, line);
+    }
+}
+
 /// @brief Emit the warnings for configurations that are legal but very likely
 ///        wrong.
 ///
@@ -500,12 +515,34 @@ void WarnOnRiskyConfig(const config::Config& cfg) noexcept
     return CreateTransport(protocol);
 }
 
-constexpr std::string_view kHttpMetricsPath = "/v1/metrics";
 constexpr std::string_view kGrpcMetricsPath =
     "/opentelemetry.proto.collector.metrics.v1.MetricsService/Export";
-constexpr std::string_view kHttpLogsPath = "/v1/logs";
 constexpr std::string_view kGrpcLogsPath =
     "/opentelemetry.proto.collector.logs.v1.LogsService/Export";
+
+/// @brief The request path the codec for @p signal sends to.
+///
+/// OTLP/HTTP: the path `config::Validate` resolved from the base and
+/// per-signal endpoints (docs/configuration.md §3.3). OTLP/gRPC: the
+/// service's method path, which no endpoint changes; empty for traces, whose
+/// path is the gRPC codec's default.
+[[nodiscard]] std::string_view SignalPath(const config::Config& cfg, ExportSignal signal)
+{
+    if (cfg.protocol == Protocol::Http)
+    {
+        return cfg.signal_paths.at(config::SignalIndex(signal));
+    }
+    switch (signal)
+    {
+        case ExportSignal::Metrics:
+            return kGrpcMetricsPath;
+        case ExportSignal::Logs:
+            return kGrpcLogsPath;
+        case ExportSignal::Traces:
+            break;
+    }
+    return {};
+}
 
 /// @brief Construct the wire codec for the configured protocol.
 ///
@@ -651,15 +688,24 @@ struct ExporterPack
                                           const config::Config& cfg,
                                           internal::IDiagnosticsSink* diag)
 {
-    auto codec = BuildWireCodec(transport, cfg, ToHeaderFields(cfg.headers), auth, diag);
-    const std::string_view metric_path =
-        cfg.protocol == Protocol::Grpc ? kGrpcMetricsPath : kHttpMetricsPath;
-    auto metric_codec =
-        BuildWireCodec(transport, cfg, ToHeaderFields(cfg.headers), auth, diag, metric_path);
-    const std::string_view log_path =
-        cfg.protocol == Protocol::Grpc ? kGrpcLogsPath : kHttpLogsPath;
-    auto log_codec =
-        BuildWireCodec(transport, cfg, ToHeaderFields(cfg.headers), auth, diag, log_path);
+    auto codec = BuildWireCodec(transport,
+                                cfg,
+                                ToHeaderFields(cfg.headers),
+                                auth,
+                                diag,
+                                SignalPath(cfg, ExportSignal::Traces));
+    auto metric_codec = BuildWireCodec(transport,
+                                       cfg,
+                                       ToHeaderFields(cfg.headers),
+                                       auth,
+                                       diag,
+                                       SignalPath(cfg, ExportSignal::Metrics));
+    auto log_codec = BuildWireCodec(transport,
+                                    cfg,
+                                    ToHeaderFields(cfg.headers),
+                                    auth,
+                                    diag,
+                                    SignalPath(cfg, ExportSignal::Logs));
 
     const exporter::OtlpExporterConfig ex_cfg = TraceExporterConfig(cfg);
     auto trace_exp = std::make_unique<exporter::OtlpExporter>(encoder, codec.get(), ex_cfg, diag);
@@ -855,14 +901,42 @@ constexpr std::string_view kCustomTransportPlaceholderEndpoint = "https://localh
             ignored.push_back(name);
         }
     }
+    for (std::size_t i = 0; i < config::kSignalCount; ++i)
+    {
+        if (!cfg.signal_endpoint_urls.at(i).empty())
+        {
+            ignored.push_back(config::kSignalEndpointVars.at(i));
+        }
+    }
     const config::Config defaults;
     cfg.endpoint_url = std::string{kCustomTransportPlaceholderEndpoint};
+    cfg.signal_endpoint_urls = defaults.signal_endpoint_urls;
     cfg.protocol = defaults.protocol;
     cfg.protocol_explicit = false;
     cfg.headers.clear();
     cfg.compression_gzip = false;
     cfg.tls = TlsOptions{};
     return ignored;
+}
+
+/// @brief `WithEndpoint` outranks the environment for every signal
+///        (docs/configuration.md §1, §3.3): drop the per-signal endpoint
+///        variables, each with a warning, so they are not in effect.
+void DropSignalEndpoints(config::Config& cfg)
+{
+    for (std::size_t i = 0; i < config::kSignalCount; ++i)
+    {
+        std::string& url = cfg.signal_endpoint_urls.at(i);
+        if (url.empty())
+        {
+            continue;
+        }
+        cfg.config_warnings.push_back(
+            std::string{config::kSignalEndpointVars.at(i)} +
+            " is ignored: WithEndpoint in code sets the endpoint for every signal and outranks "
+            "the environment");
+        url.clear();
+    }
 }
 
 /// @brief The warnings a custom-transport build owes, emitted once the log
@@ -989,6 +1063,8 @@ void SdkBuilder::Impl::ApplyExporterOverrides(config::Config& cfg) const
     if (endpoint)
     {
         cfg.endpoint_url = *endpoint;
+        cfg.endpoint_source = "WithEndpoint";
+        DropSignalEndpoints(cfg);
     }
     if (protocol)
     {
@@ -1151,6 +1227,7 @@ Expected<std::shared_ptr<Provider>, ConfigError> SdkBuilder::Build()
     const config::Config cfg = std::move(*cfg_result);
     ApplyLogLevel(cfg);
     WarnOnUnknownKeys(cfg);
+    WarnOnConfigLayer(cfg);
     if (custom_transport)
     {
         m_impl->PrepareCustomTransport(ignored_settings);

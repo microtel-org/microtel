@@ -65,3 +65,11 @@ microtel_add_integration_test(
     LIBS    microtel_sdk microtel_exporter)
 target_compile_options(fanin_export_test PRIVATE
     -Wno-missing-field-initializers)
+
+# The per-signal OTLP endpoint variables on the wire: a real Provider's one
+# loopback HTTP/2 connection to a server that records each request's :path
+# (docs/configuration.md §3.3).
+microtel_add_integration_test(
+    NAME    per_signal_endpoint_test
+    SOURCES per_signal_endpoint_test.cpp
+    LIBS    microtel_sdk PkgConfig::NGHTTP2)

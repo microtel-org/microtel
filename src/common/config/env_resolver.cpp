@@ -12,6 +12,7 @@
 #include "common/config/concentrator_config.hpp"
 #include "common/config/table_merge.hpp"
 
+#include <array>
 #include <charconv>
 #include <cstddef>
 #include <cstdint>
@@ -434,6 +435,73 @@ template <typename T, typename Parse>
     return {};
 }
 
+/// The signal infixes of the per-signal variables, in `SignalIndex` order.
+constexpr std::array<std::string_view, kSignalCount> kSignalInfixes{"TRACES", "METRICS", "LOGS"};
+
+/// A per-signal exporter setting microtel does not implement, and the shared
+/// setting that applies to every signal instead.
+struct UnsupportedSignalSetting
+{
+    std::string_view suffix;  ///< e.g. `HEADERS` in `OTEL_EXPORTER_OTLP_TRACES_HEADERS`
+    std::string_view shared;  ///< what the Warn points at instead
+};
+
+constexpr std::array<UnsupportedSignalSetting, 8> kUnsupportedSignalSettings{{
+    {.suffix = "HEADERS", .shared = "OTEL_EXPORTER_OTLP_HEADERS"},
+    {.suffix = "PROTOCOL", .shared = "OTEL_EXPORTER_OTLP_PROTOCOL"},
+    {.suffix = "TIMEOUT", .shared = "OTEL_EXPORTER_OTLP_TIMEOUT"},
+    {.suffix = "COMPRESSION", .shared = "OTEL_EXPORTER_OTLP_COMPRESSION"},
+    {.suffix = "CERTIFICATE", .shared = "OTEL_EXPORTER_OTLP_CERTIFICATE"},
+    {.suffix = "CLIENT_KEY", .shared = "tls.client_key (WithTls or [tls])"},
+    {.suffix = "CLIENT_CERTIFICATE", .shared = "tls.client_cert (WithTls or [tls])"},
+    {.suffix = "INSECURE", .shared = "tls.insecure (WithTls or [tls])"},
+}};
+
+/// Read OTEL_EXPORTER_OTLP_{TRACES,METRICS,LOGS}_ENDPOINT. `Validate` checks
+/// them and resolves them against the base endpoint (docs/configuration.md §3.3).
+void OverlaySignalEndpoints(Config& cfg)
+{
+    for (std::size_t i = 0; i < kSignalCount; ++i)
+    {
+        if (auto v = GetEnv(std::string{kSignalEndpointVars.at(i)}.c_str()); !v.empty())
+        {
+            cfg.signal_endpoint_urls.at(i) = std::move(v);
+        }
+    }
+}
+
+/// Record one warning if `OTEL_EXPORTER_OTLP_<signal>_<setting.suffix>` is
+/// set. The value is never read, so it is never echoed either.
+void WarnIfSignalVarSet(Config& cfg,
+                        std::string_view signal,
+                        const UnsupportedSignalSetting& setting)
+{
+    std::string name = "OTEL_EXPORTER_OTLP_";
+    name.append(signal).append("_").append(setting.suffix);
+    if (GetEnv(name.c_str()).empty())
+    {
+        return;
+    }
+    cfg.config_warnings.push_back(
+        name +
+        " is set but per-signal exporter settings are not supported, so it is ignored; microtel "
+        "exports every signal over one connection, and " +
+        std::string{setting.shared} + " applies to all of them");
+}
+
+/// Record one warning for each per-signal exporter variable that is set but
+/// not implemented.
+void WarnOnUnsupportedSignalVars(Config& cfg)
+{
+    for (const std::string_view signal : kSignalInfixes)
+    {
+        for (const auto& setting : kUnsupportedSignalSettings)
+        {
+            WarnIfSignalVarSet(cfg, signal, setting);
+        }
+    }
+}
+
 /// The exporter half of the overlay: endpoint, protocol, headers, timeout,
 /// compression and CA bundle.
 [[nodiscard]] microtel::Expected<void, ConfigError> OverlayExporterEnv(Config& cfg)
@@ -442,7 +510,13 @@ template <typename T, typename Parse>
     if (const auto v = GetEnv("OTEL_EXPORTER_OTLP_ENDPOINT"); !v.empty())
     {
         cfg.endpoint_url = v;
+        cfg.endpoint_source = "OTEL_EXPORTER_OTLP_ENDPOINT";
     }
+
+    // OTEL_EXPORTER_OTLP_{TRACES,METRICS,LOGS}_ENDPOINT, and the per-signal
+    // variables that are not implemented
+    OverlaySignalEndpoints(cfg);
+    WarnOnUnsupportedSignalVars(cfg);
 
     // OTEL_EXPORTER_OTLP_PROTOCOL
     if (auto r = OverlayProtocol(cfg); !r)

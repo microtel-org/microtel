@@ -30,7 +30,11 @@ Track E — Configuration.
   [`env_resolver.hpp`](env_resolver.hpp) lists the `OTEL_*` variables it
   reads; the `MICROTEL_*` ones (`MICROTEL_LOG_LEVEL`,
   `MICROTEL_RESOURCE_DETECTORS_STRICT`) are applied in
-  [`env_resolver.cpp`](env_resolver.cpp).
+  [`env_resolver.cpp`](env_resolver.cpp). The per-signal endpoint variables
+  are read there and resolved to one connection origin by `Validate`
+  (`docs/configuration.md` §3.3); the other per-signal exporter variables are
+  not implemented, and each one set adds a line to `Config::config_warnings`,
+  which `Build()` logs at `Warn` once the log level is applied.
 - The resolved `Config` value type.
 - The `[concentrator]` table and the `MICROTEL_CONCENTRATOR_*` variables of
   the leaf receiver, with the byte-size and duration syntax they share and the
@@ -61,7 +65,8 @@ Track E — Configuration.
 
 - `tests/unit/common/config/`: `config_test.cpp` checks each setting's
   precedence (code vs env vs file vs default), validation (the happy path and
-  every documented failure) and edge cases; `concentrator_config_test.cpp`
+  every documented failure) and edge cases; `signal_endpoint_test.cpp` the
+  per-signal exporter variables; `concentrator_config_test.cpp`
   the `[concentrator]` sources; `forbid_insecure_tls_test.cpp`
   covers the ON half of the `MICROTEL_FORBID_INSECURE_TLS` gate (issue #200).
 - `tests/unit/common/auth/auth_providers_test.cpp`: the static-headers and
