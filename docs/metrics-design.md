@@ -24,7 +24,8 @@ In scope for v1.2 (this doc decides all of these):
 - `Meter` surface and lifecycle (acquired from the existing `Provider`).
 - `MetricReader` / `MetricExporter` pipeline reusing the OTLP encoder
   (`src/wire/encoder/`) and nghttp2 transport (`src/transport/`).
-- Aggregation temporality (delta / cumulative), per-metric configurable.
+- Aggregation temporality (delta / cumulative), chosen per instrument kind by a
+  preset (ICP 0045); a per-instrument override is #299.
 - Cardinality limits with the OTel overflow attribute and drop accounting.
 - Views (basic: rename, attribute filter, aggregation override).
 - Exemplars linked to active span context.
@@ -43,6 +44,8 @@ Each item has a proposed **Decision** below. Reviewer approves by checking every
 box (and editing any decision they want changed first).
 
 - [x] §1 Aggregation temporality — **default cumulative**, per-metric override
+      *(as built: presets per instrument kind, ICP 0045; the per-instrument
+      override is #299)*
 - [x] §2 Cardinality limits — default 2000, OTel overflow attribute, new `DropReason` (**ICP**)
 - [x] §3 Histogram buckets — **explicit + exponential**, configurable
 - [x] §4 Async-instrument callback semantics

@@ -65,3 +65,7 @@ No public API change: `MetricCallbackTimeout` already exists and keeps its value
 - **A known cost: a first callback that is always too slow starves the rest.** If the first async stream's callback always takes longer than the interval, the deadline has passed every time it returns, so every later async stream is skipped on every cycle and never exported. The `MetricCallbackTimeout` counter and the rate-limited log are the only signals that this is happening. The fix belongs in the application: make the callback faster, or lengthen the interval.
 - **Rotate which async stream goes first.** Deferred. Rotation would end the starvation above, but registration order is predictable and testable, and rotation can be added later without changing the interface.
 - **A second `Collect` parameter for the deadline.** Rejected in review: ICP 0045's `CollectRequest` takes the deadline as a defaulted field, so the locked signature does not change again.
+
+## Amendment (2026-11-27): rate-limited logging
+
+Decision 5 names the diagnostic log's "existing per-`(level, reason)` rate limiter". That limiter is specified in `docs/error-model.md` ("Rate limiting (LOCKED)") but not built (`src/common/internal_log.hpp`). The implementation therefore limits its own warnings as `SdkLeafReceiver::RecordOutOfMemory` already does: it logs the 1st, 2nd, 4th, 8th … occurrence, with the running count. When the shared limiter is built, this log moves onto it; the counting is unchanged.
