@@ -53,8 +53,8 @@ extern "C"
  *  archive mismatch.
  *  @{ */
 #define MICROTEL_LEAF_VERSION_MAJOR 1u
-#define MICROTEL_LEAF_VERSION_MINOR 2u
-#define MICROTEL_LEAF_VERSION_PATCH 6u
+#define MICROTEL_LEAF_VERSION_MINOR 3u
+#define MICROTEL_LEAF_VERSION_PATCH 0u
 /** @} */
 
 /** Packs a version as `(major << 16) | (minor << 8) | patch`. */

@@ -27,9 +27,9 @@ namespace microtel
 /// The procedure is in `docs/releasing.md`.
 
 inline constexpr std::uint32_t kVersionMajor = 1;
-inline constexpr std::uint32_t kVersionMinor = 2;
-inline constexpr std::uint32_t kVersionPatch = 6;
+inline constexpr std::uint32_t kVersionMinor = 3;
+inline constexpr std::uint32_t kVersionPatch = 0;
 
-inline constexpr std::string_view kVersionString = "1.2.6";
+inline constexpr std::string_view kVersionString = "1.3.0";
 
 }  // namespace microtel

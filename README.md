@@ -171,7 +171,7 @@ requires an [ICP](docs/icps/).
 
 ## Status
 
-The current release is **v1.2.6**, and the project follows SemVer.
+The current release is **v1.3.0**, and the project follows SemVer.
 [SECURITY.md](.github/SECURITY.md) lists which versions get fixes.
 
 | Area | Status |
@@ -272,7 +272,7 @@ include(FetchContent)
 FetchContent_Declare(
     microtel
     GIT_REPOSITORY https://github.com/microtel-org/microtel.git
-    GIT_TAG        v1.2.6
+    GIT_TAG        v1.3.0
     GIT_SHALLOW    TRUE)
 FetchContent_MakeAvailable(microtel)
 target_link_libraries(my_app PRIVATE microtel::microtel)
@@ -281,7 +281,7 @@ target_link_libraries(my_app PRIVATE microtel::microtel)
 **CPM.cmake.**
 
 ```cmake
-CPMAddPackage("gh:microtel-org/microtel@1.2.6")
+CPMAddPackage("gh:microtel-org/microtel@1.3.0")
 target_link_libraries(my_app PRIVATE microtel::microtel)
 ```
 
@@ -310,7 +310,7 @@ Get the latest release, then build and install it under your home directory,
 which needs no `sudo`:
 
 ```bash
-git clone --branch v1.2.6 https://github.com/microtel-org/microtel.git
+git clone --branch v1.3.0 https://github.com/microtel-org/microtel.git
 cd microtel
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DMICROTEL_BUILD_TESTS=OFF
 cmake --build build -j"$(nproc)"
