@@ -14,6 +14,7 @@
 #include "microtel/attribute.hpp"
 #include "microtel/internal/icurrent_span_source.hpp"
 #include "microtel/internal/metric_batch.hpp"
+#include "microtel/log_sink.hpp"
 #include "microtel/trace.hpp"
 
 #include "fakes/fake_diagnostics_sink.hpp"
@@ -24,9 +25,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <functional>
+#include <iterator>
 #include <limits>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <thread>
 #include <utility>
 #include <vector>
@@ -52,6 +55,50 @@ std::uint64_t NonFiniteDrops(const mt::testing::FakeDiagnosticsSink& sink)
 {
     return sink.drop_counters[static_cast<std::size_t>(mt::DropReason::NonFiniteValue)];
 }
+
+std::uint64_t NegativeDrops(const mt::testing::FakeDiagnosticsSink& sink)
+{
+    return sink.drop_counters.at(static_cast<std::size_t>(mt::DropReason::NegativeHistogramValue));
+}
+
+/// RAII capture of microtel's internal `Warn` lines.
+class WarnCapture
+{
+public:
+    WarnCapture()
+    {
+        mt::SetLogSink(
+            [this](mt::LogLevel level, std::string_view message)
+            {
+                if (level == mt::LogLevel::Warn)
+                {
+                    m_warns.emplace_back(message);
+                }
+            });
+    }
+    ~WarnCapture()
+    {
+        mt::ResetLogSink();
+    }
+    WarnCapture(const WarnCapture&) = delete;
+    WarnCapture& operator=(const WarnCapture&) = delete;
+    WarnCapture(WarnCapture&&) = delete;
+    WarnCapture& operator=(WarnCapture&&) = delete;
+
+    /// The captured `Warn` lines that mention @p needle.
+    [[nodiscard]] std::vector<std::string> Mentioning(std::string_view needle) const
+    {
+        std::vector<std::string> out;
+        std::ranges::copy_if(m_warns,
+                             std::back_inserter(out),
+                             [needle](const std::string& line)
+                             { return line.find(needle) != std::string::npos; });
+        return out;
+    }
+
+private:
+    std::vector<std::string> m_warns;
+};
 
 void RecordN(mts::HistogramStorage<std::int64_t>& storage,
              mt::AttributeSpan attrs,
@@ -475,6 +522,128 @@ TEST(HistogramStorageTest, NonFiniteValueWithNullSinkIsNotDereferenced)
     const std::vector<mt::KeyValue> attrs{Kv("k", std::string{"v"})};
     storage.Record(std::numeric_limits<double>::quiet_NaN(), mt::AttributeSpan{attrs});
     EXPECT_TRUE(storage.Collect().points.empty());
+}
+
+// ── Negative values — ICP 0047 ────────────────────────────────────────────────
+
+TEST(HistogramStorageTest, NegativeDoubleIsDroppedAndCounted)
+{
+    mt::testing::FakeDiagnosticsSink sink;
+    mts::HistogramStorage<double> storage{
+        std::vector<double>{10.0}, mts::kDefaultMaxCardinality, nullptr, &sink};
+    const std::vector<mt::KeyValue> attrs{Kv("k", std::string{"v"})};
+    storage.Record(5.0, mt::AttributeSpan{attrs});
+    storage.Record(-1.0, mt::AttributeSpan{attrs});
+    storage.Record(-0.5, mt::AttributeSpan{attrs});
+
+    const mti::HistogramData data = storage.Collect();
+    ASSERT_EQ(data.points.size(), 1U);
+    EXPECT_EQ(data.points.at(0).count, 1U);
+    EXPECT_DOUBLE_EQ(data.points.at(0).sum, 5.0);
+    EXPECT_EQ(data.points.at(0).min, std::optional<double>{5.0});
+    EXPECT_EQ(data.points.at(0).max, std::optional<double>{5.0});
+    EXPECT_EQ(data.points.at(0).bucket_counts, (std::vector<std::uint64_t>{1, 0}));
+    EXPECT_EQ(NegativeDrops(sink), 2U);
+    EXPECT_EQ(NonFiniteDrops(sink), 0U);
+}
+
+TEST(HistogramStorageTest, NegativeInt64IsDroppedAndCounted)
+{
+    mt::testing::FakeDiagnosticsSink sink;
+    mts::HistogramStorage<std::int64_t> storage{
+        std::vector<double>{10.0}, mts::kDefaultMaxCardinality, nullptr, &sink};
+    const std::vector<mt::KeyValue> attrs{Kv("k", std::string{"v"})};
+    storage.Record(3, mt::AttributeSpan{attrs});
+    storage.Record(-7, mt::AttributeSpan{attrs});
+
+    const mti::HistogramData data = storage.Collect();
+    ASSERT_EQ(data.points.size(), 1U);
+    EXPECT_EQ(data.points.at(0).count, 1U);
+    EXPECT_DOUBLE_EQ(data.points.at(0).sum, 3.0);
+    EXPECT_EQ(data.points.at(0).min, std::optional<double>{3.0});
+    EXPECT_EQ(data.points.at(0).bucket_counts, (std::vector<std::uint64_t>{1, 0}));
+    EXPECT_EQ(NegativeDrops(sink), 1U);
+}
+
+TEST(HistogramStorageTest, NegativeValueAloneCreatesNoSeries)
+{
+    mt::testing::FakeDiagnosticsSink sink;
+    mts::HistogramStorage<double> storage{
+        std::vector<double>{10.0}, mts::kDefaultMaxCardinality, nullptr, &sink};
+    const std::vector<mt::KeyValue> attrs{Kv("k", std::string{"v"})};
+    storage.Record(-1.0, mt::AttributeSpan{attrs});
+    EXPECT_TRUE(storage.Collect().points.empty());
+    EXPECT_EQ(NegativeDrops(sink), 1U);
+}
+
+TEST(HistogramStorageTest, NegativeZeroIsRecordedAsZero)
+{
+    mt::testing::FakeDiagnosticsSink sink;
+    mts::HistogramStorage<double> storage{
+        std::vector<double>{0.0, 10.0}, mts::kDefaultMaxCardinality, nullptr, &sink};
+    const std::vector<mt::KeyValue> attrs{Kv("k", std::string{"v"})};
+    storage.Record(-0.0, mt::AttributeSpan{attrs});
+
+    const mti::HistogramData data = storage.Collect();
+    ASSERT_EQ(data.points.size(), 1U);
+    EXPECT_EQ(data.points.at(0).count, 1U);
+    EXPECT_DOUBLE_EQ(data.points.at(0).sum, 0.0);
+    EXPECT_EQ(data.points.at(0).min, std::optional<double>{0.0});
+    EXPECT_EQ(data.points.at(0).bucket_counts, (std::vector<std::uint64_t>{1, 0, 0}));
+    EXPECT_EQ(NegativeDrops(sink), 0U);
+}
+
+TEST(HistogramStorageTest, NegativeValueDoesNotReplaceTheExemplar)
+{
+    FakeSpanSource source;
+    source.SetSpan(MakeSampledContext());
+    mts::HistogramStorage<std::int64_t> storage{
+        std::vector<double>{10}, mts::kDefaultMaxCardinality, &source};
+    const std::vector<mt::KeyValue> attrs{Kv("k", std::string{"v"})};
+
+    storage.Record(5, mt::AttributeSpan{attrs});
+    storage.Record(-3, mt::AttributeSpan{attrs});
+
+    const mti::HistogramData data = storage.Collect();
+    ASSERT_EQ(data.points.size(), 1U);
+    ASSERT_EQ(data.points.at(0).exemplars.size(), 1U);
+    EXPECT_DOUBLE_EQ(std::get<double>(data.points.at(0).exemplars.at(0).value), 5.0);
+}
+
+TEST(HistogramStorageTest, NegativeValueWithNullSinkIsNotDereferenced)
+{
+    mts::HistogramStorage<double> storage{std::vector<double>{10.0}};  // no sink
+    const std::vector<mt::KeyValue> attrs{Kv("k", std::string{"v"})};
+    storage.Record(-1.0, mt::AttributeSpan{attrs});
+    EXPECT_TRUE(storage.Collect().points.empty());
+}
+
+TEST(HistogramStorageTest, NegativeValueWarnNamesTheInstrumentRateLimited)
+{
+    const WarnCapture capture;
+    mts::HistogramStorage<double> storage{
+        std::vector<double>{10.0}, mts::kDefaultMaxCardinality, nullptr, nullptr, "rpc.latency"};
+    const std::vector<mt::KeyValue> attrs{Kv("k", std::string{"v"})};
+    constexpr int kDrops = 5;
+    for (int i = 0; i < kDrops; ++i)
+    {
+        storage.Record(-1.0, mt::AttributeSpan{attrs});
+    }
+    // The 1st, 2nd and 4th drop are logged; the 3rd and 5th are not.
+    const auto warns = capture.Mentioning("'rpc.latency'");
+    ASSERT_EQ(warns.size(), 3U);
+    EXPECT_NE(warns.at(0).find("negative_histogram_value"), std::string::npos);
+    EXPECT_NE(warns.at(2).find("4 dropped"), std::string::npos);
+}
+
+TEST(HistogramStorageTest, NegativeValueWarnEscapesTheInstrumentName)
+{
+    const WarnCapture capture;
+    mts::HistogramStorage<std::int64_t> storage{
+        std::vector<double>{10.0}, mts::kDefaultMaxCardinality, nullptr, nullptr, "bad\nname"};
+    const std::vector<mt::KeyValue> attrs{Kv("k", std::string{"v"})};
+    storage.Record(-1, mt::AttributeSpan{attrs});
+    EXPECT_EQ(capture.Mentioning("'bad\\nname'").size(), 1U);
 }
 
 TEST(HistogramStorageTest, PointCarriesItsAttributes)

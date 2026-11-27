@@ -25,8 +25,15 @@ TEST(DropReason, MetricEnumeratorsHaveIcp0008Values)
     EXPECT_EQ(static_cast<std::uint8_t>(mt::DropReason::CardinalityOverflow), 20U);
     EXPECT_EQ(static_cast<std::uint8_t>(mt::DropReason::MetricCallbackTimeout), 21U);
     EXPECT_EQ(static_cast<std::uint8_t>(mt::DropReason::NonFiniteValue), 22U);
-    // 24 until ICP 0034 appended the three leaf reasons.
-    EXPECT_EQ(mt::kDropReasonCount, std::size_t{27});
+    // 24 until ICP 0034 appended the three leaf reasons; 27 until ICP 0047.
+    EXPECT_EQ(mt::kDropReasonCount, std::size_t{28});
+}
+
+TEST(DropReason, NegativeHistogramValueHasIcp0047Value)
+{
+    EXPECT_EQ(static_cast<std::uint8_t>(mt::DropReason::NegativeHistogramValue), 27U);
+    EXPECT_EQ(mt::sdk::DropReasonName(mt::DropReason::NegativeHistogramValue),
+              "negative_histogram_value");
 }
 
 TEST(DropReason, LogAttributeLimitHasIcp0011Value)

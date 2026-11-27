@@ -10,19 +10,50 @@
 
 #include "sdk/metric_attribute_set.hpp"
 
+#include <atomic>
 #include <chrono>
 #include <cstdint>
 #include <mutex>
+#include <string>
+#include <string_view>
 #include <unordered_map>
 #include <vector>
 
 namespace microtel::sdk
 {
 
+/// @brief Drop accounting for negative histogram measurements (ICP 0047),
+/// shared by `HistogramStorage` and `ExponentialHistogramStorage`.
+///
+/// Each `Drop` counts one `DropReason::NegativeHistogramValue` and may log a
+/// `Warn` naming the instrument. The internal log has no per-`(level, reason)`
+/// rate limiter yet (`docs/error-model.md` §9.2, `common/internal_log.hpp`),
+/// so this limits itself as `SdkLeafReceiver::RecordOutOfMemory` does: the
+/// 1st, 2nd, 4th, 8th ... drop is logged, with the running count.
+///
+/// @threadsafety Thread-safe — `Drop` may be called concurrently.
+class NegativeValueDrops
+{
+public:
+    /// @param instrument_name the instrument's name, for the `Warn`; it is
+    ///        copied, with control characters escaped.
+    explicit NegativeValueDrops(std::string_view instrument_name);
+
+    /// @brief Count one dropped negative measurement and log it, rate-limited.
+    /// @param diag Non-owning diagnostics sink; null skips the count.
+    void Drop(internal::IDiagnosticsSink* diag) noexcept;
+
+private:
+    std::string m_instrument_name;  ///< escaped
+    std::atomic<std::uint64_t> m_drops{0};
+};
+
 /// @brief Live aggregation state for an explicit-bucket Histogram instrument,
 /// per `docs/metrics-design.md` §3.
 ///
-/// Per attribute set, tracks count / sum / min / max and per-bucket counts
+/// A negative measurement is dropped before any aggregation or exemplar work
+/// and counted as `NegativeHistogramValue` (ICP 0047); `-0.0` is recorded as
+/// zero. Per attribute set, tracks count / sum / min / max and per-bucket counts
 /// against a shared, immutable boundary ladder. Bucket semantics are
 /// OTLP-standard upper-inclusive: a value `v` falls in bucket `i` = the
 /// smallest `i` with `v <= bounds[i]`, or bucket `n` if `v > bounds[n-1]`
@@ -42,14 +73,18 @@ public:
     /// @param diag Non-owning, borrowed diagnostics sink for overflow drop
     ///        accounting; null disables it. Lifetime: the owning provider
     ///        outlives this storage.
+    /// @param instrument_name names the instrument in the negative-value
+    ///        `Warn`; copied.
     explicit HistogramStorage(std::vector<double> boundaries,
                               std::size_t max_cardinality = kDefaultMaxCardinality,
                               const internal::ICurrentSpanSource* span_source = nullptr,
-                              internal::IDiagnosticsSink* diag = nullptr)
+                              internal::IDiagnosticsSink* diag = nullptr,
+                              std::string_view instrument_name = {})
         : m_boundaries(std::move(boundaries)),
           m_max_cardinality(max_cardinality),
           m_span_source(span_source),
-          m_diag(diag)
+          m_diag(diag),
+          m_negative_drops(instrument_name)
     {
     }
 
@@ -79,6 +114,12 @@ private:
         }
     }
 
+    /// @brief Whether @p observation is dropped before any aggregation or
+    ///        exemplar work, counting the drop: NaN / +-Inf, or below zero
+    ///        (ICP 0047; `-0.0` is not). One helper for both checks keeps the
+    ///        hot-path `Record` under the cognitive-complexity limit.
+    [[nodiscard]] bool DroppedBeforeAggregation(double observation) noexcept;
+
     struct Point
     {
         std::uint64_t count = 0;
@@ -94,6 +135,7 @@ private:
     std::size_t m_max_cardinality;
     const internal::ICurrentSpanSource* m_span_source;  ///< non-owning; null disables exemplars
     internal::IDiagnosticsSink* m_diag;  ///< non-owning; null disables drop accounting
+    NegativeValueDrops m_negative_drops;
     std::unordered_map<AttributeSet, Point, AttributeSetHash> m_points;
     std::unordered_map<AttributeSet, internal::Exemplar, AttributeSetHash> m_exemplars;
     /// The previous collect's time; the storage's creation before the first.

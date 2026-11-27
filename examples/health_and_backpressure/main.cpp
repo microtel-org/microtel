@@ -174,6 +174,8 @@ const char* DropReasonToString(microtel::DropReason reason) noexcept
             return "LeafPayloadTooLarge";
         case microtel::DropReason::LeafUnknown:
             return "LeafUnknown";
+        case microtel::DropReason::NegativeHistogramValue:
+            return "NegativeHistogramValue";
     }
     return "Unknown";
 }

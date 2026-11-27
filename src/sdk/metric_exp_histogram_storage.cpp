@@ -141,12 +141,27 @@ void InsertValue(ExpHistoPoint& point, double abs_value, bool is_negative, std::
 }  // namespace
 
 template <typename T>
-void ExponentialHistogramStorage<T>::Record(T value, AttributeSpan attrs)
+bool ExponentialHistogramStorage<T>::DroppedBeforeAggregation(double observation) noexcept
 {
-    const auto observation = static_cast<double>(value);
     if (!std::isfinite(observation))
     {
         RecordNonFinite();
+        return true;
+    }
+    if (observation < 0.0)  // -0.0 is not below zero: it goes to the zero count
+    {
+        m_negative_drops.Drop(m_diag);
+        return true;
+    }
+    return false;
+}
+
+template <typename T>
+void ExponentialHistogramStorage<T>::Record(T value, AttributeSpan attrs)
+{
+    const auto observation = static_cast<double>(value);
+    if (DroppedBeforeAggregation(observation))
+    {
         return;
     }
     std::optional<internal::Exemplar> exemplar;

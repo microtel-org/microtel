@@ -15,6 +15,7 @@
 
 #include "microtel/attribute.hpp"
 #include "microtel/internal/sampler.hpp"
+#include "microtel/log_sink.hpp"
 #include "microtel/meter.hpp"
 #include "microtel/provider.hpp"
 #include "microtel/resource.hpp"
@@ -29,10 +30,14 @@
 
 #include <gtest/gtest.h>
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <mutex>
+#include <string>
+#include <string_view>
+#include <vector>
 
 namespace mt = microtel;
 namespace mts = microtel::sdk;
@@ -498,4 +503,90 @@ TEST(SdkProviderMeterTest, InstrumentsOutliveMeterAndProvider_StayUsable)
     }
     constexpr std::uint64_t kInstruments = 5;
     EXPECT_EQ(OverflowDrops(*diag), kInstruments);
+}
+
+// ── Negative histogram values — ICP 0047 ─────────────────────────────────────
+// Through the provider's real `SdkMeter`, a negative value recorded on either
+// histogram kind is counted as `NegativeHistogramValue` in the health snapshot
+// and logged at `Warn` with the instrument's name.
+
+namespace
+{
+
+/// RAII capture of microtel's internal `Warn` lines.
+class WarnCapture
+{
+public:
+    WarnCapture()
+    {
+        mt::SetLogSink(
+            [this](mt::LogLevel level, std::string_view message)
+            {
+                if (level == mt::LogLevel::Warn)
+                {
+                    m_warns.emplace_back(message);
+                }
+            });
+    }
+    ~WarnCapture()
+    {
+        mt::ResetLogSink();
+    }
+    WarnCapture(const WarnCapture&) = delete;
+    WarnCapture& operator=(const WarnCapture&) = delete;
+    WarnCapture(WarnCapture&&) = delete;
+    WarnCapture& operator=(WarnCapture&&) = delete;
+
+    /// How many captured `Warn` lines mention @p needle.
+    [[nodiscard]] std::size_t CountMentioning(std::string_view needle) const
+    {
+        return static_cast<std::size_t>(std::ranges::count_if(
+            m_warns,
+            [needle](const std::string& line) { return line.find(needle) != std::string::npos; }));
+    }
+
+private:
+    std::vector<std::string> m_warns;
+};
+
+std::uint64_t NegativeDrops(mts::SdkProvider& provider)
+{
+    constexpr auto kIdx = static_cast<std::size_t>(mt::DropReason::NegativeHistogramValue);
+    return provider.DiagnosticsSink().Snapshot().drop_counters.at(kIdx);
+}
+
+}  // namespace
+
+TEST(SdkProviderMeterTest, HistogramNegativeValueIsCountedAndWarnsWithInstrumentName)
+{
+    const WarnCapture capture;
+    auto provider = MakeProvider();
+    auto meter = provider->GetMeter("test.lib");
+    const auto doubles = meter->CreateHistogram<double>("rpc.server.duration");
+    const auto ints = meter->CreateHistogram<std::int64_t>("rpc.server.request.size");
+
+    doubles->Record(-1.5, {});
+    ints->Record(-4, {});
+    doubles->Record(2.0, {});
+
+    EXPECT_EQ(NegativeDrops(*provider), 2U);
+    EXPECT_EQ(capture.CountMentioning("'rpc.server.duration'"), 1U);
+    EXPECT_EQ(capture.CountMentioning("'rpc.server.request.size'"), 1U);
+}
+
+TEST(SdkProviderMeterTest, ExponentialHistogramNegativeValueIsCountedAndWarnsWithInstrumentName)
+{
+    const WarnCapture capture;
+    auto provider = MakeProvider();
+    auto meter = provider->GetMeter("test.lib");
+    const auto doubles = meter->CreateExponentialHistogram<double>("queue.wait");
+    const auto ints = meter->CreateExponentialHistogram<std::int64_t>("queue.depth");
+
+    doubles->Record(-0.1, {});
+    ints->Record(-1, {});
+    ints->Record(0, {});
+
+    EXPECT_EQ(NegativeDrops(*provider), 2U);
+    EXPECT_EQ(capture.CountMentioning("'queue.wait'"), 1U);
+    EXPECT_EQ(capture.CountMentioning("'queue.depth'"), 1U);
 }

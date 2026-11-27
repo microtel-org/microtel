@@ -108,11 +108,16 @@ enum class DropReason : std::uint8_t
     /// A leaf payload came from a leaf with no configuration while the receiver
     /// rejects unknown leaves. Counted in payloads (ICP 0034).
     LeafUnknown = 26,
+    /// A negative measurement recorded on a `Histogram` or
+    /// `ExponentialHistogram` instrument was dropped; a histogram records
+    /// non-negative values only. Counted per measurement (ICP 0047,
+    /// `docs/metrics-design.md` §3).
+    NegativeHistogramValue = 27,
 };
 
 /// @brief The number of `DropReason` enumerators. Used to size the counter
 /// array in `HealthSnapshot`.
-inline constexpr std::size_t kDropReasonCount = 27;
+inline constexpr std::size_t kDropReasonCount = 28;
 
 /// @brief Snapshot of exporter health, returned by `Provider::GetExporterHealth`.
 ///

@@ -73,6 +73,8 @@ namespace microtel::sdk
             return "leaf_payload_too_large";
         case DropReason::LeafUnknown:
             return "leaf_unknown";
+        case DropReason::NegativeHistogramValue:
+            return "negative_histogram_value";
     }
     return "unknown";
 }
