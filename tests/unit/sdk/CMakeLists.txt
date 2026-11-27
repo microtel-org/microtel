@@ -114,6 +114,16 @@ microtel_add_test(
 target_include_directories(periodic_exporting_metric_reader_test
     PRIVATE ${PROJECT_SOURCE_DIR}/src)
 
+# ICP 0046 — the per-collection deadline for async callbacks (issue #237).
+microtel_add_test(
+    NAME    metric_callback_deadline_test
+    SOURCES metric_callback_deadline_test.cpp
+    LIBS    microtel_sdk)
+target_include_directories(metric_callback_deadline_test
+    PRIVATE
+        ${PROJECT_SOURCE_DIR}/src
+        ${PROJECT_SOURCE_DIR}/tests)
+
 # M12 — SynchronousMetricReader: collect + export pipeline (pull-on-demand).
 microtel_add_test(
     NAME    synchronous_metric_reader_test

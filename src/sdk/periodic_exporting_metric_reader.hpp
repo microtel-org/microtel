@@ -27,8 +27,14 @@ namespace microtel::sdk
 ///  - `ForceFlush(timeout)` — immediate caller-thread cycle, then delegates
 ///    to the exporter's `ForceFlush`.
 ///
-/// `Shutdown(timeout)` wakes the background thread for a final cycle, waits
-/// for it to exit, then delegates to the exporter's `Shutdown`.
+/// `Shutdown(timeout)` stops the background thread, runs a final cycle on the
+/// caller's thread, then delegates to the exporter's `Shutdown`.
+///
+/// Each cycle holds async callbacks to a deadline (ICP 0046): `t0 + interval`
+/// for the background thread's cycles, `min(t0 + interval, t0 + timeout)` for
+/// one run by `Collect(timeout)`, `ForceFlush(timeout)` or `Shutdown(timeout)`,
+/// where `t0` is when the call starts. The reader passes it to the producer
+/// as `CollectRequest::callback_deadline`.
 ///
 /// Concurrent calls to `Collect`, `ForceFlush`, and the background thread are
 /// serialized so that one interval's deltas are never split across two
@@ -88,8 +94,13 @@ public:
     /// the exporter. Returns `AlreadyShutDown` if already shut down.
     [[nodiscard]] microtel::Status ForceFlush(std::chrono::milliseconds timeout) noexcept override;
 
-    /// @brief Wake the background thread for a final export, join it, then
-    /// delegate `Shutdown` to the exporter. Idempotent.
+    /// @brief Stop and join the background thread, run a final collect+export
+    /// whose callbacks are capped by @p timeout, then delegate `Shutdown` to
+    /// the exporter with the time left. Idempotent.
+    ///
+    /// The final cycle runs here rather than on the background thread so it
+    /// always runs, even when the thread has not yet reached its first wait,
+    /// and so it is bounded by this call's deadline (ICP 0041, ICP 0046).
     [[nodiscard]] microtel::Status Shutdown(std::chrono::milliseconds timeout) noexcept override;
 
     /// @brief Retune the background export period while the reader runs
@@ -115,8 +126,14 @@ private:
     void RunLoop() noexcept;
 
     /// Execute one collect+export cycle. Guarded by `m_collect_mu`.
+    /// @param cap The caller's deadline; the cycle's callback deadline is the
+    ///        earlier of it and the cycle's start plus the interval (ICP 0046).
+    ///        `time_point::max()` for the background thread's own cycles.
     /// @returns `Status::Completed` or `Status::Failed`.
-    microtel::Status DoCollectExport() noexcept;
+    microtel::Status DoCollectExport(std::chrono::steady_clock::time_point cap) noexcept;
+
+    /// The current interval, read under `m_mu`.
+    [[nodiscard]] std::chrono::milliseconds Interval() noexcept;
 
     internal::IMetricProducer& m_producer;
     internal::IMetricExporter& m_exporter;

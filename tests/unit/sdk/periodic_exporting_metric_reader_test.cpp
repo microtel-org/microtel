@@ -60,6 +60,7 @@ public:
         {
             const std::scoped_lock lk{m_selector_mu};
             m_last_selector = request.selector;
+            m_last_deadline = request.callback_deadline;
         }
         return std::move(m_handles);
     }
@@ -76,11 +77,19 @@ public:
         return m_last_selector;
     }
 
+    /// The callback deadline of the last `Collect` request (ICP 0046).
+    [[nodiscard]] std::chrono::steady_clock::time_point LastDeadline() const
+    {
+        const std::scoped_lock lk{m_selector_mu};
+        return m_last_deadline;
+    }
+
 private:
     std::vector<mti::MetricBatchHandle> m_handles;
     std::atomic<int> m_collect_count{0};
     mutable std::mutex m_selector_mu;
-    mti::TemporalitySelector m_last_selector;  // guarded by m_selector_mu
+    mti::TemporalitySelector m_last_selector;               // guarded by m_selector_mu
+    std::chrono::steady_clock::time_point m_last_deadline;  // guarded by m_selector_mu
 };
 
 class FakeMetricExporter : public mti::IMetricExporter
@@ -365,6 +374,71 @@ TEST(PeriodicExportingMetricReaderTest, ForceFlush_PassesTheSameSelector)
 
     EXPECT_EQ(reader.ForceFlush(100ms), mt::Status::Completed);
     EXPECT_EQ(producer.LastSelector(), mti::TemporalitySelector::LowMemory());
+}
+
+// ── The callback deadline (ICP 0046) ─────────────────────────────────────────
+//
+// A collection's deadline is t0 + interval, capped by the time a Collect,
+// ForceFlush or Shutdown caller has left.
+
+TEST(PeriodicExportingMetricReaderTest, Collect_CapsTheCallbackDeadlineAtItsTimeout)
+{
+    FakeMetricProducer producer;
+    FakeMetricExporter exporter;
+    mts::PeriodicExportingMetricReader reader{producer, exporter, 60'000ms};
+
+    const auto before = std::chrono::steady_clock::now();
+    EXPECT_EQ(reader.Collect(0ms), mt::Status::Completed);
+    const auto after = std::chrono::steady_clock::now();
+
+    EXPECT_GE(producer.LastDeadline(), before);
+    EXPECT_LE(producer.LastDeadline(), after);
+}
+
+TEST(PeriodicExportingMetricReaderTest, Collect_DeadlineIsTheIntervalWhenTheTimeoutIsLonger)
+{
+    constexpr auto kInterval = 60'000ms;
+    FakeMetricProducer producer;
+    FakeMetricExporter exporter;
+    mts::PeriodicExportingMetricReader reader{producer, exporter, kInterval};
+
+    const auto before = std::chrono::steady_clock::now();
+    EXPECT_EQ(reader.Collect(2 * kInterval), mt::Status::Completed);
+    const auto after = std::chrono::steady_clock::now();
+
+    EXPECT_GE(producer.LastDeadline(), before + kInterval);
+    EXPECT_LE(producer.LastDeadline(), after + kInterval);
+}
+
+TEST(PeriodicExportingMetricReaderTest, ForceFlush_CapsTheCallbackDeadlineAtItsTimeout)
+{
+    FakeMetricProducer producer;
+    FakeMetricExporter exporter;
+    mts::PeriodicExportingMetricReader reader{producer, exporter, 60'000ms};
+
+    const auto before = std::chrono::steady_clock::now();
+    EXPECT_EQ(reader.ForceFlush(0ms), mt::Status::Completed);
+    const auto after = std::chrono::steady_clock::now();
+
+    EXPECT_GE(producer.LastDeadline(), before);
+    EXPECT_LE(producer.LastDeadline(), after);
+}
+
+TEST(PeriodicExportingMetricReaderTest, Shutdown_CapsItsFinalCollectionsDeadline)
+{
+    FakeMetricProducer producer;
+    FakeMetricExporter exporter;
+    mts::PeriodicExportingMetricReader reader{producer, exporter, 60'000ms};
+
+    const auto before = std::chrono::steady_clock::now();
+    EXPECT_EQ(reader.Shutdown(0ms), mt::Status::Completed);
+    const auto after = std::chrono::steady_clock::now();
+
+    // The final collection always runs, even when Shutdown is called before
+    // the background thread has reached its first wait.
+    EXPECT_EQ(producer.CollectCount(), 1);
+    EXPECT_GE(producer.LastDeadline(), before);
+    EXPECT_LE(producer.LastDeadline(), after);
 }
 
 // ── Serialization after the nested-lock fix ──────────────────────────────────

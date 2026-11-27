@@ -5,6 +5,7 @@
 
 #include "microtel/internal/metric_batch.hpp"
 
+#include <chrono>
 #include <vector>
 
 namespace microtel::internal
@@ -21,6 +22,20 @@ struct CollectRequest
     /// @brief The temporality each instrument kind is collected with. Each
     ///        stream resolves its own, as `selector.For(kind)`.
     TemporalitySelector selector = TemporalitySelector::Cumulative();
+
+    /// @brief The time after which this collection runs no further async
+    ///        callback (ICP 0046). `time_point::max()`, the default, means no
+    ///        deadline.
+    ///
+    /// Synchronous streams are always collected, and so is the first async
+    /// stream. Each later async stream checks the deadline before its
+    /// callback runs; once it has passed, that stream and every async stream
+    /// after it are skipped for this collection, each counted once as
+    /// `DropReason::MetricCallbackTimeout`. A skipped stream contributes no
+    /// record and keeps its state. A callback is never interrupted: one that
+    /// returns after the deadline keeps its measurements and is not counted.
+    std::chrono::steady_clock::time_point callback_deadline =
+        std::chrono::steady_clock::time_point::max();
 };
 
 /// @brief The pull source the `IMetricReader` collects from — the metrics SDK
