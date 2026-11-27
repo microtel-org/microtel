@@ -120,6 +120,17 @@ limit is hit.
   defaults), with automatic downscale when the bucket budget is exceeded.
 - Instrument advice / View selects which aggregation a given histogram uses;
   explicit is the default when unspecified.
+- **Negative values are dropped** ([ICP 0047](icps/0047-histogram-drops-negative-values.md)).
+  A `Histogram` or `ExponentialHistogram` instrument records non-negative
+  values only. A value below zero, `std::int64_t` or `double`, is dropped
+  after the non-finite check and before any exemplar or aggregation work, so
+  it reaches neither `sum`, `count`, `min` nor the buckets. Each one is
+  counted as `DropReason::NegativeHistogramValue` and logged at `warn` naming
+  the instrument, rate-limited. `-0.0` is not below zero and is recorded as
+  zero. A signed quantity belongs on an UpDownCounter or a Gauge. The
+  exponential histogram keeps its negative bucket array for a View that
+  aggregates a signed instrument as a histogram (#298), where `sum` is
+  omitted instead (#554).
 
 ## §4 Async-instrument callback semantics
 

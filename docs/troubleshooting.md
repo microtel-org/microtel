@@ -489,6 +489,12 @@ it together with the counter that moved:
   rise** **→** the collector's responses are bigger than the configured caps,
   or not valid OTLP. Usually something other than an OTLP receiver is
   answering ([configuration.md](configuration.md) §3.8).
+- **If `NegativeHistogramValue` rises** **→** code is recording values below
+  zero on a `Histogram` or `ExponentialHistogram` instrument. They are dropped,
+  so the histogram's `sum`, `count`, `min` and buckets leave them out. A
+  `warn` in the diagnostic log names the instrument. Record a signed quantity
+  on an UpDownCounter or a Gauge instead
+  ([metrics-design.md](metrics-design.md) §3).
 - **If `ForceFlushTimeout` or `ShutdownTimeout` rise** **→** see the next
   section.
 

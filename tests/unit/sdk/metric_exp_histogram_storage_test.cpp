@@ -56,6 +56,11 @@ std::uint64_t NonFiniteDrops(const mt::testing::FakeDiagnosticsSink& sink)
     return sink.drop_counters[static_cast<std::size_t>(mt::DropReason::NonFiniteValue)];
 }
 
+std::uint64_t NegativeDrops(const mt::testing::FakeDiagnosticsSink& sink)
+{
+    return sink.drop_counters.at(static_cast<std::size_t>(mt::DropReason::NegativeHistogramValue));
+}
+
 std::uint64_t Sum(const std::vector<std::uint64_t>& counts)
 {
     return std::accumulate(counts.begin(), counts.end(), std::uint64_t{0});
@@ -163,19 +168,107 @@ TEST(ExpHistogramStorageTest, PositiveMappingAtScaleZero)
     EXPECT_EQ(point.zero_count, 0U);
 }
 
-TEST(ExpHistogramStorageTest, NegativeValuesUseNegativeBuckets)
+// ── Negative values — ICP 0047 ────────────────────────────────────────────────
+// A negative measurement is dropped before aggregation, so it reaches neither
+// sum / count / min nor the negative buckets (which stay, for #554 / #298).
+
+TEST(ExpHistogramStorageTest, NegativeInt64IsDroppedAndCounted)
 {
-    mts::ExponentialHistogramStorage<std::int64_t> storage{0, 160};
+    mt::testing::FakeDiagnosticsSink sink;
+    mts::ExponentialHistogramStorage<std::int64_t> storage{
+        0, 160, mts::kDefaultMaxCardinality, nullptr, &sink};
     const std::vector<mt::KeyValue> attrs{Kv("k", std::string{"v"})};
 
-    storage.Record(-2, mt::AttributeSpan{attrs});  // |v|=2 → index 0
+    storage.Record(3, mt::AttributeSpan{attrs});
+    storage.Record(-2, mt::AttributeSpan{attrs});
 
     const mti::ExponentialHistogramData data = storage.Collect();
     ASSERT_EQ(data.points.size(), 1U);
-    const mti::ExponentialHistogramPoint& point = data.points[0];
-    EXPECT_TRUE(point.positive.bucket_counts.empty());
-    EXPECT_EQ(point.negative.offset, 0);
-    EXPECT_EQ(Sum(point.negative.bucket_counts), 1U);
+    const mti::ExponentialHistogramPoint& point = data.points.at(0);
+    EXPECT_EQ(point.count, 1U);
+    EXPECT_DOUBLE_EQ(point.sum, 3.0);
+    EXPECT_EQ(point.min, std::optional<double>{3.0});
+    EXPECT_EQ(Sum(point.positive.bucket_counts), 1U);
+    EXPECT_TRUE(point.negative.bucket_counts.empty());
+    EXPECT_EQ(NegativeDrops(sink), 1U);
+}
+
+TEST(ExpHistogramStorageTest, NegativeDoubleIsDroppedAndCounted)
+{
+    mt::testing::FakeDiagnosticsSink sink;
+    mts::ExponentialHistogramStorage<double> storage{
+        20, 160, mts::kDefaultMaxCardinality, nullptr, &sink};
+    const std::vector<mt::KeyValue> attrs{Kv("k", std::string{"v"})};
+
+    storage.Record(2.0, mt::AttributeSpan{attrs});
+    storage.Record(-0.25, mt::AttributeSpan{attrs});
+    storage.Record(-8.0, mt::AttributeSpan{attrs});
+
+    const mti::ExponentialHistogramData data = storage.Collect();
+    ASSERT_EQ(data.points.size(), 1U);
+    const mti::ExponentialHistogramPoint& point = data.points.at(0);
+    EXPECT_EQ(point.count, 1U);
+    EXPECT_DOUBLE_EQ(point.sum, 2.0);
+    EXPECT_EQ(point.min, std::optional<double>{2.0});
+    EXPECT_EQ(point.max, std::optional<double>{2.0});
+    EXPECT_TRUE(point.negative.bucket_counts.empty());
+    EXPECT_EQ(NegativeDrops(sink), 2U);
+    EXPECT_EQ(NonFiniteDrops(sink), 0U);
+}
+
+TEST(ExpHistogramStorageTest, NegativeValueAloneCreatesNoSeries)
+{
+    mt::testing::FakeDiagnosticsSink sink;
+    mts::ExponentialHistogramStorage<double> storage{
+        20, 160, mts::kDefaultMaxCardinality, nullptr, &sink};
+    const std::vector<mt::KeyValue> attrs{Kv("k", std::string{"v"})};
+    storage.Record(-1.0, mt::AttributeSpan{attrs});
+    EXPECT_TRUE(storage.Collect().points.empty());
+    EXPECT_EQ(NegativeDrops(sink), 1U);
+}
+
+TEST(ExpHistogramStorageTest, NegativeZeroIsRecordedAsZero)
+{
+    mt::testing::FakeDiagnosticsSink sink;
+    mts::ExponentialHistogramStorage<double> storage{
+        20, 160, mts::kDefaultMaxCardinality, nullptr, &sink};
+    const std::vector<mt::KeyValue> attrs{Kv("k", std::string{"v"})};
+    storage.Record(-0.0, mt::AttributeSpan{attrs});
+
+    const mti::ExponentialHistogramData data = storage.Collect();
+    ASSERT_EQ(data.points.size(), 1U);
+    const mti::ExponentialHistogramPoint& point = data.points.at(0);
+    EXPECT_EQ(point.count, 1U);
+    EXPECT_EQ(point.zero_count, 1U);
+    EXPECT_DOUBLE_EQ(point.sum, 0.0);
+    EXPECT_EQ(point.min, std::optional<double>{0.0});
+    EXPECT_TRUE(point.negative.bucket_counts.empty());
+    EXPECT_EQ(NegativeDrops(sink), 0U);
+}
+
+TEST(ExpHistogramStorageTest, NegativeValueWithNullSinkIsNotDereferenced)
+{
+    mts::ExponentialHistogramStorage<double> storage{20, 160};  // no sink
+    const std::vector<mt::KeyValue> attrs{Kv("k", std::string{"v"})};
+    storage.Record(-1.0, mt::AttributeSpan{attrs});
+    EXPECT_TRUE(storage.Collect().points.empty());
+}
+
+TEST(ExpHistogramStorageTest, NegativeValueDoesNotReplaceTheExemplar)
+{
+    FakeSpanSource source;
+    source.SetSpan(MakeSampledContext());
+    mts::ExponentialHistogramStorage<std::int64_t> storage{
+        0, 160, mts::kDefaultMaxCardinality, &source};
+    const std::vector<mt::KeyValue> attrs{Kv("k", std::string{"v"})};
+
+    storage.Record(4, mt::AttributeSpan{attrs});
+    storage.Record(-4, mt::AttributeSpan{attrs});
+
+    const mti::ExponentialHistogramData data = storage.Collect();
+    ASSERT_EQ(data.points.size(), 1U);
+    ASSERT_EQ(data.points.at(0).exemplars.size(), 1U);
+    EXPECT_DOUBLE_EQ(std::get<double>(data.points.at(0).exemplars.at(0).value), 4.0);
 }
 
 TEST(ExpHistogramStorageTest, DownscaleWhenSpanExceedsMaxBuckets)

@@ -508,8 +508,10 @@ std::shared_ptr<microtel::Histogram<std::int64_t>> SdkMeter::DoCreateHistogramI6
     const InstrumentDescriptor desc{
         .name = name, .kind = InstrumentKind::Histogram, .meter_name = m_scope.name};
     const auto specs = ResolveStreamSpecs(name, m_registry.get(), desc);
-    const StorageOptions opts{
-        .max_cardinality = m_max_cardinality, .span_source = m_span_source, .diag = m_diag};
+    const StorageOptions opts{.max_cardinality = m_max_cardinality,
+                              .span_source = m_span_source,
+                              .diag = m_diag,
+                              .instrument_name = name};
     std::vector<StorageSlot<HistogramStorage<std::int64_t>>> slots;
     slots.reserve(specs.size());
     for (const auto& spec : specs)
@@ -528,8 +530,10 @@ std::shared_ptr<microtel::Histogram<double>> SdkMeter::DoCreateHistogramDouble(
     const InstrumentDescriptor desc{
         .name = name, .kind = InstrumentKind::Histogram, .meter_name = m_scope.name};
     const auto specs = ResolveStreamSpecs(name, m_registry.get(), desc);
-    const StorageOptions opts{
-        .max_cardinality = m_max_cardinality, .span_source = m_span_source, .diag = m_diag};
+    const StorageOptions opts{.max_cardinality = m_max_cardinality,
+                              .span_source = m_span_source,
+                              .diag = m_diag,
+                              .instrument_name = name};
     std::vector<StorageSlot<HistogramStorage<double>>> slots;
     slots.reserve(specs.size());
     for (const auto& spec : specs)
@@ -552,8 +556,10 @@ SdkMeter::DoCreateExponentialHistogramI64(std::string name,
     const InstrumentDescriptor desc{
         .name = name, .kind = InstrumentKind::ExponentialHistogram, .meter_name = m_scope.name};
     const auto specs = ResolveStreamSpecs(name, m_registry.get(), desc);
-    const StorageOptions opts{
-        .max_cardinality = m_max_cardinality, .span_source = m_span_source, .diag = m_diag};
+    const StorageOptions opts{.max_cardinality = m_max_cardinality,
+                              .span_source = m_span_source,
+                              .diag = m_diag,
+                              .instrument_name = name};
     std::vector<StorageSlot<ExponentialHistogramStorage<std::int64_t>>> slots;
     slots.reserve(specs.size());
     for (const auto& spec : specs)
@@ -576,8 +582,10 @@ SdkMeter::DoCreateExponentialHistogramDouble(std::string name,
     const InstrumentDescriptor desc{
         .name = name, .kind = InstrumentKind::ExponentialHistogram, .meter_name = m_scope.name};
     const auto specs = ResolveStreamSpecs(name, m_registry.get(), desc);
-    const StorageOptions opts{
-        .max_cardinality = m_max_cardinality, .span_source = m_span_source, .diag = m_diag};
+    const StorageOptions opts{.max_cardinality = m_max_cardinality,
+                              .span_source = m_span_source,
+                              .diag = m_diag,
+                              .instrument_name = name};
     std::vector<StorageSlot<ExponentialHistogramStorage<double>>> slots;
     slots.reserve(specs.size());
     for (const auto& spec : specs)
