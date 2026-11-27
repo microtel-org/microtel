@@ -22,6 +22,7 @@
 
 #include <gtest/gtest.h>
 
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <utility>
@@ -60,13 +61,14 @@ struct ProviderOptions
 {
     microtel::TemporalityPreference temporality = microtel::TemporalityPreference::Cumulative;
     bool gzip = false;  ///< request `Content-Encoding: gzip`
+    std::size_t max_cardinality = microtel::MetricLimitOptions{}.max_cardinality;
 };
 
 /// @brief Builds a provider aimed at the collector's TLS OTLP/HTTP receiver.
 ///
 /// @param builder  caller-owned; `SdkBuilder` cannot be returned by value.
 /// @param endpoint resolved from @ref kEndpointEnv.
-/// @param options  temporality and compression.
+/// @param options  temporality, compression and cardinality limit.
 /// @return the provider, or null after recording a failure.
 std::shared_ptr<microtel::Provider> BuildProvider(microtel::SdkBuilder& builder,
                                                   const std::string& endpoint,
@@ -85,6 +87,7 @@ std::shared_ptr<microtel::Provider> BuildProvider(microtel::SdkBuilder& builder,
             })
             .WithMetricTemporality(options.temporality)
             .WithCompressionGzip(options.gzip)
+            .WithMetricLimits({.max_cardinality = options.max_cardinality})
             .Build();
     if (!result.has_value())
     {
@@ -158,6 +161,20 @@ TEST(HttpMetricsConformance, GzipAccepted)
     const auto provider = BuildProvider(builder, target.endpoint, {.gzip = true});
     ASSERT_NE(provider, nullptr);
     metrics::RunGzipDelivery(*provider, target.output_file, kScopeName);
+}
+
+TEST(HttpMetricsConformance, CardinalityOverflow)
+{
+    Target target;
+    if (!ResolveTarget(target))
+    {
+        GTEST_SKIP() << kSkipReason;
+    }
+    microtel::SdkBuilder builder;
+    const auto provider =
+        BuildProvider(builder, target.endpoint, {.max_cardinality = metrics::kOverflowLimit});
+    ASSERT_NE(provider, nullptr);
+    metrics::RunCardinalityOverflow(*provider, target.output_file, kScopeName);
 }
 
 }  // namespace
