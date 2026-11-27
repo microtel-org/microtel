@@ -17,11 +17,15 @@
 namespace microtel::internal
 {
 
-/// @brief Identifier for the instrumentation library that produced a span.
+/// @brief Identifier for the instrumentation library that produced a span,
+///        metric or log record.
 struct InstrumentationScope
 {
     std::string name;
     std::string version;
+    /// Exported as `ScopeMetrics.schema_url`. Only `Provider::GetMeter` takes
+    /// one: tracer and logger scopes leave it empty (#456).
+    std::string schema_url{};
 };
 
 /// @brief Worker-thread shape of a completed span.

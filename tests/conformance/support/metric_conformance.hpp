@@ -48,6 +48,7 @@ inline constexpr const char* kMetricsOutputFileEnv = "MICROTEL_CONFORMANCE_METRI
 
 inline constexpr const char* kServiceName = "microtel-conformance";
 inline constexpr const char* kScopeVersion = "1.0";
+inline constexpr const char* kScopeSchemaUrl = "https://opentelemetry.io/schemas/1.26.0";
 
 inline constexpr auto kFlushTimeout = std::chrono::seconds(30);
 inline constexpr auto kCollectorPollTimeout = std::chrono::seconds(15);
@@ -303,7 +304,8 @@ inline void ExpectSyncGaugeAndHistograms(const std::string& output_file, const s
 /// @brief One of each synchronous instrument kind, cumulative: Counter,
 ///        UpDownCounter, Gauge, explicit-bucket Histogram and exponential
 ///        Histogram. Asserts each one's data point, its temporality and
-///        monotonicity, and the resource and scope it arrived under.
+///        monotonicity, and the resource and scope it arrived under,
+///        including the scope's schema URL (#456).
 inline void RunSyncInstruments(Provider& provider,
                                const std::string& output_file,
                                const std::string& scope_name)
@@ -311,7 +313,7 @@ inline void RunSyncInstruments(Provider& provider,
     const std::string marker = UniqueMarker();
     const auto attrs = MeasurementAttributes();
     {
-        const auto meter = provider.GetMeter(scope_name, kScopeVersion);
+        const auto meter = provider.GetMeter(scope_name, kScopeVersion, kScopeSchemaUrl);
         const auto counter =
             meter->CreateCounter<std::int64_t>(marker + ".counter", "a counter", "1");
         const auto updown = meter->CreateUpDownCounter<std::int64_t>(marker + ".updown");
@@ -339,6 +341,7 @@ inline void RunSyncInstruments(Provider& provider,
     const std::string scope =
         AwaitMetricObject(output_file, marker + ".counter", kScopeMetricsLevel);
     ExpectContains(scope, R"("scope":{"name":")" + scope_name + R"(","version":"1.0"})");
+    ExpectContains(scope, R"("schemaUrl":")" + std::string{kScopeSchemaUrl} + R"(")");
     const std::string resource =
         AwaitMetricObject(output_file, marker + ".counter", kResourceMetricsLevel);
     ExpectContains(resource, kServiceNameJson);
@@ -436,6 +439,83 @@ inline void RunTemporality(Provider& provider,
     const std::uint64_t expected_start = delta ? NanosField(exports[0], "timeUnixNano")
                                                : NanosField(exports[0], "startTimeUnixNano");
     EXPECT_EQ(second_start, expected_start) << exports[0] << "\n" << exports[1];
+}
+
+/// @brief The cardinality limit `RunCardinalityOverflow`'s provider must be
+///        built with, and how many distinct attribute sets it records.
+inline constexpr std::size_t kOverflowLimit = 3;
+inline constexpr std::size_t kOverflowSeriesRecorded = 5;
+
+inline constexpr const char* kOverflowAttrKeyJson = R"("key":"otel.metric.overflow")";
+inline constexpr const char* kOverflowAttrJson =
+    R"({"key":"otel.metric.overflow","value":{"boolValue":true}})";
+
+/// Nesting from a whole attribute object outward: its data point.
+inline constexpr std::size_t kDataPointLevel = 1;
+
+/// @brief The attribute set of series @p i of `RunCardinalityOverflow`.
+inline std::vector<KeyValue> SeriesAttributes(const std::size_t i)
+{
+    return {KeyValue{.key = "conformance.series", .value = "s" + std::to_string(i)}};
+}
+
+/// @brief The `key`-to-value text of series @p i's attribute.
+inline std::string SeriesAttrJson(const std::size_t i)
+{
+    return R"({"key":"conformance.series","value":{"stringValue":"s)" + std::to_string(i) +
+           R"("}})";
+}
+
+/// @brief Asserts `RunCardinalityOverflow`'s exported @p metric: one series
+///        per in-limit attribute set, none for the sets past the limit, and
+///        one overflow series holding their measurements.
+inline void ExpectOverflowSeries(const std::string& metric)
+{
+    for (std::size_t i = 0; i < kOverflowLimit; ++i)
+    {
+        const auto point = EnclosingObject(metric, SeriesAttrJson(i), kDataPointLevel);
+        ASSERT_TRUE(point.has_value()) << "series s" << i << " missing in: " << metric;
+        ExpectContains(*point, R"("asInt":"1")");
+        ExpectLacks(*point, kOverflowAttrKeyJson);
+    }
+    for (std::size_t i = kOverflowLimit; i < kOverflowSeriesRecorded; ++i)
+    {
+        ExpectLacks(metric, SeriesAttrJson(i));
+    }
+
+    const auto overflow = EnclosingObject(metric, kOverflowAttrJson, kDataPointLevel);
+    ASSERT_TRUE(overflow.has_value()) << "no overflow series in: " << metric;
+    ExpectContains(*overflow, R"("asInt":"2")");
+    ExpectLacks(*overflow, R"("key":"conformance.series")");
+    ExpectTimestamps(*overflow);
+}
+
+/// @brief A counter given two more distinct attribute sets than @p provider's
+///        cardinality limit allows. @p provider must be built with
+///        `MetricLimitOptions{.max_cardinality = kOverflowLimit}`.
+///
+/// The first `kOverflowLimit` sets keep their own series; the two past the
+/// limit fold into one series carrying only `otel.metric.overflow=true`, with
+/// both their measurements (`metrics-design.md` §2).
+inline void RunCardinalityOverflow(Provider& provider,
+                                   const std::string& output_file,
+                                   const std::string& scope_name)
+{
+    const std::string marker = UniqueMarker();
+    const std::string name = marker + ".overflow";
+    {
+        const auto meter = provider.GetMeter(scope_name, kScopeVersion);
+        const auto counter = meter->CreateCounter<std::int64_t>(name);
+        for (std::size_t i = 0; i < kOverflowSeriesRecorded; ++i)
+        {
+            counter->Add(1, SeriesAttributes(i));
+        }
+        Flush(provider);
+    }
+
+    const std::string metric = AwaitMetricObject(output_file, name);
+    ASSERT_FALSE(metric.empty()) << "overflow counter never reached " << output_file;
+    ExpectOverflowSeries(metric);
 }
 
 /// @brief Twenty counters through a gzip-compressed provider, each exported

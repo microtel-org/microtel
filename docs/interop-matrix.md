@@ -127,8 +127,8 @@ plaintext HTTP/1.1.
 
 The metrics rows work the same way: one set of scenarios
 ([`tests/conformance/support/metric_conformance.hpp`](../tests/conformance/support/metric_conformance.hpp))
-over both protocols, read back from `metrics.jsonl`. The cardinality-overflow
-series is not yet covered (#302).
+over both protocols, read back from `metrics.jsonl`, including the
+cardinality-overflow series.
 
 **Weekly interop** — [`interop.yml`](../.github/workflows/interop.yml).
 Behaviour at volume against collector and Jaeger: delivery rate and
@@ -194,5 +194,4 @@ A pin bump is one PR:
 
 | Item | Target |
 |---|---|
-| Metrics cardinality-overflow series against the collector (#302) | v1.3 |
 | Restart-recovery scenario (collector bounced mid-export) | post-v1.0 |

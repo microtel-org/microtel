@@ -743,6 +743,7 @@ void EncodeMetricScope(const internal::InstrumentationScope& scope, UpbScoMet* s
     }
     opentelemetry_proto_common_v1_InstrumentationScope_set_name(usc, Sv(scope.name));
     opentelemetry_proto_common_v1_InstrumentationScope_set_version(usc, Sv(scope.version));
+    opentelemetry_proto_metrics_v1_ScopeMetrics_set_schema_url(sm, Sv(scope.schema_url));
 }
 
 }  // anonymous namespace

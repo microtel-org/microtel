@@ -132,6 +132,11 @@ time. Threading and re-entrancy must be pinned given the strict threading model.
   serving (documented contract; not enforced in v1.2).
 - Duplicate measurements for the same attribute set within one callback →
   last-write-wins + diagnostic.
+- **A series a callback stops observing is not exported, and no
+  `NO_RECORDED_VALUE` point marks its end** (#457, by design). The OTel SDK
+  spec says an attribute set not observed in a successful callback should
+  produce no data. The data model defines what the flag means (the Prometheus
+  staleness marker), but neither document asks an SDK to emit it.
 
 ## §5 MetricReader / MetricExporter interaction
 

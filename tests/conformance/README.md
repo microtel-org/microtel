@@ -11,8 +11,7 @@ has started a collector and exported the environment contract below.
 Tier 1 of the four-tier compatibility model in `docs/compatibility-matrix.md` §7:
 payloads emitted by microtel are accepted by receivers implementing the
 pinned OTLP specification version, over both OTLP/HTTP-protobuf and
-OTLP/gRPC. Traces, logs and metrics are covered; the metrics
-cardinality-overflow series is not yet (see "Deliberately excluded").
+OTLP/gRPC. Traces, logs and metrics are covered.
 
 This is the gate the `conformance` CI job runs (`docs/ci-architecture.md`):
 
@@ -98,7 +97,7 @@ A key/value-list (structured map) body is not tested because the public
 
 ### Metrics
 
-Both `metrics_test.cpp` files run the same five scenarios, defined once in
+Both `metrics_test.cpp` files run the same six scenarios, defined once in
 [`support/metric_conformance.hpp`](support/metric_conformance.hpp), over HTTP
 (TLS receiver) and gRPC (plaintext), read back from `metrics.jsonl`. Every
 assertion is narrowed to one metric's object by its per-run unique name, and
@@ -108,11 +107,12 @@ a `timeUnixNano` and no start), per
 
 | Test | What the collector must have decoded |
 |---|---|
-| `SyncInstruments` | a Counter, UpDownCounter, Gauge, explicit-bucket Histogram and exponential Histogram: each one's value, buckets, count, sum, min/max, scale and offset as applicable, cumulative temporality, `isMonotonic` on the counter only; the description and unit; `service.name` on the resource and the `GetMeter(name, version)` scope |
+| `SyncInstruments` | a Counter, UpDownCounter, Gauge, explicit-bucket Histogram and exponential Histogram: each one's value, buckets, count, sum, min/max, scale and offset as applicable, cumulative temporality, `isMonotonic` on the counter only; the description and unit; `service.name` on the resource and the `GetMeter(name, version, schema_url)` scope, with its `schemaUrl` |
 | `ObservableInstruments` | an ObservableCounter, ObservableUpDownCounter and ObservableGauge, each with the value its callback reported during `ForceFlush` |
 | `CumulativeTemporality` | a counter exported twice reports 3 then 7, with one start time |
 | `DeltaTemporality` | the same counter on a delta provider reports 3 then 4, the second window starting where the first ended |
 | `GzipAccepted` | 20 counters through a gzip-compressed provider, each exactly once |
+| `CardinalityOverflow` | a counter on a provider limited to 3 attribute sets, given 5: the first 3 keep their own series, and the other 2 fold into one series that carries only `otel.metric.overflow=true` and their summed value |
 
 ### `leaf/` — the leaf / concentrator gate, 2 binaries
 
@@ -329,7 +329,6 @@ per-run marker are normalised
 | Partial-success responses | [`tests/unit/wire/otlp_response_test.cpp`](../unit/wire/otlp_response_test.cpp) and the two codec tests, against hand-encoded byte fixtures | A collector configured to accept spans never returns a `partial_success` body, so this tier cannot elicit one. |
 | Retry and backoff timing | [`tests/unit/exporter/retry_policy_test.cpp`](../unit/exporter/retry_policy_test.cpp), [`tests/integration/sdk/exporter_health_test.cpp`](../integration/sdk/exporter_health_test.cpp) against fakes | Needs a clock the test controls. Here the negative tests run a near-zero retry budget precisely to *avoid* the schedule. |
 | Restart recovery (collector bounced mid-export) | deferred; see [`docs/interop-matrix.md`](../../docs/interop-matrix.md) §6 | |
-| The metrics cardinality-overflow series | deferred to v1.3 (#302); see [`docs/interop-matrix.md`](../../docs/interop-matrix.md) §6 | |
 | Throughput and delivery rate at volume | the weekly [`interop.yml`](../../.github/workflows/interop.yml) workflow | Slow, and not a merge gate. |
 
 ## Known-defect tripwires

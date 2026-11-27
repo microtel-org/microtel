@@ -32,6 +32,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <mutex>
 
 namespace mt = microtel;
 namespace mts = microtel::sdk;
@@ -130,6 +131,16 @@ TEST(SdkProviderMeterTest, GetMeter_EmptyVersionDistinctFromNonEmpty)
     EXPECT_NE(a.get(), b.get());
 }
 
+// schema_url is not part of the cache key (provider.hpp): the first call
+// for a (name, version) fixes the scope's schema URL.
+TEST(SdkProviderMeterTest, GetMeter_SchemaUrlDoesNotAffectCaching)
+{
+    auto provider = MakeProvider();
+    auto a = provider->GetMeter("lib", "1.0", "https://example.test/a");
+    auto b = provider->GetMeter("lib", "1.0", "https://example.test/b");
+    EXPECT_EQ(a.get(), b.get());
+}
+
 TEST(SdkProviderMeterTest, GetMeter_DefaultAndExplicitEmptyVersionAreSameScope)
 {
     auto provider = MakeProvider();
@@ -199,6 +210,41 @@ TEST(SdkProviderMeterTest, ForceFlush_WithMetricExporter_FlushesExporter)
     EXPECT_EQ(provider->ForceFlush(500ms), mt::Status::Completed);
     // Reader's ForceFlush calls DoCollectExport then exporter ForceFlush.
     EXPECT_GE(metric_exp_ptr->flush_call_count.load(), 1);
+}
+
+// The schema URL given to GetMeter reaches the exported scope (#456).
+TEST(SdkProviderMeterTest, GetMeter_SchemaUrlReachesExportedScope)
+{
+    auto metric_exp = std::make_unique<mtm::MockMetricExporter>();
+    auto* const metric_exp_ptr = metric_exp.get();
+
+    auto provider = std::make_unique<mts::SdkProvider>(mts::SdkProviderArgs{
+        .diagnostics = std::make_unique<mts::DiagnosticsCounters>(),
+        .encoder = nullptr,
+        .auth = nullptr,
+        .transport = std::make_unique<mtm::MockTransport>(),
+        .codec = nullptr,
+        .exporter = std::make_unique<mtm::MockExporter>(),
+        .processor = std::make_unique<mtm::MockSpanProcessor>(),
+        .resource = std::make_shared<mt::Resource>(),
+        .sampler = mt::MakeAlwaysOnSampler(),
+        .span_limits = {},
+        .connect_opts = {},
+        .metric_exporter = std::move(metric_exp),
+        .metric_interval = std::chrono::milliseconds{60'000},
+    });
+
+    const auto meter = provider->GetMeter("my.lib", "2.0", "https://example.test/schema");
+    const auto counter = meter->CreateCounter<std::int64_t>("requests");
+    counter->Add(1, {});
+    ASSERT_EQ(provider->ForceFlush(500ms), mt::Status::Completed);
+
+    const std::scoped_lock lk{metric_exp_ptr->scopes_mu};
+    ASSERT_FALSE(metric_exp_ptr->exported_scopes.empty());
+    const auto& scope = metric_exp_ptr->exported_scopes.front();
+    EXPECT_EQ(scope.name, "my.lib");
+    EXPECT_EQ(scope.version, "2.0");
+    EXPECT_EQ(scope.schema_url, "https://example.test/schema");
 }
 
 TEST(SdkProviderMeterTest, Shutdown_WithMetricExporter_ShutsDownExporter)
