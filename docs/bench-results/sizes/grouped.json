@@ -2,32 +2,32 @@
  "microtel": {
   "binary": {
    "buckets": {
-    "microtel": 782998,
+    "microtel": 794014,
     "toml++": 55949,
-    "upb": 32678,
-    "emit-app": 31252,
-    "unattributed": 187899
+    "upb": 32683,
+    "emit-app": 33137,
+    "unattributed": 187313
    },
    "sections": {
-    "[section .rela.dyn]": 47592,
-    "[section .rodata]": 40054,
-    "[section .gcc_except_table]": 35744,
+    "[section .rela.dyn]": 47928,
+    "[section .rodata]": 40838,
+    "[section .gcc_except_table]": 36208,
     "[section .text]": 7255,
-    "[section .data.rel.ro]": 17712,
-    "[section .dynstr]": 7552,
-    "[Unmapped]": 7052,
-    "[section .dynsym]": 6161,
-    "[section .rela.plt]": 5736,
+    "[section .data.rel.ro]": 17808,
+    "[section .dynstr]": 7606,
+    "[section .dynsym]": 6287,
+    "[section .rela.plt]": 5808,
     "[section .eh_frame]": 956,
-    "[section .plt]": 3840,
+    "[Unmapped]": 4436,
+    "[section .plt]": 3888,
     "[section .tbss]": 0,
     "[ELF Section Headers]": 2048,
-    "[section .got.plt]": 1936,
-    "[section .data]": 960,
+    "[section .got.plt]": 1960,
+    "[section .data]": 976,
     "[section .eh_frame_hdr]": 124,
-    "[section .gnu.version_r]": 672,
+    "[section .gnu.version_r]": 688,
     "[section .dynamic]": 592,
-    "[section .gnu.version]": 568,
+    "[section .gnu.version]": 574,
     "[ELF Program Headers]": 432,
     "[section .bss]": 0,
     "[section .shstrtab]": 303,
@@ -40,11 +40,11 @@
     "[section .interp]": 28,
     "[section .init]": 27,
     "[section .plt.got]": 24,
-    "[LOAD #5 [RW]]": 16,
     "[section .init_array]": 16,
-    "[LOAD #2 [R]]": 13,
     "[LOAD #3 [RX]]": 13,
     "[section .fini]": 13,
+    "[LOAD #5 [RW]]": 8,
+    "[LOAD #2 [R]]": 9,
     "[section .fini_array]": 8,
     "[LOAD #4 [R]]": 4
    },
@@ -60,11 +60,11 @@
     "[LOAD #5 [RW]]": 0
    },
    "stdcxx_inlined": {
-    "microtel": 551129,
-    "emit-app": 21719
+    "microtel": 559060,
+    "emit-app": 22285
    },
    "unknown_cu": {},
-   "bloaty_total": 1090776
+   "bloaty_total": 1103096
   },
   "shared": {
    "zlib": {

@@ -24,7 +24,7 @@ include(FetchContent)
 FetchContent_Declare(
     microtel
     GIT_REPOSITORY https://github.com/microtel-org/microtel.git
-    GIT_TAG        v1.2.6
+    GIT_TAG        v1.3.0
     GIT_SHALLOW    TRUE
 )
 FetchContent_MakeAvailable(microtel)
