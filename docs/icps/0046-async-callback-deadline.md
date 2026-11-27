@@ -1,8 +1,8 @@
 # ICP 0046: A per-collection deadline for async callbacks
 
-**Status:** Draft — 2026-11-26. Milestone v1.3; tracking issue #237.
+**Status:** Accepted — 2026-11-27. Milestone v1.3; tracking issue #237.
 **Affected interfaces / docs:**
-- `include/microtel/internal/metric_producer.hpp`: `IMetricProducer::Collect` gains a deadline parameter (**locked internal interface**; it builds on [ICP 0045](0045-temporality-selectors.md)'s signature)
+- `include/microtel/internal/metric_producer.hpp`: `CollectRequest` gains a `callback_deadline` field (**locked internal interface**; it builds on [ICP 0045](0045-temporality-selectors.md)'s `Collect(const CollectRequest&)`, whose signature is unchanged)
 - `include/microtel/provider.hpp`: Doxygen only, for `DropReason::MetricCallbackTimeout`; its value (21) and `kDropReasonCount` are unchanged
 - `docs/metrics-design.md` §4, `docs/error-model.md` §3 (`metric_callback_timeout` loses *(not yet produced)*)
 - code: `src/sdk/metric_producer.{hpp,cpp}`, `src/sdk/metric_stream.hpp`, `src/sdk/periodic_exporting_metric_reader.{hpp,cpp}`
@@ -32,7 +32,16 @@ Each collection has a deadline: the export interval, capped by the time the call
    - Its series are **not** treated as unobserved under [ICP 0039](0039-metric-start-timestamps.md). Nothing is forgotten, and the next collection does not report any series as a first observation in full.
    - **Delta:** the next collection that runs the callback reports the change since the last observation that was exported, over a window starting at that observation's collection. One skipped cycle widens one window and over-counts nothing.
    - **Cumulative:** the series is absent from one export, then resumes with its running value and its original start time.
-7. **The interface.** ICP 0045's `IMetricProducer::Collect(const TemporalitySelector&)` becomes `Collect(const TemporalitySelector& selector, std::chrono::steady_clock::time_point callback_deadline)`. `callback_deadline` defaults to `time_point::max()`, meaning no deadline, for tests and for `SynchronousMetricReader`, which has no interval. `IMetricStream` gains `[[nodiscard]] virtual bool RunsCallback() const noexcept`, so the producer can tell async streams from sync ones without a cast.
+7. **The interface.** ICP 0045's `CollectRequest` gains a field, and `Collect(const CollectRequest& request = {})` keeps its signature:
+   ```cpp
+   struct CollectRequest
+   {
+       TemporalitySelector selector = TemporalitySelector::Cumulative();
+       std::chrono::steady_clock::time_point callback_deadline =
+           std::chrono::steady_clock::time_point::max();
+   };
+   ```
+   `time_point::max()` means no deadline. It is the default for tests and for `SynchronousMetricReader`, which has no interval. The periodic reader sets both fields, as in `Collect({.selector = m_selector, .callback_deadline = deadline})`. `IMetricStream` gains `[[nodiscard]] virtual bool RunsCallback() const noexcept`, so the producer can tell async streams from sync ones without a cast.
 8. **`MetricCallbackTimeout` Doxygen** changes from "exceeded the per-collection deadline; its measurements were dropped" to "skipped because the per-collection deadline had passed; its series kept their state".
 
 ## Tests the implementing PR adds
@@ -53,5 +62,6 @@ No public API change: `MetricCallbackTimeout` already exists and keeps its value
 - **Discard a late callback's measurements.** Rejected: the work is already done, so throwing away what it observed helps no one, and the next callback was delayed by the same amount either way.
 - **A new `OTEL_METRIC_EXPORT_TIMEOUT` setting.** Not needed: the reader has no export timeout to reuse, and the interval already bounds how long a collection may take before the next one is due.
 - **Run callbacks on worker threads so a slow one can be abandoned.** Rejected: threads per collection, plus a callback still running against a meter that the next collection reads.
-- **Rotate which async stream goes first.** Not now. Registration order is predictable and testable. Rotation only matters if flushes arrive with almost no time left over and over again, and it can be added later without changing the interface.
-- **Fold the selector and the deadline into one `CollectRequest` struct.** It would spare `Collect` the next parameter as well. Left to review: it is a one-line change to ICP 0045 if preferred.
+- **A known cost: a first callback that is always too slow starves the rest.** If the first async stream's callback always takes longer than the interval, the deadline has passed every time it returns, so every later async stream is skipped on every cycle and never exported. The `MetricCallbackTimeout` counter and the rate-limited log are the only signals that this is happening. The fix belongs in the application: make the callback faster, or lengthen the interval.
+- **Rotate which async stream goes first.** Deferred. Rotation would end the starvation above, but registration order is predictable and testable, and rotation can be added later without changing the interface.
+- **A second `Collect` parameter for the deadline.** Rejected in review: ICP 0045's `CollectRequest` takes the deadline as a defaulted field, so the locked signature does not change again.
