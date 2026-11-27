@@ -1,6 +1,6 @@
 # ICP 0047: Histogram instruments drop negative values
 
-**Status:** Draft — 2026-11-26. Milestone v1.3; tracking issue #458.
+**Status:** Accepted — 2026-11-27. Milestone v1.3; tracking issue #458.
 **Affected interfaces / docs:**
 - `include/microtel/provider.hpp`: append `DropReason::NegativeHistogramValue = 27`; `kDropReasonCount` 27 → 28 (**public health surface**)
 - `include/microtel/meter.hpp`: Doxygen for `Histogram::Record` and `ExponentialHistogram::Record`
