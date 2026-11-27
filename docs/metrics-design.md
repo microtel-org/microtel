@@ -68,10 +68,22 @@ and counter-reset semantics.
   safest default for an exporter-first project whose headline claim is wire
   compatibility.
 - The **delta path is fully implemented** and selectable per-reader via a
-  temporality preference (`cumulative` | `delta` | `lowmemory`, where
-  `lowmemory` = delta for Counter/Histogram, cumulative for UpDownCounter — the
-  OTel-defined preset). Per-View aggregation override can also force temporality
-  on a specific instrument.
+  temporality preference (`cumulative` | `delta` | `lowmemory`). Each preset
+  chooses temporality **per instrument kind**, as the
+  [OTLP exporter spec](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/sdk_exporters/otlp.md)
+  defines it ([ICP 0045](icps/0045-temporality-selectors.md)):
+
+  | Instrument kind | `cumulative` | `delta` | `lowmemory` |
+  |---|---|---|---|
+  | Counter, Histogram, ExponentialHistogram | Cumulative | Delta | Delta |
+  | ObservableCounter | Cumulative | Delta | Cumulative |
+  | UpDownCounter, ObservableUpDownCounter | Cumulative | Cumulative | Cumulative |
+  | Gauge, ObservableGauge | n/a | n/a | n/a |
+
+  The reader holds the preset as a `TemporalitySelector` and passes it in each
+  `CollectRequest`; every stream resolves its own temporality from its
+  instrument kind. A per-instrument or per-View temporality override is #299,
+  after v1.3.
 - Honor `OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE`.
 - **Point timestamps** (`time_unix_nano`, `start_time_unix_nano`) follow the
   OTel SDK "Start timestamps" rules; [ICP 0039](icps/0039-metric-start-timestamps.md)

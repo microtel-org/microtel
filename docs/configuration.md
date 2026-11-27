@@ -484,6 +484,18 @@ environment variables; there is no TOML table.
 | `WithMetricLimits({.max_cardinality = n})` | — | `MICROTEL_METRIC_CARDINALITY_LIMIT` (decimal integer) | 2000 |
 | `WithView(ViewConfig)` | — | — | no views |
 
+The temporality preference chooses temporality per instrument kind, as the
+OTLP exporter spec defines its presets
+([ICP 0045](icps/0045-temporality-selectors.md)):
+
+| Instrument kind | `cumulative` | `delta` | `lowmemory` |
+|---|---|---|---|
+| Counter, Histogram, ExponentialHistogram | cumulative | delta | delta |
+| ObservableCounter | cumulative | delta | cumulative |
+| UpDownCounter, ObservableUpDownCounter | cumulative | cumulative | cumulative |
+
+Gauges have no temporality under any preset.
+
 ### 3.14 Concentrator (leaf receiver)
 
 Experimental in v1.2, and compiled in only with `-DMICROTEL_WITH_CONCENTRATOR=ON`

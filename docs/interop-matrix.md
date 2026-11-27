@@ -80,7 +80,7 @@ accept what microtel emits, and is what it decodes what microtel meant?
 | Logs trace correlation (in-span record carries the span's ids; out-of-span record carries none) | ✅ | ✅ |
 | Logs with gzip request compression | ✅ | ✅ |
 | Metrics round-trip (Counter, UpDownCounter, Gauge, explicit and exponential Histogram, the three observable kinds; data points, attributes, resource, scope) | ✅ (`/v1/metrics`, TLS) | ✅ (`MetricsService/Export`) |
-| Metrics temporality (cumulative and delta) and data-point timestamps (`0 < start ≤ time`; delta windows chain, ICP 0039) | ✅ | ✅ |
+| Metrics temporality (cumulative and delta; the `delta` and `lowmemory` presets per instrument kind, ICP 0045) and data-point timestamps (`0 < start ≤ time`; delta windows chain, ICP 0039) | ✅ | ✅ |
 | Metrics with gzip request compression | ✅ | ✅ |
 
 The two suites are deliberate per-file duplicates rather than one parameterised
