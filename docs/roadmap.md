@@ -29,6 +29,7 @@ finishing and stabilizing that code, not writing it.
 | v1.2.4 Patch | Done (#462) | Exponential histograms encoded (#447); metric data points carry time and start time ([ICP 0039](icps/0039-metric-start-timestamps.md), #449); observable sums report deltas under delta temporality (#453); span and link `trace_state` and flags encoded (#452); metrics conformance against the collector on both protocols, and a known-limitations section in the README (#459) |
 | v1.3 Metrics | Mostly done, experimental | Async-callback deadline: the export interval, capped by the caller's remaining time (#237, [ICP 0046](icps/0046-async-callback-deadline.md)); per-kind Delta/LowMemory presets (#455, [ICP 0045](icps/0045-temporality-selectors.md)); the meter scope's `schema_url` exported and part of the meter's identity (#456, [ICP 0048](icps/0048-meter-identity-includes-schema-url.md); tracer and logger scopes have none to export); Histogram instruments drop negative values, counted (#458, [ICP 0047](icps/0047-histogram-drops-negative-values.md)); collector conformance for the cardinality-overflow series (#302, done); exemplars not supported in v1.3, with capture off and no public option (#544, [ICP 0043](icps/0043-exemplar-capture-off-in-v1.3.md)) |
 | Metrics: additive features (after v1.3) | Not started | View aggregation override (#298); per-instrument or per-View temporality (#299); `Timer`/`Counter` sugar (#301); exemplar export (#454); OTel exemplar reservoirs and `OTEL_METRICS_EXEMPLAR_FILTER` (#300). Unnumbered: each ships in the next minor release after it is done |
+| Leaf: metrics and logs (after v1.3) | Design in review ([ICP 0049](icps/0049-leaf-metrics-logs-scope-and-build-selection.md), [ICP 0050](icps/0050-leaf-metrics-logs-wire-and-ingest.md), Draft) | Worked on straight after v1.3, metrics first, then logs ([`leaf-metrics-logs-design.md`](leaf-metrics-logs-design.md)): the shared-core split with every leaf signal selectable at compile time; leaf counter, up-down counter and gauge; histogram; concentrator metrics ingest; leaf logs; concentrator logs ingest (#542, #543). Unnumbered: released as the next minor |
 | v1.4 Control plane | Not started | Unix-socket server, `microtelctl`, threat model, operator guide (ICP 0024); mTLS rotation (#296, #297) |
 | Tier 3 otel-cpp shim | Done for all three signals, experimental | Beta gates in §10 (real-world app testing, frozen API, deprecation policy) |
 | v1.5 Conformance push | Not started | Custom samplers are reachable through `SamplerHandle` but not a documented extension point; histogram buckets can be set per instrument but not through Views |
@@ -198,6 +199,21 @@ Then implementation:
 **Compatibility tier:** Tier 1 and Tier 2 advance to include metrics. Tier 3 shim adds metric instruments, still experimental. *(The shim's metric instruments are already done.)*
 
 **Anti-goals in v1.3:** no advanced exemplar formats, no metric backfill / persistence, no `NO_RECORDED_VALUE` points for series that stop reporting (#457, closed by design: the OTel SDK spec doesn't ask for them; see `docs/metrics-design.md` §4).
+
+---
+
+### Leaf: metrics and logs (after v1.3)
+
+**Theme:** the leaf's second and third signals, with metrics first. An unnumbered milestone, worked on straight after v1.3 and released as the next minor; v1.4 to v1.6 keep their numbers ([ICP 0049](icps/0049-leaf-metrics-logs-scope-and-build-selection.md)).
+
+**Status:** design in review ([`leaf-metrics-logs-design.md`](leaf-metrics-logs-design.md), Draft). No code until it is signed off.
+
+- **Compile-time selection.** `MICROTEL_LEAF_TRACES` (on), `MICROTEL_LEAF_METRICS` and `MICROTEL_LEAF_LOGS` (off while experimental), and one switch per metric kind, as plain C defines. A disabled signal has no API and is not linked; a trace-only leaf is unchanged in API, bytes and footprint.
+- **Leaf metrics** (#542): counter, up-down counter and gauge, then explicit-bucket histograms with build-time bounds; aggregated on the leaf; proposed cumulative since boot on the wire with a per-boot start time and a sequence number ([ICP 0050](icps/0050-leaf-metrics-logs-wire-and-ingest.md)), which would reverse the delta-only rule of `leaf-concentrator-design.md` §6.4.
+- **Concentrator metrics ingest**, forwarding each leaf's points as received.
+- **Leaf logs** (#543) and **concentrator logs ingest**.
+
+**Anti-goals:** no exponential histograms on the leaf; no re-aggregation at the concentrator; no reliable delivery on the leaf link (loss is repaired for metrics by cumulative values and counted for logs).
 
 ---
 
@@ -493,6 +509,7 @@ Brief notes on decisions whose rationale spans multiple releases and influences 
 | Leaf / concentrator in v1.3 as experimental, with upb **and** nanopb leaf backends | [ICP 0031](icps/0031-leaf-concentrator-in-v1.3.md) | Reverses the v1.0 design's release target for the leaf (v2.0) and the "upb first, nanopb later" row above. The leaf is the strongest pitch for IoT fleets, and most of those devices are Cortex-M, which only nanopb reaches. Nothing in the design needed a major version: the receiver and enrichment hooks never existed as internal interfaces, so they arrive as new API. v2.0 becomes the release where that API goes stable. | v1.3, v2.0, v2.1 |
 | v1.1.1 patch for the concentrator's prerequisites; release order becomes v1.2 logs + leaf, v1.3 metrics, v1.4 control plane, v1.5 conformance push, v1.6 performance | [ICP 0032](icps/0032-release-reorder-v1.1.1.md) | Only #257 and #222 block the concentrator, so they ship first as a patch. Metrics and the control plane share no code and have very different amounts of work left, so they no longer share a release. Earlier rows keep the numbers they were decided under. | v1.1.1–v1.6 |
 | v1.3 keeps only metrics work that changes existing behaviour or fixes exported data; additive metrics features move to an unnumbered milestone | Milestone change, 2026-11-17 (no ICP: no release is renumbered) | v1.3 is the release that makes metrics supported. Additive features don't affect that promise, so they no longer hold it up. They ship in whichever minor release follows once each is done. Unrelated transport, packaging and docs issues left the v1.3 milestone for v1.6 and v1.2.7. Exemplars are declared unsupported in v1.3, with capture off by default (#544), rather than exported: export and reservoirs (#454, #300) move to the additive milestone. | v1.3 |
+| Leaf metrics before leaf logs, in an unnumbered milestone straight after v1.3; every leaf signal selectable at compile time | [ICP 0049](icps/0049-leaf-metrics-logs-scope-and-build-selection.md) (Draft) | Reverses `leaf-concentrator-design.md` §1.3's logs-first order: IoT fleets mostly want counters and gauges, and free text fits poorly in a few hundred bytes of buffer. No release is renumbered. | the milestone after v1.3 |
 
 This log is appended to, never rewritten. When a decision is reversed, the original entry stays and a new entry records the reversal with rationale — the control-plane deferral is the first.
 

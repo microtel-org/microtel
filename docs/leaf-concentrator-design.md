@@ -50,7 +50,9 @@ Out of scope, unchanged from the v1.0 design and ICP 0031 Decision 1:
 - Pass-through forwarding of raw leaf bytes.
 - Any inbound socket in microtel. The application owns the transport.
 - Leaf metrics and leaf logs (§1.3 explains why; §6.4 says what metrics will
-  need when they come).
+  need when they come). Their design is now
+  [`leaf-metrics-logs-design.md`](leaf-metrics-logs-design.md) (Draft), for the
+  milestone after v1.3.
 - Leaf authentication, concentrator HA and multi-tenant routing (v2.2).
 
 ## Sign-off checklist
@@ -153,6 +155,11 @@ Rationale:
 
 Logs are the natural second signal and can follow in a later 1.x minor as an
 additive API. Metrics follow after that, delta-only.
+
+> **Proposed change ([ICP 0049](icps/0049-leaf-metrics-logs-scope-and-build-selection.md), Draft):**
+> metrics come first, then logs, in a milestone after v1.3, with every signal
+> selectable at compile time. See
+> [`leaf-metrics-logs-design.md`](leaf-metrics-logs-design.md).
 
 ### 1.4 Types and memory ownership
 
@@ -1831,6 +1838,13 @@ and the concentrator rejects cumulative leaf metrics as `Malformed`.**
 
 This is recorded now so the leaf's metrics design starts from it. It does not
 affect v1.2, which has no leaf metrics (§1.3).
+
+> **Proposed reversal ([ICP 0050](icps/0050-leaf-metrics-logs-wire-and-ingest.md), Draft):**
+> leaf metrics are sent cumulative since boot, so a lost payload is made up by
+> the next one, with a start time the concentrator caches once per leaf boot
+> instead of per series. Both objections above are met without per-series
+> state; see [`leaf-metrics-logs-design.md`](leaf-metrics-logs-design.md) §2.2,
+> question 9.
 
 ---
 
