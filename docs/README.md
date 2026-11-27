@@ -30,6 +30,7 @@ public headers in [`include/microtel/`](../include/microtel/).
 |---|---|
 | [leaf/README.md](../leaf/README.md) | The C leaf library for microcontrollers; start here. |
 | [leaf-concentrator-design.md](leaf-concentrator-design.md) | Design of the leaf and of the concentrator that receives its spans. |
+| [leaf-metrics-logs-design.md](leaf-metrics-logs-design.md) | Design of leaf metrics and logs, and their concentrator ingest (Draft). |
 | [bench-results/leaf-footprint.md](bench-results/leaf-footprint.md) | Measured flash, RAM and stack of the leaf on each target and backend. |
 | [examples/leaf](../examples/leaf/README.md), [examples/leaf_mqtt](../examples/leaf_mqtt/README.md) | A leaf and a concentrator over UDP and over MQTT. |
 
