@@ -187,10 +187,17 @@ Three things worth knowing:
   deployment to `http://collector:4317` with `OTEL_EXPORTER_OTLP_PROTOCOL=grpc`,
   or to `https://collector:4318`. See
   [`compatibility-matrix.md`](compatibility-matrix.md) §4.
-- Per-signal env vars for signals v1 doesn't yet resolve independently (e.g.
-  `OTEL_EXPORTER_OTLP_METRICS_ENDPOINT` as distinct from the unsigned
-  `OTEL_EXPORTER_OTLP_ENDPOINT`) are **ignored, not rejected**
-  (`configuration.md` §2.2).
+- **Per-signal endpoints work if they share one origin.**
+  `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`, `_METRICS_ENDPOINT` and
+  `_LOGS_ENDPOINT` are read, and each URL is used as-is for its signal. A
+  deployment that sets only `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`, as Helm
+  charts and the OTel Operator often do, carries over. microtel exports every
+  signal over one connection, so if two endpoints name different scheme, host
+  or port, `Build()` fails with `InvalidValue` where opentelemetry-cpp would
+  open two connections. Every other per-signal variable (`_HEADERS`,
+  `_PROTOCOL`, `_TIMEOUT` and so on) is ignored with one `Warn` each; set
+  the shared `OTEL_EXPORTER_OTLP_*` form instead (`configuration.md` §2.2,
+  §3.3).
 - There is no `microtel.toml` equivalent of opentelemetry-cpp's own YAML
   declarative-configuration file format. Translate your settings to the
   `SdkBuilder` calls or the env vars in the referenced table.

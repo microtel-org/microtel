@@ -10,6 +10,15 @@ microtel_add_test(
 
 target_include_directories(config_test PRIVATE ${PROJECT_SOURCE_DIR}/src)
 
+# The per-signal OTLP exporter variables: one origin, a path per signal, and a
+# warning for each per-signal variable microtel does not implement.
+microtel_add_test(
+    NAME    signal_endpoint_test
+    SOURCES signal_endpoint_test.cpp
+    LIBS    microtel_config)
+
+target_include_directories(signal_endpoint_test PRIVATE ${PROJECT_SOURCE_DIR}/src)
+
 # Issue #200 — the ON half of the MICROTEL_FORBID_INSECURE_TLS gate.
 #
 # The macro is compiled into microtel_config, so whether the check fires is

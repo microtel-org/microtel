@@ -20,6 +20,32 @@
 namespace microtel::testing
 {
 
+/// @brief Gives @p builder the test timeouts and batch delay, and no endpoint.
+///
+/// For a test whose endpoint comes from the environment, which `WithEndpoint`
+/// would outrank (`docs/configuration.md` §3.3).
+///
+/// @param builder the builder to configure; borrowed for the call only.
+/// @return @p builder, for chaining.
+inline SdkBuilder& ConfigureConformanceTimeouts(SdkBuilder& builder)
+{
+    return builder
+        .WithTimeouts(TimeoutOptions{
+            .connect = std::chrono::seconds(5),
+            .tls_handshake = std::chrono::seconds(5),
+            .per_export = std::chrono::seconds(5),
+            // flush and shutdown stay generous: they bound a drain, and cutting
+            // them short would report TimedOut for a batch that was merely slow.
+            .flush = std::chrono::seconds(30),
+            .shutdown = std::chrono::seconds(10),
+        })
+        .WithBatch(BatchOptions{
+            // 100 ms instead of the 5 s default so ForceFlush is not the only
+            // thing that ever moves a batch.
+            .schedule_delay = std::chrono::milliseconds(100),
+        });
+}
+
 /// @brief Points @p builder at the conformance collector with test timeouts.
 ///
 /// Takes the builder by reference rather than returning a fresh one: the
@@ -39,22 +65,7 @@ inline SdkBuilder& ConfigureConformanceBuilder(SdkBuilder& builder,
                                                const std::string& endpoint,
                                                const Protocol proto)
 {
-    return builder.WithEndpoint(endpoint)
-        .WithProtocol(proto)
-        .WithTimeouts(TimeoutOptions{
-            .connect = std::chrono::seconds(5),
-            .tls_handshake = std::chrono::seconds(5),
-            .per_export = std::chrono::seconds(5),
-            // flush and shutdown stay generous: they bound a drain, and cutting
-            // them short would report TimedOut for a batch that was merely slow.
-            .flush = std::chrono::seconds(30),
-            .shutdown = std::chrono::seconds(10),
-        })
-        .WithBatch(BatchOptions{
-            // 100 ms instead of the 5 s default so ForceFlush is not the only
-            // thing that ever moves a batch.
-            .schedule_delay = std::chrono::milliseconds(100),
-        });
+    return ConfigureConformanceTimeouts(builder.WithEndpoint(endpoint).WithProtocol(proto));
 }
 
 }  // namespace microtel::testing

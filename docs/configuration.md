@@ -46,7 +46,7 @@ Method calls on `SdkBuilder`. Highest precedence. Each `WithXxx` call records th
 
 ### 2.2 Environment variables
 
-Read at `Build()` time. Both `OTEL_*` and `MICROTEL_*` namespaces. Per-signal exporter env vars (e.g., `OTEL_EXPORTER_OTLP_METRICS_ENDPOINT`, `OTEL_EXPORTER_OTLP_LOGS_ENDPOINT`) are not implemented and are **ignored, not rejected**. Traces, metrics and logs all export through the shared `OTEL_EXPORTER_OTLP_*` settings. The one per-signal variable read is `OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE` (§3.13).
+Read at `Build()` time. Both `OTEL_*` and `MICROTEL_*` namespaces. Traces, metrics and logs all export over one connection, through the shared `OTEL_EXPORTER_OTLP_*` settings. Of the per-signal exporter variables, microtel reads the three endpoints, `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`, `OTEL_EXPORTER_OTLP_METRICS_ENDPOINT` and `OTEL_EXPORTER_OTLP_LOGS_ENDPOINT`, provided every endpoint in effect shares one origin (§3.3), and `OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE` (§3.13). Every other per-signal exporter variable (`OTEL_EXPORTER_OTLP_{TRACES,METRICS,LOGS}_{HEADERS,PROTOCOL,TIMEOUT,COMPRESSION,CERTIFICATE,CLIENT_KEY,CLIENT_CERTIFICATE,INSECURE}`) is not implemented: it is ignored, and `Build()` logs one `Warn` per variable set, naming it and the shared setting that applies instead. Through v1.2.6 all of them, the endpoints included, were ignored without a warning.
 
 The key=value list variables (`OTEL_EXPORTER_OTLP_HEADERS`, `OTEL_RESOURCE_ATTRIBUTES`, `MICROTEL_CONCENTRATOR_RESOURCE_ATTRIBUTES`) use the W3C Baggage list format without metadata, as the OTel spec specifies. Whitespace around each key and value is dropped, so `a=1, b=2` sets `b`. Values are percent-decoded: `authorization=Bearer%20<token>` sends `Bearer <token>`, and a literal `%` is `%25`. Keys are not decoded. A `%` not followed by two hex digits fails `Build()` with `EnvParseFailure` (issue #413).
 
@@ -152,7 +152,8 @@ not a failure under either policy.
 
 | TOML | Code | OTEL env | MICROTEL env | Default | Notes |
 |---|---|---|---|---|---|
-| `exporter.endpoint` | `WithEndpoint(s)` | `OTEL_EXPORTER_OTLP_ENDPOINT` | — | none (required) | If unset, `Build` fails with `ConfigError::EndpointMalformed`. |
+| `exporter.endpoint` | `WithEndpoint(s)` | `OTEL_EXPORTER_OTLP_ENDPOINT` | — | none (required) | If neither this nor a per-signal endpoint is set, `Build` fails with `ConfigError::EndpointMalformed`. |
+| — | — (`WithEndpoint` overrides them, below) | `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`, `OTEL_EXPORTER_OTLP_METRICS_ENDPOINT`, `OTEL_EXPORTER_OTLP_LOGS_ENDPOINT` | — | unset | One signal's endpoint, used as-is. Every endpoint in effect must share one origin. See "Per-signal endpoints" below. |
 | `exporter.protocol` | `WithProtocol(p)` | `OTEL_EXPORTER_OTLP_PROTOCOL` | — | **`http`**, or `grpc` for a `grpc://` / `grpcs://` endpoint | `http` or `grpc`. See "Endpoint scheme and protocol" below. |
 | `exporter.compression` | `WithCompressionGzip(b)` | `OTEL_EXPORTER_OTLP_COMPRESSION` | — | off | TOML/env value is `gzip` to enable; anything else is off. The code setter is a `bool`, not a codec name — gzip is the only compression v1 implements. Controls **requests**: gzip request bodies with `content-encoding: gzip` (HTTP) or frame flag `0x01` with `grpc-encoding: gzip` (gRPC). Responses are independent — `accept-encoding` / `grpc-accept-encoding: gzip` is advertised whatever this is set to, and a compressed response is inflated under `MemoryLimitOptions::max_decompressed_bytes`. |
 | `[exporter.headers]` table | `WithHeaders({...})` | `OTEL_EXPORTER_OTLP_HEADERS` (csv `k=v,k=v`; see §2.2) | — | empty | Merged per key across sources (§1): each source overrides only the headers it names. Header names compare ASCII case-insensitively (`authorization` overrides `Authorization`; the higher source's spelling is kept). Static headers, fixed for the process lifetime; runtime auth via `WithAuthProvider` is separate. `Build()` fails with `InvalidValue` on `exporter.headers.<name>` for a name that HTTP/2 forbids or that microtel sets itself: a pseudo-header or other non-token name; `connection`, `keep-alive`, `proxy-connection`, `transfer-encoding`, `upgrade`, `te`, `host`; on gRPC `content-type`, `user-agent`, `grpc-encoding`, `grpc-accept-encoding`, `content-length`; on HTTP/protobuf `content-type`, `content-length`, `content-encoding`, `accept-encoding`. A static `authorization` fails the same way when `WithAuthProvider` is set ([ICP 0038](icps/0038-reject-reserved-request-headers.md)), and so does a value with CR, LF or NUL, or with a space or tab at either end (RFC 9113 §8.2.1, #412). `WithAuthProvider` has no TOML or env surface — it takes a callable. See [`auth-callback-recipes.md`](auth-callback-recipes.md) for OAuth2 and SigV4, and for what the callback runs on (an exporter worker) before you put I/O in it. |
@@ -195,12 +196,100 @@ not a replacement. (Before #203 landed, the shorthand was normalised for TLS
 only and left `protocol` at its default, so `grpc://` silently spoke OTLP/HTTP
 at a gRPC port.)
 
-**No per-signal env vars.** `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT` and
-`OTEL_EXPORTER_OTLP_TRACES_PROTOCOL` were listed here and are read by nothing —
-`src/common/config/env_resolver.cpp` handles the unsuffixed forms only. Setting
-a `_TRACES_` variable changes no behaviour and produces no warning. Per §2.2
-that silence is deliberate for signals microtel does not implement; for traces
-it is a gap, not a policy.
+**Per-signal endpoints.** `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`,
+`OTEL_EXPORTER_OTLP_METRICS_ENDPOINT` and `OTEL_EXPORTER_OTLP_LOGS_ENDPOINT` each
+set one signal's endpoint, as the OTel spec defines them. microtel sends all
+three signals over **one connection**, so it can honour them only when they
+agree on where that connection goes. The rules, applied at `Build()`:
+
+1. **Precedence.** A per-signal variable overrides the base endpoint
+   (`OTEL_EXPORTER_OTLP_ENDPOINT` or `exporter.endpoint`) for its own signal,
+   which is environment over file (§1). `WithEndpoint` in code sets the
+   endpoint of every signal and outranks the whole environment, the per-signal
+   variables included: with `WithEndpoint` set, a per-signal variable is not
+   in effect, and `Build()` logs one `Warn` naming it.
+2. **Endpoints in effect.** Each set per-signal variable is in effect for its
+   signal. The base endpoint is in effect when at least one signal has no
+   per-signal variable. With all three per-signal variables set, the base is
+   unused: it is neither parsed nor compared.
+3. **One origin.** The origin is scheme, host and port, after the default
+   port is filled in and the `grpc://` / `grpcs://` shorthand is applied
+   (`grpc://` is `http://` and `grpcs://` is `https://`, above). Every
+   endpoint in effect must have the same origin, which is the connection's.
+   If two differ, `Build()` fails with `ConfigError::Kind::InvalidValue`; see
+   the message below.
+4. **No base endpoint.** If the base is unset, the first per-signal variable
+   set (in the order traces, metrics, logs) supplies the origin. A signal
+   without its own variable then uses its default path on that origin. There
+   is no `localhost` fallback, because microtel has no built-in default
+   endpoint.
+5. **Paths, OTLP/HTTP.** A per-signal endpoint's path is the request path,
+   used as-is with nothing appended. No path means `/`, and a trailing slash
+   is kept. A signal on the base endpoint uses the base's path followed by
+   `/v1/traces`, `/v1/metrics` or `/v1/logs`, joined with one slash, so
+   `http://c:4318/otlp/` sends traces to `/otlp/v1/traces`. (Through v1.2.6
+   the base path reached traces only: metrics and logs went to `/v1/metrics`
+   and `/v1/logs` whatever the base path, and a trailing slash gave traces
+   `/otlp//v1/traces`.)
+6. **Paths, OTLP/gRPC.** The service fixes the method paths
+   (`/opentelemetry.proto.collector.trace.v1.TraceService/Export` and its
+   metrics and logs equivalents), so a per-signal endpoint contributes only
+   its origin. A path on one, other than `/`, is ignored with one `Warn` that
+   names the variable and the path. A path on the base endpoint is still
+   refused (`ProtocolMismatch`, above). A `grpc://` or `grpcs://` scheme on
+   any endpoint in effect selects gRPC for all three signals, as it does on
+   the base endpoint.
+7. **A custom transport.** With `WithExportTransport` (§3.15) no endpoint is
+   in effect: the per-signal variables join the one `Warn` that lists the
+   ignored exporter settings, are not validated, and take no part in the
+   origin check. On the HTTP/2 path, all three signal pipelines are always
+   built, so every per-signal variable that is set is in effect.
+
+| Set | Connection | Traces | Metrics | Logs |
+|---|---|---|---|---|
+| `TRACES_ENDPOINT=http://c:4318/v1/traces` only | `c:4318` | `/v1/traces` | `/v1/metrics` | `/v1/logs` |
+| `TRACES_ENDPOINT=http://c:4318` only | `c:4318` | `/` | `/v1/metrics` | `/v1/logs` |
+| `ENDPOINT=http://c:4318/gw`, `METRICS_ENDPOINT=http://c:4318/m` | `c:4318` | `/gw/v1/traces` | `/m` | `/gw/v1/logs` |
+| all three on `https://c` with paths `/a`, `/b`, `/c` | `c:4318` (TLS) | `/a` | `/b` | `/c` |
+| `ENDPOINT=http://c:4318`, `TRACES_ENDPOINT=http://c/v1/traces` | `c:4318`: the omitted port defaults to 4318 | `/v1/traces` | `/v1/metrics` | `/v1/logs` |
+| `PROTOCOL=grpc`, `TRACES_ENDPOINT=http://c:4317/v1/traces` | `c:4317` | `TraceService/Export`, with a `Warn` that the path is ignored | `MetricsService/Export` | `LogsService/Export` |
+| `ENDPOINT=http://c:4318`, `METRICS_ENDPOINT=http://m:4318/v1/metrics` | `Build()` fails | | | |
+| `WithEndpoint("http://c:4318")`, `TRACES_ENDPOINT=http://t:4318` | `c:4318`, and a `Warn` that `TRACES_ENDPOINT` is ignored | `/v1/traces` | `/v1/metrics` | `/v1/logs` |
+
+(The `OTEL_EXPORTER_OTLP_` prefix is dropped from the variable names above.)
+The default port is 4318 for OTLP/HTTP and 4317 for OTLP/gRPC, whatever the
+scheme, as for the base endpoint. That differs from the OTel spec, which
+defaults an `http` URL with no port to 80 and an `https` one to 443.
+
+The refusal names both variables, their origins and the reason. It sets
+`field` to the variable that disagreed with an endpoint already resolved:
+
+```
+OTEL_EXPORTER_OTLP_METRICS_ENDPOINT (http://m:4318) and OTEL_EXPORTER_OTLP_ENDPOINT (http://c:4318) resolve to different origins; microtel exports every signal over one connection, so every endpoint in effect must share one scheme, host and port
+```
+
+The base endpoint is named by where it came from:
+`OTEL_EXPORTER_OTLP_ENDPOINT`, or `exporter.endpoint` for the file. A
+malformed per-signal URL fails with `EndpointMalformed`, as a malformed base
+endpoint does, with `field` set to the variable's name. Through v1.2.6 the
+three variables were read by nothing, and setting one had no effect and
+logged no warning.
+
+**Other per-signal variables.** `OTEL_EXPORTER_OTLP_<SIGNAL>_HEADERS`,
+`_PROTOCOL`, `_TIMEOUT`, `_COMPRESSION`, `_CERTIFICATE`, `_CLIENT_KEY`,
+`_CLIENT_CERTIFICATE` and `_INSECURE`, for each of `TRACES`, `METRICS` and
+`LOGS`, are not implemented. Each one set is ignored, and `Build()` logs one
+`Warn` naming it and the setting that applies to every signal instead. For
+example:
+
+```
+[microtel warn] OTEL_EXPORTER_OTLP_TRACES_HEADERS is set but per-signal exporter settings are not supported, so it is ignored; microtel exports every signal over one connection, and OTEL_EXPORTER_OTLP_HEADERS applies to all of them
+```
+
+The shared settings are `OTEL_EXPORTER_OTLP_HEADERS`, `_PROTOCOL`, `_TIMEOUT`,
+`_COMPRESSION` and `_CERTIFICATE`. `_CLIENT_KEY`, `_CLIENT_CERTIFICATE` and
+`_INSECURE` have no environment form even unsuffixed (§3.5), so their warnings
+point at `tls.client_key`, `tls.client_cert` and `tls.insecure`.
 
 ### 3.4 Exporter — timeouts (six independent)
 

@@ -547,6 +547,25 @@ TEST(ExportTransportBuilderTest, EnvironmentExporterSettings_AreIgnoredWithOneWa
     EXPECT_EQ(capture.WarnsContaining("plaintext"), 0U) << "no HTTP warnings for a custom link";
 }
 
+// A custom transport has no endpoint, so a per-signal endpoint is not in
+// effect either: it joins the one ignored-settings Warn, is not validated, and
+// takes no part in an origin check.
+TEST(ExportTransportBuilderTest, PerSignalEndpoints_AreIgnoredInTheOneWarn)
+{
+    const LogCapture capture;
+    const EnvVar traces{"OTEL_EXPORTER_OTLP_TRACES_ENDPOINT", "not a url"};
+    const EnvVar metrics{"OTEL_EXPORTER_OTLP_METRICS_ENDPOINT", "http://a:4318/m"};
+    const EnvVar logs{"OTEL_EXPORTER_OTLP_LOGS_ENDPOINT", "http://b:4318/l"};
+
+    const auto provider = BuildWith(std::make_unique<mtt::MockExportTransport>());
+    ASSERT_NE(provider, nullptr);
+
+    EXPECT_EQ(capture.WarnsContaining("ignored"), 1U);
+    EXPECT_EQ(capture.WarnsContaining("OTEL_EXPORTER_OTLP_TRACES_ENDPOINT"), 1U);
+    EXPECT_EQ(capture.WarnsContaining("OTEL_EXPORTER_OTLP_METRICS_ENDPOINT"), 1U);
+    EXPECT_EQ(capture.WarnsContaining("OTEL_EXPORTER_OTLP_LOGS_ENDPOINT"), 1U);
+}
+
 TEST(ExportTransportBuilderTest, NoExporterSettingsAnywhere_NoWarn)
 {
     const LogCapture capture;

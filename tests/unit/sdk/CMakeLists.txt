@@ -237,6 +237,13 @@ microtel_add_test(
     SOURCES sdk_builder_test.cpp
     LIBS    microtel_sdk)
 
+# The per-signal OTLP exporter variables at Build(): one origin, the gRPC path
+# rule, WithEndpoint precedence, and a Warn for each unsupported variable.
+microtel_add_test(
+    NAME    signal_endpoint_builder_test
+    SOURCES signal_endpoint_builder_test.cpp
+    LIBS    microtel_sdk)
+
 # ICP 0036: SdkBuilder::WithExportTransport through a real Provider.
 microtel_add_test(
     NAME    export_transport_builder_test

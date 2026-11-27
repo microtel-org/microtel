@@ -98,6 +98,18 @@ Source: `src/common/config/config_validator.cpp` (`ParseEndpointUrl`,
   (`ProtocolMismatch`, field `exporter.endpoint`) **→** drop the path. A
   gRPC endpoint is `https://collector:4317`; `/v1/traces` belongs to OTLP/HTTP
   only.
+- **If you see** `<VAR> (<origin>) and <VAR> (<origin>) resolve to different
+  origins; microtel exports every signal over one connection, ...`
+  (`InvalidValue`, field `OTEL_EXPORTER_OTLP_<SIGNAL>_ENDPOINT`) **→** two
+  endpoints in effect name different collectors, or the same collector by a
+  different scheme, host or port. microtel sends every signal over one
+  connection. Point the per-signal variables at one collector, or unset the
+  one that disagrees. An omitted port counts as 4318 (OTLP/HTTP) or 4317
+  (OTLP/gRPC), so `http://c` and `http://c:4318` agree
+  ([configuration.md](configuration.md) §3.3).
+- **If a malformed `OTEL_EXPORTER_OTLP_<SIGNAL>_ENDPOINT`** is the cause
+  **→** expect the same `EndpointMalformed` errors, with `field` set to that
+  variable's name.
 - **If you see** `endpoint scheme "grpc://" selects OTLP/gRPC but protocol is
   set to "http"; use an http:// or https:// endpoint, or drop the explicit
   protocol` (`ProtocolMismatch`, field `exporter.protocol`) **→** do what it
@@ -286,6 +298,22 @@ appear on stderr as `[microtel warn] ...` unless you installed a sink.
   variable or `[exporter]`/`[tls]` key is set but has no effect with
   `WithExportTransport`; remove it. Source: `src/sdk/sdk_builder.cpp`,
   `WarnOnCustomTransport`.
+- **If you see** `OTEL_EXPORTER_OTLP_<SIGNAL>_<SETTING> is set but per-signal
+  exporter settings are not supported, so it is ignored; ...` **→** the
+  variable has no effect: microtel exports every signal over one connection
+  with one set of exporter settings. Set the shared setting the message names
+  (for example `OTEL_EXPORTER_OTLP_HEADERS` for `_TRACES_HEADERS`) and unset
+  the per-signal one. Source: `src/common/config/env_resolver.cpp`.
+- **If you see** `OTEL_EXPORTER_OTLP_<SIGNAL>_ENDPOINT is ignored: WithEndpoint
+  in code sets the endpoint for every signal and outranks the environment`
+  **→** the code's endpoint wins for every signal (configuration.md §1, §3.3).
+  Drop the `WithEndpoint` call if the deployment's variables should decide.
+  Source: `src/sdk/sdk_builder.cpp`.
+- **If you see** `OTEL_EXPORTER_OTLP_<SIGNAL>_ENDPOINT: path "<path>" ignored;
+  OTLP/gRPC request paths are fixed by the service, ...` **→** under OTLP/gRPC
+  a per-signal endpoint gives only the scheme, host and port. Drop the path,
+  or set `OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf` if the path was meant for
+  an OTLP/HTTP receiver. Source: `src/common/config/config_validator.cpp`.
 - **If you see** `export transport: traces are off in ExportTransportOptions;
   the sampler is always-off and no span is recorded` **→** set `traces = true`
   in `ExportTransportOptions` if you meant to export spans. The metrics and

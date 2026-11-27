@@ -101,7 +101,8 @@ struct AuthorityPath
 
 /// Parse the port component of an endpoint URL.
 [[nodiscard]] microtel::Expected<std::uint16_t, ConfigError> ParsePort(std::string_view port_str,
-                                                                       Protocol protocol)
+                                                                       Protocol protocol,
+                                                                       std::string_view field)
 {
     if (port_str.empty())
     {
@@ -114,7 +115,7 @@ struct AuthorityPath
         parsed == 0)
     {
         return microtel::make_unexpected(ConfigError{.kind = ConfigError::Kind::EndpointMalformed,
-                                                     .field = "exporter.endpoint",
+                                                     .field = std::string{field},
                                                      .message = "invalid port in endpoint URL"});
     }
     return static_cast<std::uint16_t>(parsed);
@@ -122,13 +123,16 @@ struct AuthorityPath
 
 /// Parse an endpoint URL into ParsedEndpoint components.
 /// Does not validate file-system resources.
+///
+/// @param field what a failure names: `exporter.endpoint` for the base
+///        endpoint, the variable's name for a per-signal one.
 [[nodiscard]] microtel::Expected<ParsedEndpoint, ConfigError> ParseEndpointUrl(
-    const std::string& url, Protocol protocol)
+    const std::string& url, Protocol protocol, std::string_view field)
 {
     if (url.empty())
     {
         return microtel::make_unexpected(ConfigError{.kind = ConfigError::Kind::EndpointMalformed,
-                                                     .field = "exporter.endpoint",
+                                                     .field = std::string{field},
                                                      .message = "endpoint URL is empty"});
     }
 
@@ -137,7 +141,7 @@ struct AuthorityPath
     {
         return microtel::make_unexpected(
             ConfigError{.kind = ConfigError::Kind::EndpointMalformed,
-                        .field = "exporter.endpoint",
+                        .field = std::string{field},
                         .message = "endpoint URL missing scheme (expected https:// or http://)"});
     }
 
@@ -155,7 +159,7 @@ struct AuthorityPath
     {
         return microtel::make_unexpected(
             ConfigError{.kind = ConfigError::Kind::EndpointMalformed,
-                        .field = "exporter.endpoint",
+                        .field = std::string{field},
                         .message = "unsupported scheme: " + std::string{scheme}});
     }
 
@@ -164,12 +168,12 @@ struct AuthorityPath
     if (ap.host.empty())
     {
         return microtel::make_unexpected(ConfigError{.kind = ConfigError::Kind::EndpointMalformed,
-                                                     .field = "exporter.endpoint",
+                                                     .field = std::string{field},
                                                      .message = "endpoint URL has empty host"});
     }
 
     // Parse optional port.
-    auto port_result = ParsePort(ap.port_str, protocol);
+    auto port_result = ParsePort(ap.port_str, protocol, field);
     if (!port_result)
     {
         return microtel::make_unexpected(port_result.error());
@@ -206,13 +210,35 @@ struct AuthorityPath
 ///
 /// A URL with no recognisable scheme falls through unchanged; `ParseEndpointUrl`
 /// is what reports it, and it reports it as `EndpointMalformed`.
-[[nodiscard]] microtel::Expected<Protocol, ConfigError> ResolveProtocol(const Config& cfg)
+///
+/// Every endpoint in effect is consulted - the base endpoint when a signal
+/// uses it, and each per-signal endpoint - because they share one connection
+/// and so one protocol. The first gRPC-named scheme decides.
+[[nodiscard]] microtel::Expected<Protocol, ConfigError> ResolveProtocol(const Config& cfg,
+                                                                        bool base_in_effect)
 {
-    const std::string_view scheme = ExtractScheme(cfg.endpoint_url);
-    if (scheme != kSchemeGrpc && scheme != kSchemeGrpcs)
+    const auto names_grpc = [](std::string_view url)
+    {
+        const std::string_view scheme = ExtractScheme(url);
+        return scheme == kSchemeGrpc || scheme == kSchemeGrpcs;
+    };
+    std::string_view grpc_url;
+    if (base_in_effect && names_grpc(cfg.endpoint_url))
+    {
+        grpc_url = cfg.endpoint_url;
+    }
+    for (const std::string& url : cfg.signal_endpoint_urls)
+    {
+        if (grpc_url.empty() && names_grpc(url))
+        {
+            grpc_url = url;
+        }
+    }
+    if (grpc_url.empty())
     {
         return cfg.protocol;
     }
+    const std::string_view scheme = ExtractScheme(grpc_url);
     if (cfg.protocol_explicit && cfg.protocol != Protocol::Grpc)
     {
         return microtel::make_unexpected(ConfigError{
@@ -223,6 +249,175 @@ struct AuthorityPath
                        "http:// or https:// endpoint, or drop the explicit protocol"});
     }
     return Protocol::Grpc;
+}
+
+// ---------------------------------------------------------------------------
+// Per-signal endpoints (docs/configuration.md §3.3)
+// ---------------------------------------------------------------------------
+
+/// The OTLP/HTTP path of each signal relative to the base endpoint, in
+/// `SignalIndex` order (OTel spec, "Endpoint URLs for OTLP/HTTP").
+constexpr std::array<std::string_view, kSignalCount> kDefaultSignalPaths{
+    "/v1/traces", "/v1/metrics", "/v1/logs"};
+
+/// `scheme://host:port`, with the default port already filled in.
+[[nodiscard]] std::string OriginOf(const ParsedEndpoint& e)
+{
+    return e.scheme + "://" + e.host + ":" + std::to_string(e.port);
+}
+
+/// The endpoint whose origin every other endpoint in effect must match.
+struct OriginAnchor
+{
+    std::string_view name;  ///< the variable or key that set it
+    std::string origin;     ///< `OriginOf` its parsed URL
+};
+
+/// @brief Whether the base endpoint is in effect.
+///
+/// It is when at least one signal has no per-signal endpoint of its own,
+/// unless it is unset and a per-signal endpoint can supply the origin instead.
+/// Unset with no per-signal endpoint either, it is still in effect, so that
+/// parsing it reports the missing endpoint exactly as before.
+[[nodiscard]] bool BaseEndpointInEffect(const Config& cfg) noexcept
+{
+    const auto unset = [](const std::string& url) { return url.empty(); };
+    const bool base_used = std::ranges::any_of(cfg.signal_endpoint_urls, unset);
+    const bool any_signal_endpoint = !std::ranges::all_of(cfg.signal_endpoint_urls, unset);
+    return base_used && (!cfg.endpoint_url.empty() || !any_signal_endpoint);
+}
+
+/// Parse the base endpoint, which refuses a path under gRPC as it always has.
+[[nodiscard]] microtel::Expected<ParsedEndpoint, ConfigError> ParseBaseEndpoint(const Config& cfg)
+{
+    auto endpoint = ParseEndpointUrl(cfg.endpoint_url, cfg.protocol, "exporter.endpoint");
+    if (!endpoint)
+    {
+        return microtel::make_unexpected(endpoint.error());
+    }
+    if (cfg.protocol == Protocol::Grpc && !endpoint->path.empty())
+    {
+        return microtel::make_unexpected(
+            ConfigError{.kind = ConfigError::Kind::ProtocolMismatch,
+                        .field = "exporter.endpoint",
+                        .message = "gRPC endpoint URLs must not include a path"});
+    }
+    return endpoint;
+}
+
+/// The refusal for two endpoints in effect whose origins differ.
+[[nodiscard]] ConfigError OriginMismatch(std::string_view name,
+                                         const std::string& origin,
+                                         const OriginAnchor& anchor)
+{
+    return ConfigError{
+        .kind = ConfigError::Kind::InvalidValue,
+        .field = std::string{name},
+        .message = std::string{name} + " (" + origin + ") and " + std::string{anchor.name} + " (" +
+                   anchor.origin +
+                   ") resolve to different origins; microtel exports every signal over one "
+                   "connection, so every endpoint in effect must share one scheme, host and port"};
+}
+
+/// @brief Resolve one signal's per-signal endpoint.
+///
+/// Checks its origin against @p anchor, or makes it the anchor (and @p shared
+/// the connection's origin) if there is none yet. Under OTLP/HTTP its path is
+/// the signal's path, as-is; under OTLP/gRPC a path is ignored with a warning.
+[[nodiscard]] microtel::Expected<void, ConfigError> ResolveSignalEndpoint(
+    Config& cfg, std::size_t signal, std::optional<OriginAnchor>& anchor, ParsedEndpoint& shared)
+{
+    const std::string_view name = kSignalEndpointVars.at(signal);
+    auto endpoint = ParseEndpointUrl(cfg.signal_endpoint_urls.at(signal), cfg.protocol, name);
+    if (!endpoint)
+    {
+        return microtel::make_unexpected(endpoint.error());
+    }
+    std::string origin = OriginOf(*endpoint);
+    if (anchor && origin != anchor->origin)
+    {
+        return microtel::make_unexpected(OriginMismatch(name, origin, *anchor));
+    }
+    if (!anchor)
+    {
+        anchor = OriginAnchor{.name = name, .origin = std::move(origin)};
+        shared = *endpoint;
+    }
+    if (cfg.protocol == Protocol::Http)
+    {
+        cfg.signal_paths.at(signal) = endpoint->path.empty() ? "/" : endpoint->path;
+    }
+    else if (!endpoint->path.empty())
+    {
+        cfg.config_warnings.push_back(
+            std::string{name} + ": path \"" + endpoint->path +
+            "\" ignored; OTLP/gRPC request paths are fixed by the service, so a per-signal "
+            "endpoint contributes only its scheme, host and port");
+    }
+    return {};
+}
+
+/// @brief Give each signal on the base endpoint its OTLP/HTTP path: the base
+///        path, then `/v1/<signal>`.
+///
+/// The spec joins the two with one slash, so a base path that ends in one
+/// (`/mycollector/`) does not gain a second. Nothing to do under OTLP/gRPC.
+void AssignBasePaths(Config& cfg, std::string_view base_path)
+{
+    if (cfg.protocol != Protocol::Http)
+    {
+        return;
+    }
+    if (base_path.ends_with('/'))
+    {
+        base_path.remove_suffix(1);
+    }
+    for (std::size_t i = 0; i < kSignalCount; ++i)
+    {
+        if (cfg.signal_endpoint_urls.at(i).empty())
+        {
+            cfg.signal_paths.at(i) =
+                std::string{base_path} + std::string{kDefaultSignalPaths.at(i)};
+        }
+    }
+}
+
+/// @brief Resolve the endpoints in effect to one connection origin and a
+///        request path per signal (docs/configuration.md §3.3).
+///
+/// On success `cfg.endpoint` holds the shared origin and the base endpoint's
+/// path (empty when no signal uses the base), and, under OTLP/HTTP,
+/// `cfg.signal_paths` the path of each signal.
+[[nodiscard]] microtel::Expected<void, ConfigError> ResolveEndpoints(Config& cfg)
+{
+    std::optional<OriginAnchor> anchor;
+    ParsedEndpoint shared;
+    if (BaseEndpointInEffect(cfg))
+    {
+        auto base = ParseBaseEndpoint(cfg);
+        if (!base)
+        {
+            return microtel::make_unexpected(base.error());
+        }
+        anchor = OriginAnchor{.name = cfg.endpoint_source, .origin = OriginOf(*base)};
+        shared = std::move(*base);
+    }
+    std::string base_path = shared.path;
+    AssignBasePaths(cfg, base_path);
+    for (std::size_t i = 0; i < kSignalCount; ++i)
+    {
+        if (cfg.signal_endpoint_urls.at(i).empty())
+        {
+            continue;
+        }
+        if (auto r = ResolveSignalEndpoint(cfg, i, anchor, shared); !r)
+        {
+            return r;
+        }
+    }
+    shared.path = std::move(base_path);
+    cfg.endpoint = std::move(shared);
+    return {};
 }
 
 /// Check that a path-string refers to a readable file.
@@ -513,30 +708,19 @@ microtel::Expected<void, ConfigError> Validate(Config& cfg)
     // --- Protocol (docs/configuration.md §3.3) ---
     // Before the endpoint is parsed: the resolved protocol is what picks the
     // default port, so `grpc://collector` means 4317 and not 4318.
-    auto protocol = ResolveProtocol(cfg);
+    auto protocol = ResolveProtocol(cfg, BaseEndpointInEffect(cfg));
     if (!protocol)
     {
         return microtel::make_unexpected(protocol.error());
     }
     cfg.protocol = *protocol;
 
-    // --- Endpoint URL ---
-    auto endpoint = ParseEndpointUrl(cfg.endpoint_url, cfg.protocol);
-    if (!endpoint)
+    // --- Endpoint URLs: the base and the per-signal ones, on one origin; a
+    // path on a gRPC base endpoint is refused (docs/configuration.md §3.3) ---
+    if (auto endpoints_ok = ResolveEndpoints(cfg); !endpoints_ok)
     {
-        return microtel::make_unexpected(endpoint.error());
+        return microtel::make_unexpected(endpoints_ok.error());
     }
-
-    // --- gRPC path rejection (docs/configuration.md §3.3) ---
-    if (cfg.protocol == Protocol::Grpc && !endpoint->path.empty())
-    {
-        return microtel::make_unexpected(
-            ConfigError{.kind = ConfigError::Kind::ProtocolMismatch,
-                        .field = "exporter.endpoint",
-                        .message = "gRPC endpoint URLs must not include a path"});
-    }
-
-    cfg.endpoint = std::move(*endpoint);
 
     // --- TLS ---
     if (auto insecure_ok = CheckInsecureAllowed(cfg); !insecure_ok)

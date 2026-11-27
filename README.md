@@ -223,7 +223,8 @@ dependencies leave your link.
 >   `CreateDoubleGauge`) and `Span::AddLink()` after start (both ABI v2),
 >   bound instruments (`Counter::Bind()`), opentelemetry-cpp's YAML
 >   configuration file, and per-signal `OTEL_EXPORTER_OTLP_<SIGNAL>_*`
->   variables (ignored).
+>   settings other than the endpoints (each is ignored with a warning; the
+>   per-signal endpoints work when they share one host and port).
 > - **Converted or dropped:** a `uint64` attribute above `INT64_MAX` becomes
 >   a decimal string and a `uint64` measurement above it is dropped; byte-array
 >   attributes become hex strings; `schema_url` on `GetTracer` and `GetLogger`,
@@ -574,9 +575,11 @@ Each setting is resolved separately, highest precedence first: code
 `SdkBuilder::FromFile(path)`, then built-in defaults. A value set in code can't
 be overridden from the environment. microtel never searches for a config file
 on its own. The standard `OTEL_EXPORTER_OTLP_*`, `OTEL_SERVICE_NAME` and
-`OTEL_RESOURCE_ATTRIBUTES` variables work; some `OTEL_*` variables are
-ignored, including the per-signal endpoints, `OTEL_TRACES_SAMPLER` and
-`OTEL_BSP_*`. [docs/configuration.md](docs/configuration.md) has every
+`OTEL_RESOURCE_ATTRIBUTES` variables work, and so do the per-signal endpoints
+(`OTEL_EXPORTER_OTLP_TRACES_ENDPOINT` and the rest) when they share one host
+and port, since every signal goes over one connection. Some `OTEL_*` variables
+are ignored, including `OTEL_TRACES_SAMPLER`, `OTEL_BSP_*` and the other
+per-signal exporter settings, which log a warning. [docs/configuration.md](docs/configuration.md) has every
 setting with its environment variable, TOML key and default.
 
 `microtel-preflight --preflight={connect|export} [config.toml]` resolves a
