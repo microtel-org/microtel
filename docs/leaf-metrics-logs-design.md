@@ -340,12 +340,12 @@ Records are immutable once emitted, so the log buffer is a simple append-only re
 
 Each lands as its own PR with its acceptance tests and a footprint measurement; metrics (1–4) are released before logs (5–6).
 
-1. **Shared-core split, traces made optional.** The file split of §1.1, `leaf_config.h`, the switches and their errors, the disabled-function macros, `microtel_leaf_features()`, the guarded nanopb wrappers, the `leaf-config-matrix` job and the negative compile tests, the four-profile plumbing in the footprint and target jobs. *Accepts when:* trace-only golden vectors, symbols and footprint unchanged; a no-signal build fails with the message; the matrix compiles.
-2. **Metrics: counter, up-down counter, gauge.** Leaf API, series table, both backends, nanopb metrics generation, golden vectors, the new reserved attributes and sequence number, unit and QEMU tests, footprint for the metrics-only profile.
-3. **Histogram.** The optional kind: integer bounds, bucket search, encode in both backends, golden vectors, footprint with and without it, the kind-off compile check.
-4. **Concentrator metrics ingest.** `IngestRequest::signal`, the metrics decoder and validation, per-boot start cache, sequence tracking, the pass-through queue, stats, config keys, fuzz target, collector conformance per backend and protocol (including the lost-payload repair test).
-5. **Logs.** Leaf API, log buffer, UTF-8-safe truncation, `_in_span`, both backends, nanopb logs generation, golden vectors, unit and QEMU tests, footprint for logs-only and all-on.
-6. **Concentrator logs ingest.** The logs decoder and validation, observed time, the log queue, stats, fuzz target, collector conformance per backend and protocol.
+1. **Shared-core split, traces made optional** (#565). The file split of §1.1, `leaf_config.h`, the switches and their errors, the disabled-function macros, `microtel_leaf_features()`, the guarded nanopb wrappers, the `leaf-config-matrix` job and the negative compile tests, the four-profile plumbing in the footprint and target jobs. *Accepts when:* trace-only golden vectors, symbols and footprint unchanged; a no-signal build fails with the message; the matrix compiles.
+2. **Metrics: counter, up-down counter, gauge** (#566). Leaf API, series table, both backends, nanopb metrics generation, golden vectors, the new reserved attributes and sequence number, unit and QEMU tests, footprint for the metrics-only profile.
+3. **Histogram** (#567). The optional kind: integer bounds, bucket search, encode in both backends, golden vectors, footprint with and without it, the kind-off compile check.
+4. **Concentrator metrics ingest** (#568). `IngestRequest::signal`, the metrics decoder and validation, per-boot start cache, sequence tracking, the pass-through queue, stats, config keys, fuzz target, collector conformance per backend and protocol (including the lost-payload repair test).
+5. **Logs** (#569). Leaf API, log buffer, UTF-8-safe truncation, `_in_span`, both backends, nanopb logs generation, golden vectors, unit and QEMU tests, footprint for logs-only and all-on.
+6. **Concentrator logs ingest** (#570). The logs decoder and validation, observed time, the log queue, stats, fuzz target, collector conformance per backend and protocol.
 
 ---
 
