@@ -473,8 +473,7 @@ every later section's unknown-key check runs under).
 
 ### 3.13 Metrics pipeline
 
-Metrics are implemented but experimental until v1.3 (see the root `README.md`
-status table). The configuration surface that exists today is code plus three
+Metrics are supported from v1.3 (see the root `README.md` status table). The configuration surface that exists today is code plus three
 environment variables; there is no TOML table.
 
 | Code | OTEL env | MICROTEL env | Default |

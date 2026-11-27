@@ -39,3 +39,7 @@ A Histogram or ExponentialHistogram instrument drops a negative value, counts it
 - **Clamp to zero.** Rejected: it records a value the caller never gave.
 - **Reuse `NonFiniteValue`.** Rejected: an operator who sees the counter rise needs to know which caller error to look for.
 - **Fold this into ICP 0046.** Rejected: the two are separate decisions about separate code, and this one changes the public health surface on its own.
+
+## Amendment (2026-11-27): rate-limited logging
+
+Decision 3 names the diagnostic log's "existing per-`(level, reason)` rate limiter". That limiter is specified in `docs/error-model.md` ("Rate limiting (LOCKED)") but not built (`src/common/internal_log.hpp`). The implementation therefore limits its own warnings as `SdkLeafReceiver::RecordOutOfMemory` already does: it logs the 1st, 2nd, 4th, 8th … occurrence, with the running count. When the shared limiter is built, this log moves onto it; the counting is unchanged.

@@ -19,7 +19,7 @@ Website: <https://microtel-org.github.io/microtel/>
 
 microtel covers the part of the OpenTelemetry SDK that applications use day to
 day. For traces: tracers, spans, context, W3C propagation, samplers, a batch
-processor and resources. For metrics (experimental until v1.3): all seven
+processor and resources. For metrics (supported from v1.3): all seven
 instrument kinds, a periodic reader, both temporalities and views. For logs: a
 `Logger`, trace correlation and bridges for spdlog, glog and log4cxx. One OTLP
 exporter carries all three signals. Both OTLP protocols run over a
@@ -178,7 +178,7 @@ The current release is **v1.2.6**, and the project follows SemVer.
 |---|---|
 | Traces | Supported. `Tracer` and `Span`; `StartAsCurrentSpan` with a thread-local context; W3C `traceparent`, `tracestate` and `baggage` inject/extract; head samplers (always on/off, trace-ID ratio, parent-based) and composable rule chains; batch span processor; process and host resource detectors; `HealthSnapshot` drop and queue counters. |
 | Operations | Supported since v1.1. Runtime setters on `Provider` (`SetBatchOptions`, `SetSamplerRatio`, `SetMetricInterval`, `SetLogLevel`); several named providers in one process via `GetProvider(name)`; static headers and a `WithAuthProvider` callback; TLS, custom CA and mTLS; gzip; the `microtel::sugar` convenience layer. |
-| Metrics | Implemented but experimental: all seven instruments, periodic reader, temporality, cardinality limits, and views. Exemplars are not supported in v1.3 (see [Known limitations](#known-limitations)). Conformance-tested against the collector over both protocols since v1.2.4. Scheduled to become supported in v1.3; until then there is no compatibility guarantee. |
+| Metrics | Supported from v1.3: all seven instruments, periodic reader, cumulative, delta and low-memory temporality presets mapped per instrument kind, cardinality limits, and views. Exemplars are not supported in v1.3 (see [Known limitations](#known-limitations)). Conformance-tested against the collector over both protocols. |
 | Logs | Supported since v1.2: `Logger` and `LogRecord`, OTLP export over both protocols with retry, automatic trace/span correlation, conformance-tested against the collector, and bridges for spdlog, glog and log4cxx. |
 | Leaf / concentrator | New in v1.2, experimental and off by default. A C11 leaf library for microcontrollers (about 9.3 KB of flash, no heap) and a `LeafReceiver` that turns a microtel process into a gateway for them; see [Leaf and concentrator](#leaf-and-concentrator-tracing-for-microcontrollers). Traces only. The C API may change in any 1.x minor. |
 | Custom export transport | Experimental. `SdkBuilder::WithExportTransport` sends a full C++ Provider's OTLP requests through your own link (UART, CAN, UDP, MQTT…) instead of HTTP/2, for example to a concentrator. See [ICP 0036](docs/icps/0036-custom-export-transport.md). |
