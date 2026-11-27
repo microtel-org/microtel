@@ -108,7 +108,7 @@ a `timeUnixNano` and no start), per
 
 | Test | What the collector must have decoded |
 |---|---|
-| `SyncInstruments` | a Counter, UpDownCounter, Gauge, explicit-bucket Histogram and exponential Histogram: each one's value, buckets, count, sum, min/max, scale and offset as applicable, cumulative temporality, `isMonotonic` on the counter only; the description and unit; `service.name` on the resource and the `GetMeter(name, version)` scope |
+| `SyncInstruments` | a Counter, UpDownCounter, Gauge, explicit-bucket Histogram and exponential Histogram: each one's value, buckets, count, sum, min/max, scale and offset as applicable, cumulative temporality, `isMonotonic` on the counter only; the description and unit; `service.name` on the resource and the `GetMeter(name, version, schema_url)` scope, with its `schemaUrl` |
 | `ObservableInstruments` | an ObservableCounter, ObservableUpDownCounter and ObservableGauge, each with the value its callback reported during `ForceFlush` |
 | `CumulativeTemporality` | a counter exported twice reports 3 then 7, with one start time |
 | `DeltaTemporality` | the same counter on a delta provider reports 3 then 4, the second window starting where the first ended |
