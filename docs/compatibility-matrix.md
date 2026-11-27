@@ -36,8 +36,8 @@ Nothing reads either mechanically.
 Logs and metrics were both once implemented and unit-tested but never decoded
 by a real collector. Logs left that state in v1.2 (issue #303) and metrics in
 PR #459, when the conformance suites started asserting on what the collector
-decodes from microtel's exports. The cardinality-overflow series is not yet
-conformance-tested ([`interop-matrix.md`](interop-matrix.md) §6).
+decodes from microtel's exports. The cardinality-overflow series joined them
+in v1.3 (#302).
 
 ---
 
