@@ -67,11 +67,11 @@ public:
     /// @brief Register `stream` under `scope`. Creates the scope entry if new.
     void AddStream(internal::InstrumentationScope scope, std::unique_ptr<IMetricStream> stream);
 
-    /// @brief Snapshot all streams. `temporality` defaults to `Cumulative` per the
-    /// `IMetricProducer` contract; pass `Delta` to reset each stream after collection.
+    /// @brief Snapshot all streams. Each stream resolves its own temporality
+    /// from `request.selector`, by its instrument kind (ICP 0045); the default
+    /// request collects every kind cumulative.
     [[nodiscard]] std::vector<internal::MetricBatchHandle> Collect(
-        internal::AggregationTemporality temporality =
-            internal::AggregationTemporality::Cumulative) override;
+        const internal::CollectRequest& request = {}) override;
 
     /// @brief The diagnostics sink passed at construction, or null.
     ///        Borrowed; valid for as long as this producer is.

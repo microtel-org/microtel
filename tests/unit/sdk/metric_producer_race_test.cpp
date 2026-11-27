@@ -44,7 +44,7 @@ class StubStream final : public mts::IMetricStream
 public:
     using mts::IMetricStream::Collect;
 
-    [[nodiscard]] mti::MetricRecord Collect(mti::AggregationTemporality /*temporality*/,
+    [[nodiscard]] mti::MetricRecord Collect(const mti::TemporalitySelector& /*selector*/,
                                             std::chrono::system_clock::time_point /*time*/) override
     {
         return mti::MetricRecord{.name = "stub"};
@@ -78,7 +78,7 @@ void CollectRepeatedly(mts::MetricProducer& producer, const std::atomic<bool>& g
     }
     for (int i = 0; i < kStreamsPerRound; ++i)
     {
-        (void)producer.Collect(mti::AggregationTemporality::Cumulative);
+        (void)producer.Collect({.selector = mti::TemporalitySelector::Cumulative()});
     }
 }
 

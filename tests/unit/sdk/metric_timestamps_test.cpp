@@ -50,6 +50,8 @@ using TimePoint = Clock::time_point;
 
 constexpr auto kCumulative = mti::AggregationTemporality::Cumulative;
 constexpr auto kDelta = mti::AggregationTemporality::Delta;
+constexpr auto kCumulativeSelector = mti::TemporalitySelector::Cumulative();
+constexpr auto kDeltaSelector = mti::TemporalitySelector::Delta();
 
 std::vector<mt::KeyValue> SeriesA()
 {
@@ -363,11 +365,11 @@ TEST(MetricTimestampsTest, ObservableSumCumulative_StartsAtCreationOrPriorCollec
     TwoSeriesCallback callback;
     Window created{.before = Clock::now(), .after = {}};
     mts::MetricStreamObservableSum<std::int64_t> stream{
-        "observed", "", "", /*monotonic=*/true, std::ref(callback)};
+        "observed", "", "", mt::InstrumentKind::ObservableCounter, std::ref(callback)};
     created.after = Clock::now();
     const Collections c;
 
-    const auto r1 = stream.Collect(kCumulative, c.first);
+    const auto r1 = stream.Collect(kCumulativeSelector, c.first);
     const auto& p1 = std::get<mti::SumData>(r1.data).points;
     ASSERT_EQ(p1.size(), 1U);
     ExpectWithin(p1[0].start_time, created);
@@ -375,8 +377,8 @@ TEST(MetricTimestampsTest, ObservableSumCumulative_StartsAtCreationOrPriorCollec
     const TimePoint start_a = p1[0].start_time;
 
     // B is first observed in the second collection, so it starts at the first.
-    for (const auto& [t, r] : {std::pair{c.second, stream.Collect(kCumulative, c.second)},
-                               std::pair{c.third, stream.Collect(kCumulative, c.third)}})
+    for (const auto& [t, r] : {std::pair{c.second, stream.Collect(kCumulativeSelector, c.second)},
+                               std::pair{c.third, stream.Collect(kCumulativeSelector, c.third)}})
     {
         const auto& points = std::get<mti::SumData>(r.data).points;
         ASSERT_EQ(points.size(), 2U);
@@ -397,7 +399,7 @@ TEST(MetricTimestampsTest, ObservableSumCumulative_ReturningSeriesStartsAfresh)
         "observed",
         "",
         "",
-        /*monotonic=*/true,
+        mt::InstrumentKind::ObservableCounter,
         [&calls](mts::ObservableResult<std::int64_t>& result)
         {
             ++calls;
@@ -409,11 +411,11 @@ TEST(MetricTimestampsTest, ObservableSumCumulative_ReturningSeriesStartsAfresh)
         }};
     const Collections c;
 
-    const auto r1 = stream.Collect(kCumulative, c.first);
+    const auto r1 = stream.Collect(kCumulativeSelector, c.first);
     const TimePoint start_a =
         PointFor(std::get<mti::SumData>(r1.data).points, SeriesA()).start_time;
-    (void)stream.Collect(kCumulative, c.second);
-    const auto r3 = stream.Collect(kCumulative, c.third);
+    (void)stream.Collect(kCumulativeSelector, c.second);
+    const auto r3 = stream.Collect(kCumulativeSelector, c.third);
 
     const auto& points = std::get<mti::SumData>(r3.data).points;
     ASSERT_EQ(points.size(), 2U);
@@ -426,13 +428,13 @@ TEST(MetricTimestampsTest, ObservableSumDelta_WindowsChainFromCreation)
     TwoSeriesCallback callback;
     Window created{.before = Clock::now(), .after = {}};
     mts::MetricStreamObservableSum<std::int64_t> stream{
-        "observed", "", "", /*monotonic=*/true, std::ref(callback)};
+        "observed", "", "", mt::InstrumentKind::ObservableCounter, std::ref(callback)};
     created.after = Clock::now();
     const Collections c;
 
-    const auto r1 = stream.Collect(kDelta, c.first);
-    const auto r2 = stream.Collect(kDelta, c.second);
-    const auto r3 = stream.Collect(kDelta, c.third);
+    const auto r1 = stream.Collect(kDeltaSelector, c.first);
+    const auto r2 = stream.Collect(kDeltaSelector, c.second);
+    const auto r3 = stream.Collect(kDeltaSelector, c.third);
     const auto& p1 = std::get<mti::SumData>(r1.data).points;
     ASSERT_EQ(p1.size(), 1U);
     ExpectWithin(p1[0].start_time, created);
@@ -458,7 +460,7 @@ TEST(MetricTimestampsTest, ObservableGauge_TimeIsEachCollection)
     const Collections c;
     for (const TimePoint t : {c.first, c.second, c.third})
     {
-        const auto r = stream.Collect(kCumulative, t);
+        const auto r = stream.Collect(kCumulativeSelector, t);
         const auto& points = std::get<mti::GaugeData>(r.data).points;
         ASSERT_EQ(points.size(), 1U);
         EXPECT_EQ(points[0].time, t);
@@ -499,7 +501,8 @@ std::vector<TimePoint> FirstPointTimes(const std::vector<mti::MetricBatchHandle>
 TEST(MetricTimestampsTest, ProducerCollect_SharesOneTimeAcrossEveryStream)
 {
     mts::MetricProducer producer{std::make_shared<mt::Resource>()};
-    auto sum = std::make_unique<mts::MetricStreamSum<std::int64_t>>("sum", "", "", true);
+    auto sum = std::make_unique<mts::MetricStreamSum<std::int64_t>>(
+        "sum", "", "", mt::InstrumentKind::Counter);
     auto hist =
         std::make_unique<mts::MetricStreamHistogram<double>>("hist", "", "", std::vector{1.0});
     sum->Storage().Add(1, SeriesA());

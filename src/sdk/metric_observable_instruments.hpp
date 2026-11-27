@@ -7,6 +7,7 @@
 #include "microtel/internal/diagnostics_sink.hpp"
 #include "microtel/internal/metric_batch.hpp"
 #include "microtel/provider.hpp"
+#include "microtel/view.hpp"
 
 #include "sdk/metric_attribute_set.hpp"
 #include "sdk/metric_stream.hpp"
@@ -133,17 +134,21 @@ template <typename T>
 class MetricStreamObservableSum : public IMetricStream
 {
 public:
+    /// @param kind `ObservableCounter` (monotonic) or
+    ///        `ObservableUpDownCounter`. It also picks the stream's
+    ///        temporality from each collection's selector.
     MetricStreamObservableSum(std::string name,
                               std::string description,
                               std::string unit,
-                              bool monotonic,
+                              InstrumentKind kind,
                               ObservableCallback<T> callback,
                               std::size_t max_cardinality = kDefaultMaxCardinality,
                               internal::IDiagnosticsSink* diag = nullptr)
         : m_name(std::move(name)),
           m_description(std::move(description)),
           m_unit(std::move(unit)),
-          m_monotonic(monotonic),
+          m_kind(kind),
+          m_monotonic(IsMonotonicSum(kind)),
           m_callback(std::move(callback)),
           m_result(max_cardinality, diag)
     {
@@ -157,7 +162,8 @@ public:
 
     using IMetricStream::Collect;
 
-    /// @brief Run the callback and snapshot what it reported. Under delta
+    /// @brief Run the callback and snapshot what it reported, with the
+    ///        temporality @p selector gives this stream's kind. Under delta
     ///        each value is the change since the series' previous
     ///        observation (see `DeltaFor`). A delta point
     ///        starts at the previous collection (this stream's creation on
@@ -165,12 +171,13 @@ public:
     ///        it was first observed, which is the creation if that was the
     ///        first collection.
     [[nodiscard]] internal::MetricRecord Collect(
-        internal::AggregationTemporality temporality,
+        const internal::TemporalitySelector& selector,
         std::chrono::system_clock::time_point collection_time) override
     {
         m_result.Clear();
         m_callback(m_result);
 
+        const internal::AggregationTemporality temporality = selector.For(m_kind);
         internal::SumData data;
         data.is_monotonic = m_monotonic;
         data.temporality = temporality;
@@ -226,6 +233,7 @@ private:
     std::string m_name;
     std::string m_description;
     std::string m_unit;
+    InstrumentKind m_kind;
     bool m_monotonic;
     ObservableCallback<T> m_callback;
     ObservableResult<T> m_result;
@@ -273,9 +281,10 @@ public:
     using IMetricStream::Collect;
 
     /// @brief Run the callback and snapshot what it reported, stamped with
-    ///        @p collection_time. A gauge carries no start time.
+    ///        @p collection_time. A gauge carries no start time and no
+    ///        temporality, so the selector is ignored.
     [[nodiscard]] internal::MetricRecord Collect(
-        internal::AggregationTemporality /*temporality*/,
+        const internal::TemporalitySelector& /*selector*/,
         std::chrono::system_clock::time_point collection_time) override
     {
         m_result.Clear();

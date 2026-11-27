@@ -33,8 +33,10 @@ namespace mti = microtel::internal;
 namespace
 {
 
-constexpr auto kDelta = mti::AggregationTemporality::Delta;
-constexpr auto kCumulative = mti::AggregationTemporality::Cumulative;
+// Every kind delta, so the up-down counter's delta arithmetic is reachable:
+// the Delta preset keeps up-down counters cumulative (ICP 0045).
+constexpr mti::TemporalitySelector kDelta{mti::AggregationTemporality::Delta};
+constexpr auto kCumulative = mti::TemporalitySelector::Cumulative();
 
 std::vector<mt::KeyValue> Series()
 {
@@ -67,13 +69,13 @@ private:
 /// single value, or `nullopt` for a collection with no point.
 template <typename T>
 std::vector<std::optional<T>> CollectAll(mts::MetricStreamObservableSum<T>& stream,
-                                         mti::AggregationTemporality temporality,
+                                         const mti::TemporalitySelector& selector,
                                          std::size_t collections)
 {
     std::vector<std::optional<T>> values;
     for (std::size_t i = 0; i < collections; ++i)
     {
-        const auto record = stream.Collect(temporality);
+        const auto record = stream.Collect(selector);
         const auto& points = std::get<mti::SumData>(record.data).points;
         values.push_back(points.empty() ? std::nullopt
                                         : std::optional<T>{std::get<T>(points.at(0).value)});
@@ -83,13 +85,15 @@ std::vector<std::optional<T>> CollectAll(mts::MetricStreamObservableSum<T>& stre
 
 template <typename T>
 std::vector<std::optional<T>> CollectScript(bool monotonic,
-                                            mti::AggregationTemporality temporality,
+                                            const mti::TemporalitySelector& selector,
                                             std::vector<std::optional<T>> script)
 {
     const std::size_t collections = script.size();
+    const mt::InstrumentKind kind = monotonic ? mt::InstrumentKind::ObservableCounter
+                                              : mt::InstrumentKind::ObservableUpDownCounter;
     mts::MetricStreamObservableSum<T> stream{
-        "observed", "", "", monotonic, ScriptedCallback<T>{std::move(script)}};
-    return CollectAll(stream, temporality, collections);
+        "observed", "", "", kind, ScriptedCallback<T>{std::move(script)}};
+    return CollectAll(stream, selector, collections);
 }
 
 using I64 = std::optional<std::int64_t>;

@@ -76,6 +76,12 @@ microtel_add_test(
 target_include_directories(metric_producer_test
     PRIVATE ${PROJECT_SOURCE_DIR}/src)
 
+# ICP 0045 — TemporalitySelector: temporality per instrument kind.
+microtel_add_test(
+    NAME    temporality_selector_test
+    SOURCES temporality_selector_test.cpp
+    LIBS    microtel_sdk)
+
 # M12 — Concrete IMetricStream implementations (one per storage kind).
 microtel_add_test(
     NAME    metric_stream_impls_test

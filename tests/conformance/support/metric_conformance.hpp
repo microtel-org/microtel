@@ -441,6 +441,87 @@ inline void RunTemporality(Provider& provider,
     EXPECT_EQ(second_start, expected_start) << exports[0] << "\n" << exports[1];
 }
 
+/// @brief Which instrument kinds a temporality preset exports as delta. Every
+///        kind it does not mark delta must arrive cumulative (ICP 0045).
+struct PresetTemporality
+{
+    bool counter_delta = false;             ///< Counter, Histogram, ExponentialHistogram
+    bool observable_counter_delta = false;  ///< ObservableCounter
+    bool updown_delta = false;              ///< UpDownCounter, ObservableUpDownCounter
+};
+
+/// @brief The OTLP exporter spec's `Delta` preset.
+inline constexpr PresetTemporality kDeltaPreset{
+    .counter_delta = true, .observable_counter_delta = true, .updown_delta = false};
+/// @brief The OTLP exporter spec's `LowMemory` preset.
+inline constexpr PresetTemporality kLowMemoryPreset{
+    .counter_delta = true, .observable_counter_delta = false, .updown_delta = false};
+
+/// @brief Asserts the metric named @p name arrived with the temporality
+///        @p delta names, and not the other one.
+inline void ExpectTemporality(const std::string& output_file,
+                              const std::string& name,
+                              const bool delta)
+{
+    const std::string metric = AwaitMetricObject(output_file, name);
+    ASSERT_FALSE(metric.empty()) << name << " never reached " << output_file;
+    ExpectContains(metric, delta ? kDeltaJson : kCumulativeJson);
+    ExpectLacks(metric, delta ? kCumulativeJson : kDeltaJson);
+}
+
+/// @brief One instrument of every kind that carries a temporality, plus a
+///        gauge, through @p provider, built with the preset @p expected
+///        describes. Asserts the temporality the collector decoded for each
+///        kind; the gauge must carry none.
+inline void RunPresetTemporality(Provider& provider,
+                                 const std::string& output_file,
+                                 const std::string& scope_name,
+                                 const PresetTemporality& expected)
+{
+    const std::string marker = UniqueMarker();
+    const auto attrs = MeasurementAttributes();
+    {
+        const auto meter = provider.GetMeter(scope_name, kScopeVersion);
+        const auto counter = meter->CreateCounter<std::int64_t>(marker + ".counter");
+        const auto updown = meter->CreateUpDownCounter<std::int64_t>(marker + ".updown");
+        const auto gauge = meter->CreateGauge<double>(marker + ".gauge");
+        const auto histogram = meter->CreateHistogram<double>(marker + ".histogram");
+        const auto exp_histogram =
+            meter->CreateExponentialHistogram<double>(marker + ".exphistogram");
+        [[maybe_unused]] const auto observed_counter = meter->CreateObservableCounter<std::int64_t>(
+            marker + ".observable.counter",
+            "",
+            "",
+            [](ObservableResult<std::int64_t>& result) { result.Observe(kObservedCounter, {}); });
+        [[maybe_unused]] const auto observed_updown =
+            meter->CreateObservableUpDownCounter<std::int64_t>(
+                marker + ".observable.updown",
+                "",
+                "",
+                [](ObservableResult<std::int64_t>& result)
+                { result.Observe(kObservedUpDown, {}); });
+
+        counter->Add(kCounterAdd, attrs);
+        updown->Add(kUpDownAdd, attrs);
+        gauge->Record(kGaugeLast, attrs);
+        histogram->Record(kHistogramMid, attrs);
+        exp_histogram->Record(kExpHistogramValue, attrs);
+        Flush(provider);
+    }
+
+    ExpectTemporality(output_file, marker + ".counter", expected.counter_delta);
+    ExpectTemporality(output_file, marker + ".histogram", expected.counter_delta);
+    ExpectTemporality(output_file, marker + ".exphistogram", expected.counter_delta);
+    ExpectTemporality(
+        output_file, marker + ".observable.counter", expected.observable_counter_delta);
+    ExpectTemporality(output_file, marker + ".updown", expected.updown_delta);
+    ExpectTemporality(output_file, marker + ".observable.updown", expected.updown_delta);
+
+    const std::string gauge = AwaitMetricObject(output_file, marker + ".gauge");
+    ASSERT_FALSE(gauge.empty()) << "gauge never reached " << output_file;
+    ExpectLacks(gauge, R"("aggregationTemporality")");
+}
+
 /// @brief The cardinality limit `RunCardinalityOverflow`'s provider must be
 ///        built with, and how many distinct attribute sets it records.
 inline constexpr std::size_t kOverflowLimit = 3;

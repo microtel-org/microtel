@@ -51,10 +51,10 @@ public:
     }
 
     [[nodiscard]] std::vector<mti::MetricBatchHandle> Collect(
-        mti::AggregationTemporality /*temporality*/ =
-            mti::AggregationTemporality::Cumulative) override
+        const mti::CollectRequest& request = {}) override
     {
         ++m_collect_count;
+        m_last_selector = request.selector;
         return std::move(m_handles);
     }
 
@@ -63,9 +63,17 @@ public:
         return m_collect_count;
     }
 
+    /// The selector of the last `Collect` request.
+    [[nodiscard]] mti::TemporalitySelector LastSelector() const noexcept
+    {
+        return m_last_selector;
+    }
+
 private:
     std::vector<mti::MetricBatchHandle> m_handles;
     int m_collect_count = 0;
+    // Not Cumulative(), so a test can tell a recorded request from the initial value.
+    mti::TemporalitySelector m_last_selector{mti::AggregationTemporality::Delta};
 };
 
 class FakeMetricExporter : public mti::IMetricExporter
@@ -157,6 +165,18 @@ TEST(SynchronousMetricReaderTest, CollectCallsProducerOncePerInvocation)
 
     EXPECT_EQ(reader.Collect(100ms), mt::Status::Completed);
     EXPECT_EQ(producer.CollectCount(), 2);
+}
+
+TEST(SynchronousMetricReaderTest, CollectSendsTheDefaultRequest)
+{
+    // ICP 0045: the synchronous reader has no preference of its own, so it
+    // collects with the default request — every kind cumulative.
+    FakeMetricProducer producer;
+    FakeMetricExporter exporter;
+    mts::SynchronousMetricReader reader{producer, exporter};
+
+    EXPECT_EQ(reader.Collect(100ms), mt::Status::Completed);
+    EXPECT_EQ(producer.LastSelector(), mti::TemporalitySelector::Cumulative());
 }
 
 TEST(SynchronousMetricReaderTest, EmptyProducerExportsNothing)

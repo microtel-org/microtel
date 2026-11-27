@@ -60,12 +60,14 @@ public:
     /// @param producer     Source of metric snapshots; must outlive this reader.
     /// @param exporter     Sink for exported batches; must outlive this reader.
     /// @param interval     Background export period; defaults to 60 s.
-    /// @param temporality  Passed to `IMetricProducer::Collect()` each cycle.
+    /// @param selector     Each instrument kind's temporality, passed to
+    ///                     `IMetricProducer::Collect()` in every cycle's
+    ///                     `CollectRequest` (ICP 0045).
     PeriodicExportingMetricReader(internal::IMetricProducer& producer,
                                   internal::IMetricExporter& exporter,
                                   std::chrono::milliseconds interval = kDefaultInterval,
-                                  internal::AggregationTemporality temporality =
-                                      internal::AggregationTemporality::Cumulative) noexcept;
+                                  internal::TemporalitySelector selector =
+                                      internal::TemporalitySelector::Cumulative()) noexcept;
 
     PeriodicExportingMetricReader(const PeriodicExportingMetricReader&) = delete;
     PeriodicExportingMetricReader& operator=(const PeriodicExportingMetricReader&) = delete;
@@ -119,10 +121,10 @@ private:
     internal::IMetricProducer& m_producer;
     internal::IMetricExporter& m_exporter;
     // Guarded by m_mu (ICP 0026). RunLoop's read is already inside the
-    // unique_lock it waits under; SetInterval is the writer. m_temporality,
+    // unique_lock it waits under; SetInterval is the writer. m_selector,
     // m_producer and m_exporter stay immutable after construction.
     std::chrono::milliseconds m_interval;
-    internal::AggregationTemporality m_temporality;
+    internal::TemporalitySelector m_selector;
 
     std::atomic<bool> m_shut_down{false};
 

@@ -10,6 +10,7 @@
 #include <atomic>
 #include <chrono>
 #include <mutex>
+#include <utility>
 #include <vector>
 
 namespace microtel::testing
@@ -34,14 +35,16 @@ public:
     /// the reader thread and a `ForceFlush` caller both export.
     std::mutex scopes_mu;
     std::vector<internal::InstrumentationScope> exported_scopes;
+    /// Every exported batch, in order. Guarded by `scopes_mu`.
+    std::vector<internal::MetricBatchHandle> exported_batches;
 
-    // NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved)
     [[nodiscard]] internal::ExportResult Export(
         internal::MetricBatchHandle&& batch) noexcept override
     {
         ++export_call_count;
         const std::scoped_lock lk{scopes_mu};
         exported_scopes.push_back(batch.Scope());
+        exported_batches.push_back(std::move(batch));
         return export_result;
     }
 

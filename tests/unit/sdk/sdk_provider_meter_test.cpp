@@ -14,11 +14,13 @@
 //  - metric_max_cardinality is forwarded to every instrument stream.
 
 #include "microtel/attribute.hpp"
+#include "microtel/internal/metric_batch.hpp"
 #include "microtel/internal/sampler.hpp"
 #include "microtel/meter.hpp"
 #include "microtel/provider.hpp"
 #include "microtel/resource.hpp"
 #include "microtel/sampler.hpp"
+#include "microtel/sdk_builder.hpp"
 #include "microtel/status.hpp"
 
 #include "mocks/mock_exporter.hpp"
@@ -33,10 +35,14 @@
 #include <cstdint>
 #include <memory>
 #include <mutex>
+#include <optional>
+#include <string>
+#include <variant>
 
 namespace mt = microtel;
 namespace mts = microtel::sdk;
 namespace mtm = microtel::testing;
+namespace mti = microtel::internal;
 
 using namespace std::chrono_literals;
 
@@ -91,7 +97,8 @@ std::unique_ptr<mts::SdkProvider> MakeProviderWithCardinality(std::size_t max_ca
 /// A provider whose metric exporter is a mock; `metric_exp` borrows it and is
 /// valid while the provider lives.
 std::unique_ptr<mts::SdkProvider> MakeProviderWithMetricExporter(
-    mtm::MockMetricExporter*& metric_exp)
+    mtm::MockMetricExporter*& metric_exp,
+    mt::TemporalityPreference temporality = mt::TemporalityPreference::Cumulative)
 {
     auto owned = std::make_unique<mtm::MockMetricExporter>();
     metric_exp = owned.get();
@@ -110,7 +117,78 @@ std::unique_ptr<mts::SdkProvider> MakeProviderWithMetricExporter(
         .connect_opts = {},
         .metric_exporter = std::move(owned),
         .metric_interval = std::chrono::milliseconds{60'000},
+        .metric_temporality = temporality,
     });
+}
+
+/// The temporality a Sum or histogram record carries; null for a gauge.
+std::optional<mti::AggregationTemporality> TemporalityOf(const mti::MetricData& data)
+{
+    if (const auto* sum = std::get_if<mti::SumData>(&data))
+    {
+        return sum->temporality;
+    }
+    if (const auto* histogram = std::get_if<mti::HistogramData>(&data))
+    {
+        return histogram->temporality;
+    }
+    if (const auto* exp_histogram = std::get_if<mti::ExponentialHistogramData>(&data))
+    {
+        return exp_histogram->temporality;
+    }
+    return std::nullopt;
+}
+
+/// The temporality of the metric named @p name in @p batch, if it holds one.
+std::optional<mti::AggregationTemporality> FindTemporality(const mti::MetricBatchHandle& batch,
+                                                           const std::string& name)
+{
+    for (const mti::MetricRecord& record : batch.Metrics())
+    {
+        if (record.name == name)
+        {
+            return TemporalityOf(record.data);
+        }
+    }
+    return std::nullopt;
+}
+
+/// The temporality the first export of the metric named @p name carried.
+std::optional<mti::AggregationTemporality> ExportedTemporality(mtm::MockMetricExporter& exp,
+                                                               const std::string& name)
+{
+    const std::scoped_lock lk{exp.scopes_mu};
+    for (const mti::MetricBatchHandle& batch : exp.exported_batches)
+    {
+        if (const auto found = FindTemporality(batch, name))
+        {
+            return found;
+        }
+    }
+    return std::nullopt;
+}
+
+/// One instrument of every kind that carries a temporality, each recorded
+/// once, then a flush through @p provider.
+void RecordOneOfEachKindAndFlush(mts::SdkProvider& provider)
+{
+    const auto meter = provider.GetMeter("temporality.lib");
+    meter->CreateCounter<std::int64_t>("counter")->Add(1, {});
+    meter->CreateUpDownCounter<std::int64_t>("updown")->Add(1, {});
+    meter->CreateHistogram<double>("histogram")->Record(1.0, {});
+    meter->CreateExponentialHistogram<double>("exphistogram")->Record(1.0, {});
+    [[maybe_unused]] const auto observed_counter = meter->CreateObservableCounter<std::int64_t>(
+        "observable.counter",
+        "",
+        "",
+        [](mt::ObservableResult<std::int64_t>& r) { r.Observe(1, {}); });
+    [[maybe_unused]] const auto observed_updown =
+        meter->CreateObservableUpDownCounter<std::int64_t>("observable.updown",
+                                                           "",
+                                                           "",
+                                                           [](mt::ObservableResult<std::int64_t>& r)
+                                                           { r.Observe(1, {}); });
+    ASSERT_EQ(provider.ForceFlush(500ms), mt::Status::Completed);
 }
 
 }  // namespace
@@ -274,6 +352,56 @@ TEST(SdkProviderMeterTest, GetMeter_SchemaUrlReachesExportedScope)
     EXPECT_EQ(scope.name, "my.lib");
     EXPECT_EQ(scope.version, "2.0");
     EXPECT_EQ(scope.schema_url, "https://example.test/schema");
+}
+
+// ── Temporality preference → per-kind selector (ICP 0045) ────────────────────
+
+TEST(SdkProviderMeterTest, CumulativePreference_ExportsEveryKindCumulative)
+{
+    mtm::MockMetricExporter* metric_exp = nullptr;
+    auto provider = MakeProviderWithMetricExporter(metric_exp);
+    RecordOneOfEachKindAndFlush(*provider);
+
+    constexpr auto kCumulative = mti::AggregationTemporality::Cumulative;
+    EXPECT_EQ(ExportedTemporality(*metric_exp, "counter"), kCumulative);
+    EXPECT_EQ(ExportedTemporality(*metric_exp, "updown"), kCumulative);
+    EXPECT_EQ(ExportedTemporality(*metric_exp, "histogram"), kCumulative);
+    EXPECT_EQ(ExportedTemporality(*metric_exp, "exphistogram"), kCumulative);
+    EXPECT_EQ(ExportedTemporality(*metric_exp, "observable.counter"), kCumulative);
+    EXPECT_EQ(ExportedTemporality(*metric_exp, "observable.updown"), kCumulative);
+}
+
+TEST(SdkProviderMeterTest, DeltaPreference_KeepsUpDownCountersCumulative)
+{
+    mtm::MockMetricExporter* metric_exp = nullptr;
+    auto provider = MakeProviderWithMetricExporter(metric_exp, mt::TemporalityPreference::Delta);
+    RecordOneOfEachKindAndFlush(*provider);
+
+    constexpr auto kDelta = mti::AggregationTemporality::Delta;
+    constexpr auto kCumulative = mti::AggregationTemporality::Cumulative;
+    EXPECT_EQ(ExportedTemporality(*metric_exp, "counter"), kDelta);
+    EXPECT_EQ(ExportedTemporality(*metric_exp, "histogram"), kDelta);
+    EXPECT_EQ(ExportedTemporality(*metric_exp, "exphistogram"), kDelta);
+    EXPECT_EQ(ExportedTemporality(*metric_exp, "observable.counter"), kDelta);
+    EXPECT_EQ(ExportedTemporality(*metric_exp, "updown"), kCumulative);
+    EXPECT_EQ(ExportedTemporality(*metric_exp, "observable.updown"), kCumulative);
+}
+
+TEST(SdkProviderMeterTest, LowMemoryPreference_KeepsObservableCounterCumulative)
+{
+    mtm::MockMetricExporter* metric_exp = nullptr;
+    auto provider =
+        MakeProviderWithMetricExporter(metric_exp, mt::TemporalityPreference::LowMemory);
+    RecordOneOfEachKindAndFlush(*provider);
+
+    constexpr auto kDelta = mti::AggregationTemporality::Delta;
+    constexpr auto kCumulative = mti::AggregationTemporality::Cumulative;
+    EXPECT_EQ(ExportedTemporality(*metric_exp, "counter"), kDelta);
+    EXPECT_EQ(ExportedTemporality(*metric_exp, "histogram"), kDelta);
+    EXPECT_EQ(ExportedTemporality(*metric_exp, "exphistogram"), kDelta);
+    EXPECT_EQ(ExportedTemporality(*metric_exp, "observable.counter"), kCumulative);
+    EXPECT_EQ(ExportedTemporality(*metric_exp, "updown"), kCumulative);
+    EXPECT_EQ(ExportedTemporality(*metric_exp, "observable.updown"), kCumulative);
 }
 
 TEST(SdkProviderMeterTest, Shutdown_WithMetricExporter_ShutsDownExporter)

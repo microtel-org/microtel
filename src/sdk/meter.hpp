@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "microtel/view.hpp"
+
 #include "sdk/meter_instruments.hpp"
 #include "sdk/metric_observable_instruments.hpp"
 #include "sdk/metric_producer.hpp"
@@ -73,7 +75,7 @@ public:
     Counter<T> CreateCounter(std::string name, std::string description, std::string unit)
     {
         auto stream = std::make_unique<MetricStreamSum<T>>(
-            std::move(name), std::move(description), std::move(unit), /*monotonic=*/true);
+            std::move(name), std::move(description), std::move(unit), InstrumentKind::Counter);
         SumStorage<T>& storage = stream->Storage();
         m_producer->AddStream(m_scope, std::move(stream));
         return Counter<T>{&storage};
@@ -85,8 +87,10 @@ public:
                                          std::string description,
                                          std::string unit)
     {
-        auto stream = std::make_unique<MetricStreamSum<T>>(
-            std::move(name), std::move(description), std::move(unit), /*monotonic=*/false);
+        auto stream = std::make_unique<MetricStreamSum<T>>(std::move(name),
+                                                           std::move(description),
+                                                           std::move(unit),
+                                                           InstrumentKind::UpDownCounter);
         SumStorage<T>& storage = stream->Storage();
         m_producer->AddStream(m_scope, std::move(stream));
         return UpDownCounter<T>{&storage};
@@ -165,12 +169,13 @@ public:
                                                  std::string unit,
                                                  ObservableCallback<T> callback)
     {
-        m_producer->AddStream(m_scope,
-                              std::make_unique<MetricStreamObservableSum<T>>(std::move(name),
-                                                                             std::move(description),
-                                                                             std::move(unit),
-                                                                             /*monotonic=*/true,
-                                                                             std::move(callback)));
+        m_producer->AddStream(
+            m_scope,
+            std::make_unique<MetricStreamObservableSum<T>>(std::move(name),
+                                                           std::move(description),
+                                                           std::move(unit),
+                                                           InstrumentKind::ObservableCounter,
+                                                           std::move(callback)));
         return ObservableCounter<T>{};
     }
 
@@ -182,12 +187,13 @@ public:
                                                              std::string unit,
                                                              ObservableCallback<T> callback)
     {
-        m_producer->AddStream(m_scope,
-                              std::make_unique<MetricStreamObservableSum<T>>(std::move(name),
-                                                                             std::move(description),
-                                                                             std::move(unit),
-                                                                             /*monotonic=*/false,
-                                                                             std::move(callback)));
+        m_producer->AddStream(
+            m_scope,
+            std::make_unique<MetricStreamObservableSum<T>>(std::move(name),
+                                                           std::move(description),
+                                                           std::move(unit),
+                                                           InstrumentKind::ObservableUpDownCounter,
+                                                           std::move(callback)));
         return ObservableUpDownCounter<T>{};
     }
 

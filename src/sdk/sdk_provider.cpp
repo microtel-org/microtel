@@ -72,18 +72,20 @@ constexpr auto kProviderDestructorTimeout = std::chrono::milliseconds(5000);
 }
 #endif
 
-[[nodiscard]] internal::AggregationTemporality ToAggregationTemporality(
+/// The built-in selector for @p pref: the OTLP exporter spec's per-kind
+/// table (ICP 0045).
+[[nodiscard]] internal::TemporalitySelector ToTemporalitySelector(
     microtel::TemporalityPreference pref) noexcept
 {
     switch (pref)
     {
         case microtel::TemporalityPreference::Delta:
+            return internal::TemporalitySelector::Delta();
         case microtel::TemporalityPreference::LowMemory:
-            // LowMemory uses delta for all instruments; per-kind mapping deferred to v1.3.
-            return internal::AggregationTemporality::Delta;
+            return internal::TemporalitySelector::LowMemory();
         case microtel::TemporalityPreference::Cumulative:
         default:
-            return internal::AggregationTemporality::Cumulative;
+            return internal::TemporalitySelector::Cumulative();
     }
 }
 
@@ -449,7 +451,7 @@ std::shared_ptr<microtel::Meter> SdkProvider::GetMeter(std::string_view name,
                 *m_metric_producer,
                 *m_metric_exporter,
                 m_metric_interval,
-                ToAggregationTemporality(m_metric_temporality));
+                ToTemporalitySelector(m_metric_temporality));
         }
     }
     // A meter's identity includes its schema URL (ICP 0048).
