@@ -6,6 +6,7 @@
 #include "microtel/internal/diagnostics_sink.hpp"
 #include "microtel/internal/icurrent_span_source.hpp"
 #include "microtel/internal/metric_batch.hpp"
+#include "microtel/view.hpp"
 
 #include "sdk/metric_attribute_set.hpp"
 #include "sdk/metric_exp_histogram_storage.hpp"
@@ -59,15 +60,19 @@ template <typename T>
 class MetricStreamSum : public IMetricStream
 {
 public:
+    /// @param kind `Counter` (monotonic) or `UpDownCounter`. It also picks
+    ///        the stream's temporality from each collection's selector.
     MetricStreamSum(std::string name,
                     std::string description,
                     std::string unit,
-                    bool monotonic,
+                    InstrumentKind kind,
                     StorageOptions options = {})
         : m_name(std::move(name)),
           m_description(std::move(description)),
           m_unit(std::move(unit)),
-          m_storage(monotonic, options.max_cardinality, options.span_source, options.diag)
+          m_kind(kind),
+          m_storage(
+              IsMonotonicSum(kind), options.max_cardinality, options.span_source, options.diag)
     {
     }
 
@@ -80,15 +85,16 @@ public:
     /// @brief Snapshot the storage into a MetricRecord.
     using IMetricStream::Collect;
 
+    /// @brief Collect with the temporality @p selector gives this stream's kind.
     [[nodiscard]] internal::MetricRecord Collect(
-        internal::AggregationTemporality temporality,
+        const internal::TemporalitySelector& selector,
         std::chrono::system_clock::time_point collection_time) override
     {
         return internal::MetricRecord{
             .name = m_name,
             .description = m_description,
             .unit = m_unit,
-            .data = m_storage.Collect(temporality, collection_time),
+            .data = m_storage.Collect(selector.For(m_kind), collection_time),
         };
     }
 
@@ -102,6 +108,7 @@ private:
     std::string m_name;
     std::string m_description;
     std::string m_unit;
+    InstrumentKind m_kind;
     SumStorage<T> m_storage;
 };
 
@@ -133,8 +140,10 @@ public:
 
     using IMetricStream::Collect;
 
+    /// @brief Collect the last values. A gauge has no temporality, so the
+    ///        selector is ignored.
     [[nodiscard]] internal::MetricRecord Collect(
-        internal::AggregationTemporality /*temporality*/,
+        const internal::TemporalitySelector& /*selector*/,
         std::chrono::system_clock::time_point collection_time) override
     {
         return internal::MetricRecord{
@@ -165,6 +174,9 @@ template <typename T>
 class MetricStreamHistogram : public IMetricStream
 {
 public:
+    /// @brief The instrument kind this stream collects as.
+    static constexpr InstrumentKind kKind = InstrumentKind::Histogram;
+
     MetricStreamHistogram(std::string name,
                           std::string description,
                           std::string unit,
@@ -189,15 +201,16 @@ public:
 
     using IMetricStream::Collect;
 
+    /// @brief Collect with the temporality @p selector gives `kKind`.
     [[nodiscard]] internal::MetricRecord Collect(
-        internal::AggregationTemporality temporality,
+        const internal::TemporalitySelector& selector,
         std::chrono::system_clock::time_point collection_time) override
     {
         return internal::MetricRecord{
             .name = m_name,
             .description = m_description,
             .unit = m_unit,
-            .data = m_storage.Collect(temporality, collection_time),
+            .data = m_storage.Collect(selector.For(kKind), collection_time),
         };
     }
 
@@ -222,6 +235,9 @@ template <typename T>
 class MetricStreamExpHistogram : public IMetricStream
 {
 public:
+    /// @brief The instrument kind this stream collects as.
+    static constexpr InstrumentKind kKind = InstrumentKind::ExponentialHistogram;
+
     MetricStreamExpHistogram(std::string name,
                              std::string description,
                              std::string unit,
@@ -248,15 +264,16 @@ public:
 
     using IMetricStream::Collect;
 
+    /// @brief Collect with the temporality @p selector gives `kKind`.
     [[nodiscard]] internal::MetricRecord Collect(
-        internal::AggregationTemporality temporality,
+        const internal::TemporalitySelector& selector,
         std::chrono::system_clock::time_point collection_time) override
     {
         return internal::MetricRecord{
             .name = m_name,
             .description = m_description,
             .unit = m_unit,
-            .data = m_storage.Collect(temporality, collection_time),
+            .data = m_storage.Collect(selector.For(kKind), collection_time),
         };
     }
 

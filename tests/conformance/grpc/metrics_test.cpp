@@ -141,6 +141,35 @@ TEST(GrpcMetricsConformance, DeltaTemporality)
     metrics::RunTemporality(*provider, target.output_file, kScopeName, /*delta=*/true);
 }
 
+TEST(GrpcMetricsConformance, DeltaPresetPerKind)
+{
+    Target target;
+    if (!ResolveTarget(target))
+    {
+        GTEST_SKIP() << kSkipReason;
+    }
+    microtel::SdkBuilder builder;
+    const auto provider = BuildProvider(
+        builder, target.endpoint, {.temporality = microtel::TemporalityPreference::Delta});
+    ASSERT_NE(provider, nullptr);
+    metrics::RunPresetTemporality(*provider, target.output_file, kScopeName, metrics::kDeltaPreset);
+}
+
+TEST(GrpcMetricsConformance, LowMemoryPresetPerKind)
+{
+    Target target;
+    if (!ResolveTarget(target))
+    {
+        GTEST_SKIP() << kSkipReason;
+    }
+    microtel::SdkBuilder builder;
+    const auto provider = BuildProvider(
+        builder, target.endpoint, {.temporality = microtel::TemporalityPreference::LowMemory});
+    ASSERT_NE(provider, nullptr);
+    metrics::RunPresetTemporality(
+        *provider, target.output_file, kScopeName, metrics::kLowMemoryPreset);
+}
+
 TEST(GrpcMetricsConformance, GzipAccepted)
 {
     Target target;

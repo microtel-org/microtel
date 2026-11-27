@@ -10,6 +10,19 @@
 namespace microtel::internal
 {
 
+/// @brief What one `IMetricProducer::Collect` call is asked for (ICP 0045).
+///
+/// An aggregate, so callers name what they set —
+/// `Collect({.selector = TemporalitySelector::Delta()})` — and leave the rest
+/// at its default. A field added later carries a default, so neither the
+/// existing calls nor `Collect`'s signature change.
+struct CollectRequest
+{
+    /// @brief The temporality each instrument kind is collected with. Each
+    ///        stream resolves its own, as `selector.For(kind)`.
+    TemporalitySelector selector = TemporalitySelector::Cumulative();
+};
+
 /// @brief The pull source the `IMetricReader` collects from — the metrics SDK
 /// core (meter registry + per-instrument aggregation state).
 ///
@@ -30,8 +43,12 @@ class IMetricProducer
 public:
     virtual ~IMetricProducer() noexcept = default;
 
+    /// @brief Snapshot every stream, one `MetricBatchHandle` per scope.
+    ///
+    /// @param request What this collection is asked for. The default request
+    ///        collects every kind cumulative.
     [[nodiscard]] virtual std::vector<MetricBatchHandle> Collect(
-        AggregationTemporality temporality = AggregationTemporality::Cumulative) = 0;
+        const CollectRequest& request = {}) = 0;
 };
 
 }  // namespace microtel::internal

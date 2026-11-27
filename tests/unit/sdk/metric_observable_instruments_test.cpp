@@ -20,6 +20,7 @@
 #include "microtel/attribute.hpp"
 #include "microtel/internal/metric_batch.hpp"
 #include "microtel/resource.hpp"
+#include "microtel/view.hpp"
 
 #include "fakes/fake_diagnostics_sink.hpp"
 #include "sdk/meter.hpp"
@@ -72,7 +73,7 @@ TEST(MetricStreamObservableSumTest, CallbackInvokedOnCollect)
         "req.total",
         "",
         "1",
-        /*monotonic=*/true,
+        mt::InstrumentKind::ObservableCounter,
         [&called](mts::ObservableResult<std::int64_t>& result)
         {
             called = true;
@@ -80,7 +81,7 @@ TEST(MetricStreamObservableSumTest, CallbackInvokedOnCollect)
             result.Observe(42, mt::AttributeSpan{attrs});
         }};
 
-    (void)stream.Collect(mti::AggregationTemporality::Cumulative);
+    (void)stream.Collect(mti::TemporalitySelector::Cumulative());
     EXPECT_TRUE(called);
 }
 
@@ -90,10 +91,10 @@ TEST(MetricStreamObservableSumTest, SumDataIsMonotonicForCounter)
         "c",
         "",
         "1",
-        /*monotonic=*/true,
+        mt::InstrumentKind::ObservableCounter,
         [](mts::ObservableResult<std::int64_t>&) {}};
 
-    const auto rec = stream.Collect(mti::AggregationTemporality::Cumulative);
+    const auto rec = stream.Collect(mti::TemporalitySelector::Cumulative());
     EXPECT_TRUE(std::get<mti::SumData>(rec.data).is_monotonic);
 }
 
@@ -103,10 +104,10 @@ TEST(MetricStreamObservableSumTest, SumDataIsNonMonotonicForUpDownCounter)
         "c",
         "",
         "1",
-        /*monotonic=*/false,
+        mt::InstrumentKind::ObservableUpDownCounter,
         [](mts::ObservableResult<std::int64_t>&) {}};
 
-    const auto rec = stream.Collect(mti::AggregationTemporality::Cumulative);
+    const auto rec = stream.Collect(mti::TemporalitySelector::Cumulative());
     EXPECT_FALSE(std::get<mti::SumData>(rec.data).is_monotonic);
 }
 
@@ -117,11 +118,11 @@ TEST(MetricStreamObservableSumTest, ObservationAppearsAsNumberPoint)
         "req.total",
         "Total requests",
         "1",
-        /*monotonic=*/true,
+        mt::InstrumentKind::ObservableCounter,
         [&attrs](mts::ObservableResult<std::int64_t>& result)
         { result.Observe(7, mt::AttributeSpan{attrs}); }};
 
-    const auto rec = stream.Collect(mti::AggregationTemporality::Cumulative);
+    const auto rec = stream.Collect(mti::TemporalitySelector::Cumulative());
     const auto& sum = std::get<mti::SumData>(rec.data);
     ASSERT_EQ(sum.points.size(), 1U);
     EXPECT_EQ(std::get<std::int64_t>(sum.points[0].value), 7);
@@ -135,14 +136,14 @@ TEST(MetricStreamObservableSumTest, MultipleObservationsYieldMultiplePoints)
         "c",
         "",
         "1",
-        /*monotonic=*/true,
+        mt::InstrumentKind::ObservableCounter,
         [&a1, &a2](mts::ObservableResult<std::int64_t>& result)
         {
             result.Observe(1, mt::AttributeSpan{a1});
             result.Observe(2, mt::AttributeSpan{a2});
         }};
 
-    const auto rec = stream.Collect(mti::AggregationTemporality::Cumulative);
+    const auto rec = stream.Collect(mti::TemporalitySelector::Cumulative());
     EXPECT_EQ(std::get<mti::SumData>(rec.data).points.size(), 2U);
 }
 
@@ -154,7 +155,7 @@ TEST(MetricStreamObservableSumTest, CallbackResultResetBetweenCollects)
         "c",
         "",
         "1",
-        /*monotonic=*/true,
+        mt::InstrumentKind::ObservableCounter,
         [&calls, &attrs](mts::ObservableResult<std::int64_t>& result)
         {
             ++calls;
@@ -162,8 +163,8 @@ TEST(MetricStreamObservableSumTest, CallbackResultResetBetweenCollects)
             result.Observe(calls == 1 ? 10 : 20, mt::AttributeSpan{attrs});
         }};
 
-    (void)stream.Collect(mti::AggregationTemporality::Cumulative);
-    const auto rec = stream.Collect(mti::AggregationTemporality::Cumulative);
+    (void)stream.Collect(mti::TemporalitySelector::Cumulative());
+    const auto rec = stream.Collect(mti::TemporalitySelector::Cumulative());
     const auto& sum = std::get<mti::SumData>(rec.data);
     ASSERT_EQ(sum.points.size(), 1U);
     EXPECT_EQ(std::get<std::int64_t>(sum.points[0].value), 20);
@@ -172,10 +173,75 @@ TEST(MetricStreamObservableSumTest, CallbackResultResetBetweenCollects)
 TEST(MetricStreamObservableSumTest, TemporalityForwardedIntoSumData)
 {
     mts::MetricStreamObservableSum<std::int64_t> stream{
-        "c", "", "1", true, [](mts::ObservableResult<std::int64_t>&) {}};
+        "c",
+        "",
+        "1",
+        mt::InstrumentKind::ObservableCounter,
+        [](mts::ObservableResult<std::int64_t>&) {}};
 
-    const auto rec = stream.Collect(mti::AggregationTemporality::Delta);
+    const auto rec = stream.Collect(mti::TemporalitySelector::Delta());
     EXPECT_EQ(std::get<mti::SumData>(rec.data).temporality, mti::AggregationTemporality::Delta);
+}
+
+// ── Temporality resolved through the stream's kind (ICP 0045) ────────────────
+
+namespace
+{
+
+/// The temporality an observable Sum of @p kind collects with under @p selector.
+mti::AggregationTemporality ObservableSumTemporality(mt::InstrumentKind kind,
+                                                     const mti::TemporalitySelector& selector)
+{
+    mts::MetricStreamObservableSum<std::int64_t> stream{
+        "c", "", "1", kind, [](mts::ObservableResult<std::int64_t>& result) {
+            result.Observe(1, {});
+        }};
+    return std::get<mti::SumData>(stream.Collect(selector).data).temporality;
+}
+
+}  // namespace
+
+TEST(MetricStreamObservableSumTest, ObservableUpDownCounterIsCumulativeUnderDeltaPreset)
+{
+    EXPECT_EQ(ObservableSumTemporality(mt::InstrumentKind::ObservableUpDownCounter,
+                                       mti::TemporalitySelector::Delta()),
+              mti::AggregationTemporality::Cumulative);
+}
+
+TEST(MetricStreamObservableSumTest, ObservableCounterIsCumulativeUnderLowMemoryPreset)
+{
+    EXPECT_EQ(ObservableSumTemporality(mt::InstrumentKind::ObservableCounter,
+                                       mti::TemporalitySelector::LowMemory()),
+              mti::AggregationTemporality::Cumulative);
+}
+
+TEST(MetricStreamObservableSumTest, ObservableUpDownCounterFollowsAnAllDeltaSelector)
+{
+    // The stream asks the selector for its own kind; nothing hard-codes the
+    // up-down counter as cumulative.
+    EXPECT_EQ(
+        ObservableSumTemporality(mt::InstrumentKind::ObservableUpDownCounter,
+                                 mti::TemporalitySelector{mti::AggregationTemporality::Delta}),
+        mti::AggregationTemporality::Delta);
+}
+
+TEST(MetricStreamObservableSumTest, CumulativeResolvedSeriesIsNotDiffed)
+{
+    // Under Delta an ObservableUpDownCounter is cumulative, so each export
+    // carries the observed value, not the change since the last one.
+    std::int64_t observed = 5;
+    mts::MetricStreamObservableSum<std::int64_t> stream{
+        "c",
+        "",
+        "1",
+        mt::InstrumentKind::ObservableUpDownCounter,
+        [&observed](mts::ObservableResult<std::int64_t>& result) { result.Observe(observed, {}); }};
+
+    (void)stream.Collect(mti::TemporalitySelector::Delta());
+    observed = 8;
+    const auto sum = std::get<mti::SumData>(stream.Collect(mti::TemporalitySelector::Delta()).data);
+    ASSERT_EQ(sum.points.size(), 1U);
+    EXPECT_EQ(std::get<std::int64_t>(sum.points.at(0).value), 8);
 }
 
 // ── MetricStreamObservableGauge ───────────────────────────────────────────────
@@ -188,7 +254,7 @@ TEST(MetricStreamObservableGaugeTest, ObservationAppearsAsGaugePoint)
             result.Observe(21.5, mt::AttributeSpan{attrs});
         }};
 
-    const auto rec = stream.Collect(mti::AggregationTemporality::Cumulative);
+    const auto rec = stream.Collect(mti::TemporalitySelector::Cumulative());
     const auto& gd = std::get<mti::GaugeData>(rec.data);
     ASSERT_EQ(gd.points.size(), 1U);
     EXPECT_DOUBLE_EQ(std::get<double>(gd.points[0].value), 21.5);
@@ -208,7 +274,7 @@ TEST(MetricStreamObservableGaugeTest, MultipleObservationsYieldMultiplePoints)
             result.Observe(25.0, mt::AttributeSpan{a2});
         }};
 
-    const auto rec = stream.Collect(mti::AggregationTemporality::Cumulative);
+    const auto rec = stream.Collect(mti::TemporalitySelector::Cumulative());
     EXPECT_EQ(std::get<mti::GaugeData>(rec.data).points.size(), 2U);
 }
 
@@ -226,8 +292,8 @@ TEST(MetricStreamObservableGaugeTest, CallbackResultResetBetweenCollects)
             result.Observe(calls == 1 ? 1.0 : 2.0, mt::AttributeSpan{attrs});
         }};
 
-    (void)stream.Collect(mti::AggregationTemporality::Cumulative);
-    const auto rec = stream.Collect(mti::AggregationTemporality::Cumulative);
+    (void)stream.Collect(mti::TemporalitySelector::Cumulative());
+    const auto rec = stream.Collect(mti::TemporalitySelector::Cumulative());
     const auto& gd = std::get<mti::GaugeData>(rec.data);
     ASSERT_EQ(gd.points.size(), 1U);
     EXPECT_DOUBLE_EQ(std::get<double>(gd.points[0].value), 2.0);
@@ -387,7 +453,7 @@ TEST(MetricStreamObservableSumTest, OverflowFoldsIntoOverflowPoint)
         "c",
         "",
         "1",
-        /*monotonic=*/true,
+        mt::InstrumentKind::ObservableCounter,
         [](mts::ObservableResult<std::int64_t>& result)
         {
             const auto a1 = Attrs("host", std::string{"web-01"});
@@ -400,7 +466,7 @@ TEST(MetricStreamObservableSumTest, OverflowFoldsIntoOverflowPoint)
         /*max_cardinality=*/2,
         &sink};
 
-    const auto rec = stream.Collect(mti::AggregationTemporality::Cumulative);
+    const auto rec = stream.Collect(mti::TemporalitySelector::Cumulative());
     const auto& sum = std::get<mti::SumData>(rec.data);
 
     EXPECT_EQ(sum.points.size(), 3U);  // 2 real + 1 overflow
@@ -427,7 +493,7 @@ TEST(MetricStreamObservableGaugeTest, OverflowFoldsIntoOverflowPoint)
         /*max_cardinality=*/2,
         &sink};
 
-    const auto rec = stream.Collect(mti::AggregationTemporality::Cumulative);
+    const auto rec = stream.Collect(mti::TemporalitySelector::Cumulative());
     const auto& gd = std::get<mti::GaugeData>(rec.data);
 
     EXPECT_EQ(gd.points.size(), 3U);  // 2 real + 1 overflow

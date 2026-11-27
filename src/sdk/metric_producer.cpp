@@ -49,7 +49,7 @@ std::vector<MetricProducer::ScopeSnapshot> MetricProducer::SnapshotScopes() cons
 }
 
 std::vector<internal::MetricBatchHandle> MetricProducer::Collect(
-    internal::AggregationTemporality temporality)
+    const internal::CollectRequest& request)
 {
     // Snapshot the structure, then release m_mu before calling into any
     // stream: IMetricStream::Collect takes its own per-instrument mutex, and
@@ -73,7 +73,8 @@ std::vector<internal::MetricBatchHandle> MetricProducer::Collect(
         records.reserve(entry.streams.size());
         for (IMetricStream* const stream : entry.streams)
         {
-            records.push_back(stream->Collect(temporality, collection_time));
+            // The stream resolves its temporality from its own kind.
+            records.push_back(stream->Collect(request.selector, collection_time));
         }
         handles.emplace_back(std::move(records), m_resource, entry.scope);
     }

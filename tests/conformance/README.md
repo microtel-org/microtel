@@ -97,7 +97,7 @@ A key/value-list (structured map) body is not tested because the public
 
 ### Metrics
 
-Both `metrics_test.cpp` files run the same six scenarios, defined once in
+Both `metrics_test.cpp` files run the same eight scenarios, defined once in
 [`support/metric_conformance.hpp`](support/metric_conformance.hpp), over HTTP
 (TLS receiver) and gRPC (plaintext), read back from `metrics.jsonl`. Every
 assertion is narrowed to one metric's object by its per-run unique name, and
@@ -111,6 +111,8 @@ a `timeUnixNano` and no start), per
 | `ObservableInstruments` | an ObservableCounter, ObservableUpDownCounter and ObservableGauge, each with the value its callback reported during `ForceFlush` |
 | `CumulativeTemporality` | a counter exported twice reports 3 then 7, with one start time |
 | `DeltaTemporality` | the same counter on a delta provider reports 3 then 4, the second window starting where the first ended |
+| `DeltaPresetPerKind` | on a `Delta` provider, the Counter, Histogram, exponential Histogram and ObservableCounter arrive with `aggregationTemporality` 1 (delta), the UpDownCounter and ObservableUpDownCounter with 2 (cumulative), and the Gauge with none ([ICP 0045](../../docs/icps/0045-temporality-selectors.md)) |
+| `LowMemoryPresetPerKind` | the same on a `LowMemory` provider, except that the ObservableCounter arrives cumulative too |
 | `GzipAccepted` | 20 counters through a gzip-compressed provider, each exactly once |
 | `CardinalityOverflow` | a counter on a provider limited to 3 attribute sets, given 5: the first 3 keep their own series, and the other 2 fold into one series that carries only `otel.metric.overflow=true` and their summed value |
 

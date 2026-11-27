@@ -9,7 +9,8 @@
 //  - Streams grouped by InstrumentationScope (same name+version → one handle).
 //  - Each handle carries all records for its scope, the shared Resource, and
 //    the scope identity.
-//  - Collect() delegates the AggregationTemporality to each stream.
+//  - Collect() hands the request's TemporalitySelector to each stream
+//    unchanged; the producer resolves no temporality itself (ICP 0045).
 
 #include "sdk/metric_producer.hpp"
 
@@ -41,10 +42,10 @@ public:
 
     using mts::IMetricStream::Collect;
 
-    [[nodiscard]] mti::MetricRecord Collect(mti::AggregationTemporality temporality,
+    [[nodiscard]] mti::MetricRecord Collect(const mti::TemporalitySelector& selector,
                                             std::chrono::system_clock::time_point /*time*/) override
     {
-        m_last_temporality = temporality;
+        m_last_selector = selector;
         ++m_call_count;
         return mti::MetricRecord{
             .name = m_name,
@@ -54,9 +55,9 @@ public:
         };
     }
 
-    [[nodiscard]] mti::AggregationTemporality LastTemporality() const noexcept
+    [[nodiscard]] mti::TemporalitySelector LastSelector() const noexcept
     {
-        return m_last_temporality;
+        return m_last_selector;
     }
 
     [[nodiscard]] int CallCount() const noexcept
@@ -67,7 +68,8 @@ public:
 private:
     std::string m_name;
     mti::MetricData m_data;
-    mti::AggregationTemporality m_last_temporality = mti::AggregationTemporality::Cumulative;
+    // Not Cumulative(), so a test can tell a recorded selector from the initial value.
+    mti::TemporalitySelector m_last_selector{mti::AggregationTemporality::Delta};
     int m_call_count = 0;
 };
 
@@ -161,15 +163,19 @@ TEST(MetricProducerTest, HandleCarriesScopeIdentity)
     EXPECT_EQ(handles[0].Scope().schema_url, "https://example.test/schema");
 }
 
-TEST(MetricProducerTest, CollectDelegatesTemporalityToStream)
+TEST(MetricProducerTest, CollectHandsTheSelectorToEveryStream)
 {
     mts::MetricProducer producer{MakeResource()};
-    auto stream = std::make_unique<FakeMetricStream>("m");
-    auto* stream_ptr = stream.get();
-    producer.AddStream(MakeScope("lib"), std::move(stream));
+    auto a = std::make_unique<FakeMetricStream>("a");
+    auto b = std::make_unique<FakeMetricStream>("b");
+    auto* a_ptr = a.get();
+    auto* b_ptr = b.get();
+    producer.AddStream(MakeScope("lib"), std::move(a));
+    producer.AddStream(MakeScope("other"), std::move(b));
 
-    (void)producer.Collect(mti::AggregationTemporality::Delta);
-    EXPECT_EQ(stream_ptr->LastTemporality(), mti::AggregationTemporality::Delta);
+    (void)producer.Collect({.selector = mti::TemporalitySelector::LowMemory()});
+    EXPECT_EQ(a_ptr->LastSelector(), mti::TemporalitySelector::LowMemory());
+    EXPECT_EQ(b_ptr->LastSelector(), mti::TemporalitySelector::LowMemory());
 }
 
 TEST(MetricProducerTest, CollectDefaultIsCumulative)
@@ -180,7 +186,7 @@ TEST(MetricProducerTest, CollectDefaultIsCumulative)
     producer.AddStream(MakeScope("lib"), std::move(stream));
 
     (void)producer.Collect();
-    EXPECT_EQ(stream_ptr->LastTemporality(), mti::AggregationTemporality::Cumulative);
+    EXPECT_EQ(stream_ptr->LastSelector(), mti::TemporalitySelector::Cumulative());
 }
 
 TEST(MetricProducerTest, CollectCallsEachStreamExactlyOnce)

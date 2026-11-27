@@ -194,11 +194,6 @@ the full list, and [docs/roadmap.md](docs/roadmap.md) has what's next.
   Exemplars are outside the v1.3 compatibility promise: a later minor release
   that captures and exports them by default (#454) is not a breaking change
   ([ICP 0043](docs/icps/0043-exemplar-capture-off-in-v1.3.md)).
-- **The Delta and LowMemory temporality presets apply delta to up-down
-  counters.** The OpenTelemetry presets keep UpDownCounter and
-  ObservableUpDownCounter cumulative (and LowMemory keeps ObservableCounter
-  cumulative too); microtel applies delta to every instrument. A fix is
-  planned for v1.3 (#455).
 
 ## How you use it
 

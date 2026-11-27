@@ -319,11 +319,12 @@ struct ObservableStreamContext
     internal::IDiagnosticsSink* diag = nullptr;
 };
 
-// One observable Sum stream per resolved view spec.
+// One observable Sum stream per resolved view spec. `kind` is
+// ObservableCounter or ObservableUpDownCounter.
 template <typename T>
 void AddObservableSums(const ObservableStreamContext& ctx,
                        const std::vector<StreamSpec>& specs,
-                       bool monotonic,
+                       InstrumentKind kind,
                        const microtel::ObservableCallback<T>& callback)
 {
     for (const auto& spec : specs)
@@ -333,7 +334,7 @@ void AddObservableSums(const ObservableStreamContext& ctx,
             std::make_unique<MetricStreamObservableSum<T>>(spec.name,
                                                            *ctx.description,
                                                            *ctx.unit,
-                                                           monotonic,
+                                                           kind,
                                                            BridgeCallback(callback, spec.allowlist),
                                                            ctx.max_cardinality,
                                                            ctx.diag));
@@ -391,7 +392,7 @@ std::shared_ptr<microtel::Counter<std::int64_t>> SdkMeter::DoCreateCounterI64(
     for (const auto& spec : specs)
     {
         auto stream = std::make_unique<MetricStreamSum<std::int64_t>>(
-            spec.name, description, unit, /*monotonic=*/true, opts);
+            spec.name, description, unit, InstrumentKind::Counter, opts);
         slots.push_back({.storage = &stream->Storage(), .allowlist = spec.allowlist});
         m_producer->AddStream(m_scope, std::move(stream));
     }
@@ -412,7 +413,7 @@ std::shared_ptr<microtel::Counter<double>> SdkMeter::DoCreateCounterDouble(std::
     for (const auto& spec : specs)
     {
         auto stream = std::make_unique<MetricStreamSum<double>>(
-            spec.name, description, unit, /*monotonic=*/true, opts);
+            spec.name, description, unit, InstrumentKind::Counter, opts);
         slots.push_back({.storage = &stream->Storage(), .allowlist = spec.allowlist});
         m_producer->AddStream(m_scope, std::move(stream));
     }
@@ -432,7 +433,7 @@ std::shared_ptr<microtel::UpDownCounter<std::int64_t>> SdkMeter::DoCreateUpDownC
     for (const auto& spec : specs)
     {
         auto stream = std::make_unique<MetricStreamSum<std::int64_t>>(
-            spec.name, description, unit, /*monotonic=*/false, opts);
+            spec.name, description, unit, InstrumentKind::UpDownCounter, opts);
         slots.push_back({.storage = &stream->Storage(), .allowlist = spec.allowlist});
         m_producer->AddStream(m_scope, std::move(stream));
     }
@@ -452,7 +453,7 @@ std::shared_ptr<microtel::UpDownCounter<double>> SdkMeter::DoCreateUpDownCounter
     for (const auto& spec : specs)
     {
         auto stream = std::make_unique<MetricStreamSum<double>>(
-            spec.name, description, unit, /*monotonic=*/false, opts);
+            spec.name, description, unit, InstrumentKind::UpDownCounter, opts);
         slots.push_back({.storage = &stream->Storage(), .allowlist = spec.allowlist});
         m_producer->AddStream(m_scope, std::move(stream));
     }
@@ -598,7 +599,7 @@ SdkMeter::DoCreateExponentialHistogramDouble(std::string name,
 }
 
 // Registers one observable stream per view the instrument resolves to: a Gauge
-// for ObservableGauge, otherwise a Sum, monotonic for ObservableCounter.
+// for ObservableGauge, otherwise a Sum of the instrument's kind.
 template <typename T>
 void SdkMeter::RegisterObservable(const std::string& name,
                                   const std::string& description,
@@ -619,7 +620,7 @@ void SdkMeter::RegisterObservable(const std::string& name,
         AddObservableGauges(ctx, specs, callback);
         return;
     }
-    AddObservableSums(ctx, specs, kind == InstrumentKind::ObservableCounter, callback);
+    AddObservableSums(ctx, specs, kind, callback);
 }
 
 microtel::ObservableCounter<std::int64_t> SdkMeter::DoCreateObservableCounterI64(

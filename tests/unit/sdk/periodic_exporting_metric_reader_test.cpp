@@ -26,6 +26,7 @@
 #include <chrono>
 #include <functional>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <thread>
 #include <utility>
@@ -53,10 +54,13 @@ public:
     }
 
     [[nodiscard]] std::vector<mti::MetricBatchHandle> Collect(
-        mti::AggregationTemporality temporality = mti::AggregationTemporality::Cumulative) override
+        const mti::CollectRequest& request = {}) override
     {
         m_collect_count.fetch_add(1, std::memory_order_relaxed);
-        m_last_temporality.store(static_cast<int>(temporality), std::memory_order_relaxed);
+        {
+            const std::scoped_lock lk{m_selector_mu};
+            m_last_selector = request.selector;
+        }
         return std::move(m_handles);
     }
 
@@ -65,16 +69,18 @@ public:
         return m_collect_count.load(std::memory_order_relaxed);
     }
 
-    [[nodiscard]] mti::AggregationTemporality LastTemporality() const noexcept
+    /// The selector of the last `Collect` request.
+    [[nodiscard]] mti::TemporalitySelector LastSelector() const
     {
-        return static_cast<mti::AggregationTemporality>(
-            m_last_temporality.load(std::memory_order_relaxed));
+        const std::scoped_lock lk{m_selector_mu};
+        return m_last_selector;
     }
 
 private:
     std::vector<mti::MetricBatchHandle> m_handles;
     std::atomic<int> m_collect_count{0};
-    std::atomic<int> m_last_temporality{static_cast<int>(mti::AggregationTemporality::Cumulative)};
+    mutable std::mutex m_selector_mu;
+    mti::TemporalitySelector m_last_selector;  // guarded by m_selector_mu
 };
 
 class FakeMetricExporter : public mti::IMetricExporter
@@ -318,26 +324,47 @@ TEST(PeriodicExportingMetricReaderTest, DestructorShutdownDoesNotCrash)
 
 // ── Temporality threading ─────────────────────────────────────────────────────
 
-TEST(PeriodicExportingMetricReaderTest, Collect_DefaultTemporality_PassesCumulativeToProducer)
+TEST(PeriodicExportingMetricReaderTest, Collect_DefaultSelector_PassesCumulativeToProducer)
 {
     FakeMetricProducer producer;
     FakeMetricExporter exporter;
-    mts::PeriodicExportingMetricReader reader{
-        producer, exporter, 60'000ms, mti::AggregationTemporality::Cumulative};
+    mts::PeriodicExportingMetricReader reader{producer, exporter, 60'000ms};
 
     EXPECT_EQ(reader.Collect(100ms), mt::Status::Completed);
-    EXPECT_EQ(producer.LastTemporality(), mti::AggregationTemporality::Cumulative);
+    EXPECT_EQ(producer.LastSelector(), mti::TemporalitySelector::Cumulative());
 }
 
-TEST(PeriodicExportingMetricReaderTest, Collect_WithDeltaTemporality_PassesDeltaToProducer)
+TEST(PeriodicExportingMetricReaderTest, Collect_WithDeltaSelector_PassesDeltaToProducer)
 {
     FakeMetricProducer producer;
     FakeMetricExporter exporter;
     mts::PeriodicExportingMetricReader reader{
-        producer, exporter, 60'000ms, mti::AggregationTemporality::Delta};
+        producer, exporter, 60'000ms, mti::TemporalitySelector::Delta()};
 
     EXPECT_EQ(reader.Collect(100ms), mt::Status::Completed);
-    EXPECT_EQ(producer.LastTemporality(), mti::AggregationTemporality::Delta);
+    EXPECT_EQ(producer.LastSelector(), mti::TemporalitySelector::Delta());
+}
+
+TEST(PeriodicExportingMetricReaderTest, Collect_WithLowMemorySelector_PassesLowMemoryToProducer)
+{
+    FakeMetricProducer producer;
+    FakeMetricExporter exporter;
+    mts::PeriodicExportingMetricReader reader{
+        producer, exporter, 60'000ms, mti::TemporalitySelector::LowMemory()};
+
+    EXPECT_EQ(reader.Collect(100ms), mt::Status::Completed);
+    EXPECT_EQ(producer.LastSelector(), mti::TemporalitySelector::LowMemory());
+}
+
+TEST(PeriodicExportingMetricReaderTest, ForceFlush_PassesTheSameSelector)
+{
+    FakeMetricProducer producer;
+    FakeMetricExporter exporter;
+    mts::PeriodicExportingMetricReader reader{
+        producer, exporter, 60'000ms, mti::TemporalitySelector::LowMemory()};
+
+    EXPECT_EQ(reader.ForceFlush(100ms), mt::Status::Completed);
+    EXPECT_EQ(producer.LastSelector(), mti::TemporalitySelector::LowMemory());
 }
 
 // ── Serialization after the nested-lock fix ──────────────────────────────────
@@ -357,8 +384,7 @@ class OverlapDetectingProducer : public mti::IMetricProducer
 {
 public:
     [[nodiscard]] std::vector<mti::MetricBatchHandle> Collect(
-        mti::AggregationTemporality /*temporality*/ =
-            mti::AggregationTemporality::Cumulative) override
+        const mti::CollectRequest& /*request*/ = {}) override
     {
         if (m_inside.exchange(true, std::memory_order_acq_rel))
         {
