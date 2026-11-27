@@ -71,9 +71,13 @@ private:
     int m_call_count = 0;
 };
 
-mti::InstrumentationScope MakeScope(std::string name, std::string version = "1.0")
+mti::InstrumentationScope MakeScope(std::string name,
+                                    std::string version = "1.0",
+                                    std::string schema_url = "")
 {
-    return mti::InstrumentationScope{.name = std::move(name), .version = std::move(version)};
+    return mti::InstrumentationScope{.name = std::move(name),
+                                     .version = std::move(version),
+                                     .schema_url = std::move(schema_url)};
 }
 
 std::shared_ptr<const mt::Resource> MakeResource()
@@ -132,12 +136,14 @@ TEST(MetricProducerTest, SameNameDifferentVersionYieldsSeparateHandles)
 TEST(MetricProducerTest, HandleCarriesScopeIdentity)
 {
     mts::MetricProducer producer{MakeResource()};
-    producer.AddStream(MakeScope("my.lib", "3.0"), std::make_unique<FakeMetricStream>("m"));
+    producer.AddStream(MakeScope("my.lib", "3.0", "https://example.test/schema"),
+                       std::make_unique<FakeMetricStream>("m"));
 
     const auto handles = producer.Collect();
     ASSERT_EQ(handles.size(), 1U);
     EXPECT_EQ(handles[0].Scope().name, "my.lib");
     EXPECT_EQ(handles[0].Scope().version, "3.0");
+    EXPECT_EQ(handles[0].Scope().schema_url, "https://example.test/schema");
 }
 
 TEST(MetricProducerTest, CollectDelegatesTemporalityToStream)

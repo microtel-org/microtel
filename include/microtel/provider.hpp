@@ -205,12 +205,13 @@ public:
     /// @brief Acquire (or create) a `Meter` for one instrumentation scope.
     ///
     /// Same `(name, version)` returns the cached instance; a new instance is
-    /// created on the first call for each unique scope. `schema_url` is stored
-    /// in the scope but does not affect caching in v1.
+    /// created on the first call for each unique scope. `schema_url` does not
+    /// affect caching: the first call for a `(name, version)` fixes it.
     ///
     /// @param name        instrumentation library name (e.g., `"my.component"`).
     /// @param version     optional library version string.
-    /// @param schema_url  optional schema URL (stored; no v1 semantics).
+    /// @param schema_url  optional schema URL, exported as the scope's
+    ///                    `ScopeMetrics.schema_url`; empty exports none.
     ///
     /// @threadsafety Thread-safe.
     [[nodiscard]] virtual std::shared_ptr<Meter> GetMeter(std::string_view name,

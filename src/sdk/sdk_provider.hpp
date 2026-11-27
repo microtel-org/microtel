@@ -181,8 +181,8 @@ public:
     ///
     /// Lazily initialises the shared `MetricProducer` on the first call.
     /// Subsequent calls with the same `(name, version)` return the cached
-    /// instance. `schema_url` is stored in the scope but does not affect
-    /// caching in v1 (deferred to M12-hardening).
+    /// instance. `schema_url` is exported as the scope's schema URL; it does
+    /// not affect caching, so the first call for a `(name, version)` fixes it.
     [[nodiscard]] std::shared_ptr<microtel::Meter> GetMeter(
         std::string_view name,
         std::string_view version = {},
