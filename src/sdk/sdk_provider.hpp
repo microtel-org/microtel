@@ -180,9 +180,9 @@ public:
     /// @brief Acquire (or create) the `Meter` for one instrumentation scope.
     ///
     /// Lazily initialises the shared `MetricProducer` on the first call.
-    /// Subsequent calls with the same `(name, version)` return the cached
-    /// instance. `schema_url` is exported as the scope's schema URL; it does
-    /// not affect caching, so the first call for a `(name, version)` fixes it.
+    /// Subsequent calls with the same `(name, version, schema_url)` return the
+    /// cached instance (ICP 0048). `schema_url` is exported as the scope's
+    /// schema URL.
     [[nodiscard]] std::shared_ptr<microtel::Meter> GetMeter(
         std::string_view name,
         std::string_view version = {},

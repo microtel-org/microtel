@@ -212,6 +212,9 @@ example trace.
 - **No separate `MeterProvider`.** Extend the existing `Provider` with
   `GetMeter(name, version)` returning `std::shared_ptr<Meter>`, mirroring
   `Provider::GetTracer` exactly (same ownership and lifetime contract).
+- **A meter is identified by `(name, version, schema_url)`** (ICP 0048). A
+  call that differs from an earlier one only in its optional `schema_url`
+  returns a new meter, exported as its own `ScopeMetrics` with that URL.
 - `Meter` factory methods, value type `T ∈ {std::int64_t, double}`:
   - Sync: `CreateCounter<T>`, `CreateUpDownCounter<T>`, `CreateGauge<T>`,
     `CreateHistogram<T>`.

@@ -204,9 +204,10 @@ public:
 
     /// @brief Acquire (or create) a `Meter` for one instrumentation scope.
     ///
-    /// Same `(name, version)` returns the cached instance; a new instance is
-    /// created on the first call for each unique scope. `schema_url` does not
-    /// affect caching: the first call for a `(name, version)` fixes it.
+    /// Same `(name, version, schema_url)` returns the cached instance; a new
+    /// instance is created on the first call for each unique scope. A call
+    /// that differs only in `schema_url` gets its own meter, exported as its
+    /// own `ScopeMetrics` (ICP 0048).
     ///
     /// @param name        instrumentation library name (e.g., `"my.component"`).
     /// @param version     optional library version string.

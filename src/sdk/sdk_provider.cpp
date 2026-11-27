@@ -452,11 +452,14 @@ std::shared_ptr<microtel::Meter> SdkProvider::GetMeter(std::string_view name,
                 ToAggregationTemporality(m_metric_temporality));
         }
     }
+    // A meter's identity includes its schema URL (ICP 0048).
     std::string key;
-    key.reserve(name.size() + 1 + version.size());
+    key.reserve(name.size() + 1 + version.size() + 1 + schema_url.size());
     key.append(name);
     key += '\0';
     key.append(version);
+    key += '\0';
+    key.append(schema_url);
     auto& entry = m_meters[key];
     if (!entry)
     {
