@@ -46,7 +46,9 @@
 #include <cstring>
 #include <memory>
 #include <string>
+#include <type_traits>
 #include <variant>
+#include <vector>
 
 namespace microtel::wire
 {
@@ -139,74 +141,43 @@ int32_t MapStatusCode(microtel::StatusCode code) noexcept
 // Attribute encoding
 // ---------------------------------------------------------------------------
 
-void EncodeAnyValueStr(UpbAnyValue* av, const std::string& s)
-{
-    opentelemetry_proto_common_v1_AnyValue_set_string_value(av, Sv(s));
-}
-
-void EncodeAnyValueBool(UpbAnyValue* av, bool v)
+void SetScalar(UpbAnyValue* av, bool v)
 {
     opentelemetry_proto_common_v1_AnyValue_set_bool_value(av, v);
 }
 
-void EncodeAnyValueInt(UpbAnyValue* av, std::int64_t v)
+void SetScalar(UpbAnyValue* av, std::int64_t v)
 {
     opentelemetry_proto_common_v1_AnyValue_set_int_value(av, v);
 }
 
-void EncodeAnyValueDouble(UpbAnyValue* av, double v)
+void SetScalar(UpbAnyValue* av, double v)
 {
     opentelemetry_proto_common_v1_AnyValue_set_double_value(av, v);
 }
 
-void EncodeArrayBool(UpbAnyValue* av, const std::vector<bool>& vec, upb_Arena* arena)
+void SetScalar(UpbAnyValue* av, const std::string& s)
 {
-    UpbArrayVal* arr = opentelemetry_proto_common_v1_AnyValue_mutable_array_value(av, arena);
-    for (const bool elem : vec)
-    {
-        UpbAnyValue* item = opentelemetry_proto_common_v1_ArrayValue_add_values(arr, arena);
-        if (item != nullptr)
-        {
-            opentelemetry_proto_common_v1_AnyValue_set_bool_value(item, elem);
-        }
-    }
+    opentelemetry_proto_common_v1_AnyValue_set_string_value(av, Sv(s));
 }
 
-void EncodeArrayInt(UpbAnyValue* av, const std::vector<std::int64_t>& vec, upb_Arena* arena)
-{
-    UpbArrayVal* arr = opentelemetry_proto_common_v1_AnyValue_mutable_array_value(av, arena);
-    for (const std::int64_t elem : vec)
-    {
-        UpbAnyValue* item = opentelemetry_proto_common_v1_ArrayValue_add_values(arr, arena);
-        if (item != nullptr)
-        {
-            opentelemetry_proto_common_v1_AnyValue_set_int_value(item, elem);
-        }
-    }
-}
+template <typename T>
+constexpr bool kIsVector = false;
 
-void EncodeArrayDouble(UpbAnyValue* av, const std::vector<double>& vec, upb_Arena* arena)
-{
-    UpbArrayVal* arr = opentelemetry_proto_common_v1_AnyValue_mutable_array_value(av, arena);
-    for (const double elem : vec)
-    {
-        UpbAnyValue* item = opentelemetry_proto_common_v1_ArrayValue_add_values(arr, arena);
-        if (item != nullptr)
-        {
-            opentelemetry_proto_common_v1_AnyValue_set_double_value(item, elem);
-        }
-    }
-}
+template <typename T>
+constexpr bool kIsVector<std::vector<T>> = true;
 
-void EncodeArrayStr(UpbAnyValue* av, const std::vector<std::string>& vec, upb_Arena* arena)
+// An ArrayValue with one element per entry of @p vec, each set as a scalar.
+template <typename T>
+void EncodeArray(UpbAnyValue* av, const std::vector<T>& vec, upb_Arena* arena)
 {
     UpbArrayVal* arr = opentelemetry_proto_common_v1_AnyValue_mutable_array_value(av, arena);
-    for (const std::string& elem : vec)
+    for (const auto& elem : vec)
     {
         UpbAnyValue* item = opentelemetry_proto_common_v1_ArrayValue_add_values(arr, arena);
         if (item != nullptr)
         {
-            opentelemetry_proto_common_v1_AnyValue_set_string_value(item, Sv(elem));
+            SetScalar(item, elem);
         }
     }
 }
@@ -216,38 +187,13 @@ void EncodeAttrValue(UpbAnyValue* av, const microtel::AttributeValue& val, upb_A
     std::visit(
         [av, arena](const auto& v)
         {
-            using T = std::decay_t<decltype(v)>;
-            if constexpr (std::is_same_v<T, bool>)
+            if constexpr (kIsVector<std::decay_t<decltype(v)>>)
             {
-                EncodeAnyValueBool(av, v);
+                EncodeArray(av, v, arena);
             }
-            else if constexpr (std::is_same_v<T, std::int64_t>)
+            else
             {
-                EncodeAnyValueInt(av, v);
-            }
-            else if constexpr (std::is_same_v<T, double>)
-            {
-                EncodeAnyValueDouble(av, v);
-            }
-            else if constexpr (std::is_same_v<T, std::string>)
-            {
-                EncodeAnyValueStr(av, v);
-            }
-            else if constexpr (std::is_same_v<T, std::vector<bool>>)
-            {
-                EncodeArrayBool(av, v, arena);
-            }
-            else if constexpr (std::is_same_v<T, std::vector<std::int64_t>>)
-            {
-                EncodeArrayInt(av, v, arena);
-            }
-            else if constexpr (std::is_same_v<T, std::vector<double>>)
-            {
-                EncodeArrayDouble(av, v, arena);
-            }
-            else if constexpr (std::is_same_v<T, std::vector<std::string>>)
-            {
-                EncodeArrayStr(av, v, arena);
+                SetScalar(av, v);
             }
         },
         val);
@@ -396,12 +342,12 @@ void EncodeSpan(const internal::SpanRecord& rec, UpbScopeSp* ss, upb_Arena* aren
 }
 
 // ---------------------------------------------------------------------------
-// Resource encoding
+// Resource and scope encoding, shared by the three signals
 // ---------------------------------------------------------------------------
 
-void EncodeResource(const microtel::Resource& res, UpbResSp* rs, upb_Arena* arena)
+// @p ures is the signal's `mutable_resource` result: null if the arena ran out.
+void FillResource(const microtel::Resource& res, UpbResource* ures, upb_Arena* arena)
 {
-    UpbResource* ures = opentelemetry_proto_trace_v1_ResourceSpans_mutable_resource(rs, arena);
     if (ures == nullptr)
     {
         return;
@@ -412,19 +358,28 @@ void EncodeResource(const microtel::Resource& res, UpbResSp* rs, upb_Arena* aren
                      { return opentelemetry_proto_resource_v1_Resource_add_attributes(ures, a); });
 }
 
-// ---------------------------------------------------------------------------
-// Scope encoding
-// ---------------------------------------------------------------------------
-
-void EncodeScope(const internal::InstrumentationScope& scope, UpbScopeSp* ss, upb_Arena* arena)
+// @p usc is the signal's `mutable_scope` result: null if the arena ran out.
+void FillScope(const internal::InstrumentationScope& scope, UpbScope* usc)
 {
-    UpbScope* usc = opentelemetry_proto_trace_v1_ScopeSpans_mutable_scope(ss, arena);
     if (usc == nullptr)
     {
         return;
     }
     opentelemetry_proto_common_v1_InstrumentationScope_set_name(usc, Sv(scope.name));
     opentelemetry_proto_common_v1_InstrumentationScope_set_version(usc, Sv(scope.version));
+}
+
+// The serialized request lives in the arena, which dies with the call, so the
+// payload gets its own copy. Empty if serialization failed or wrote nothing.
+internal::EncodedPayload CopyToPayload(const char* buf, std::size_t len)
+{
+    if (buf == nullptr || len == 0)
+    {
+        return {};
+    }
+    auto bytes = std::make_unique<std::byte[]>(len);
+    std::memcpy(bytes.get(), buf, len);
+    return internal::EncodedPayload{std::move(bytes), len};
 }
 
 // ---------------------------------------------------------------------------
@@ -713,39 +668,6 @@ void EncodeMetricRecord(const internal::MetricRecord& rec, UpbScoMet* sm, upb_Ar
         rec.data);
 }
 
-// ---------------------------------------------------------------------------
-// Metrics resource encoding
-// ---------------------------------------------------------------------------
-
-void EncodeMetricResource(const microtel::Resource& res, UpbResMet* rm, upb_Arena* arena)
-{
-    UpbResource* ures = opentelemetry_proto_metrics_v1_ResourceMetrics_mutable_resource(rm, arena);
-    if (ures == nullptr)
-    {
-        return;
-    }
-    EncodeAttributes(res.Attributes(),
-                     arena,
-                     [ures](upb_Arena* a)
-                     { return opentelemetry_proto_resource_v1_Resource_add_attributes(ures, a); });
-}
-
-// ---------------------------------------------------------------------------
-// Metrics scope encoding
-// ---------------------------------------------------------------------------
-
-void EncodeMetricScope(const internal::InstrumentationScope& scope, UpbScoMet* sm, upb_Arena* arena)
-{
-    UpbScope* usc = opentelemetry_proto_metrics_v1_ScopeMetrics_mutable_scope(sm, arena);
-    if (usc == nullptr)
-    {
-        return;
-    }
-    opentelemetry_proto_common_v1_InstrumentationScope_set_name(usc, Sv(scope.name));
-    opentelemetry_proto_common_v1_InstrumentationScope_set_version(usc, Sv(scope.version));
-    opentelemetry_proto_metrics_v1_ScopeMetrics_set_schema_url(sm, Sv(scope.schema_url));
-}
-
 }  // anonymous namespace
 
 // ---------------------------------------------------------------------------
@@ -760,6 +682,10 @@ internal::EncodedPayload OtlpEncoder::Encode(const internal::BatchHandle& batch)
     }
 
     const UpbArena arena_owner;
+    if (!arena_owner.IsValid())
+    {
+        return {};
+    }
     upb_Arena* const arena = arena_owner.Get();
 
     UpbRequest* req = opentelemetry_proto_collector_trace_v1_ExportTraceServiceRequest_new(arena);
@@ -767,10 +693,12 @@ internal::EncodedPayload OtlpEncoder::Encode(const internal::BatchHandle& batch)
         opentelemetry_proto_collector_trace_v1_ExportTraceServiceRequest_add_resource_spans(req,
                                                                                             arena);
 
-    EncodeResource(batch.ResourceRef(), rs, arena);
+    FillResource(batch.ResourceRef(),
+                 opentelemetry_proto_trace_v1_ResourceSpans_mutable_resource(rs, arena),
+                 arena);
 
     UpbScopeSp* ss = opentelemetry_proto_trace_v1_ResourceSpans_add_scope_spans(rs, arena);
-    EncodeScope(batch.Scope(), ss, arena);
+    FillScope(batch.Scope(), opentelemetry_proto_trace_v1_ScopeSpans_mutable_scope(ss, arena));
 
     for (const auto& rec : batch.Spans())
     {
@@ -780,16 +708,7 @@ internal::EncodedPayload OtlpEncoder::Encode(const internal::BatchHandle& batch)
     std::size_t len = 0;
     const char* buf = opentelemetry_proto_collector_trace_v1_ExportTraceServiceRequest_serialize(
         req, arena, &len);
-
-    internal::EncodedPayload payload;
-    if (buf != nullptr && len > 0)
-    {
-        auto bytes = std::make_unique<std::byte[]>(len);
-        std::memcpy(bytes.get(), buf, len);
-        payload = internal::EncodedPayload{std::move(bytes), len};
-    }
-
-    return payload;
+    return CopyToPayload(buf, len);
 }
 
 // ---------------------------------------------------------------------------
@@ -804,6 +723,10 @@ internal::EncodedPayload OtlpEncoder::Encode(const internal::MetricBatchHandle& 
     }
 
     const UpbArena arena_owner;
+    if (!arena_owner.IsValid())
+    {
+        return {};
+    }
     upb_Arena* const arena = arena_owner.Get();
 
     UpbMetReq* req =
@@ -812,10 +735,18 @@ internal::EncodedPayload OtlpEncoder::Encode(const internal::MetricBatchHandle& 
         opentelemetry_proto_collector_metrics_v1_ExportMetricsServiceRequest_add_resource_metrics(
             req, arena);
 
-    EncodeMetricResource(batch.ResourceRef(), rm, arena);
+    FillResource(batch.ResourceRef(),
+                 opentelemetry_proto_metrics_v1_ResourceMetrics_mutable_resource(rm, arena),
+                 arena);
 
     UpbScoMet* sm = opentelemetry_proto_metrics_v1_ResourceMetrics_add_scope_metrics(rm, arena);
-    EncodeMetricScope(batch.Scope(), sm, arena);
+    UpbScope* const usc = opentelemetry_proto_metrics_v1_ScopeMetrics_mutable_scope(sm, arena);
+    FillScope(batch.Scope(), usc);
+    if (usc != nullptr)
+    {
+        opentelemetry_proto_metrics_v1_ScopeMetrics_set_schema_url(sm,
+                                                                   Sv(batch.Scope().schema_url));
+    }
 
     for (const auto& rec : batch.Metrics())
     {
@@ -826,16 +757,7 @@ internal::EncodedPayload OtlpEncoder::Encode(const internal::MetricBatchHandle& 
     const char* buf =
         opentelemetry_proto_collector_metrics_v1_ExportMetricsServiceRequest_serialize(
             req, arena, &len);
-
-    internal::EncodedPayload payload;
-    if (buf != nullptr && len > 0)
-    {
-        auto bytes = std::make_unique<std::byte[]>(len);
-        std::memcpy(bytes.get(), buf, len);
-        payload = internal::EncodedPayload{std::move(bytes), len};
-    }
-
-    return payload;
+    return CopyToPayload(buf, len);
 }
 
 // ---------------------------------------------------------------------------
@@ -850,30 +772,6 @@ using UpbResLog = opentelemetry_proto_logs_v1_ResourceLogs;
 using UpbScoLog = opentelemetry_proto_logs_v1_ScopeLogs;
 using UpbLogRec = opentelemetry_proto_logs_v1_LogRecord;
 using UpbLogReq = opentelemetry_proto_collector_logs_v1_ExportLogsServiceRequest;
-
-void EncodeLogResource(const microtel::Resource& res, UpbResLog* rl, upb_Arena* arena)
-{
-    UpbResource* ures = opentelemetry_proto_logs_v1_ResourceLogs_mutable_resource(rl, arena);
-    if (ures == nullptr)
-    {
-        return;
-    }
-    EncodeAttributes(res.Attributes(),
-                     arena,
-                     [ures](upb_Arena* a)
-                     { return opentelemetry_proto_resource_v1_Resource_add_attributes(ures, a); });
-}
-
-void EncodeLogScope(const internal::InstrumentationScope& scope, UpbScoLog* sl, upb_Arena* arena)
-{
-    UpbScope* usc = opentelemetry_proto_logs_v1_ScopeLogs_mutable_scope(sl, arena);
-    if (usc == nullptr)
-    {
-        return;
-    }
-    opentelemetry_proto_common_v1_InstrumentationScope_set_name(usc, Sv(scope.name));
-    opentelemetry_proto_common_v1_InstrumentationScope_set_version(usc, Sv(scope.version));
-}
 
 void EncodeLogRecord(const microtel::LogRecord& rec, UpbScoLog* sl, upb_Arena* arena)
 {
@@ -949,6 +847,10 @@ internal::EncodedPayload OtlpEncoder::Encode(const internal::LogBatchHandle& bat
     }
 
     const UpbArena arena_owner;
+    if (!arena_owner.IsValid())
+    {
+        return {};
+    }
     upb_Arena* const arena = arena_owner.Get();
 
     UpbLogReq* req = opentelemetry_proto_collector_logs_v1_ExportLogsServiceRequest_new(arena);
@@ -956,10 +858,12 @@ internal::EncodedPayload OtlpEncoder::Encode(const internal::LogBatchHandle& bat
         opentelemetry_proto_collector_logs_v1_ExportLogsServiceRequest_add_resource_logs(req,
                                                                                          arena);
 
-    EncodeLogResource(batch.ResourceRef(), rl, arena);
+    FillResource(batch.ResourceRef(),
+                 opentelemetry_proto_logs_v1_ResourceLogs_mutable_resource(rl, arena),
+                 arena);
 
     UpbScoLog* sl = opentelemetry_proto_logs_v1_ResourceLogs_add_scope_logs(rl, arena);
-    EncodeLogScope(batch.Scope(), sl, arena);
+    FillScope(batch.Scope(), opentelemetry_proto_logs_v1_ScopeLogs_mutable_scope(sl, arena));
 
     for (const auto& rec : batch.Records())
     {
@@ -969,16 +873,7 @@ internal::EncodedPayload OtlpEncoder::Encode(const internal::LogBatchHandle& bat
     std::size_t len = 0;
     const char* buf =
         opentelemetry_proto_collector_logs_v1_ExportLogsServiceRequest_serialize(req, arena, &len);
-
-    internal::EncodedPayload payload;
-    if (buf != nullptr && len > 0)
-    {
-        auto bytes = std::make_unique<std::byte[]>(len);
-        std::memcpy(bytes.get(), buf, len);
-        payload = internal::EncodedPayload{std::move(bytes), len};
-    }
-
-    return payload;
+    return CopyToPayload(buf, len);
 }
 
 }  // namespace microtel::wire

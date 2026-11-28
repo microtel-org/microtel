@@ -25,6 +25,8 @@
 #include "microtel/log_record.hpp"
 #include "microtel/resource.hpp"
 
+#include "fakes/failing_upb_alloc.hpp"
+
 #include <gtest/gtest.h>
 
 #include <chrono>
@@ -115,6 +117,22 @@ TEST(OtlpLogEncoderTest, EmptyBatch_ReturnsEmptyPayload)
 {
     mtw::OtlpEncoder enc;
     const mti::EncodedPayload payload = enc.Encode(MakeBatch({}));
+    EXPECT_EQ(payload.Size(), 0u);
+}
+
+// ── Arena allocation failure → empty payload ─────────────────────────────────
+
+TEST(OtlpLogEncoderTest, ArenaAllocationFailure_ReturnsEmptyPayload)
+{
+    const mti::LogBatchHandle batch = MakeBatch({mt::LogRecord{.severity_text = "WARN"}});
+    mtw::OtlpEncoder enc;
+
+    mti::EncodedPayload payload;
+    {
+        const microtel::testing::ScopedFailingUpbAlloc fail_upb;
+        payload = enc.Encode(batch);
+    }
+
     EXPECT_EQ(payload.Size(), 0u);
 }
 

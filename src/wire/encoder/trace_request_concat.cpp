@@ -8,13 +8,13 @@
 #include <cstddef>
 #include <cstring>
 #include <memory>
+#include <span>
 #include <utility>
-#include <vector>
 
 namespace microtel::wire
 {
 
-internal::EncodedPayload ConcatenateTraceRequests(std::vector<internal::EncodedPayload> parts)
+internal::EncodedPayload ConcatenateTraceRequests(std::span<internal::EncodedPayload> parts)
 {
     if (parts.size() == 1)
     {

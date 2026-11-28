@@ -16,7 +16,12 @@ namespace microtel::wire
 /// The only compilation unit that includes upb headers is `otlp_encoder.cpp`.
 /// No upb type appears here or in any header it includes.
 ///
-/// @threadsafety Not thread-safe (single-caller — exporter / metric-reader worker).
+/// @threadsafety Thread-safe. The encoder holds no state: each `Encode` call
+/// builds its request in its own upb arena and touches nothing shared, so
+/// concurrent calls are safe. `SdkBuilder` relies on this: it hands one encoder
+/// to the trace, metric and log exporters, whose workers run concurrently. The
+/// interfaces it implements promise only single-caller use; this class gives
+/// more.
 class OtlpEncoder final : public internal::IOtlpEncoder,
                           public internal::IMetricEncoder,
                           public internal::ILogEncoder
