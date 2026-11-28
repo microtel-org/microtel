@@ -93,5 +93,7 @@ C and E could unblock (`docs/development.md` §2).
   symbol ships.
 - **Stateless across calls.** Each `Encode` is a pure function of its input
   and keeps everything in its own arena. `SdkBuilder` hands the same encoder
-  to the trace, metric and log exporters, whose workers run concurrently, even
-  though the header's `@threadsafety` tag still says single-caller.
+  to the trace, metric and log exporters, whose workers run concurrently, and
+  `otlp_encoder.hpp`'s `@threadsafety` tag says so. The tags on the
+  `include/microtel/internal/` interfaces still say single-caller; they are
+  locked, so changing them needs an ICP.

@@ -24,6 +24,8 @@
 #include "microtel/internal/metric_batch.hpp"
 #include "microtel/resource.hpp"
 
+#include "fakes/failing_upb_alloc.hpp"
+
 #include <gtest/gtest.h>
 
 #include <chrono>
@@ -104,6 +106,26 @@ TEST(OtlpMetricEncoderTest, EmptyBatch_ReturnsEmptyPayload)
 {
     mtw::OtlpEncoder enc;
     const mti::EncodedPayload payload = enc.Encode(MakeBatch({}));
+    EXPECT_EQ(payload.Size(), 0u);
+}
+
+// ── Arena allocation failure → empty payload ─────────────────────────────────
+
+TEST(OtlpMetricEncoderTest, ArenaAllocationFailure_ReturnsEmptyPayload)
+{
+    const mti::MetricRecord rec{
+        .name = "requests",
+        .data = mti::GaugeData{.points = {{.value = std::int64_t{1}}}},
+    };
+    const mti::MetricBatchHandle batch = MakeBatch({rec});
+    mtw::OtlpEncoder enc;
+
+    mti::EncodedPayload payload;
+    {
+        const microtel::testing::ScopedFailingUpbAlloc fail_upb;
+        payload = enc.Encode(batch);
+    }
+
     EXPECT_EQ(payload.Size(), 0u);
 }
 

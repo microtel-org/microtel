@@ -5,7 +5,7 @@
 
 #include "microtel/internal/encoded_payload.hpp"
 
-#include <vector>
+#include <span>
 
 namespace microtel::wire
 {
@@ -22,11 +22,13 @@ namespace microtel::wire
 ///
 /// Byte-level: no upb is involved, and nothing is parsed or validated.
 ///
-/// @param parts the encodings, in request order. Consumed. Empty parts
-///        contribute nothing.
+/// @param parts the encodings, in request order. Consumed: a single part is
+///        moved out, and the caller must not read any of them afterwards.
+///        Empty parts contribute nothing. The span lets a caller pass a run of
+///        a larger buffer without moving it into a vector of its own.
 /// @return one payload. A single part is returned as is, with no copy.
 /// @throws std::bad_alloc if the joined buffer cannot be allocated.
 [[nodiscard]] internal::EncodedPayload ConcatenateTraceRequests(
-    std::vector<internal::EncodedPayload> parts);
+    std::span<internal::EncodedPayload> parts);
 
 }  // namespace microtel::wire

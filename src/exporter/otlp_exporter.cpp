@@ -15,6 +15,7 @@
 #include <cstdint>
 #include <exception>
 #include <mutex>
+#include <span>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -237,7 +238,7 @@ internal::EncodedPayload OtlpExporter::EncodeRequest(
     {
         parts.push_back(m_encoder->Encode(batches.at(i)));
     }
-    return wire::ConcatenateTraceRequests(std::move(parts));
+    return wire::ConcatenateTraceRequests(parts);
 }
 
 std::vector<OtlpExporter::RequestRange> OtlpExporter::GroupIntoRequests(
@@ -292,15 +293,11 @@ void OtlpExporter::FanOutAndProcess(const std::vector<internal::BatchHandle>& ba
 
     std::vector<internal::EncodedPayload> payloads;
     payloads.reserve(requests.size());
+    // Each request consumes its run of `parts`; nothing reads `parts` after.
     for (const auto& request : requests)
     {
-        std::vector<internal::EncodedPayload> group;
-        group.reserve(request.count);
-        for (std::size_t i = request.first; i < request.first + request.count; ++i)
-        {
-            group.push_back(std::move(parts.at(i)));
-        }
-        payloads.push_back(wire::ConcatenateTraceRequests(std::move(group)));
+        payloads.push_back(
+            wire::ConcatenateTraceRequests(std::span{parts}.subspan(request.first, request.count)));
     }
 
     // Fan-out: all requests submitted concurrently; SendAll collapses N

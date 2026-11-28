@@ -28,6 +28,7 @@
 
 #include <cstddef>
 #include <memory>
+#include <span>
 #include <string>
 #include <utility>
 #include <vector>
@@ -104,7 +105,7 @@ TEST(TraceRequestConcatTest, ConcatenationDecodesToTheUnionOfResourceSpansInOrde
     parts.push_back(EncodeFor("leaf-b", "span-b"));
     parts.push_back(EncodeFor("leaf-c", "span-c"));
 
-    const auto merged = mtw::ConcatenateTraceRequests(std::move(parts));
+    const auto merged = mtw::ConcatenateTraceRequests(parts);
 
     const auto decoded = Decode(merged);
     ASSERT_EQ(decoded.size(), 3U);
@@ -123,7 +124,7 @@ TEST(TraceRequestConcatTest, SizeIsTheSumOfThePartsAndBytesAreTheirConcatenation
     parts.push_back(std::move(a));
     parts.push_back(std::move(b));
 
-    const auto merged = mtw::ConcatenateTraceRequests(std::move(parts));
+    const auto merged = mtw::ConcatenateTraceRequests(parts);
 
     EXPECT_EQ(std::vector<std::byte>(merged.Bytes().begin(), merged.Bytes().end()), expected);
 }
@@ -135,7 +136,7 @@ TEST(TraceRequestConcatTest, ASinglePartIsReturnedUnchanged)
     std::vector<mti::EncodedPayload> parts;
     parts.push_back(std::move(only));
 
-    const auto merged = mtw::ConcatenateTraceRequests(std::move(parts));
+    const auto merged = mtw::ConcatenateTraceRequests(parts);
 
     EXPECT_EQ(merged.Bytes().data(), original) << "one part needs no copy";
 }
@@ -153,7 +154,23 @@ TEST(TraceRequestConcatTest, EmptyPartsContributeNothing)
     parts.push_back(EncodeFor("leaf-a", "span-a"));
     parts.emplace_back();
 
-    const auto merged = mtw::ConcatenateTraceRequests(std::move(parts));
+    const auto merged = mtw::ConcatenateTraceRequests(parts);
 
     ASSERT_EQ(Decode(merged).size(), 1U);
+}
+
+TEST(TraceRequestConcatTest, ASubspanJoinsOnlyItsRunOfTheBuffer)
+{
+    std::vector<mti::EncodedPayload> parts;
+    parts.push_back(EncodeFor("leaf-a", "span-a"));
+    parts.push_back(EncodeFor("leaf-b", "span-b"));
+    parts.push_back(EncodeFor("leaf-c", "span-c"));
+    parts.push_back(EncodeFor("leaf-d", "span-d"));
+
+    const auto merged = mtw::ConcatenateTraceRequests(std::span{parts}.subspan(1, 2));
+
+    const auto decoded = Decode(merged);
+    ASSERT_EQ(decoded.size(), 2U);
+    EXPECT_EQ(decoded[0], (std::pair<std::string, std::string>{"leaf-b", "span-b"}));
+    EXPECT_EQ(decoded[1], (std::pair<std::string, std::string>{"leaf-c", "span-c"}));
 }

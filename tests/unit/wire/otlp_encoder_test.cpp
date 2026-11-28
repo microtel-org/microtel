@@ -25,6 +25,8 @@
 #include "microtel/resource.hpp"
 #include "microtel/trace.hpp"
 
+#include "fakes/failing_upb_alloc.hpp"
+
 #include <gtest/gtest.h>
 
 #include <chrono>
@@ -191,6 +193,21 @@ TEST_F(OtlpEncoderTest, EmptySpanList_ProducesEmptyPayload)
     mti::BatchHandle empty{std::vector<mti::SpanRecord>{}, std::move(resource), std::move(scope)};
 
     const auto payload = Encode(std::move(empty));
+    EXPECT_EQ(payload.Size(), 0U);
+}
+
+// Encode makes its arena first. If upb cannot allocate one, Encode drops the
+// batch and returns an empty payload rather than handing upb a null arena.
+TEST_F(OtlpEncoderTest, ArenaAllocationFailure_ProducesEmptyPayload)
+{
+    const mti::BatchHandle batch = MinimalBatch(MakeCtx(0xAA, 0xBB));
+
+    mti::EncodedPayload payload;
+    {
+        const microtel::testing::ScopedFailingUpbAlloc fail_upb;
+        payload = m_encoder.Encode(batch);
+    }
+
     EXPECT_EQ(payload.Size(), 0U);
 }
 
@@ -393,6 +410,63 @@ TEST_F(OtlpEncoderTest, BoolAttribute_RoundTrips)
     const auto* val = opentelemetry_proto_common_v1_KeyValue_value(attrs[0]);
     ASSERT_NE(val, nullptr);
     EXPECT_TRUE(opentelemetry_proto_common_v1_AnyValue_bool_value(val));
+}
+
+TEST_F(OtlpEncoderTest, ArrayAttributes_RoundTripElementByElement)
+{
+    const mt::SpanContext ctx = MakeCtx(0x01, 0x02);
+    mti::SpanRecord rec{.context = ctx,
+                        .name = "array_attrs",
+                        .start_time = NsEpoch(1),
+                        .end_time = NsEpoch(2),
+                        .attributes = {{.key = "ba", .value = std::vector<bool>{true, false}},
+                                       {.key = "ia", .value = std::vector<std::int64_t>{-1, 7}},
+                                       {.key = "da", .value = std::vector<double>{0.5, -2.25}},
+                                       {.key = "sa", .value = std::vector<std::string>{"x", ""}}}};
+    auto resource = std::make_shared<const mt::Resource>();
+    mti::InstrumentationScope scope{.name = "lib", .version = "1"};
+    std::vector<mti::SpanRecord> records;
+    records.push_back(std::move(rec));
+    mti::BatchHandle batch{std::move(records), std::move(resource), std::move(scope)};
+
+    const auto payload = Encode(std::move(batch));
+    auto parsed = ParseFirst(payload);
+    m_arena = parsed.arena;
+    ASSERT_NE(parsed.span, nullptr);
+
+    std::size_t count = 0;
+    const auto* const* attrs = opentelemetry_proto_trace_v1_Span_attributes(parsed.span, &count);
+    ASSERT_EQ(count, 4U);
+    const auto elements = [&attrs](std::size_t i)
+    {
+        const auto* val = opentelemetry_proto_common_v1_KeyValue_value(attrs[i]);
+        const auto* arr = opentelemetry_proto_common_v1_AnyValue_array_value(val);
+        std::size_t n = 0;
+        const auto* const* items = opentelemetry_proto_common_v1_ArrayValue_values(arr, &n);
+        return std::vector<const opentelemetry_proto_common_v1_AnyValue*>(items, items + n);
+    };
+
+    const auto bools = elements(0);
+    ASSERT_EQ(bools.size(), 2U);
+    EXPECT_TRUE(opentelemetry_proto_common_v1_AnyValue_bool_value(bools[0]));
+    EXPECT_TRUE(opentelemetry_proto_common_v1_AnyValue_has_bool_value(bools[1]));
+    EXPECT_FALSE(opentelemetry_proto_common_v1_AnyValue_bool_value(bools[1]));
+
+    const auto ints = elements(1);
+    ASSERT_EQ(ints.size(), 2U);
+    EXPECT_EQ(opentelemetry_proto_common_v1_AnyValue_int_value(ints[0]), -1);
+    EXPECT_EQ(opentelemetry_proto_common_v1_AnyValue_int_value(ints[1]), 7);
+
+    const auto doubles = elements(2);
+    ASSERT_EQ(doubles.size(), 2U);
+    EXPECT_DOUBLE_EQ(opentelemetry_proto_common_v1_AnyValue_double_value(doubles[0]), 0.5);
+    EXPECT_DOUBLE_EQ(opentelemetry_proto_common_v1_AnyValue_double_value(doubles[1]), -2.25);
+
+    const auto strings = elements(3);
+    ASSERT_EQ(strings.size(), 2U);
+    EXPECT_EQ(SvStr(opentelemetry_proto_common_v1_AnyValue_string_value(strings[0])), "x");
+    EXPECT_TRUE(opentelemetry_proto_common_v1_AnyValue_has_string_value(strings[1]));
+    EXPECT_EQ(SvStr(opentelemetry_proto_common_v1_AnyValue_string_value(strings[1])), "");
 }
 
 TEST_F(OtlpEncoderTest, Int64Attribute_RoundTrips)
