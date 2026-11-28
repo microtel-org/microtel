@@ -24,7 +24,7 @@ else()
         OUT_SOURCE_PATH SOURCE_PATH
         REPO microtel-org/microtel
         REF "v${VERSION}"
-        SHA512 774b6c5ef99c33365f2c4a1d8fb88754804229f8bdbeb7c18c239b0adf77dcc9d89ad106758bbc802924a57647f5ce16099eb7498d15291d705e31c2532291d2
+        SHA512 8753e648df8c078cfe7bb14bf7cfada082923d50b0456b88c415ecca72933a709524abdb1e8f5bf355c3f7c487d13800e9699fa10e3328c5a7cead8a6d7229f7
         HEAD_REF master
     )
 endif()

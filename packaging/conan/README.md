@@ -8,12 +8,12 @@ has the submission steps.
 Until it is, build it into your local Conan cache from a microtel checkout:
 
 ```bash
-conan create packaging/conan/recipes/microtel/all --version=1.2.6 \
+conan create packaging/conan/recipes/microtel/all --version=1.3.0 \
       -s compiler.cppstd=20 --build=missing
 ```
 
 Add `-o "microtel/*:leaf=True"` for the experimental C leaf
-(`microtel::leaf`). Then require `microtel/1.2.6` in your project and use it
+(`microtel::leaf`). Then require `microtel/1.3.0` in your project and use it
 with `CMakeDeps`:
 
 ```cmake
