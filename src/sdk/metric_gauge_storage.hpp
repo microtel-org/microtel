@@ -9,10 +9,10 @@
 #include "microtel/internal/metric_batch.hpp"
 
 #include "sdk/metric_attribute_set.hpp"
+#include "sdk/metric_series_table.hpp"
 
 #include <chrono>
-#include <mutex>
-#include <unordered_map>
+#include <optional>
 
 namespace microtel::sdk
 {
@@ -41,7 +41,7 @@ public:
     explicit GaugeStorage(std::size_t max_cardinality = kDefaultMaxCardinality,
                           const internal::ICurrentSpanSource* span_source = nullptr,
                           internal::IDiagnosticsSink* diag = nullptr) noexcept
-        : m_max_cardinality(max_cardinality), m_span_source(span_source), m_diag(diag)
+        : m_span_source(span_source), m_diag(diag), m_series(max_cardinality, diag)
     {
     }
 
@@ -68,12 +68,17 @@ private:
         }
     }
 
-    mutable std::mutex m_mu;
-    std::size_t m_max_cardinality;
+    /// @brief One series: its latest reading and the latest exemplar of the
+    ///        current collection window.
+    struct Point
+    {
+        T value{};
+        std::optional<internal::Exemplar> exemplar;
+    };
+
     const internal::ICurrentSpanSource* m_span_source;  ///< non-owning; null disables exemplars
     internal::IDiagnosticsSink* m_diag;  ///< non-owning; null disables drop accounting
-    std::unordered_map<AttributeSet, T, AttributeSetHash> m_points;
-    std::unordered_map<AttributeSet, internal::Exemplar, AttributeSetHash> m_exemplars;
+    SeriesTable<Point> m_series;
 };
 
 }  // namespace microtel::sdk

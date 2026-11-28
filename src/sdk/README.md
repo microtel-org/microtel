@@ -89,7 +89,10 @@ Metrics ([`docs/metrics-design.md`](../../docs/metrics-design.md)):
 - `SdkMeter` and the instrument types (`meter_instruments.hpp`,
   `metric_observable_instruments.hpp`).
 - Per-aggregation storage: `SumStorage`, `GaugeStorage`, `HistogramStorage`,
-  `ExponentialHistogramStorage`, keyed by `AttributeSet`.
+  `ExponentialHistogramStorage`, keyed by `AttributeSet`. Each composes a
+  [`SeriesTable<Point>`](metric_series_table.hpp), which owns the mutex, the
+  series map, the cardinality limit and its overflow series; a series'
+  exemplar lives in its `Point`.
 - `MetricProducer`, `ViewRegistry`, and the two readers,
   `PeriodicExportingMetricReader` and `SynchronousMetricReader`.
 
