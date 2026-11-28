@@ -21,6 +21,7 @@ changing `IWireCodec`.
 | [`http1_transport.hpp`](http1_transport.hpp) | `Http1Transport`, the HTTP/1.1 `ITransport` (ICP 0042): serial requests, background reconnect after keep-alive ends, one stale-connection retry |
 | [`fallback_transport.hpp`](fallback_transport.hpp) | `FallbackTransport`, the OTLP/HTTP `ITransport`: HTTP/2 until the peer proves HTTP/1.1-only (plaintext preface answered in HTTP/1.1, or TLS ALPN `http/1.1` or none), then `Http1Transport`, with at most one I/O thread at a time |
 | [`event_log_limiter.hpp`](event_log_limiter.hpp) | How loudly `Http1Transport` logs its reconnects and retries: Info for the first of each, then at most one Info summary a minute, else Debug |
+| [`io_thread_runner.hpp`](io_thread_runner.hpp) | `IoThreadRunner`, the I/O thread both transports own: the stop flag, the thread, and the timed stop `Close` uses (a bounded wait that reports a timeout, then a join either way) |
 | [`epoll_reactor.hpp`](epoll_reactor.hpp) | `EpollReactor`, the `IReactor` implementation |
 | [`nosignal_io.hpp`](nosignal_io.hpp) | `SendNoSignal` and the SIGPIPE-safe TLS `BIO` |
 | [`connect_error.hpp`](connect_error.hpp) | The `Error` a failed TCP connect reports, from its errno |

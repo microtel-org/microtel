@@ -50,7 +50,7 @@ This section said "exactly three thread roles" until ICP 0021 checked it. Both h
 | Exporter worker | `OtlpExporter::m_worker` | `WorkerLoop` | traces |
 | Exporter worker | `OtlpMetricExporter::m_worker` | `WorkerLoop` | metrics |
 | Exporter worker | `OtlpLogExporter::m_worker` | `WorkerLoop` | logs |
-| I/O | `Http2Transport::m_io_thread` | `IoThreadLoop` | all (one shared transport) |
+| I/O | `Http2Transport::m_io_thread` (an `IoThreadRunner`) | `IoThreadTurn`, called until `Close` | all (one shared transport) |
 
 Seven, not eight: the producer row is the application's own thread, not one microtel creates. The metric reader is grouped with the processor workers because it plays their part in the metrics pipeline — it collects and hands off to an exporter — but it is woken by an interval rather than by an enqueue, which is why it is called out.
 
@@ -99,7 +99,7 @@ The two roles are separated by a queue, and conflating them is what the old text
 **Identity.** Owned by the `Transport`. Created in `Http2Transport::Create()`
 — **not** at `Connect`, as this line said until it was checked against the
 code. The loop starts polling immediately and runs whether or not a
-connection exists; `IoThreadLoop` simply finds `m_nghttp2_session` invalid and
+connection exists; `IoThreadTurn` simply finds `m_nghttp2_session` invalid and
 skips the drain steps. Joined at `Transport::Close`, which is accurate.
 
 **Exactly one I/O thread per `Provider`** (LOCKED — cites `src/transport/http2_transport.hpp:m_io_thread`, `src/transport/http1_transport.hpp:m_io_thread`, `src/transport/fallback_transport.cpp:SwitchToHttp1`, `src/sdk/sdk_builder.cpp:Build`). One nghttp2 session, one socket, one reactor: `Http2Transport` holds a single `m_io_thread`, and each `SdkBuilder::Build` constructs one transport, shared by every pipeline of the `Provider` it builds.
@@ -123,7 +123,7 @@ I/O-thread-only.
 **May not:** call into the encoder, the SDK, or any caller-facing API. The I/O thread is purely the byte-mover.
 
 **Sleep state.** Blocked in `epoll_wait` with a **fixed 100 ms tick**
-(`Http2Transport::IoThreadLoop`), not a computed deadline. This section
+(`Http2Transport::IoThreadTurn`), not a computed deadline. This section
 previously described a timeout derived from "the nearest of: pending HTTP/2
 timeout, retry-after deadline, shutdown deadline"; no such computation exists.
 Wake
@@ -234,7 +234,7 @@ Every mutex in v1, by owner. This table named five locks until ICP 0021; three o
 | `m_mu` | `CallbackAuthProvider` | cached-token read / refresh |
 | `m_mu` | `EpollReactor` | `m_callbacks` register / unregister / dispatch lookup |
 | `m_pending_mu`, `m_cancel_mu` | `Http2Transport` | request-queue push / drain; cancel-queue push / drain |
-| `m_io_done_mu` | `Http2Transport` | the I/O-loop-exited flag `Close` waits on |
+| `m_io_done_mu` | `IoThreadRunner` (in `Http2Transport` and `Http1Transport`) | the I/O-loop-exited flag `Close` waits on |
 | `m_mu` | `LeafTable` (the leaf receiver's, v1.2 concentrator builds only) | one leaf lookup, insert (with its idle and LRU evictions) or boot-anchor update; a leaf lock, never held across a call out — the leaf's settings (including the user's resolver) and its Resource are resolved before it is taken and the processor is called after it is released ([`leaf-concentrator-design.md`](leaf-concentrator-design.md) §3.5) |
 
 There is **no completion lock and no shutdown lock**: request completion is a `std::promise` / `std::future` pair (§3.3), and shutdown is a set of atomic flags (§5.3).

@@ -16,10 +16,10 @@
 #include "transport/connection_setup.hpp"
 #include "transport/event_log_limiter.hpp"
 #include "transport/http1_response_parser.hpp"
+#include "transport/io_thread_runner.hpp"
 
 #include <atomic>
 #include <chrono>
-#include <condition_variable>
 #include <cstddef>
 #include <cstdint>
 #include <deque>
@@ -27,7 +27,6 @@
 #include <memory>
 #include <mutex>
 #include <span>
-#include <thread>
 #include <vector>
 
 namespace microtel::transport
@@ -174,7 +173,8 @@ private:
     [[nodiscard]] bool RegisterConnection() noexcept;
     void CloseConnection() noexcept;
 
-    void IoThreadLoop() noexcept;
+    /// @brief One pass of the I/O loop; `m_io_thread` calls it until `Close`.
+    void IoThreadTurn() noexcept;
     void Service() noexcept;
     void ExpireQueued() noexcept;
     void CheckInFlight() noexcept;
@@ -203,11 +203,9 @@ private:
 
     std::unique_ptr<internal::IReactor> m_reactor;
     std::atomic<microtel::ConnectionState> m_state{microtel::ConnectionState::Disconnected};
-    std::atomic<bool> m_stop{false};
-    std::thread m_io_thread;
-    std::mutex m_io_done_mu;
-    std::condition_variable m_io_done_cv;
-    bool m_io_done = false;
+    /// The I/O thread, running `IoThreadTurn` until `Close` stops it with a
+    /// timed wait (see `IoThreadRunner`).
+    IoThreadRunner m_io_thread;
 
     // Written by `Connect` before it publishes `Connected`; read by the I/O
     // thread after it observes `Connected`.

@@ -201,7 +201,7 @@ microtel::Expected<std::unique_ptr<Http1Transport>, microtel::Error> Http1Transp
         // Private constructor; make_unique can't reach it.
         // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
         auto t = std::unique_ptr<Http1Transport>(new Http1Transport(std::move(reactor)));
-        t->m_io_thread = std::thread(&Http1Transport::IoThreadLoop, t.get());
+        t->m_io_thread.Start([raw = t.get()]() noexcept { raw->IoThreadTurn(); });
         return t;
     }
     // As in Http2Transport::Create: std::thread throws std::system_error when
@@ -356,18 +356,8 @@ microtel::Status Http1Transport::Close(std::chrono::milliseconds timeout) noexce
         return microtel::Status::AlreadyShutDown;
     }
 
-    m_stop.store(true, std::memory_order_release);
-    m_reactor->Wake();
-    const bool exited_in_time = [&]
-    {
-        std::unique_lock lk{m_io_done_mu};
-        return m_io_done_cv.wait_for(lk, timeout, [this] { return m_io_done; });
-    }();
     // Joined either way, as in Http2Transport::Close: the loop touches `this`.
-    if (m_io_thread.joinable())
-    {
-        m_io_thread.join();
-    }
+    const bool exited_in_time = m_io_thread.Stop(timeout, *m_reactor);
 
     FailAll(
         microtel::Error{.kind = microtel::Error::Kind::Cancelled, .message = "transport closed"});
@@ -448,18 +438,10 @@ void Http1Transport::Cancel(const internal::RequestHandle& handle) noexcept
 // I/O thread
 // ---------------------------------------------------------------------------
 
-void Http1Transport::IoThreadLoop() noexcept
+void Http1Transport::IoThreadTurn() noexcept
 {
-    while (!m_stop.load(std::memory_order_acquire))
-    {
-        m_reactor->WaitAndDispatch(std::chrono::steady_clock::now() + kPollInterval);
-        Service();
-    }
-    {
-        const std::scoped_lock lk{m_io_done_mu};
-        m_io_done = true;
-    }
-    m_io_done_cv.notify_all();
+    m_reactor->WaitAndDispatch(std::chrono::steady_clock::now() + kPollInterval);
+    Service();
 }
 
 void Http1Transport::Service() noexcept
