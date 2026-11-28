@@ -8,7 +8,6 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
-#include <mutex>
 #include <optional>
 #include <utility>
 #include <vector>
@@ -179,23 +178,20 @@ void ExponentialHistogramStorage<T>::Record(T value, AttributeSpan attrs)
         }
     }
 
-    const std::scoped_lock lock{m_mu};
-    AttributeSet key{attrs};
-    auto it = m_points.find(key);
-    if (it == m_points.end())
-    {
-        const bool needs_drop = (m_points.size() >= m_max_cardinality);
-        if (needs_drop)
-        {
-            key = OverflowAttributeSet();
-        }
-        it = m_points.try_emplace(std::move(key)).first;
-        if (needs_drop && m_diag != nullptr)
-        {
-            m_diag->RecordDrop(DropReason::CardinalityOverflow);
-        }
-    }
-    ExpHistoPoint& point = it->second;
+    m_series.Update(attrs,
+                    [&](ExpHistoPoint& point, bool /*inserted*/)
+                    {
+                        // A zero goes to the zero count and carries no exemplar.
+                        if (Aggregate(point, observation) && exemplar.has_value())
+                        {
+                            point.exemplar = std::move(exemplar);
+                        }
+                    });
+}
+
+template <typename T>
+bool ExponentialHistogramStorage<T>::Aggregate(ExpHistoPoint& point, double observation) const
+{
     if (point.count == 0)  // newly inserted entry (normal or first overflow use)
     {
         point.scale = m_max_scale;
@@ -214,13 +210,10 @@ void ExponentialHistogramStorage<T>::Record(T value, AttributeSpan attrs)
     if (observation == 0.0)
     {
         ++point.zero_count;
-        return;
+        return false;
     }
     InsertValue(point, std::abs(observation), observation < 0.0, m_max_buckets);
-    if (exemplar.has_value())
-    {
-        m_exemplars.insert_or_assign(it->first, std::move(*exemplar));
-    }
+    return true;
 }
 
 template <typename T>
@@ -228,43 +221,35 @@ internal::ExponentialHistogramData ExponentialHistogramStorage<T>::Collect(
     internal::AggregationTemporality temporality,
     std::chrono::system_clock::time_point collection_time)
 {
-    const std::scoped_lock lock{m_mu};
-
     internal::ExponentialHistogramData data;
     data.temporality = temporality;
-    data.points.reserve(m_points.size());
 
     const bool delta = temporality == internal::AggregationTemporality::Delta;
-    for (const auto& [key, point] : m_points)
-    {
-        internal::ExponentialHistogramPoint out;
-        const auto pairs = key.Pairs();
-        out.attributes.assign(pairs.begin(), pairs.end());
-        out.start_time = delta ? m_last_collect : point.start;
-        out.time = collection_time;
-        out.count = point.count;
-        out.sum = point.sum;
-        out.min = point.min;
-        out.max = point.max;
-        out.scale = point.scale;
-        out.zero_count = point.zero_count;
-        out.positive.offset = point.positive.offset;
-        out.positive.bucket_counts = point.positive.counts;
-        out.negative.offset = point.negative.offset;
-        out.negative.bucket_counts = point.negative.counts;
-        if (const auto ex_it = m_exemplars.find(key); ex_it != m_exemplars.end())
-        {
-            out.exemplars.push_back(ex_it->second);
-        }
-        data.points.push_back(std::move(out));
-    }
-
-    m_exemplars.clear();
-    m_last_collect = collection_time;
-    if (delta)
-    {
-        m_points.clear();
-    }
+    m_series.Collect(collection_time,
+                     delta,
+                     data.points,
+                     [&](const AttributeSet& key,
+                         ExpHistoPoint& point,
+                         std::chrono::system_clock::time_point previous_collect)
+                     {
+                         internal::ExponentialHistogramPoint out;
+                         const auto pairs = key.Pairs();
+                         out.attributes.assign(pairs.begin(), pairs.end());
+                         out.start_time = delta ? previous_collect : point.start;
+                         out.time = collection_time;
+                         out.count = point.count;
+                         out.sum = point.sum;
+                         out.min = point.min;
+                         out.max = point.max;
+                         out.scale = point.scale;
+                         out.zero_count = point.zero_count;
+                         out.positive.offset = point.positive.offset;
+                         out.positive.bucket_counts = point.positive.counts;
+                         out.negative.offset = point.negative.offset;
+                         out.negative.bucket_counts = point.negative.counts;
+                         TakeExemplar(point.exemplar, out.exemplars);
+                         return out;
+                     });
     return data;
 }
 

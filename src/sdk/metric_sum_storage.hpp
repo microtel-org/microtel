@@ -9,10 +9,10 @@
 #include "microtel/internal/metric_batch.hpp"
 
 #include "sdk/metric_attribute_set.hpp"
+#include "sdk/metric_series_table.hpp"
 
 #include <chrono>
-#include <mutex>
-#include <unordered_map>
+#include <optional>
 
 namespace microtel::sdk
 {
@@ -44,9 +44,9 @@ public:
                         const internal::ICurrentSpanSource* span_source = nullptr,
                         internal::IDiagnosticsSink* diag = nullptr) noexcept
         : m_monotonic(monotonic),
-          m_max_cardinality(max_cardinality),
           m_span_source(span_source),
-          m_diag(diag)
+          m_diag(diag),
+          m_series(max_cardinality, diag)
     {
     }
 
@@ -78,22 +78,19 @@ private:
         }
     }
 
-    /// @brief One series: its running total and its first measurement.
+    /// @brief One series: its running total, its first measurement, and the
+    ///        latest exemplar of the current collection window.
     struct Point
     {
         T value{};
         std::chrono::system_clock::time_point start;
+        std::optional<internal::Exemplar> exemplar;
     };
 
-    mutable std::mutex m_mu;
     bool m_monotonic;
-    std::size_t m_max_cardinality;
     const internal::ICurrentSpanSource* m_span_source;  ///< non-owning; null disables exemplars
     internal::IDiagnosticsSink* m_diag;  ///< non-owning; null disables drop accounting
-    std::unordered_map<AttributeSet, Point, AttributeSetHash> m_points;
-    std::unordered_map<AttributeSet, internal::Exemplar, AttributeSetHash> m_exemplars;
-    /// The previous collect's time; the storage's creation before the first.
-    std::chrono::system_clock::time_point m_last_collect = std::chrono::system_clock::now();
+    SeriesTable<Point> m_series;
 };
 
 }  // namespace microtel::sdk

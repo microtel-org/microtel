@@ -6,7 +6,6 @@
 #include <chrono>
 #include <cmath>
 #include <cstdint>
-#include <mutex>
 #include <optional>
 #include <utility>
 
@@ -35,66 +34,48 @@ void SumStorage<T>::Add(T value, AttributeSpan attrs)
             };
         }
     }
-    const std::scoped_lock lock{m_mu};
-    AttributeSet key{attrs};
-    auto it = m_points.find(key);
-    if (it == m_points.end())
-    {
-        const bool needs_drop = (m_points.size() >= m_max_cardinality);
-        if (needs_drop)
-        {
-            key = OverflowAttributeSet();
-        }
-        it = m_points
-                 .try_emplace(std::move(key),
-                              Point{.value = T{}, .start = std::chrono::system_clock::now()})
-                 .first;
-        if (needs_drop && m_diag != nullptr)
-        {
-            m_diag->RecordDrop(DropReason::CardinalityOverflow);
-        }
-    }
-    it->second.value += value;
-    if (exemplar.has_value())
-    {
-        m_exemplars.insert_or_assign(it->first, std::move(*exemplar));
-    }
+    m_series.Update(attrs,
+                    [&](Point& point, bool inserted)
+                    {
+                        if (inserted)
+                        {
+                            point.start = std::chrono::system_clock::now();
+                        }
+                        point.value += value;
+                        if (exemplar.has_value())
+                        {
+                            point.exemplar = std::move(exemplar);
+                        }
+                    });
 }
 
 template <typename T>
 internal::SumData SumStorage<T>::Collect(internal::AggregationTemporality temporality,
                                          std::chrono::system_clock::time_point collection_time)
 {
-    const std::scoped_lock lock{m_mu};
-
     internal::SumData data;
     data.temporality = temporality;
     data.is_monotonic = m_monotonic;
-    data.points.reserve(m_points.size());
 
     const bool delta = temporality == internal::AggregationTemporality::Delta;
-    for (const auto& [key, series] : m_points)
-    {
-        internal::NumberPoint point;
-        const auto pairs = key.Pairs();
-        point.attributes.assign(pairs.begin(), pairs.end());
-        point.start_time = delta ? m_last_collect : series.start;
-        point.time = collection_time;
-        point.value = series.value;  // T (int64_t/double) selects the MetricValue alternative
-        if (const auto ex_it = m_exemplars.find(key); ex_it != m_exemplars.end())
-        {
-            point.exemplars.push_back(ex_it->second);
-        }
-        data.points.push_back(std::move(point));
-    }
-
-    m_exemplars.clear();
-    m_last_collect = collection_time;
     // Delta reports the increment since the last collect, so clear live state.
-    if (temporality == internal::AggregationTemporality::Delta)
-    {
-        m_points.clear();
-    }
+    m_series.Collect(collection_time,
+                     delta,
+                     data.points,
+                     [&](const AttributeSet& key,
+                         Point& series,
+                         std::chrono::system_clock::time_point previous_collect)
+                     {
+                         internal::NumberPoint point;
+                         const auto pairs = key.Pairs();
+                         point.attributes.assign(pairs.begin(), pairs.end());
+                         point.start_time = delta ? previous_collect : series.start;
+                         point.time = collection_time;
+                         // T (int64_t/double) selects the MetricValue alternative
+                         point.value = series.value;
+                         TakeExemplar(series.exemplar, point.exemplars);
+                         return point;
+                     });
     return data;
 }
 
