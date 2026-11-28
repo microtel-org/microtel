@@ -16,7 +16,6 @@
 #include <algorithm>
 #include <cerrno>
 #include <chrono>
-#include <condition_variable>
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
@@ -254,7 +253,7 @@ microtel::Expected<std::unique_ptr<Http2Transport>, microtel::Error> Http2Transp
         // Private constructor; make_unique can't reach it.
         // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
         auto t = std::unique_ptr<Http2Transport>(new Http2Transport(std::move(reactor)));
-        t->m_io_thread = std::thread(&Http2Transport::IoThreadLoop, t.get());
+        t->m_io_thread.Start([raw = t.get()]() noexcept { raw->IoThreadTurn(); });
         return t;
     }
     // Not just bad_alloc: std::thread's constructor throws std::system_error
@@ -384,27 +383,12 @@ microtel::Status Http2Transport::Close(std::chrono::milliseconds timeout) noexce
         return microtel::Status::AlreadyShutDown;
     }
 
-    m_stop.store(true, std::memory_order_release);
-    m_reactor->Wake();
-
-    // Wait for the loop to publish its exit, bounded by the caller's timeout.
-    // Previously the timeout parameter was not even named and this was a bare
-    // join(), so a wedged I/O thread hung Provider::Shutdown -- and through it
-    // the host application's exit -- with no way for the caller to find out.
-    const bool exited_in_time = [&]
-    {
-        std::unique_lock lk{m_io_done_mu};
-        return m_io_done_cv.wait_for(lk, timeout, [this] { return m_io_done; });
-    }();
-
-    // Joined either way: the loop touches members of `this`, so detaching a
-    // thread that has not finished would leave it running against a destroyed
+    // Wait for the loop to exit, bounded by the caller's timeout, and join it
+    // either way: the loop touches members of `this`, so detaching a thread
+    // that has not finished would leave it running against a destroyed
     // transport. The timeout governs how long the caller waits before being
-    // told the truth, not whether the join happens.
-    if (m_io_thread.joinable())
-    {
-        m_io_thread.join();
-    }
+    // told the truth, not whether the join happens (IoThreadRunner::Stop).
+    const bool exited_in_time = m_io_thread.Stop(timeout, *m_reactor);
 
     // I/O thread has stopped — fulfill any streams it didn't get to close.
     AbandonInFlight("transport closed");
@@ -1111,39 +1095,30 @@ void Http2Transport::OnSettingsAck() noexcept
 // I/O thread
 // ---------------------------------------------------------------------------
 
-void Http2Transport::IoThreadLoop() noexcept
+void Http2Transport::IoThreadTurn() noexcept
 {
-    while (!m_stop.load(std::memory_order_acquire))
+    const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(100);
+    m_reactor->WaitAndDispatch(deadline);
+    // Gate on m_state before touching the connection objects, exactly as
+    // OnIoEvent does. Connect writes m_socket / m_ssl_* / m_nghttp2_session
+    // and *then* release-stores Connected; reading the session without the
+    // matching acquire is a data race against a concurrent reconnect.
+    //
+    // Harmless while a transport connected once and never again, which is
+    // why it went unnoticed — implementing Reconnecting (ICP 0018 §3) made
+    // reconnect a first-class path and TSAN found it immediately.
+    if (m_state.load(std::memory_order_acquire) == microtel::ConnectionState::Connected &&
+        m_nghttp2_session.IsValid())
     {
-        const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(100);
-        m_reactor->WaitAndDispatch(deadline);
-        // Gate on m_state before touching the connection objects, exactly as
-        // OnIoEvent does. Connect writes m_socket / m_ssl_* / m_nghttp2_session
-        // and *then* release-stores Connected; reading the session without the
-        // matching acquire is a data race against a concurrent reconnect.
-        //
-        // Harmless while a transport connected once and never again, which is
-        // why it went unnoticed — implementing Reconnecting (ICP 0018 §3) made
-        // reconnect a first-class path and TSAN found it immediately.
-        if (m_state.load(std::memory_order_acquire) == microtel::ConnectionState::Connected &&
-            m_nghttp2_session.IsValid())
-        {
-            DrainPendingRequests();
-            DrainCancelQueue();
-            // A cancel can retire the last stream on a GOAWAY'd connection,
-            // and no read event need follow it: without this the transport
-            // would sit in Connected on a session nghttp2 refuses to open
-            // streams on, which is the wedge the GOAWAY handling exists to
-            // avoid. Safe here — nghttp2 is between turns, not mid-recv.
-            (void)FinishGoawayDrainIfIdle();
-        }
+        DrainPendingRequests();
+        DrainCancelQueue();
+        // A cancel can retire the last stream on a GOAWAY'd connection,
+        // and no read event need follow it: without this the transport
+        // would sit in Connected on a session nghttp2 refuses to open
+        // streams on, which is the wedge the GOAWAY handling exists to
+        // avoid. Safe here — nghttp2 is between turns, not mid-recv.
+        (void)FinishGoawayDrainIfIdle();
     }
-    // Publish loop exit so Close's wait can be bounded by its timeout.
-    {
-        const std::scoped_lock lk{m_io_done_mu};
-        m_io_done = true;
-    }
-    m_io_done_cv.notify_all();
 }
 
 void Http2Transport::AbandonInFlight(const char* message) noexcept

@@ -14,11 +14,11 @@
 #include "common/raii/ssl_ctx.hpp"
 #include "common/raii/ssl_session.hpp"
 #include "common/raii/unique_fd.hpp"
+#include "transport/io_thread_runner.hpp"
 
 #include <array>
 #include <atomic>
 #include <chrono>
-#include <condition_variable>
 #include <cstddef>
 #include <cstdint>
 #include <future>
@@ -26,7 +26,6 @@
 #include <mutex>
 #include <string>
 #include <string_view>
-#include <thread>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -187,7 +186,8 @@ private:
 
     explicit Http2Transport(std::unique_ptr<internal::IReactor> reactor) noexcept;
 
-    void IoThreadLoop() noexcept;
+    /// @brief One pass of the I/O loop; `m_io_thread` calls it until `Close`.
+    void IoThreadTurn() noexcept;
     void OnIoEvent(int fd, internal::EventMask events) noexcept;
     void DrainPendingRequests() noexcept;
     void DrainCancelQueue() noexcept;
@@ -283,17 +283,9 @@ private:
 
     std::unique_ptr<internal::IReactor> m_reactor;
     std::atomic<microtel::ConnectionState> m_state{microtel::ConnectionState::Disconnected};
-    std::atomic<bool> m_stop{false};
-    std::thread m_io_thread;
-    /// Signalled by the I/O thread as its loop exits, so `Close` can bound how
-    /// long it waits. `std::thread` has no timed join, and detaching is not an
-    /// option here because the loop touches members of `this` — so the wait is
-    /// what the timeout actually governs, and a timeout is reported honestly
-    /// rather than silently ignored (`Provider::Shutdown` contract, CLAUDE.md
-    /// rule 15). Same shape as `OtlpExporter::Shutdown`.
-    std::mutex m_io_done_mu;
-    std::condition_variable m_io_done_cv;
-    bool m_io_done{false};
+    /// The I/O thread, running `IoThreadTurn` until `Close` stops it with a
+    /// timed wait (see `IoThreadRunner`).
+    IoThreadRunner m_io_thread;
 
     // Connection resources — written by Connect(), read by I/O-thread callbacks.
     // Thread-safety: Connect() writes these before the release-store of
